@@ -9,7 +9,10 @@ from typing import Any, Iterable, Mapping
 
 from .validation import ValidationIssue, load_document, load_schema, validate_document
 
-SEMANTIC_KEY_RE = re.compile(r"^[a-z][a-z0-9._-]*$")
+SEMANTIC_KEY_RE = re.compile(
+    r"^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*){2,}$"
+)
+ENTITY_ID_RE = re.compile(r"^[a-z][a-z0-9_]*\.[a-z0-9_]+$")
 
 
 class SnapshotBindingError(ValueError):
@@ -102,15 +105,17 @@ def load_validated_snapshot(path: Path, schema_path: Path) -> dict[str, Any]:
 
 
 def parse_binding(value: str) -> ParsedBinding:
-    """Parse semantic.key=domain.entity from the CLI."""
+    """Parse scope.object.role=domain.entity from the CLI."""
     semantic_key, separator, entity_id = value.partition("=")
     if not separator or not semantic_key or not entity_id:
         raise SnapshotBindingError(
-            f"invalid binding {value!r}; expected semantic.key=domain.entity"
+            f"invalid binding {value!r}; expected scope.object.role=domain.entity"
         )
     if not SEMANTIC_KEY_RE.fullmatch(semantic_key):
-        raise SnapshotBindingError(f"invalid semantic key {semantic_key!r}")
-    if "." not in entity_id:
+        raise SnapshotBindingError(
+            f"invalid semantic key {semantic_key!r}; use at least three dot-separated segments"
+        )
+    if not ENTITY_ID_RE.fullmatch(entity_id):
         raise SnapshotBindingError(f"invalid Home Assistant entity_id {entity_id!r}")
     return ParsedBinding(semantic_key=semantic_key, entity_id=entity_id)
 
@@ -126,6 +131,15 @@ def build_inventory(
     }
     output_bindings: dict[str, dict[str, Any]] = {}
     for binding in bindings:
+        if not SEMANTIC_KEY_RE.fullmatch(binding.semantic_key):
+            raise SnapshotBindingError(
+                f"invalid semantic key {binding.semantic_key!r}; "
+                "use at least three dot-separated segments"
+            )
+        if not ENTITY_ID_RE.fullmatch(binding.entity_id):
+            raise SnapshotBindingError(
+                f"invalid Home Assistant entity_id {binding.entity_id!r}"
+            )
         if binding.semantic_key in output_bindings:
             raise SnapshotBindingError(
                 f"semantic key {binding.semantic_key!r} is bound more than once"

@@ -8,9 +8,7 @@ import yaml
 from custom_components.contract_generated_ui.validation import validate_source_tree
 
 REPO_ROOT = Path(__file__).parents[1]
-PACKAGED_SCHEMAS = (
-    REPO_ROOT / "custom_components" / "contract_generated_ui" / "schemas"
-)
+PACKAGED_SCHEMAS = REPO_ROOT / "custom_components" / "contract_generated_ui" / "schemas"
 ROOT_SCHEMAS = REPO_ROOT / "schemas"
 
 
@@ -68,7 +66,7 @@ def _valid_documents() -> tuple[dict, dict, dict]:
         },
         "spec": {
             "bindings": {
-                "test.status": {
+                "test.synthetic.status": {
                     "entity_id": "sensor.test",
                     "domain": "sensor",
                     "verification": "verified",
@@ -92,7 +90,7 @@ def _valid_documents() -> tuple[dict, dict, dict]:
                         {
                             "contract": "test.contract",
                             "order": 0,
-                            "bindings": {"status": "test.status"},
+                            "bindings": {"status": "test.synthetic.status"},
                         }
                     ],
                 }

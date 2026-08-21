@@ -81,8 +81,8 @@ def _manifest() -> dict:
                             "instance": "garden",
                             "order": 0,
                             "bindings": {
-                                "contact": "access.garden_contact",
-                                "light": "access.garden_light",
+                                "contact": "access.garden.contact",
+                                "light": "access.garden.light",
                             },
                         }
                     ],
@@ -94,12 +94,12 @@ def _manifest() -> dict:
 
 def _bindings() -> dict:
     return {
-        "access.garden_contact": {
+        "access.garden.contact": {
             "entity_id": "binary_sensor.garden_door",
             "domain": "binary_sensor",
             "verification": "verified",
         },
-        "access.garden_light": {
+        "access.garden.light": {
             "entity_id": "light.garden",
             "domain": "light",
             "verification": "verified",
@@ -145,7 +145,7 @@ def test_required_role_binding_cannot_be_omitted() -> None:
 
 def test_binding_domain_must_match_contract_role() -> None:
     inventory = _bindings()
-    inventory["access.garden_contact"] = {
+    inventory["access.garden.contact"] = {
         "entity_id": "sensor.garden_door",
         "domain": "sensor",
         "verification": "verified",
@@ -162,7 +162,7 @@ def test_toggle_is_restricted_to_explicit_safe_v1_domains() -> None:
     contract = _contract()
     contract["spec"]["roles"]["light"]["allowed_domains"] = ["lock"]
     inventory = _bindings()
-    inventory["access.garden_light"] = {
+    inventory["access.garden.light"] = {
         "entity_id": "lock.garden",
         "domain": "lock",
         "verification": "verified",

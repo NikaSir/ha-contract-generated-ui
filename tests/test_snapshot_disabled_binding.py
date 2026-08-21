@@ -1,4 +1,9 @@
-from generator.snapshot import ParsedBinding, SnapshotBindingError, build_inventory, canonical_snapshot_id
+from generator.snapshot import (
+    ParsedBinding,
+    SnapshotBindingError,
+    build_inventory,
+    canonical_snapshot_id,
+)
 
 
 def test_disabled_entity_cannot_become_verified_inventory_binding() -> None:
@@ -26,7 +31,7 @@ def test_disabled_entity_cannot_become_verified_inventory_binding() -> None:
     try:
         build_inventory(
             snapshot,
-            [ParsedBinding("diagnostic.disabled", "sensor.disabled_source")],
+            [ParsedBinding("diagnostic.source.disabled", "sensor.disabled_source")],
         )
     except SnapshotBindingError as exc:
         assert "is disabled in snapshot" in str(exc)

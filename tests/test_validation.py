@@ -27,14 +27,8 @@ def _contract() -> dict:
                 }
             },
             "states": {
-                "normal": {
-                    "description": "Normal factual state",
-                    "rules": [],
-                },
-                "event": {
-                    "description": "Active event state",
-                    "rules": [],
-                },
+                "normal": {"description": "Normal factual state", "rules": []},
+                "event": {"description": "Active event state", "rules": []},
                 "unreliable": {
                     "description": "Source cannot establish a factual state",
                     "rules": [],
@@ -73,7 +67,7 @@ def _inventory() -> dict:
         },
         "spec": {
             "bindings": {
-                "example.status": {
+                "example.synthetic.status": {
                     "entity_id": "sensor.synthetic_status",
                     "domain": "sensor",
                     "verification": "verified",
@@ -104,7 +98,7 @@ def _manifest() -> dict:
                         {
                             "contract": "example_subsystem",
                             "order": 0,
-                            "bindings": {"status": "example.status"},
+                            "bindings": {"status": "example.synthetic.status"},
                         }
                     ],
                 }
@@ -122,9 +116,7 @@ def test_contract_rejects_missing_unreliable_state() -> None:
     document = _contract()
     del document["spec"]["states"]["unreliable"]
     schema = load_schema(Path("schemas/contract.schema.json"))
-
     issues = validate_document(document, schema, path=Path("contract.yaml"))
-
     assert any("unreliable" in issue.message for issue in issues)
 
 
@@ -134,14 +126,12 @@ def test_manifest_policy_rejects_concrete_entity_binding() -> None:
         "sensor.synthetic_status"
     )
     schema = load_schema(Path("schemas/manifest.schema.json"))
-
     issues = validate_document(
         document,
         schema,
         path=Path("manifest.yaml"),
         forbid_bindings=True,
     )
-
     assert any("binding key 'entity_id' is forbidden" in issue.message for issue in issues)
 
 
@@ -167,16 +157,13 @@ def test_repository_validation_routes_documents_to_correct_schema(tmp_path: Path
         )
 
     (tmp_path / "contracts" / "example.yaml").write_text(
-        yaml.safe_dump(_contract(), sort_keys=False),
-        encoding="utf-8",
+        yaml.safe_dump(_contract(), sort_keys=False), encoding="utf-8"
     )
     (tmp_path / "inventory" / "example.json").write_text(
-        json.dumps(_inventory()),
-        encoding="utf-8",
+        json.dumps(_inventory()), encoding="utf-8"
     )
     (tmp_path / "manifests" / "example.yml").write_text(
-        yaml.safe_dump(_manifest(), sort_keys=False),
-        encoding="utf-8",
+        yaml.safe_dump(_manifest(), sort_keys=False), encoding="utf-8"
     )
 
     assert validate_repository(tmp_path) == []

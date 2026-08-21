@@ -16,6 +16,7 @@ from generator.snapshot import (
     SnapshotBindingError,
     build_inventory,
     canonical_snapshot_id,
+    parse_binding,
     validate_snapshot_document,
 )
 from generator.validation import load_schema, validate_document
@@ -72,11 +73,23 @@ def test_snapshot_rejects_domain_mismatch_and_duplicate_entity() -> None:
     assert any("duplicate entity_id" in issue.message for issue in issues)
 
 
+def test_semantic_key_namespace_cannot_be_home_assistant_entity_id() -> None:
+    parsed = parse_binding("infrastructure.router.status=sensor.router_status")
+    assert parsed.semantic_key == "infrastructure.router.status"
+
+    try:
+        parse_binding("sensor.router_status=sensor.router_status")
+    except SnapshotBindingError as exc:
+        assert "at least three dot-separated segments" in str(exc)
+    else:
+        raise AssertionError("entity-shaped semantic key must be rejected")
+
+
 def test_inventory_build_rejects_entities_absent_from_snapshot() -> None:
     document = snapshot(entity("binary_sensor.door", device_class="door"))
     inventory = build_inventory(
         document,
-        [ParsedBinding("access.garden_door", "binary_sensor.door")],
+        [ParsedBinding("access.garden.door", "binary_sensor.door")],
     )
     schema = load_schema(ROOT / "schemas/inventory.schema.json")
     assert validate_document(inventory, schema, path=Path("inventory.yaml")) == []
@@ -85,7 +98,7 @@ def test_inventory_build_rejects_entities_absent_from_snapshot() -> None:
     try:
         build_inventory(
             document,
-            [ParsedBinding("access.missing", "binary_sensor.missing")],
+            [ParsedBinding("access.missing.entity", "binary_sensor.missing")],
         )
     except SnapshotBindingError as exc:
         assert "absent from snapshot" in str(exc)
@@ -97,14 +110,14 @@ def test_inventory_diff_reports_rebinding() -> None:
     document = snapshot(entity("binary_sensor.door"), entity("binary_sensor.door_new"))
     before = build_inventory(
         document,
-        [ParsedBinding("access.door", "binary_sensor.door")],
+        [ParsedBinding("access.entry.door", "binary_sensor.door")],
     )
     after = build_inventory(
         document,
-        [ParsedBinding("access.door", "binary_sensor.door_new")],
+        [ParsedBinding("access.entry.door", "binary_sensor.door_new")],
     )
     assert [(change.kind, change.key) for change in diff_inventories(before, after)] == [
-        ("rebound", "access.door")
+        ("rebound", "access.entry.door")
     ]
 
 
@@ -196,12 +209,12 @@ def test_cli_inventory_build(monkeypatch, tmp_path: Path) -> None:
             "--inventory-schema",
             str(ROOT / "schemas/inventory.schema.json"),
             "--bind",
-            "access.garden_door=binary_sensor.garden_door",
+            "access.garden.door=binary_sensor.garden_door",
         ],
     )
     assert main() == 0
     built = yaml.safe_load(output.read_text(encoding="utf-8"))
     assert (
-        built["spec"]["bindings"]["access.garden_door"]["entity_id"]
+        built["spec"]["bindings"]["access.garden.door"]["entity_id"]
         == "binary_sensor.garden_door"
     )

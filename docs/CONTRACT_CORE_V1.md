@@ -4,15 +4,15 @@ The first executable layer of `CONTRACT_GENERATED_UI` separates UI semantics fro
 
 ## Data flow
 
-`UIContract → SemanticInventory → PanelManifest → generator`
+`RegistrySnapshot → SemanticInventory + UIContract + PanelManifest → renderer`
 
-The three document kinds are independently schema-validated before generation.
+The input document kinds are independently schema-validated before generation and are cross-checked again by the renderer.
 
 ## UIContract
 
 API version: `nikas.home-assistant/ui-contract/v1`
 
-A contract defines semantic roles, normal/event/unreliable state classes, permitted actions, renderer-facing requirements and safety invariants. It must not contain concrete Home Assistant registry identifiers.
+A contract defines semantic roles, normal/event/unreliable state classes, explicit actions, renderer-facing requirements and safety invariants. It must not contain concrete Home Assistant registry identifiers.
 
 Required safety invariants:
 
@@ -22,11 +22,15 @@ Required safety invariants:
 
 Concrete `entity_id`, `device_id` and `area_id` keys are rejected recursively in contracts.
 
+Renderable v1 contracts also define a user-facing label and allowed Home Assistant domains for every role, exactly one explicit action per role, and an explicit presentation order.
+
 ## SemanticInventory
 
 API version: `nikas.home-assistant/semantic-inventory/v1`
 
-The inventory is the only v1 input layer allowed to bind semantic roles to concrete Home Assistant entity IDs. Every binding must be marked `verification: verified`, and inventory metadata must state that the source was scrubbed before being committed.
+The inventory is the only v1 input layer allowed to bind semantic keys to concrete Home Assistant entity IDs. Every binding must be marked `verification: verified`, and inventory metadata must state that the source was scrubbed before being committed.
+
+Semantic keys use at least three dot-separated segments, for example `infrastructure.router.status`. This namespace cannot be confused with a Home Assistant `domain.object_id` entity ID.
 
 The inventory is factual input. It does not convert `unknown` or `unavailable` into healthy states.
 
@@ -34,9 +38,16 @@ The inventory is factual input. It does not convert `unknown` or `unavailable` i
 
 API version: `nikas.home-assistant/panel-manifest/v1`
 
-A manifest declares dashboard paths, views, ordering and references to contract modules. It stays intentionally short and contains no concrete Home Assistant registry bindings.
+A manifest declares dashboard paths, views, ordering and references to contract modules. A module binds contract roles to semantic inventory keys only:
 
-Concrete `entity_id`, `device_id` and `area_id` keys are rejected recursively in manifests.
+```yaml
+bindings:
+  status: infrastructure.router.status
+```
+
+The semantic-key grammar requires at least three dot-separated segments, so a direct Home Assistant `domain.entity` value cannot satisfy the manifest schema.
+
+Concrete `entity_id`, `device_id` and `area_id` keys are also rejected recursively in manifests.
 
 ## Validation
 
@@ -54,6 +65,7 @@ The installed console entry point is equivalent:
 ha-contract-ui validate .
 ```
 
-## Scope of v1
+## Related executable layers
 
-Contract core v1 validates document structure and architectural boundaries. It does not yet implement Lovelace rendering, Home Assistant registry snapshot collection or semantic diff. Those layers must consume these validated inputs rather than bypassing them.
+- `docs/SNAPSHOT_PIPELINE.md` — scrubbed Home Assistant registry capture, verified inventory build and semantic diff.
+- `docs/RENDERER_V1.md` — deterministic Lovelace rendering and interaction-safety rules.
