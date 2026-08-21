@@ -1,0 +1,183 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: infrastructure.ups
+  title: UPS
+  version: 0.1.0
+spec:
+  roles:
+    cloud_telemetry:
+      label: Облако
+      description: Доступность облачной телеметрии UPS.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    data_stale:
+      label: Данные устарели
+      description: Флаг устаревших данных по облачной метке времени.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    on_battery:
+      label: От батареи
+      description: UPS работает от батареи.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    data_age:
+      label: Возраст данных
+      description: Возраст фактического облачного снимка.
+      required: true
+      allowed_domains:
+      - sensor
+    data_time:
+      label: Время данных
+      description: Время фактического снимка UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    operating_mode:
+      label: Режим
+      description: Текущий режим работы UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    battery_capacity:
+      label: Заряд АКБ
+      description: Расчётная ёмкость батареи.
+      required: true
+      allowed_domains:
+      - sensor
+    battery_voltage:
+      label: Напряжение АКБ
+      description: Напряжение батарейной сборки.
+      required: true
+      allowed_domains:
+      - sensor
+    input_voltage:
+      label: Входное напряжение
+      description: Входное напряжение UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    input_frequency:
+      label: Входная частота
+      description: Входная частота UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    output_voltage:
+      label: Выходное напряжение
+      description: Выходное напряжение UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    output_frequency:
+      label: Выходная частота
+      description: Выходная частота UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    output_current:
+      label: Выходной ток
+      description: Выходной ток UPS.
+      required: true
+      allowed_domains:
+      - sensor
+    output_load:
+      label: Нагрузка
+      description: Процент нагрузки UPS.
+      required: true
+      allowed_domains:
+      - sensor
+  states:
+    normal:
+      description: Фактическое штатное состояние источника.
+      rules: []
+    event:
+      description: Фактическое событие или отклонение источника.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо не позволяет установить факт.
+      rules: []
+  actions:
+  - id: more_info_cloud_telemetry
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: cloud_telemetry
+  - id: more_info_data_stale
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: data_stale
+  - id: more_info_on_battery
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: on_battery
+  - id: more_info_data_age
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: data_age
+  - id: more_info_data_time
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: data_time
+  - id: more_info_operating_mode
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: operating_mode
+  - id: more_info_battery_capacity
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: battery_capacity
+  - id: more_info_battery_voltage
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: battery_voltage
+  - id: more_info_input_voltage
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: input_voltage
+  - id: more_info_input_frequency
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: input_frequency
+  - id: more_info_output_voltage
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: output_voltage
+  - id: more_info_output_frequency
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: output_frequency
+  - id: more_info_output_current
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: output_current
+  - id: more_info_output_load
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: output_load
+  presentation:
+    renderer: tiles_v1
+    columns: 3
+    role_order:
+    - cloud_telemetry
+    - data_stale
+    - on_battery
+    - data_age
+    - data_time
+    - operating_mode
+    - battery_capacity
+    - battery_voltage
+    - input_voltage
+    - input_frequency
+    - output_voltage
+    - output_frequency
+    - output_current
+    - output_load
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+    - Read-only infrastructure slice; all primary actions are more-info.
