@@ -20,7 +20,7 @@ from .runtime_registration import (
     RuntimeRegistrationError,
     write_lovelace_registration_snippet,
 )
-from .runtime_renderer import RuntimeRenderError, render_all_manifests
+from .runtime_sections import RuntimeRenderError, render_all_manifests
 
 
 async def async_setup_entry(
