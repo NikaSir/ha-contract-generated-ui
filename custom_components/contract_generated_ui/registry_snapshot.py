@@ -28,8 +28,12 @@ class SnapshotWriteResult:
 
 def canonical_snapshot_id(entities: Iterable[Mapping[str, Any]]) -> str:
     """Return a stable content ID for scrubbed entity facts."""
+    ordered = sorted(
+        (dict(entity) for entity in entities),
+        key=lambda item: item["entity_id"],
+    )
     payload = json.dumps(
-        list(entities),
+        ordered,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
