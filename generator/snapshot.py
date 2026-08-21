@@ -136,6 +136,11 @@ def build_inventory(
                 f"{snapshot['metadata']['snapshot_id']}"
             )
         entity = entities[binding.entity_id]
+        if entity.get("disabled"):
+            raise SnapshotBindingError(
+                f"entity {binding.entity_id!r} is disabled in snapshot "
+                f"{snapshot['metadata']['snapshot_id']}"
+            )
         output: dict[str, Any] = {
             "entity_id": binding.entity_id,
             "domain": entity["domain"],
