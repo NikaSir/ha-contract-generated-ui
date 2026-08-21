@@ -1,0 +1,119 @@
+from __future__ import annotations
+
+import importlib.util
+import sys
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).parents[1]
+REGISTRATION_PATH = (
+    ROOT
+    / "custom_components"
+    / "contract_generated_ui"
+    / "runtime_registration.py"
+)
+
+
+def _registration_module():
+    spec = importlib.util.spec_from_file_location(
+        "contract_generated_ui_runtime_registration_test",
+        REGISTRATION_PATH,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _manifest(dashboard_path: str = "/dashboard-infrastructure") -> dict:
+    return {
+        "api_version": "nikas.home-assistant/panel-manifest/v1",
+        "kind": "PanelManifest",
+        "metadata": {
+            "id": "infrastructure",
+            "title": "Infrastructure",
+            "version": "1.0",
+        },
+        "spec": {
+            "dashboard_path": dashboard_path,
+            "views": [
+                {
+                    "id": "overview",
+                    "title": "Infrastructure",
+                    "path": "overview",
+                    "order": 0,
+                    "modules": [
+                        {
+                            "contract": "infra",
+                            "order": 0,
+                            "bindings": {
+                                "status": "infrastructure.router.status"
+                            },
+                        }
+                    ],
+                }
+            ],
+        },
+    }
+
+
+def _write_manifest(source_root: Path, document: dict) -> None:
+    manifest_root = source_root / "manifests"
+    manifest_root.mkdir(parents=True, exist_ok=True)
+    (manifest_root / "infrastructure.yaml").write_text(
+        yaml.safe_dump(document, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
+def test_registration_export_is_official_yaml_shape_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    registration = _registration_module()
+    source_root = tmp_path / "contract_generated_ui"
+    generated_root = source_root / "generated"
+    _write_manifest(source_root, _manifest())
+
+    first = registration.write_lovelace_registration_snippet(
+        source_root,
+        generated_root,
+    )
+    assert first.changed is True
+    assert first.dashboard_count == 1
+    text = first.path.read_text(encoding="utf-8")
+    assert "registration snippet only" in text
+    document = yaml.safe_load(text)
+    dashboard = document["lovelace"]["dashboards"]["dashboard-infrastructure"]
+    assert dashboard == {
+        "mode": "yaml",
+        "filename": "contract_generated_ui/generated/infrastructure.yaml",
+        "title": "Infrastructure",
+        "show_in_sidebar": True,
+        "require_admin": False,
+    }
+
+    before = first.path.read_bytes()
+    second = registration.write_lovelace_registration_snippet(
+        source_root,
+        generated_root,
+    )
+    assert second.changed is False
+    assert second.path.read_bytes() == before
+
+
+def test_registration_rejects_single_word_yaml_dashboard_url(tmp_path: Path) -> None:
+    registration = _registration_module()
+    source_root = tmp_path / "contract_generated_ui"
+    _write_manifest(source_root, _manifest("/infrastructure"))
+
+    try:
+        registration.write_lovelace_registration_snippet(
+            source_root,
+            source_root / "generated",
+        )
+    except registration.RuntimeRegistrationError as exc:
+        assert "must contain a hyphen" in str(exc)
+    else:
+        raise AssertionError("Home Assistant YAML dashboard slug rule must be enforced")
