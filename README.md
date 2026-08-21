@@ -8,17 +8,36 @@ Architecture-as-Code toolchain for generating and validating Home Assistant Love
 
 ## Status
 
-Infrastructure/bootstrap stage. The repository intentionally does not contain placeholder dashboard logic or fabricated Home Assistant entities. Production contracts and generator behavior will be imported only from verified project data.
+Contract core v1 is under active development. The repository now has machine-readable schemas and an executable validator for UI contracts, semantic inventory and panel manifests. Production contracts and bindings are still introduced only from verified Home Assistant NikaS project data; placeholder dashboard logic and fabricated production entity IDs are not accepted.
 
 ## Repository structure
 
 - `contracts/` — formal subsystem and UI contracts.
 - `inventory/` — normalized semantic inventory derived from Home Assistant state/registry snapshots.
 - `manifests/` — concise declarations describing panel composition.
-- `generator/` — generator implementation and rendering rules.
+- `generator/` — validation and deterministic generator implementation.
 - `schemas/` — machine-readable schemas for contracts, inventory and manifests.
 - `tests/` — contract, semantic-diff and generation regression tests.
-- `docs/` — architecture, release and operating documentation.
+- `docs/` — architecture, contract-core, release and operating documentation.
+
+## Contract core
+
+The first executable layer enforces a hard separation between semantics and Home Assistant bindings:
+
+- contracts define roles, state classes, actions and safety invariants;
+- semantic inventory is the only input layer allowed to contain verified `entity_id` bindings;
+- manifests compose dashboards and views by contract reference, not by direct entity binding;
+- `unknown` and `unavailable` must remain explicit unreliable states.
+
+See `docs/CONTRACT_CORE_V1.md` for the v1 format and validation commands.
+
+## Development validation
+
+```bash
+python -m pip install -e '.[test]'
+python -m generator validate .
+python -m pytest -q
+```
 
 ## Design principles
 
