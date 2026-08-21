@@ -4,11 +4,11 @@ Architecture-as-Code toolchain for generating and validating Home Assistant Love
 
 ## Pipeline
 
-`Home Assistant registry snapshot + UI contracts → semantic inventory → panel manifests → deterministic Lovelace YAML → semantic diff → validation → release`
+`Home Assistant registry snapshot + UI contracts → semantic inventory → panel manifests → deterministic Lovelace YAML → semantic diff → release gate → validation → release`
 
 ## Status
 
-The current development stack contains Contract Core v1, an installable Home Assistant custom-integration shell, scrubbed entity-registry capture, verified semantic-inventory construction, semantic diff and deterministic Lovelace Renderer v1. Production contracts and bindings are introduced only from verified Home Assistant NikaS project data; fabricated production entity IDs and placeholder dashboard facts are not accepted.
+The current development stack contains Contract Core v1, an installable Home Assistant custom-integration shell, scrubbed entity-registry capture, verified semantic-inventory construction, semantic diff, deterministic Lovelace Renderer v1 and a fail-closed semantic release gate. Production contracts and bindings are introduced only from verified Home Assistant NikaS project data; fabricated production entity IDs and placeholder dashboard facts are not accepted.
 
 All functional changes are developed through stacked draft pull requests. `main` remains the release baseline until the stack is reviewed.
 
@@ -18,10 +18,11 @@ All functional changes are developed through stacked draft pull requests. `main`
 - `inventory/` — normalized semantic inventory derived from verified snapshots.
 - `manifests/` — concise panel composition and role-to-semantic-key bindings.
 - `snapshots/` — scrubbed reviewed Home Assistant registry snapshots when intentionally committed.
-- `generator/` — validation, inventory construction, semantic diff and deterministic renderer.
-- `schemas/` — machine-readable schemas for contracts, inventory, manifests, snapshots and render traces.
-- `custom_components/contract_generated_ui/` — Home Assistant custom integration and packaged schemas.
-- `tests/` — contract, integration, snapshot, semantic-diff and rendering regression tests.
+- `generator/` — validation, inventory construction, semantic diff, deterministic renderer and release gate.
+- `schemas/` — machine-readable schemas for contracts, inventory, manifests, snapshots, render traces, diffs and approvals.
+- `approvals/` — intentionally reviewed exact semantic-change approvals.
+- `custom_components/contract_generated_ui/` — Home Assistant custom integration and packaged runtime schemas.
+- `tests/` — contract, integration, snapshot, semantic-diff, rendering and release-gate regression tests.
 - `docs/` — architecture, operating and release documentation.
 
 ## Contract boundary
@@ -67,11 +68,26 @@ Renderer v1 resolves explicit manifest role bindings through verified semantic i
 ha-contract-ui render manifests/example.yaml .generated/example.yaml
 ```
 
-The command writes deterministic Lovelace YAML plus a sibling `.meta.json` RenderTrace with source versions, snapshot IDs, resolved bindings and the SHA-256 of canonical dashboard content.
+The command writes deterministic Lovelace YAML plus a sibling `.meta.json` RenderTrace with source versions, snapshot IDs, resolved bindings, reviewable view/module/role/action semantics, renderer-engine SHA-256 and the SHA-256 of canonical dashboard content.
 
 Interaction safety is explicit: card and icon actions are always written, long-press opens `more-info`, double-tap is disabled, service actions fail closed, and `toggle` is restricted to the v1 allowlist.
 
 See `docs/RENDERER_V1.md`.
+
+## Semantic release gate
+
+A syntactically valid generated dashboard is not automatically releasable.
+
+```bash
+ha-contract-ui diff render release/baseline.meta.json .generated/candidate.meta.json
+ha-contract-ui gate render release/baseline.meta.json .generated/candidate.meta.json
+```
+
+The semantic diff classifies binding reassignments, actions, navigation, layout, source revisions and renderer-engine changes. Any semantic change blocks the gate by default.
+
+A reviewed `RenderApproval v1` is accepted only when its baseline dashboard SHA-256, candidate dashboard SHA-256 and semantic-diff SHA-256 exactly match the candidate under review. Any subsequent change makes the approval stale. Unexplained canonical dashboard drift is classified as critical and blocks release.
+
+See `docs/SEMANTIC_RELEASE_GATE.md` and `docs/RELEASES.md`.
 
 ## Installation
 
@@ -95,8 +111,9 @@ Home Assistant metadata and translation structure are additionally checked by th
 2. **Contracts are explicit.** UI behavior, entity semantics, interaction and navigation are defined before rendering.
 3. **Generated output is reproducible.** Manual changes to generated dashboards are treated as drift.
 4. **Semantic diff precedes release.** Meaningful changes are reviewable independently of formatting noise.
-5. **Home Assistant entity IDs are never invented.** Generation consumes verified inventory.
-6. **Secrets stay outside Git.** Snapshots and diagnostics are scrubbed before intentional commit.
+5. **Release is fail-closed.** Unreviewed semantic changes and unexplained renderer drift block the candidate.
+6. **Home Assistant entity IDs are never invented.** Generation consumes verified inventory.
+7. **Secrets stay outside Git.** Snapshots and diagnostics are scrubbed before intentional commit.
 
 ## License
 

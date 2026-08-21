@@ -32,4 +32,10 @@ All notable changes to this project will be documented in this file.
 - Explicit safe Tile card/icon tap, hold and double-tap action generation.
 - Fail-closed service actions and restricted v1 toggle-domain allowlist.
 - Deterministic `RenderTrace v1` metadata with source versions, resolved bindings and dashboard SHA-256.
-- Renderer safety, schema-boundary and reproducibility regression tests.
+- Reviewable RenderTrace semantics for views, modules, roles, domains and primary actions.
+- Deterministic renderer-engine SHA-256 fingerprint in every RenderTrace.
+- `RenderDiff v1` classification for manifest, source, view, module, binding, action and renderer changes.
+- Critical detection of unexplained canonical dashboard drift.
+- Fail-closed `ha-contract-ui gate render` release gate.
+- Exact `RenderApproval v1` hash matching with automatic stale-approval rejection.
+- Renderer safety, namespace-boundary, reproducibility and release-gate regression tests.
