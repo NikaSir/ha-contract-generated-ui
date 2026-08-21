@@ -7,7 +7,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlowResult
 
 from .const import DOMAIN, NAME
 
@@ -20,7 +20,7 @@ class ContractGeneratedUIConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self,
         user_input: dict[str, Any] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Create the single local Contract Generated UI instance."""
         if user_input is not None:
             return self.async_create_entry(title=NAME, data={})
