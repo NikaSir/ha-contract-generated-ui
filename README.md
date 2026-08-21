@@ -8,20 +8,20 @@ Architecture-as-Code toolchain for generating and validating Home Assistant Love
 
 ## Status
 
-The current development stack contains Contract Core v1, an installable Home Assistant custom-integration shell, scrubbed entity-registry capture, verified semantic-inventory construction, semantic diff, deterministic Lovelace Renderer v1 and a fail-closed semantic release gate. Production contracts and bindings are introduced only from verified Home Assistant NikaS project data; fabricated production entity IDs and placeholder dashboard facts are not accepted.
+The current release line contains Contract Core v1, an installable Home Assistant custom integration, scrubbed entity-registry capture, verified semantic-inventory construction, semantic diff, deterministic Lovelace Renderer v1, a fail-closed semantic release gate, in-Home-Assistant candidate rendering, and safe export of Home Assistant YAML-dashboard registration configuration.
 
-All functional changes are developed through stacked draft pull requests. `main` remains the release baseline until the stack is reviewed.
+Production contracts and bindings are introduced only from verified Home Assistant project data; fabricated production entity IDs and placeholder dashboard facts are not accepted. Real runtime inventory files containing private Home Assistant bindings stay under `/config/contract_generated_ui/inventory/` and are not committed to the public repository.
 
 ## Repository structure
 
 - `contracts/` — formal subsystem and UI contracts.
-- `inventory/` — normalized semantic inventory derived from verified snapshots.
+- `inventory/` — public examples/policy only; real runtime inventory stays private in Home Assistant.
 - `manifests/` — concise panel composition and role-to-semantic-key bindings.
-- `snapshots/` — scrubbed reviewed Home Assistant registry snapshots when intentionally committed.
+- `snapshots/` — scrubbed reviewed Home Assistant registry snapshots only when intentionally committed.
 - `generator/` — validation, inventory construction, semantic diff, deterministic renderer and release gate.
 - `schemas/` — machine-readable schemas for contracts, inventory, manifests, snapshots, render traces, diffs and approvals.
 - `approvals/` — intentionally reviewed exact semantic-change approvals.
-- `custom_components/contract_generated_ui/` — Home Assistant custom integration and packaged runtime schemas.
+- `custom_components/contract_generated_ui/` — Home Assistant custom integration, runtime renderer and packaged schemas.
 - `tests/` — contract, integration, snapshot, semantic-diff, rendering and release-gate regression tests.
 - `docs/` — architecture, operating and release documentation.
 
@@ -39,7 +39,7 @@ See `docs/CONTRACT_CORE_V1.md`.
 
 ## Home Assistant custom integration
 
-The custom integration monitors `/config/contract_generated_ui` and exposes its factual validation state. Validation runs once per minute outside the Home Assistant event loop.
+The integration monitors `/config/contract_generated_ui` and exposes its factual validation state. Validation runs once per minute outside the Home Assistant event loop.
 
 The diagnostic source-status sensor reports:
 
@@ -49,7 +49,9 @@ The diagnostic source-status sensor reports:
 - `valid` — contracts, inventory and manifests pass validation;
 - `invalid` — parsing, schema or binding-boundary validation failed.
 
-The integration also provides **Capture registry snapshot**. It writes scrubbed registry facts to:
+### Capture registry snapshot
+
+**Capture registry snapshot / Снять снимок реестра** writes scrubbed registry facts to:
 
 ```text
 /config/contract_generated_ui/snapshots/current.json
@@ -59,6 +61,28 @@ The integration also provides **Capture registry snapshot**. It writes scrubbed 
 `previous.json` is rotated only when canonical registry facts change. Snapshots exclude unique IDs, device identifiers, config-entry IDs, credentials and device names.
 
 See `docs/SNAPSHOT_PIPELINE.md`.
+
+### Generate dashboards
+
+**Generate dashboards / Сгенерировать панели** is available only when source status is `valid`. It runs file parsing and rendering in the Home Assistant executor and writes candidate artifacts under:
+
+```text
+/config/contract_generated_ui/generated/
+```
+
+For each manifest it writes deterministic Lovelace YAML plus a sibling RenderTrace JSON. Repeated generation with identical source meaning is byte-stable and reports no change.
+
+The integration does **not** overwrite Home Assistant dashboards or `.storage` files.
+
+Starting with `0.3.0`, generation also exports:
+
+```text
+/config/contract_generated_ui/generated/lovelace_configuration_snippet.yaml
+```
+
+This is a reviewable snippet using Home Assistant's supported `lovelace: dashboards:` YAML configuration. It must be merged with existing `configuration.yaml`; it is never applied automatically.
+
+See `docs/YAML_DASHBOARD_REGISTRATION.md`.
 
 ## Deterministic Lovelace renderer
 
@@ -91,7 +115,9 @@ See `docs/SEMANTIC_RELEASE_GATE.md` and `docs/RELEASES.md`.
 
 ## Installation
 
-The integration source lives in `custom_components/contract_generated_ui`. After the first tagged release it is intended for HACS installation as a custom repository. For manual installation, copy that directory to `/config/custom_components/contract_generated_ui`, restart Home Assistant, then go to **Settings → Devices & services → Add integration → Contract Generated UI**.
+Add `NikaSir/ha-contract-generated-ui` to HACS as a custom repository of type **Integration**, install **Contract Generated UI**, restart Home Assistant, then add it through **Settings → Devices & services → Add integration → Contract Generated UI**.
+
+For manual installation, copy `custom_components/contract_generated_ui` to `/config/custom_components/contract_generated_ui` and restart Home Assistant.
 
 The integration is single-instance and requires no credentials or cloud service.
 
@@ -113,7 +139,8 @@ Home Assistant metadata and translation structure are additionally checked by th
 4. **Semantic diff precedes release.** Meaningful changes are reviewable independently of formatting noise.
 5. **Release is fail-closed.** Unreviewed semantic changes and unexplained renderer drift block the candidate.
 6. **Home Assistant entity IDs are never invented.** Generation consumes verified inventory.
-7. **Secrets stay outside Git.** Snapshots and diagnostics are scrubbed before intentional commit.
+7. **Private runtime bindings stay private.** Public contracts/manifests do not reveal the Home Assistant entity catalog.
+8. **Deployment uses supported Home Assistant mechanisms.** The integration does not mutate Lovelace `.storage` through private APIs.
 
 ## License
 
