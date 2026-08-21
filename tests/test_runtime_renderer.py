@@ -12,13 +12,25 @@ RUNTIME_RENDERER_PATH = (
     ROOT
     / "custom_components"
     / "contract_generated_ui"
-    / "runtime_renderer.py"
+    / "runtime_sections.py"
 )
 
 
 def _runtime_renderer():
+    package_name = "contract_generated_ui_runtime_test"
+    package_path = ROOT / "custom_components" / "contract_generated_ui"
+    package_spec = importlib.util.spec_from_file_location(
+        package_name,
+        package_path / "__init__.py",
+        submodule_search_locations=[str(package_path)],
+    )
+    assert package_spec is not None and package_spec.loader is not None
+    package = importlib.util.module_from_spec(package_spec)
+    sys.modules[package_name] = package
+    package_spec.loader.exec_module(package)
+
     spec = importlib.util.spec_from_file_location(
-        "contract_generated_ui_runtime_renderer_test",
+        f"{package_name}.runtime_sections",
         RUNTIME_RENDERER_PATH,
     )
     assert spec is not None and spec.loader is not None
@@ -137,7 +149,7 @@ def _write_sources(root: Path) -> None:
     )
 
 
-def test_runtime_renderer_writes_deterministic_yaml_and_trace(tmp_path: Path) -> None:
+def test_runtime_renderer_writes_deterministic_sections_yaml_and_trace(tmp_path: Path) -> None:
     renderer = _runtime_renderer()
     source_root = tmp_path / "source"
     generated_root = source_root / "generated"
@@ -150,8 +162,16 @@ def test_runtime_renderer_writes_deterministic_yaml_and_trace(tmp_path: Path) ->
     yaml_path = generated_root / "infrastructure.yaml"
     trace_path = generated_root / "infrastructure.meta.json"
     dashboard = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
-    tile = dashboard["views"][0]["cards"][1]["cards"][0]
+    view = dashboard["views"][0]
+    assert view["type"] == "sections"
+    assert view["max_columns"] == 4
+    assert view["dense_section_placement"] is False
+    assert len(view["sections"]) == 1
+    assert view["sections"][0]["column_span"] == 4
+
+    tile = view["sections"][0]["cards"][1]
     assert tile["entity"] == "sensor.router_status"
+    assert tile["grid_options"] == {"columns": 6, "rows": 1}
     assert tile["tap_action"] == {"action": "more-info"}
     assert tile["icon_tap_action"] == {"action": "more-info"}
     assert tile["hold_action"] == {"action": "more-info"}
