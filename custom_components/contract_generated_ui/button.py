@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+import yaml
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import SNAPSHOT_DIRECTORY, SOURCE_DIRECTORY
+from .const import GENERATED_DIRECTORY, SNAPSHOT_DIRECTORY, SOURCE_DIRECTORY
 from .coordinator import ContractGeneratedUICoordinator
 from .registry_snapshot import capture_registry_snapshot, write_registry_snapshot
+from .runtime_renderer import RuntimeRenderError, render_all_manifests
 
 
 async def async_setup_entry(
@@ -21,7 +25,12 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Contract Generated UI buttons."""
-    async_add_entities([ContractGeneratedUICaptureSnapshotButton(entry)])
+    async_add_entities(
+        [
+            ContractGeneratedUICaptureSnapshotButton(entry),
+            ContractGeneratedUIGenerateDashboardsButton(entry),
+        ]
+    )
 
 
 class ContractGeneratedUICaptureSnapshotButton(ButtonEntity):
@@ -58,5 +67,77 @@ class ContractGeneratedUICaptureSnapshotButton(ButtonEntity):
                 result.current_path.relative_to(Path(self.hass.config.path()))
             ),
             "previous_available": result.previous_path is not None,
+        }
+        self.async_write_ha_state()
+
+
+class ContractGeneratedUIGenerateDashboardsButton(ButtonEntity):
+    """Generate deterministic Lovelace YAML without applying it to Home Assistant."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_has_entity_name = True
+    _attr_icon = "mdi:view-dashboard-edit-outline"
+    _attr_translation_key = "generate_dashboards"
+
+    def __init__(
+        self,
+        entry: ConfigEntry[ContractGeneratedUICoordinator],
+    ) -> None:
+        """Initialize the generation button."""
+        self._attr_unique_id = f"{entry.entry_id}_generate_dashboards"
+        self._coordinator = entry.runtime_data
+
+    async def async_press(self) -> None:
+        """Render all validated manifests into the generated runtime directory."""
+        await self._coordinator.async_request_refresh()
+        if self._coordinator.data.status != "valid":
+            message = (
+                "Contract Generated UI source tree must be valid before rendering; "
+                f"current status is {self._coordinator.data.status!r}"
+            )
+            self._attr_extra_state_attributes = {"last_error": message}
+            self.async_write_ha_state()
+            raise HomeAssistantError(message)
+
+        config_root = Path(self.hass.config.path())
+        source_root = Path(self.hass.config.path(SOURCE_DIRECTORY))
+        generated_root = Path(
+            self.hass.config.path(SOURCE_DIRECTORY, GENERATED_DIRECTORY)
+        )
+        try:
+            artifacts = await self.hass.async_add_executor_job(
+                render_all_manifests,
+                source_root,
+                generated_root,
+            )
+        except (
+            RuntimeRenderError,
+            OSError,
+            ValueError,
+            json.JSONDecodeError,
+            yaml.YAMLError,
+        ) as exc:
+            message = str(exc)
+            self._attr_extra_state_attributes = {"last_error": message}
+            self.async_write_ha_state()
+            raise HomeAssistantError(message) from exc
+
+        self._attr_extra_state_attributes = {
+            "generated_count": len(artifacts),
+            "changed_count": sum(artifact.changed for artifact in artifacts),
+            "output_directory": str(generated_root.relative_to(config_root)),
+            "files": [
+                str(artifact.output_path.relative_to(config_root))
+                for artifact in artifacts
+            ],
+            "traces": [
+                str(artifact.trace_path.relative_to(config_root))
+                for artifact in artifacts
+            ],
+            "dashboard_sha256": {
+                artifact.manifest_id: artifact.dashboard_sha256
+                for artifact in artifacts
+            },
+            "last_error": None,
         }
         self.async_write_ha_state()

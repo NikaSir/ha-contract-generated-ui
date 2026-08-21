@@ -9,6 +9,7 @@ SOURCE_DIRECTORY = "contract_generated_ui"
 SOURCE_KINDS = ("contracts", "inventory", "manifests")
 SOURCE_STATUSES = ("missing", "empty", "incomplete", "valid", "invalid")
 SNAPSHOT_DIRECTORY = "snapshots"
+GENERATED_DIRECTORY = "generated"
 
 SCAN_INTERVAL = timedelta(minutes=1)
 
