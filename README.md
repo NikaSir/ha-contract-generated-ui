@@ -8,7 +8,7 @@ Architecture-as-Code toolchain for generating and validating Home Assistant Love
 
 ## Status
 
-Contract core v1 is under active development. The repository now has machine-readable schemas and an executable validator for UI contracts, semantic inventory and panel manifests. Production contracts and bindings are still introduced only from verified Home Assistant NikaS project data; placeholder dashboard logic and fabricated production entity IDs are not accepted.
+Contract core v1 and the first Home Assistant custom-integration shell are under active development. The repository has machine-readable schemas, an executable validator and an installable `custom_components/contract_generated_ui` layer. Production contracts and bindings are still introduced only from verified Home Assistant NikaS project data; placeholder dashboard logic and fabricated production entity IDs are not accepted.
 
 ## Repository structure
 
@@ -17,7 +17,8 @@ Contract core v1 is under active development. The repository now has machine-rea
 - `manifests/` — concise declarations describing panel composition.
 - `generator/` — validation and deterministic generator implementation.
 - `schemas/` — machine-readable schemas for contracts, inventory and manifests.
-- `tests/` — contract, semantic-diff and generation regression tests.
+- `custom_components/contract_generated_ui/` — Home Assistant custom integration and packaged schemas.
+- `tests/` — contract, integration, semantic-diff and generation regression tests.
 - `docs/` — architecture, contract-core, release and operating documentation.
 
 ## Contract core
@@ -31,6 +32,37 @@ The first executable layer enforces a hard separation between semantics and Home
 
 See `docs/CONTRACT_CORE_V1.md` for the v1 format and validation commands.
 
+## Home Assistant custom integration
+
+The custom integration is intentionally narrow in its first version. It validates contract sources and exposes their factual state; it does **not** write Lovelace configuration yet.
+
+### Source directory
+
+The integration reads:
+
+```text
+/config/contract_generated_ui/
+├── contracts/
+├── inventory/
+└── manifests/
+```
+
+Validation runs once per minute outside the Home Assistant event loop. The diagnostic enum sensor reports one of:
+
+- `missing` — `/config/contract_generated_ui` does not exist;
+- `empty` — the directory exists but contains no supported contract documents;
+- `incomplete` — valid documents exist, but at least one required source kind is missing;
+- `valid` — contracts, inventory and manifests are present and pass Contract Core v1 validation;
+- `invalid` — parsing, schema or binding-boundary validation failed.
+
+The sensor exposes scrubbed counts and up to ten validation issues as attributes. A validation problem is data, not a healthy state.
+
+### Installation
+
+The integration source lives in `custom_components/contract_generated_ui`. After the first tagged release it is intended for HACS installation as a custom repository. For manual installation, copy that directory to `/config/custom_components/contract_generated_ui`, restart Home Assistant, then go to **Settings → Devices & services → Add integration → Contract Generated UI**.
+
+The integration is single-instance and requires no credentials or cloud service.
+
 ## Development validation
 
 ```bash
@@ -38,6 +70,8 @@ python -m pip install -e '.[test]'
 python -m generator validate .
 python -m pytest -q
 ```
+
+Home Assistant-specific metadata is additionally checked with the official `home-assistant/actions/hassfest` workflow.
 
 ## Design principles
 
