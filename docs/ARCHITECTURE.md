@@ -26,4 +26,4 @@ The project treats Home Assistant dashboards as generated artifacts derived from
 
 ## Current stage
 
-Repository bootstrap. The next milestone is to formalize the first real contract and inventory schema from the existing Home Assistant NikaS UI architecture before implementing production generation.
+Contract core v1 is implemented as the first executable architectural layer. `UIContract`, `SemanticInventory` and `PanelManifest` have machine-readable schemas; repository validation enforces their boundaries and regression tests protect the core safety invariants. The next milestone is to ingest a scrubbed, verified Home Assistant registry snapshot and create the first real Home Assistant NikaS semantic inventory and subsystem contract without introducing fabricated production entities.
