@@ -10,6 +10,11 @@
     }
   },
   "entity": {
+    "button": {
+      "capture_registry_snapshot": {
+        "name": "Capture registry snapshot"
+      }
+    },
     "sensor": {
       "source_status": {
         "name": "Source status",
