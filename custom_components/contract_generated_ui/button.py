@@ -16,6 +16,10 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import GENERATED_DIRECTORY, SNAPSHOT_DIRECTORY, SOURCE_DIRECTORY
 from .coordinator import ContractGeneratedUICoordinator
 from .registry_snapshot import capture_registry_snapshot, write_registry_snapshot
+from .runtime_registration import (
+    RuntimeRegistrationError,
+    write_lovelace_registration_snippet,
+)
 from .runtime_renderer import RuntimeRenderError, render_all_manifests
 
 
@@ -88,7 +92,7 @@ class ContractGeneratedUIGenerateDashboardsButton(ButtonEntity):
         self._coordinator = entry.runtime_data
 
     async def async_press(self) -> None:
-        """Render all validated manifests into the generated runtime directory."""
+        """Render manifests and export a non-applied YAML registration snippet."""
         await self._coordinator.async_request_refresh()
         if self._coordinator.data.status != "valid":
             message = (
@@ -110,8 +114,14 @@ class ContractGeneratedUIGenerateDashboardsButton(ButtonEntity):
                 source_root,
                 generated_root,
             )
+            registration = await self.hass.async_add_executor_job(
+                write_lovelace_registration_snippet,
+                source_root,
+                generated_root,
+            )
         except (
             RuntimeRenderError,
+            RuntimeRegistrationError,
             OSError,
             ValueError,
             json.JSONDecodeError,
@@ -138,6 +148,11 @@ class ContractGeneratedUIGenerateDashboardsButton(ButtonEntity):
                 artifact.manifest_id: artifact.dashboard_sha256
                 for artifact in artifacts
             },
+            "registration_snippet": str(
+                registration.path.relative_to(config_root)
+            ),
+            "registration_changed": registration.changed,
+            "registration_dashboard_count": registration.dashboard_count,
             "last_error": None,
         }
         self.async_write_ha_state()
