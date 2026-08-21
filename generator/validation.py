@@ -12,6 +12,7 @@ SCHEMA_BY_DIRECTORY = {
     "contracts": "contract.schema.json",
     "inventory": "inventory.schema.json",
     "manifests": "manifest.schema.json",
+    "snapshots": "registry-snapshot.schema.json",
 }
 
 FORBIDDEN_BINDING_KEYS = {"entity_id", "device_id", "area_id"}

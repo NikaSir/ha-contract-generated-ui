@@ -10,6 +10,11 @@
     }
   },
   "entity": {
+    "button": {
+      "capture_registry_snapshot": {
+        "name": "Снять снимок реестра"
+      }
+    },
     "sensor": {
       "source_status": {
         "name": "Состояние источников",

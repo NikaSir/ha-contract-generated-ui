@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nikasir.github.io/ha-contract-generated-ui/schemas/registry-snapshot.schema.json",
+  "title": "Scrubbed Home Assistant entity registry snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "kind", "metadata", "spec"],
+  "properties": {
+    "api_version": {"const": "nikas.home-assistant/registry-snapshot/v1"},
+    "kind": {"const": "RegistrySnapshot"},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["captured_at", "source", "scrubbed", "snapshot_id"],
+      "properties": {
+        "captured_at": {"type": "string", "format": "date-time"},
+        "source": {"const": "home_assistant"},
+        "scrubbed": {"const": true},
+        "snapshot_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{20}$"},
+        "home_assistant_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entities"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/entity"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_id", "domain", "platform", "disabled", "hidden"],
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+$"
+        },
+        "domain": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "platform": {"type": "string", "minLength": 1},
+        "device_class": {"type": ["string", "null"]},
+        "unit_of_measurement": {"type": ["string", "null"]},
+        "area": {"type": ["string", "null"]},
+        "disabled": {"type": "boolean"},
+        "hidden": {"type": "boolean"}
+      }
+    }
+  }
+}
