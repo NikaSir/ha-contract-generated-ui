@@ -13,6 +13,9 @@
     "button": {
       "capture_registry_snapshot": {
         "name": "Снять снимок реестра"
+      },
+      "generate_dashboards": {
+        "name": "Сгенерировать панели"
       }
     },
     "sensor": {
