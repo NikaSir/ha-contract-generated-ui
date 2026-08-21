@@ -1,0 +1,26 @@
+{
+  "title": "Contract Generated UI",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Contract Generated UI",
+        "description": "Monitor and validate contract sources in `/config/contract_generated_ui`. No Home Assistant entity IDs are invented or written by this setup step.",
+        "data": {}
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "source_status": {
+        "name": "Source status",
+        "state": {
+          "missing": "Source directory missing",
+          "empty": "Empty",
+          "incomplete": "Incomplete",
+          "valid": "Valid",
+          "invalid": "Invalid"
+        }
+      }
+    }
+  }
+}

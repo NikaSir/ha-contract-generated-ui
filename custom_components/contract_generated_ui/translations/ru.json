@@ -1,0 +1,26 @@
+{
+  "title": "Contract Generated UI",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Contract Generated UI",
+        "description": "Контроль и проверка контрактных источников в `/config/contract_generated_ui`. На этом шаге интеграция не создаёт и не подменяет entity_id Home Assistant.",
+        "data": {}
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "source_status": {
+        "name": "Состояние источников",
+        "state": {
+          "missing": "Каталог источников отсутствует",
+          "empty": "Пусто",
+          "incomplete": "Неполный набор",
+          "valid": "Корректно",
+          "invalid": "Ошибка"
+        }
+      }
+    }
+  }
+}
