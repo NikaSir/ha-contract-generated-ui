@@ -45,3 +45,8 @@ All notable changes to this project will be documented in this file.
 - Deterministic candidate generation under `/config/contract_generated_ui/generated/` with generated-file and SHA attributes.
 - Official Home Assistant YAML-dashboard registration snippet export (`0.3.0`) without automatic configuration or `.storage` mutation.
 - Runtime regression tests for deterministic generation, verified-only bindings, registration snippet shape and dashboard slug safety.
+- Renderer v2 Sections layout (`0.4.0`) as a deterministic layer over validated tiles_v1 semantics.
+- Module-to-section composition with `max_columns: 4`, explicit non-dense placement and stable section spans.
+- Explicit Tile card Sections sizing (`grid_options: columns: 6, rows: 1`) to improve label readability.
+- CLI and Home Assistant runtime parity for Sections v2 generation.
+- Infrastructure panel manifest `0.2.0` / title `Инфраструктура · v0.2` for the new layout baseline.
