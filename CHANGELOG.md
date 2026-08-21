@@ -39,3 +39,9 @@ All notable changes to this project will be documented in this file.
 - Fail-closed `ha-contract-ui gate render` release gate.
 - Exact `RenderApproval v1` hash matching with automatic stale-approval rejection.
 - Renderer safety, namespace-boundary, reproducibility and release-gate regression tests.
+- First production infrastructure contracts for electrical grid, Stark SolarPower UPS and Keenetic WAN failover telemetry.
+- Public/private runtime policy that keeps real Home Assistant `SemanticInventory` bindings outside the public repository.
+- Home Assistant runtime renderer and **Generate dashboards / Сгенерировать панели** button (`0.2.0`).
+- Deterministic candidate generation under `/config/contract_generated_ui/generated/` with generated-file and SHA attributes.
+- Official Home Assistant YAML-dashboard registration snippet export (`0.3.0`) without automatic configuration or `.storage` mutation.
+- Runtime regression tests for deterministic generation, verified-only bindings, registration snippet shape and dashboard slug safety.
