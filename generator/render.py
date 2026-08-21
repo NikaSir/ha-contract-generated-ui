@@ -26,6 +26,11 @@ class RenderResult:
     trace: dict[str, Any]
 
 
+def _renderer_engine_sha256() -> str:
+    """Return a deterministic fingerprint of the rendering engine source."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
 def _documents(base: Path) -> Iterable[Path]:
     if not base.exists():
         return ()
@@ -204,11 +209,22 @@ def _lovelace_action(
     )
 
 
+def _semantic_action(action: Mapping[str, Any]) -> dict[str, Any]:
+    rendered = {"kind": action["kind"]}
+    if action["kind"] == "navigate":
+        rendered["target"] = action["target"]
+    return rendered
+
+
 def _render_module(
     module: Mapping[str, Any],
     contract: Mapping[str, Any],
     inventory: Mapping[str, Mapping[str, Any]],
-) -> tuple[list[dict[str, Any]], dict[str, dict[str, str]]]:
+) -> tuple[
+    list[dict[str, Any]],
+    dict[str, dict[str, str]],
+    list[dict[str, Any]],
+]:
     contract_id = contract["metadata"]["id"]
     spec = contract["spec"]
     roles = spec["roles"]
@@ -223,6 +239,7 @@ def _render_module(
         )
 
     used: dict[str, dict[str, str]] = {}
+    role_semantics: list[dict[str, Any]] = []
     tiles: list[dict[str, Any]] = []
     for role in spec["presentation"]["role_order"]:
         role_spec = roles[role]
@@ -270,6 +287,16 @@ def _render_module(
             "semantic_key": semantic_key,
             "entity_id": binding["entity_id"],
         }
+        role_semantics.append(
+            {
+                "role": role,
+                "label": role_spec["label"],
+                "semantic_key": semantic_key,
+                "entity_id": binding["entity_id"],
+                "domain": domain,
+                "action": _semantic_action(actions[role]),
+            }
+        )
 
     if not tiles:
         raise RenderError(f"module {contract_id!r} rendered no roles")
@@ -284,7 +311,7 @@ def _render_module(
             "cards": tiles,
         },
     ]
-    return cards, used
+    return cards, used, role_semantics
 
 
 def render_dashboard(
@@ -301,6 +328,7 @@ def render_dashboard(
     _assert_unique(views, "order", "manifest views")
 
     rendered_views: list[dict[str, Any]] = []
+    semantic_views: list[dict[str, Any]] = []
     used_contracts: dict[str, str] = {}
     used_bindings: dict[str, dict[str, str]] = {}
 
@@ -308,6 +336,7 @@ def render_dashboard(
         modules = view["modules"]
         _assert_unique(modules, "order", f"view {view['id']!r} modules")
         cards: list[dict[str, Any]] = []
+        semantic_modules: list[dict[str, Any]] = []
 
         for module in sorted(modules, key=lambda item: item["order"]):
             contract_id = module["contract"]
@@ -317,7 +346,11 @@ def render_dashboard(
                     f"view {view['id']!r} references missing contract {contract_id!r}"
                 )
 
-            module_cards, module_used = _render_module(module, contract, inventory)
+            module_cards, module_used, role_semantics = _render_module(
+                module,
+                contract,
+                inventory,
+            )
             cards.extend(module_cards)
             used_contracts[contract_id] = contract["metadata"]["version"]
 
@@ -330,12 +363,34 @@ def render_dashboard(
                     )
                 used_bindings[trace_key] = used
 
+            presentation = contract["spec"]["presentation"]
+            semantic_modules.append(
+                {
+                    "instance": instance,
+                    "contract": contract_id,
+                    "order": module["order"],
+                    "title": module.get("title") or contract["metadata"]["title"],
+                    "renderer": presentation["renderer"],
+                    "columns": presentation["columns"],
+                    "roles": role_semantics,
+                }
+            )
+
         rendered_views.append(
             {
                 "title": view["title"],
                 "path": view["path"],
                 "type": "masonry",
                 "cards": cards,
+            }
+        )
+        semantic_views.append(
+            {
+                "id": view["id"],
+                "title": view["title"],
+                "path": view["path"],
+                "order": view["order"],
+                "modules": semantic_modules,
             }
         )
 
@@ -360,6 +415,8 @@ def render_dashboard(
         ],
         "inventory_snapshot_ids": sorted(set(snapshot_ids)),
         "bindings": dict(sorted(used_bindings.items())),
+        "semantics": {"views": semantic_views},
+        "renderer_engine_sha256": _renderer_engine_sha256(),
         "dashboard_sha256": hashlib.sha256(dashboard_bytes).hexdigest(),
     }
     return RenderResult(dashboard=dashboard, trace=trace)

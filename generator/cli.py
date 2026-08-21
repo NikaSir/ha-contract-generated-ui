@@ -6,6 +6,12 @@ from pathlib import Path
 
 import yaml
 
+from .release_gate import (
+    ReleaseGateError,
+    gate_render_traces,
+    load_validated_render_trace,
+    render_diff_payload,
+)
 from .render import RenderError, render_repository_manifest, write_render_result
 from .semantic_diff import diff_inventories, diff_registry_snapshots, render_text
 from .snapshot import (
@@ -80,6 +86,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("schemas/registry-snapshot.schema.json"),
     )
 
+    render_diff = diff_sub.add_parser("render")
+    render_diff.add_argument("before", type=Path)
+    render_diff.add_argument("after", type=Path)
+    render_diff.add_argument("--json", action="store_true", dest="as_json")
+    render_diff.add_argument("--check", action="store_true")
+    render_diff.add_argument(
+        "--schema",
+        type=Path,
+        default=Path("schemas/render-trace.schema.json"),
+    )
+
     render = subparsers.add_parser(
         "render",
         help="render deterministic Lovelace YAML from one panel manifest",
@@ -88,6 +105,26 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("output", type=Path)
     render.add_argument("--repo-root", type=Path, default=Path("."))
     render.add_argument("--metadata", type=Path)
+
+    gate = subparsers.add_parser(
+        "gate",
+        help="apply fail-closed release gates",
+    )
+    gate_sub = gate.add_subparsers(dest="gate_kind", required=True)
+    render_gate = gate_sub.add_parser("render")
+    render_gate.add_argument("before", type=Path)
+    render_gate.add_argument("after", type=Path)
+    render_gate.add_argument("--approval", type=Path)
+    render_gate.add_argument(
+        "--trace-schema",
+        type=Path,
+        default=Path("schemas/render-trace.schema.json"),
+    )
+    render_gate.add_argument(
+        "--approval-schema",
+        type=Path,
+        default=Path("schemas/render-approval.schema.json"),
+    )
 
     return parser
 
@@ -101,6 +138,18 @@ def _write_document(path: Path, document: dict) -> None:
     else:
         raise SnapshotBindingError("inventory output must end in .json, .yaml or .yml")
     path.write_text(text, encoding="utf-8")
+
+
+def _render_release_changes(changes: list[dict]) -> str:
+    if not changes:
+        return "No semantic render changes."
+    lines = [f"{len(changes)} semantic render change(s):"]
+    for change in changes:
+        lines.append(
+            f"- [{change['severity']}] {change['category']}:"
+            f"{change['kind']} {change['key']}"
+        )
+    return "\n".join(lines)
 
 
 def main() -> int:
@@ -148,6 +197,21 @@ def main() -> int:
         return 0
 
     if args.command == "diff":
+        if args.diff_kind == "render":
+            try:
+                before = load_validated_render_trace(args.before, args.schema)
+                after = load_validated_render_trace(args.after, args.schema)
+                payload = render_diff_payload(before, after)
+            except (OSError, ReleaseGateError, ValueError) as exc:
+                print(exc)
+                return 1
+            if args.as_json:
+                print(json.dumps(payload, ensure_ascii=False, indent=2))
+            else:
+                print(_render_release_changes(payload["changes"]))
+                print(f"Semantic diff SHA-256: {payload['semantic_diff_sha256']}")
+            return 2 if args.check and payload["changes"] else 0
+
         before = load_document(args.before)
         after = load_document(args.after)
         schema = load_schema(args.schema)
@@ -201,5 +265,35 @@ def main() -> int:
         print(f"Lovelace YAML written to {output_path}.")
         print(f"Render trace written to {metadata_path}.")
         return 0
+
+    if args.command == "gate" and args.gate_kind == "render":
+        try:
+            before = load_validated_render_trace(args.before, args.trace_schema)
+            after = load_validated_render_trace(args.after, args.trace_schema)
+            approval = load_document(args.approval) if args.approval else None
+            approval_schema = (
+                load_schema(args.approval_schema) if args.approval else None
+            )
+            result = gate_render_traces(
+                before,
+                after,
+                approval=approval,
+                approval_schema=approval_schema,
+                approval_path=args.approval,
+            )
+        except (
+            OSError,
+            ReleaseGateError,
+            ValueError,
+            json.JSONDecodeError,
+            yaml.YAMLError,
+        ) as exc:
+            print(exc)
+            return 1
+
+        print(_render_release_changes([change.as_dict() for change in result.changes]))
+        print(f"Semantic diff SHA-256: {result.semantic_diff_sha256}")
+        print(f"Gate: {'ALLOW' if result.allowed else 'BLOCK'} — {result.reason}")
+        return 0 if result.allowed else 3
 
     raise AssertionError("unhandled command")
