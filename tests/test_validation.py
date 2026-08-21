@@ -20,6 +20,7 @@ def _contract() -> dict:
         "spec": {
             "roles": {
                 "status": {
+                    "label": "Status",
                     "description": "Synthetic status source",
                     "required": True,
                     "allowed_domains": ["sensor"],
@@ -38,6 +39,19 @@ def _contract() -> dict:
                     "description": "Source cannot establish a factual state",
                     "rules": [],
                 },
+            },
+            "actions": [
+                {
+                    "id": "status_info",
+                    "kind": "more_info",
+                    "description": "Open status details",
+                    "role": "status",
+                }
+            ],
+            "presentation": {
+                "renderer": "tiles_v1",
+                "columns": 1,
+                "role_order": ["status"],
             },
             "safety": {
                 "unknown_is_unreliable": True,
@@ -85,7 +99,14 @@ def _manifest() -> dict:
                     "id": "overview",
                     "title": "Overview",
                     "path": "overview",
-                    "modules": [{"contract": "example_subsystem"}],
+                    "order": 0,
+                    "modules": [
+                        {
+                            "contract": "example_subsystem",
+                            "order": 0,
+                            "bindings": {"status": "example.status"},
+                        }
+                    ],
                 }
             ],
         },
@@ -109,9 +130,9 @@ def test_contract_rejects_missing_unreliable_state() -> None:
 
 def test_manifest_policy_rejects_concrete_entity_binding() -> None:
     document = _manifest()
-    document["spec"]["views"][0]["modules"][0]["options"] = {
-        "entity_id": "sensor.synthetic_status"
-    }
+    document["spec"]["views"][0]["modules"][0]["bindings"]["entity_id"] = (
+        "sensor.synthetic_status"
+    )
     schema = load_schema(Path("schemas/manifest.schema.json"))
 
     issues = validate_document(

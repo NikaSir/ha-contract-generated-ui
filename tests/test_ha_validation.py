@@ -27,6 +27,7 @@ def _valid_documents() -> tuple[dict, dict, dict]:
         "spec": {
             "roles": {
                 "status": {
+                    "label": "Status",
                     "description": "Status",
                     "required": True,
                     "allowed_domains": ["sensor"],
@@ -36,6 +37,19 @@ def _valid_documents() -> tuple[dict, dict, dict]:
                 "normal": {"description": "Normal", "rules": []},
                 "event": {"description": "Event", "rules": []},
                 "unreliable": {"description": "Unreliable", "rules": []},
+            },
+            "actions": [
+                {
+                    "id": "status_info",
+                    "kind": "more_info",
+                    "description": "Open status details",
+                    "role": "status",
+                }
+            ],
+            "presentation": {
+                "renderer": "tiles_v1",
+                "columns": 1,
+                "role_order": ["status"],
             },
             "safety": {
                 "unknown_is_unreliable": True,
@@ -73,7 +87,14 @@ def _valid_documents() -> tuple[dict, dict, dict]:
                     "id": "home",
                     "title": "Home",
                     "path": "home",
-                    "modules": [{"contract": "test.contract"}],
+                    "order": 0,
+                    "modules": [
+                        {
+                            "contract": "test.contract",
+                            "order": 0,
+                            "bindings": {"status": "test.status"},
+                        }
+                    ],
                 }
             ],
         },
@@ -86,6 +107,7 @@ def test_packaged_schemas_match_repository_schemas() -> None:
         "contract.schema.json",
         "inventory.schema.json",
         "manifest.schema.json",
+        "registry-snapshot.schema.json",
     ):
         assert json.loads((PACKAGED_SCHEMAS / name).read_text(encoding="utf-8")) == json.loads(
             (ROOT_SCHEMAS / name).read_text(encoding="utf-8")
@@ -116,9 +138,9 @@ def test_source_tree_status_progression(tmp_path: Path) -> None:
 def test_direct_binding_in_manifest_is_invalid(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     contract, inventory, manifest = _valid_documents()
-    manifest["spec"]["views"][0]["modules"][0]["options"] = {
-        "entity_id": "sensor.forbidden"
-    }
+    manifest["spec"]["views"][0]["modules"][0]["bindings"]["entity_id"] = (
+        "sensor.forbidden"
+    )
 
     _write_yaml(source_root / "contracts" / "test.yaml", contract)
     _write_yaml(source_root / "inventory" / "test.yaml", inventory)

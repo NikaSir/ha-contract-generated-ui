@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nikasir.github.io/ha-contract-generated-ui/schemas/render-trace.schema.json",
+  "title": "Contract Generated UI render trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "manifest",
+    "contracts",
+    "inventory_snapshot_ids",
+    "bindings",
+    "dashboard_sha256"
+  ],
+  "properties": {
+    "api_version": {"const": "nikas.home-assistant/render-trace/v1"},
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "dashboard_path"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+        "version": {"type": "string", "minLength": 1},
+        "dashboard_path": {
+          "type": "string",
+          "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+        }
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "version"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+          "version": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "inventory_snapshot_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "bindings": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9._-]*$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["semantic_key", "entity_id"],
+        "properties": {
+          "semantic_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]*$"
+          },
+          "entity_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+$"
+          }
+        }
+      }
+    },
+    "dashboard_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

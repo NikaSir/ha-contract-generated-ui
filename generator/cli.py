@@ -6,6 +6,7 @@ from pathlib import Path
 
 import yaml
 
+from .render import RenderError, render_repository_manifest, write_render_result
 from .semantic_diff import diff_inventories, diff_registry_snapshots, render_text
 from .snapshot import (
     SnapshotBindingError,
@@ -78,6 +79,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("schemas/registry-snapshot.schema.json"),
     )
+
+    render = subparsers.add_parser(
+        "render",
+        help="render deterministic Lovelace YAML from one panel manifest",
+    )
+    render.add_argument("manifest", type=Path)
+    render.add_argument("output", type=Path)
+    render.add_argument("--repo-root", type=Path, default=Path("."))
+    render.add_argument("--metadata", type=Path)
 
     return parser
 
@@ -166,5 +176,30 @@ def main() -> int:
         else:
             print(render_text(changes))
         return 2 if args.check and changes else 0
+
+    if args.command == "render":
+        repo_root = args.repo_root.resolve()
+        manifest_path = args.manifest
+        if not manifest_path.is_absolute():
+            manifest_path = repo_root / manifest_path
+        try:
+            result = render_repository_manifest(repo_root, manifest_path)
+            output_path, metadata_path = write_render_result(
+                args.output,
+                result,
+                metadata_path=args.metadata,
+            )
+        except (
+            OSError,
+            RenderError,
+            ValueError,
+            json.JSONDecodeError,
+            yaml.YAMLError,
+        ) as exc:
+            print(exc)
+            return 1
+        print(f"Lovelace YAML written to {output_path}.")
+        print(f"Render trace written to {metadata_path}.")
+        return 0
 
     raise AssertionError("unhandled command")
