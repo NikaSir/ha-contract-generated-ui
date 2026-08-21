@@ -13,6 +13,9 @@
     "button": {
       "capture_registry_snapshot": {
         "name": "Capture registry snapshot"
+      },
+      "generate_dashboards": {
+        "name": "Generate dashboards"
       }
     },
     "sensor": {
