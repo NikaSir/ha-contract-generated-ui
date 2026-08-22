@@ -40,6 +40,9 @@ def _summary_dashboard(
     for view, semantic_view in zip(views, semantic_views, strict=True):
         if not isinstance(view, dict) or view.get("type") != "masonry":
             raise RenderError("infrastructure summary expects validated masonry input")
+        view_id = semantic_view.get("id")
+        if not isinstance(view_id, str):
+            raise RenderError("infrastructure summary view id missing")
         cards = view.pop("cards", None)
         modules = semantic_view.get("modules")
         if not isinstance(cards, list) or not isinstance(modules, list):
@@ -52,7 +55,7 @@ def _summary_dashboard(
             if not isinstance(semantic_module, Mapping):
                 raise RenderError("infrastructure summary module must be an object")
             try:
-                card = build_summary_card(semantic_module)
+                card = build_summary_card(semantic_module, view_id=view_id)
             except ValueError as err:
                 raise RenderError(str(err)) from err
             sections.append({"type": "grid", "cards": [card]})
@@ -62,6 +65,9 @@ def _summary_dashboard(
         view["type"] = "sections"
         view["max_columns"] = min(MAX_SECTION_COLUMNS, max(1, len(sections)))
         view["dense_section_placement"] = True
+        if view_id.startswith("power-"):
+            view["subview"] = True
+            view["max_columns"] = 1
         view["sections"] = sections
 
     return transformed
@@ -90,7 +96,7 @@ def _filter_trace(trace: Mapping[str, Any]) -> dict[str, Any]:
             ):
                 raise RenderError("infrastructure summary trace module is incomplete")
             try:
-                required = required_summary_roles(contract_id)
+                required = required_summary_roles(contract_id, view_id)
             except ValueError as err:
                 raise RenderError(str(err)) from err
             role_by_name = {

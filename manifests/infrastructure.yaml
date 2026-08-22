@@ -3,15 +3,15 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.11.0
-  description: 'Production infrastructure panel v0.11: native compact Markdown summaries with no Lovelace custom-card dependency.'
+  version: 0.12.0
+  description: 'Production infrastructure panel v0.12: native electrical subpanel with three control points and UPS Boiler-backed non-interruptible line.'
 spec:
   dashboard_path: /dashboard-infrastructure
   app_shell:
     active: infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.11
+    title: Инфраструктура · v0.12
     path: overview
     order: 0
     renderer: infrastructure_summary_v1
@@ -23,7 +23,7 @@ spec:
       groups:
       - status
       - telemetry
-      bindings:
+      bindings: &power_bindings
         grid_ok: infrastructure.power.grid_ok
         meter_online: infrastructure.power.meter_online
         phase_a_present: infrastructure.power.phase_a_present
@@ -35,7 +35,10 @@ spec:
         voltage_c: infrastructure.power.voltage_c
         voltage_imbalance: infrastructure.power.voltage_imbalance
         total_power: infrastructure.power.total_power
-        non_interruptible_voltage: infrastructure.power.non_interruptible_voltage
+        non_interruptible_voltage: infrastructure.ups.boiler.input_voltage
+        non_interruptible_frequency: infrastructure.ups.boiler.input_frequency
+        non_interruptible_mode: infrastructure.ups.boiler.operating_mode
+        non_interruptible_data_stale: infrastructure.ups.boiler.data_stale
     - contract: infrastructure.ups
       instance: ups_internet
       title: UPS Интернет
@@ -96,3 +99,59 @@ spec:
         wan_switches_today: infrastructure.network.keenetic.wan_switches_today
         lte_time_today: infrastructure.network.keenetic.lte_time_today
         temperature: infrastructure.network.keenetic.temperature
+  - id: power-overview
+    title: Электросеть
+    path: power-overview
+    order: 1
+    renderer: infrastructure_summary_v1
+    modules:
+    - contract: infrastructure.power_grid
+      instance: power
+      title: Электросеть
+      order: 0
+      groups:
+      - status
+      - telemetry
+      bindings: *power_bindings
+  - id: power-before
+    title: До стабилизаторов
+    path: power-before
+    order: 2
+    renderer: infrastructure_summary_v1
+    modules:
+    - contract: infrastructure.power_grid
+      instance: power
+      title: Электросеть
+      order: 0
+      groups:
+      - status
+      - telemetry
+      bindings: *power_bindings
+  - id: power-after
+    title: После стабилизаторов
+    path: power-after
+    order: 3
+    renderer: infrastructure_summary_v1
+    modules:
+    - contract: infrastructure.power_grid
+      instance: power
+      title: Электросеть
+      order: 0
+      groups:
+      - status
+      - telemetry
+      bindings: *power_bindings
+  - id: power-history
+    title: История электросети
+    path: power-history
+    order: 4
+    renderer: infrastructure_summary_v1
+    modules:
+    - contract: infrastructure.power_grid
+      instance: power
+      title: Электросеть
+      order: 0
+      groups:
+      - status
+      - telemetry
+      bindings: *power_bindings

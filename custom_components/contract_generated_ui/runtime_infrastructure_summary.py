@@ -11,20 +11,26 @@ SUMMARY_VARIANTS = {
     "infrastructure.keenetic": "keenetic",
 }
 
+POWER_ROLES = (
+    "grid_ok",
+    "meter_online",
+    "phase_loss",
+    "phase_a_present",
+    "phase_b_present",
+    "phase_c_present",
+    "voltage_a",
+    "voltage_b",
+    "voltage_c",
+    "voltage_imbalance",
+    "total_power",
+    "non_interruptible_voltage",
+    "non_interruptible_frequency",
+    "non_interruptible_mode",
+    "non_interruptible_data_stale",
+)
+
 SUMMARY_ROLE_ORDER = {
-    "infrastructure.power_grid": (
-        "grid_ok",
-        "meter_online",
-        "phase_loss",
-        "phase_a_present",
-        "phase_b_present",
-        "phase_c_present",
-        "voltage_a",
-        "voltage_b",
-        "voltage_c",
-        "voltage_imbalance",
-        "total_power",
-    ),
+    "infrastructure.power_grid": POWER_ROLES,
     "infrastructure.ups": (
         "operating_mode",
         "battery_capacity",
@@ -43,8 +49,37 @@ SUMMARY_ROLE_ORDER = {
     ),
 }
 
+POWER_VIEW_ROLE_ORDER = {
+    "power-overview": POWER_ROLES,
+    "power-before": (
+        "grid_ok",
+        "meter_online",
+        "phase_loss",
+        "phase_a_present",
+        "phase_b_present",
+        "phase_c_present",
+        "voltage_a",
+        "voltage_b",
+        "voltage_c",
+        "voltage_imbalance",
+        "total_power",
+    ),
+    "power-after": ("grid_ok",),
+    "power-history": (
+        "voltage_a",
+        "voltage_b",
+        "voltage_c",
+        "non_interruptible_voltage",
+    ),
+}
 
-def required_summary_roles(contract_id: str) -> tuple[str, ...]:
+
+def required_summary_roles(
+    contract_id: str,
+    view_id: str | None = None,
+) -> tuple[str, ...]:
+    if contract_id == "infrastructure.power_grid" and view_id in POWER_VIEW_ROLE_ORDER:
+        return POWER_VIEW_ROLE_ORDER[view_id]
     roles = SUMMARY_ROLE_ORDER.get(contract_id)
     if roles is None:
         raise ValueError(
@@ -63,6 +98,18 @@ def _translated(entity_id: str) -> str:
     )
 
 
+def _tile(entity_id: str, name: str, icon: str) -> dict[str, Any]:
+    return {
+        "type": "tile",
+        "entity": entity_id,
+        "name": name,
+        "icon": icon,
+        "tap_action": {"action": "more-info"},
+        "hold_action": {"action": "more-info"},
+        "double_tap_action": {"action": "none"},
+    }
+
+
 def _power_content(title: str, entities: Mapping[str, str]) -> str:
     grid = entities["grid_ok"]
     meter = entities["meter_online"]
@@ -75,23 +122,205 @@ def _power_content(title: str, entities: Mapping[str, str]) -> str:
     voltage_c = entities["voltage_c"]
     imbalance = entities["voltage_imbalance"]
     power = entities["total_power"]
+    line_voltage = entities["non_interruptible_voltage"]
+    line_frequency = entities["non_interruptible_frequency"]
+    line_mode = entities["non_interruptible_mode"]
+    line_stale = entities["non_interruptible_data_stale"]
 
-    return f"""{{% set reliable = has_value('{grid}') and has_value('{meter}') and has_value('{phase_loss}') and has_value('{phase_a}') and has_value('{phase_b}') and has_value('{phase_c}') and has_value('{voltage_a}') and has_value('{voltage_b}') and has_value('{voltage_c}') and has_value('{imbalance}') and has_value('{power}') %}}
-{{% set event = reliable and (is_state('{grid}', 'off') or is_state('{meter}', 'off') or is_state('{phase_loss}', 'on') or is_state('{phase_a}', 'off') or is_state('{phase_b}', 'off') or is_state('{phase_c}', 'off')) %}}
+    return f"""{{% set before_reliable = has_value('{grid}') and has_value('{meter}') and has_value('{phase_loss}') and has_value('{phase_a}') and has_value('{phase_b}') and has_value('{phase_c}') and has_value('{voltage_a}') and has_value('{voltage_b}') and has_value('{voltage_c}') and has_value('{imbalance}') and has_value('{power}') %}}
+{{% set before_event = before_reliable and (is_state('{grid}', 'off') or is_state('{meter}', 'off') or is_state('{phase_loss}', 'on') or is_state('{phase_a}', 'off') or is_state('{phase_b}', 'off') or is_state('{phase_c}', 'off')) %}}
+{{% set line_reliable = has_value('{line_voltage}') and has_value('{line_frequency}') and has_value('{line_mode}') and has_value('{line_stale}') %}}
 <table role="presentation" width="100%">
-<tr><td><strong>{title}</strong><br><small>Трёхфазная сеть</small></td><td align="right"><strong>{{% if not reliable %}}⚪ Данные неполные{{% elif event %}}🔴 Отклонение{{% else %}}🟢 Нормально{{% endif %}}</strong></td></tr>
+<tr><td><strong>{title}</strong><br><small>Три точки контроля</small></td><td align="right"><strong>🔵 Контроль</strong></td></tr>
 </table>
 <table role="presentation" width="100%">
 <tr>
-<td width="33%" align="center">A<br><strong>{_translated(voltage_a)}</strong></td>
-<td width="34%" align="center">B<br><strong>{_translated(voltage_b)}</strong></td>
-<td width="33%" align="center">C<br><strong>{_translated(voltage_c)}</strong></td>
+<td width="33%" align="center"><small>До стаб.</small><br><strong>{{% if not before_reliable %}}⚪ Нет данных{{% elif before_event %}}🔴 Отклонение{{% else %}}🟢 Нормально{{% endif %}}</strong></td>
+<td width="34%" align="center"><small>После стаб.</small><br><strong>⚪ Подготовлено</strong></td>
+<td width="33%" align="center"><small>Линия котла</small><br><strong>{{% if not line_reliable %}}⚪ Нет данных{{% elif is_state('{line_stale}', 'on') %}}🟠 Данные устарели{{% else %}}🟢 {_translated(line_voltage)}{{% endif %}}</strong></td>
 </tr>
+</table>
+<table role="presentation" width="100%">
 <tr>
-<td colspan="2"><ha-icon icon="mdi:sine-wave"></ha-icon> Перекос · <strong>{_translated(imbalance)}</strong></td>
-<td><ha-icon icon="mdi:flash"></ha-icon> <strong>{_translated(power)}</strong></td>
+<td><ha-icon icon="mdi:sine-wave"></ha-icon> Перекос · <strong>{_translated(imbalance)}</strong></td>
+<td><ha-icon icon="mdi:flash"></ha-icon> Мощность · <strong>{_translated(power)}</strong></td>
+<td align="right"><ha-icon icon="mdi:sine-wave"></ha-icon> Линия · <strong>{_translated(line_frequency)}</strong></td>
 </tr>
+<tr><td colspan="3" align="right"><strong>Подробнее ›</strong></td></tr>
 </table>"""
+
+
+def _power_status_content(entities: Mapping[str, str]) -> str:
+    grid = entities["grid_ok"]
+    meter = entities["meter_online"]
+    phase_loss = entities["phase_loss"]
+    phase_a = entities["phase_a_present"]
+    phase_b = entities["phase_b_present"]
+    phase_c = entities["phase_c_present"]
+    line_stale = entities["non_interruptible_data_stale"]
+    line_mode = entities["non_interruptible_mode"]
+    return f"""{{% set reliable = has_value('{grid}') and has_value('{meter}') and has_value('{phase_loss}') and has_value('{phase_a}') and has_value('{phase_b}') and has_value('{phase_c}') %}}
+{{% set event = reliable and (is_state('{grid}', 'off') or is_state('{meter}', 'off') or is_state('{phase_loss}', 'on') or is_state('{phase_a}', 'off') or is_state('{phase_b}', 'off') or is_state('{phase_c}', 'off')) %}}
+## {{% if not reliable %}}⚪ Данные входящей сети неполные{{% elif event %}}🔴 Есть отклонение входящей сети{{% else %}}🟢 Входящая сеть в норме{{% endif %}}
+Три физические точки контроля: **до стабилизаторов**, **после стабилизаторов**, **неотключаемая линия**.
+
+Линия котла: **{_translated(line_mode)}** · {{% if not has_value('{line_stale}') %}}свежесть неизвестна{{% elif is_state('{line_stale}', 'on') %}}данные устарели{{% else %}}данные актуальны{{% endif %}}."""
+
+
+def _power_overview_card(entities: Mapping[str, str]) -> dict[str, Any]:
+    status_entities = [
+        entities[name]
+        for name in (
+            "grid_ok",
+            "meter_online",
+            "phase_loss",
+            "phase_a_present",
+            "phase_b_present",
+            "phase_c_present",
+            "non_interruptible_mode",
+            "non_interruptible_data_stale",
+        )
+    ]
+    return {
+        "type": "vertical-stack",
+        "grid_options": {"columns": "full"},
+        "cards": [
+            {
+                "type": "markdown",
+                "content": _power_status_content(entities),
+                "entity_id": status_entities,
+            },
+            {"type": "heading", "heading": "1. До стабилизаторов · входящая сеть"},
+            {
+                "type": "grid",
+                "columns": 3,
+                "square": False,
+                "cards": [
+                    _tile(entities["voltage_a"], "Фаза A", "mdi:alpha-a-circle-outline"),
+                    _tile(entities["voltage_b"], "Фаза B", "mdi:alpha-b-circle-outline"),
+                    _tile(entities["voltage_c"], "Фаза C", "mdi:alpha-c-circle-outline"),
+                ],
+            },
+            {
+                "type": "grid",
+                "columns": 2,
+                "square": False,
+                "cards": [
+                    _tile(entities["voltage_imbalance"], "Перекос", "mdi:sine-wave"),
+                    _tile(entities["total_power"], "Мощность", "mdi:flash"),
+                ],
+            },
+            {
+                "type": "markdown",
+                "content": """### 2. После стабилизаторов
+⚪ **Точка контроля зарезервирована.** В v0.12 структура уже показана в интерфейсе, но значения не подменяются и не вычисляются из входящей сети до появления проверенных semantic bindings.
+
+**Пороги качества после стабилизаторов:** норма 210–230 В; внимание 205–209 / 231–235 В; существенное отклонение 198–204 / 236–242 В; авария ниже 198 В.""",
+            },
+            {"type": "heading", "heading": "3. Неотключаемая линия · UPS Котёл"},
+            {
+                "type": "grid",
+                "columns": 3,
+                "square": False,
+                "cards": [
+                    _tile(
+                        entities["non_interruptible_voltage"],
+                        "Напряжение",
+                        "mdi:power-plug-outline",
+                    ),
+                    _tile(
+                        entities["non_interruptible_frequency"],
+                        "Частота",
+                        "mdi:sine-wave",
+                    ),
+                    _tile(
+                        entities["non_interruptible_mode"],
+                        "Источник",
+                        "mdi:battery-sync-outline",
+                    ),
+                ],
+            },
+        ],
+    }
+
+
+def _power_before_card(entities: Mapping[str, str]) -> dict[str, Any]:
+    grid = entities["grid_ok"]
+    meter = entities["meter_online"]
+    phase_loss = entities["phase_loss"]
+    phase_a = entities["phase_a_present"]
+    phase_b = entities["phase_b_present"]
+    phase_c = entities["phase_c_present"]
+    status = f"""{{% set reliable = has_value('{grid}') and has_value('{meter}') and has_value('{phase_loss}') and has_value('{phase_a}') and has_value('{phase_b}') and has_value('{phase_c}') %}}
+{{% set event = reliable and (is_state('{grid}', 'off') or is_state('{meter}', 'off') or is_state('{phase_loss}', 'on') or is_state('{phase_a}', 'off') or is_state('{phase_b}', 'off') or is_state('{phase_c}', 'off')) %}}
+## {{% if not reliable %}}⚪ Данные неполные{{% elif event %}}🟠 Требует внимания{{% else %}}🟢 Нормально{{% endif %}}
+Контроль входящей трёхфазной сети **до стабилизаторов**."""
+    return {
+        "type": "vertical-stack",
+        "grid_options": {"columns": "full"},
+        "cards": [
+            {
+                "type": "markdown",
+                "content": status,
+                "entity_id": [grid, meter, phase_loss, phase_a, phase_b, phase_c],
+            },
+            {
+                "type": "grid",
+                "columns": 3,
+                "square": False,
+                "cards": [
+                    _tile(entities["voltage_a"], "Фаза A", "mdi:alpha-a-circle-outline"),
+                    _tile(entities["voltage_b"], "Фаза B", "mdi:alpha-b-circle-outline"),
+                    _tile(entities["voltage_c"], "Фаза C", "mdi:alpha-c-circle-outline"),
+                ],
+            },
+            {
+                "type": "grid",
+                "columns": 2,
+                "square": False,
+                "cards": [
+                    _tile(entities["voltage_imbalance"], "Перекос фаз", "mdi:sine-wave"),
+                    _tile(entities["total_power"], "Мощность общая", "mdi:flash"),
+                ],
+            },
+        ],
+    }
+
+
+def _power_after_card() -> dict[str, Any]:
+    return {
+        "type": "markdown",
+        "grid_options": {"columns": "full"},
+        "content": """## ⚪ После стабилизаторов
+
+Точка контроля предусмотрена отдельным экраном и **не использует входящие фазы как замену выходным измерениям**.
+
+Сейчас проверенные semantic bindings для трёх напряжений после стабилизаторов в Contract Generated UI не заданы. Поэтому v0.12 намеренно показывает структуру без фиктивных значений.
+
+| Уровень | Напряжение |
+|---|---:|
+| Норма | 210–230 В |
+| Внимание | 205–209 / 231–235 В |
+| Существенное отклонение | 198–204 / 236–242 В |
+| Авария | <198 В |
+
+После привязки трёх фактических источников этот экран заполняется без изменения общей навигации.""",
+    }
+
+
+def _power_history_card(entities: Mapping[str, str]) -> dict[str, Any]:
+    return {
+        "type": "history-graph",
+        "title": "Напряжение · 24 часа",
+        "hours_to_show": 24,
+        "entities": [
+            entities["voltage_a"],
+            entities["voltage_b"],
+            entities["voltage_c"],
+            entities["non_interruptible_voltage"],
+        ],
+        "grid_options": {"columns": "full"},
+    }
 
 
 def _ups_content(title: str, entities: Mapping[str, str], *, details: bool) -> str:
@@ -151,7 +380,11 @@ def _keenetic_content(title: str, entities: Mapping[str, str]) -> str:
 </table>"""
 
 
-def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
+def build_summary_card(
+    semantic_module: Mapping[str, Any],
+    *,
+    view_id: str | None = None,
+) -> dict[str, Any]:
     contract_id = semantic_module.get("contract")
     if not isinstance(contract_id, str):
         raise ValueError("infrastructure summary module contract missing")
@@ -175,7 +408,7 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
             raise ValueError("infrastructure summary role name missing")
         role_by_name[role_name] = role
 
-    required = required_summary_roles(contract_id)
+    required = required_summary_roles(contract_id, view_id)
     missing = [role_name for role_name in required if role_name not in role_by_name]
     if missing:
         raise ValueError(
@@ -208,6 +441,14 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
         )
 
     if variant == "power_grid":
+        if view_id == "power-overview":
+            return _power_overview_card(entities)
+        if view_id == "power-before":
+            return _power_before_card(entities)
+        if view_id == "power-after":
+            return _power_after_card()
+        if view_id == "power-history":
+            return _power_history_card(entities)
         content = _power_content(title, entities)
     elif variant == "ups":
         content = _ups_content(title, entities, details=bool(navigate_targets))
@@ -220,7 +461,7 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
         "entity_id": [entities[role_name] for role_name in required],
         "grid_options": {"columns": "full"},
     }
-    if navigate_targets:
+    if navigate_targets and view_id in (None, "overview"):
         card["tap_action"] = {
             "action": "navigate",
             "navigation_path": next(iter(navigate_targets)),
@@ -229,6 +470,7 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
 
 
 __all__ = [
+    "POWER_VIEW_ROLE_ORDER",
     "SUMMARY_CARD_TYPE",
     "SUMMARY_RENDERER",
     "SUMMARY_ROLE_ORDER",
