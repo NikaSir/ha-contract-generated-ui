@@ -3,13 +3,13 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.2.0
-  description: 'Production infrastructure panel v0.2: Sections layout for электросеть, UPS и резервный WAN.'
+  version: 0.3.0
+  description: 'Production infrastructure panel v0.3: operational status, telemetry and diagnostics layout.'
 spec:
   dashboard_path: /dashboard-infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.2
+    title: Инфраструктура · v0.3
     path: overview
     order: 0
     modules:
