@@ -1,0 +1,245 @@
+api_version: nikas.home-assistant/panel-manifest/v1
+kind: PanelManifest
+metadata:
+  id: irrigation
+  title: Полив
+  version: 0.1.0
+  description: Generated HO-SC-8W application subpanel; controller data remains integration-owned and write actions remain closed until verified.
+spec:
+  dashboard_path: /dashboard-irrigation
+  subpanel:
+    template: standard_v1
+    navigation: main
+    parent: actions
+  views:
+    - id: overview
+      title: Обзор
+      icon: mdi:view-dashboard-outline
+      path: overview
+      order: 0
+      renderer: operational_v1
+      modules:
+        - &controller_overview
+          contract: house.irrigation.controller
+          instance: controller
+          title: Контроллер HO-SC-8W
+          order: 0
+          groups:
+            - status
+            - telemetry
+          bindings: &controller_bindings
+            connection_mode: house.irrigation.ho_sc_8w.connection_mode
+            operation_mode: house.irrigation.ho_sc_8w.operation_mode
+            irrigation_mode: house.irrigation.ho_sc_8w.irrigation_mode
+            active_zones: house.irrigation.ho_sc_8w.active_zones
+            queued_zones: house.irrigation.ho_sc_8w.queued_zones
+            rain_sensor: house.irrigation.ho_sc_8w.rain_sensor
+            seasonal_adjustment: house.irrigation.ho_sc_8w.seasonal_adjustment
+            schedule_cache: house.irrigation.ho_sc_8w.schedule_cache
+            timer_error_alarm: house.irrigation.ho_sc_8w.timer_error_alarm
+        - &zone1
+          contract: house.irrigation.zone
+          instance: zone_1
+          title: Зона 1
+          order: 1
+          groups:
+            - status
+          bindings: &zone1_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_1.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_1.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_1.time_elapsed
+        - &zone2
+          contract: house.irrigation.zone
+          instance: zone_2
+          title: Зона 2
+          order: 2
+          groups:
+            - status
+          bindings: &zone2_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_2.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_2.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_2.time_elapsed
+        - &zone3
+          contract: house.irrigation.zone
+          instance: zone_3
+          title: Зона 3
+          order: 3
+          groups:
+            - status
+          bindings: &zone3_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_3.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_3.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_3.time_elapsed
+        - &zone4
+          contract: house.irrigation.zone
+          instance: zone_4
+          title: Зона 4
+          order: 4
+          groups:
+            - status
+          bindings: &zone4_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_4.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_4.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_4.time_elapsed
+        - &zone5
+          contract: house.irrigation.zone
+          instance: zone_5
+          title: Зона 5
+          order: 5
+          groups:
+            - status
+          bindings: &zone5_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_5.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_5.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_5.time_elapsed
+        - &zone6
+          contract: house.irrigation.zone
+          instance: zone_6
+          title: Зона 6
+          order: 6
+          groups:
+            - status
+          bindings: &zone6_bindings
+            schedule: house.irrigation.ho_sc_8w.zone_6.schedule
+            time_remaining: house.irrigation.ho_sc_8w.zone_6.time_remaining
+            time_elapsed: house.irrigation.ho_sc_8w.zone_6.time_elapsed
+    - id: manual
+      title: Ручной
+      icon: mdi:watering-can-outline
+      path: manual
+      order: 1
+      renderer: operational_v1
+      modules:
+        - contract: house.irrigation.controller
+          instance: controller
+          title: Текущее выполнение
+          order: 0
+          groups:
+            - status
+          bindings: *controller_bindings
+        - contract: house.irrigation.zone
+          instance: zone_1
+          title: Зона 1 · runtime
+          order: 1
+          groups:
+            - telemetry
+          bindings: *zone1_bindings
+        - contract: house.irrigation.zone
+          instance: zone_2
+          title: Зона 2 · runtime
+          order: 2
+          groups:
+            - telemetry
+          bindings: *zone2_bindings
+        - contract: house.irrigation.zone
+          instance: zone_3
+          title: Зона 3 · runtime
+          order: 3
+          groups:
+            - telemetry
+          bindings: *zone3_bindings
+        - contract: house.irrigation.zone
+          instance: zone_4
+          title: Зона 4 · runtime
+          order: 4
+          groups:
+            - telemetry
+          bindings: *zone4_bindings
+        - contract: house.irrigation.zone
+          instance: zone_5
+          title: Зона 5 · runtime
+          order: 5
+          groups:
+            - telemetry
+          bindings: *zone5_bindings
+        - contract: house.irrigation.zone
+          instance: zone_6
+          title: Зона 6 · runtime
+          order: 6
+          groups:
+            - telemetry
+          bindings: *zone6_bindings
+    - id: settings
+      title: Настройки
+      icon: mdi:cog-outline
+      path: settings
+      order: 2
+      renderer: operational_v1
+      modules:
+        - contract: house.irrigation.controller
+          instance: controller
+          title: Настройки контроллера · только просмотр
+          order: 0
+          groups:
+            - telemetry
+          bindings: *controller_bindings
+    - id: diagnostics
+      title: Диагностика
+      icon: mdi:stethoscope
+      path: diagnostics
+      order: 3
+      renderer: operational_v1
+      modules:
+        - contract: house.irrigation.controller
+          instance: controller
+          title: Интеграция и кэш
+          order: 0
+          groups:
+            - diagnostic
+          bindings: *controller_bindings
+        - contract: house.irrigation.lab
+          instance: zone_8_lab
+          title: Зона 8 · лабораторная
+          order: 1
+          groups:
+            - diagnostic
+          bindings:
+            zone_8_schedule: house.irrigation.ho_sc_8w.zone_8.schedule
+        - contract: house.irrigation.zone
+          instance: zone_1
+          title: Зона 1 · проверка программы
+          order: 2
+          groups:
+            - status
+            - telemetry
+          bindings: *zone1_bindings
+        - contract: house.irrigation.zone
+          instance: zone_2
+          title: Зона 2 · проверка программы
+          order: 3
+          groups:
+            - status
+            - telemetry
+          bindings: *zone2_bindings
+        - contract: house.irrigation.zone
+          instance: zone_3
+          title: Зона 3 · проверка программы
+          order: 4
+          groups:
+            - status
+            - telemetry
+          bindings: *zone3_bindings
+        - contract: house.irrigation.zone
+          instance: zone_4
+          title: Зона 4 · проверка программы
+          order: 5
+          groups:
+            - status
+            - telemetry
+          bindings: *zone4_bindings
+        - contract: house.irrigation.zone
+          instance: zone_5
+          title: Зона 5 · проверка программы
+          order: 6
+          groups:
+            - status
+            - telemetry
+          bindings: *zone5_bindings
+        - contract: house.irrigation.zone
+          instance: zone_6
+          title: Зона 6 · проверка программы
+          order: 7
+          groups:
+            - status
+            - telemetry
+          bindings: *zone6_bindings
