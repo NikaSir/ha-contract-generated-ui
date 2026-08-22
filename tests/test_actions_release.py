@@ -12,7 +12,7 @@ def test_release_version_and_schema_are_packaged() -> None:
             encoding="utf-8"
         )
     )
-    assert manifest["version"] == "0.21.0"
+    assert manifest["version"] == "0.22.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
@@ -76,6 +76,9 @@ def test_frontend_bundle_and_shared_generated_panel_host_are_packaged() -> None:
     assert "position:fixed" in panel_bundle
     assert "safe-area-inset-bottom" in panel_bundle
     assert 'type: "config/entity_registry/list"' in panel_bundle
+    assert 'type: "config/device_registry/list"' in panel_bundle
+    assert "_deviceGroups" in panel_bundle
+    assert "_deviceSelectorHtml" in panel_bundle
     assert ".callService(" not in panel_bundle
     assert 'type: "call_service"' not in panel_bundle
     assert '"/dashboard-zont"' not in panel_bundle
@@ -87,7 +90,7 @@ def test_frontend_bundle_and_shared_generated_panel_host_are_packaged() -> None:
     assert 'UI_BUNDLE_FILENAME = "nikas-ui.js"' in const_source
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
     assert 'GENERATED_SUBPANEL_FILENAME = "nikas-generated-subpanel.js"' in const_source
-    assert 'GENERATED_SUBPANEL_BUILD = "b005"' in const_source
+    assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
     assert "GENERATED_SUBPANEL_MODULE_URL" in const_source
     assert 'NAVIGATION_REGISTRY_FILENAME = "navigation.json"' in const_source
 
@@ -104,5 +107,6 @@ def test_frontend_bundle_and_shared_generated_panel_host_are_packaged() -> None:
     doc = (ROOT / "docs" / "FRONTEND_RESOURCE.md").read_text(encoding="utf-8")
     assert "автоматически" in doc.lower()
     assert "b004" in doc
-    assert "b005" in doc
+    assert "b006" in doc
+    assert "device registry" in doc.lower()
     assert "nikas-generated-subpanel.js" in doc

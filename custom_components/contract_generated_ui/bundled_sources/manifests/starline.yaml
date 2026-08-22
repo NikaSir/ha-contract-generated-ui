@@ -3,8 +3,8 @@ kind: PanelManifest
 metadata:
   id: starline
   title: StarLine
-  version: 0.4.0
-  description: Read-only StarLine information panel sourced from the live Home Assistant entity registry at runtime.
+  version: 0.5.0
+  description: Read-only StarLine vehicle panel with automatic multi-vehicle grouping from the live Home Assistant registries.
 spec:
   dashboard_path: /dashboard-starline
   subpanel:
@@ -23,7 +23,7 @@ spec:
       path: overview
       order: 0
       renderer: subpanel_placeholder_v1
-      placeholder: Информационный обзор автомобиля StarLine. Управляющие команды намеренно отключены.
+      placeholder: Краткая сводка по каждому автомобилю StarLine. Управляющие команды намеренно отключены.
       readonly:
         domains:
           - binary_sensor
@@ -32,24 +32,40 @@ spec:
           - switch
           - device_tracker
         priority_keywords:
-          - alarm
           - security
           - охран
-          - lock
-          - замок
-          - door
-          - двер
-          - engine
-          - двигат
-          - ignition
-          - зажиган
-          - battery
-          - аккумуля
+          - alarm
+          - mileage
+          - odometer
+          - пробег
           - fuel
           - топлив
+          - battery
+          - аккумуля
+          - акб
+          - engine
+          - двигат
+          - cabin
+          - interior
+          - салон
           - temperature
           - температур
-        limit: 16
+        exclude_keywords:
+          - door
+          - двер
+          - hood
+          - капот
+          - trunk
+          - багаж
+          - brake
+          - тормоз
+          - hands free
+          - hands_free
+          - movement
+          - движен
+          - program
+          - программ
+        limit: 6
       modules: []
     - id: security
       title: Охрана
@@ -57,7 +73,7 @@ spec:
       path: security
       order: 1
       renderer: subpanel_placeholder_v1
-      placeholder: Состояния охраны и периметра автомобиля без команд постановки или снятия.
+      placeholder: Состояния охраны и периметра выбранного автомобиля без команд постановки или снятия.
       readonly:
         domains:
           - binary_sensor
@@ -70,7 +86,7 @@ spec:
       path: engine
       order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Состояния двигателя, зажигания и отопителя без запуска или остановки.
+      placeholder: Состояния двигателя, зажигания и отопителя выбранного автомобиля без запуска или остановки.
       readonly:
         domains:
           - switch
@@ -94,7 +110,7 @@ spec:
       path: vehicle
       order: 3
       renderer: subpanel_placeholder_v1
-      placeholder: Телеметрия автомобиля и местоположение в режиме только чтения.
+      placeholder: Телеметрия и местоположение выбранного автомобиля в режиме только чтения.
       readonly:
         domains:
           - sensor
@@ -107,7 +123,7 @@ spec:
       path: service
       order: 4
       renderer: subpanel_placeholder_v1
-      placeholder: Контроль недоступных сущностей StarLine без сервисных команд.
+      placeholder: Контроль недоступных сущностей выбранного автомобиля StarLine без сервисных команд.
       readonly:
         domains:
           - binary_sensor
