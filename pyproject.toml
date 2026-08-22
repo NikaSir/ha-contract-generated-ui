@@ -20,7 +20,7 @@ test = [
 ]
 
 [project.scripts]
-ha-contract-ui = "generator.cli:main"
+ha-contract-ui = "generator.entrypoint:main"
 
 [tool.setuptools.packages.find]
 include = ["generator*"]
