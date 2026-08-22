@@ -34,6 +34,7 @@ from .runtime_render_subpanel_placeholder import (
 )
 from .runtime_subpanel_shell import (
     apply_navigation_shell,
+    embed_subpanel_dashboard,
     navigation_shell_engine_sha256,
 )
 
@@ -85,108 +86,180 @@ def manifest_renderer(manifest: Mapping[str, Any]) -> str:
     return renderers.pop()
 
 
+def _render_manifest_entry(
+    manifest: Mapping[str, Any],
+    *,
+    contracts: Mapping[str, Any],
+    inventory: Mapping[str, Any],
+    snapshot_ids: list[str],
+    source_root: Path,
+) -> dict[str, Any]:
+    dashboard, base_trace = base._render_manifest(
+        manifest,
+        contracts,
+        inventory,
+        snapshot_ids=snapshot_ids,
+    )
+    renderer = manifest_renderer(manifest)
+
+    if renderer == ACTIONS_RENDERER:
+        dashboard = render_actions_dashboard(dashboard, base_trace)
+        trace = copy.deepcopy(base_trace)
+        trace["renderer_engine_sha256"] = _actions_layout_engine_sha256(
+            base_trace["renderer_engine_sha256"]
+        )
+    elif renderer == operational.HOUSE_RENDERER:
+        dashboard = operational.render_house_dashboard(
+            dashboard,
+            base_trace,
+            manifest,
+        )
+        trace = copy.deepcopy(base_trace)
+        trace["renderer_engine_sha256"] = operational._house_layout_engine_sha256(
+            base_trace["renderer_engine_sha256"]
+        )
+    elif renderer == SUMMARY_RENDERER:
+        dashboard = _infrastructure_summary_dashboard(dashboard, base_trace)
+        trace = _infrastructure_summary_filter_trace(base_trace)
+        trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
+            base_trace["renderer_engine_sha256"]
+        )
+    elif renderer == PLACEHOLDER_RENDERER:
+        dashboard = render_subpanel_placeholder_dashboard(dashboard, manifest)
+        trace = copy.deepcopy(base_trace)
+        trace["renderer_engine_sha256"] = _placeholder_layout_engine_sha256(
+            base_trace["renderer_engine_sha256"]
+        )
+    else:
+        dashboard = operational._operational_dashboard(
+            dashboard,
+            base_trace,
+            contracts,
+            manifest,
+        )
+        trace = operational._filter_trace(base_trace, contracts, manifest)
+        trace["renderer_engine_sha256"] = operational._layout_engine_sha256(
+            base_trace["renderer_engine_sha256"]
+        )
+
+    dashboard, navigation_groups = apply_navigation_shell(
+        dashboard,
+        manifest,
+        source_root,
+    )
+    trace["renderer_engine_sha256"] = navigation_shell_engine_sha256(
+        trace["renderer_engine_sha256"],
+        navigation_groups,
+    )
+
+    app_shell_config = manifest_app_shell_config(manifest)
+    if app_shell_config is not None:
+        app_shell_active, app_shell_routes = app_shell_config
+        dashboard = append_app_shell(
+            dashboard,
+            active=app_shell_active,
+            routes=app_shell_routes,
+        )
+        trace["renderer_engine_sha256"] = app_shell_engine_sha256(
+            trace["renderer_engine_sha256"]
+        )
+
+    return {
+        "manifest": manifest,
+        "dashboard": dashboard,
+        "trace": trace,
+        "navigation_groups": navigation_groups,
+    }
+
+
+def _compose_embedded(entries: dict[str, dict[str, Any]]) -> None:
+    for child_id, child in list(entries.items()):
+        manifest = child["manifest"]
+        if manifest.get("spec", {}).get("subpanel") is None:
+            continue
+        groups = child["navigation_groups"]
+        if not groups or not groups[0].get("embedded"):
+            continue
+        if len(groups) != 1:
+            raise RuntimeRenderError(
+                f"embedded subpanel {child_id!r} must resolve to exactly one navigation group"
+            )
+        group = groups[0]
+        host_path = group["dashboard_path"]
+        hosts = [
+            (manifest_id, entry)
+            for manifest_id, entry in entries.items()
+            if manifest_id != child_id
+            and entry["manifest"].get("spec", {}).get("subpanel") is None
+            and entry["manifest"].get("spec", {}).get("dashboard_path") == host_path
+        ]
+        if len(hosts) != 1:
+            raise RuntimeRenderError(
+                f"embedded subpanel {child_id!r} requires exactly one host manifest for {host_path!r}; found {len(hosts)}"
+            )
+        _, host = hosts[0]
+        host["dashboard"] = embed_subpanel_dashboard(
+            host["dashboard"],
+            host["manifest"],
+            child["dashboard"],
+            group,
+        )
+        host["trace"]["renderer_engine_sha256"] = navigation_shell_engine_sha256(
+            host["trace"]["renderer_engine_sha256"],
+            [group],
+        )
+
+
+def _finalize_trace(entry: dict[str, Any]) -> None:
+    canonical = json.dumps(
+        entry["dashboard"],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    entry["trace"]["dashboard_sha256"] = hashlib.sha256(canonical).hexdigest()
+
+
 def render_all_manifests(
     source_root: Path,
     generated_root: Path,
 ) -> list[GeneratedArtifact]:
     contracts = base._index_contracts(source_root)
     inventory, snapshot_ids = base._index_inventory(source_root)
-    artifacts: list[GeneratedArtifact] = []
 
-    manifests = list(base._documents(source_root / "manifests"))
-    if not manifests:
+    manifest_paths = list(base._documents(source_root / "manifests"))
+    if not manifest_paths:
         raise RuntimeRenderError("no panel manifests found")
 
-    seen_ids: set[str] = set()
-    for manifest_path in manifests:
+    entries: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for manifest_path in manifest_paths:
         manifest = base._load_object(manifest_path)
         if manifest.get("kind") != "PanelManifest":
             raise RuntimeRenderError(f"unexpected manifest kind in {manifest_path}")
         manifest_id = manifest.get("metadata", {}).get("id")
         if not isinstance(manifest_id, str) or not manifest_id:
             raise RuntimeRenderError(f"manifest id missing in {manifest_path}")
-        if manifest_id in seen_ids:
+        if manifest_id in entries:
             raise RuntimeRenderError(f"duplicate manifest id {manifest_id!r}")
-        seen_ids.add(manifest_id)
-
-        dashboard, base_trace = base._render_manifest(
+        entries[manifest_id] = _render_manifest_entry(
             manifest,
-            contracts,
-            inventory,
+            contracts=contracts,
+            inventory=inventory,
             snapshot_ids=snapshot_ids,
+            source_root=source_root,
         )
-        renderer = manifest_renderer(manifest)
+        order.append(manifest_id)
 
-        if renderer == ACTIONS_RENDERER:
-            dashboard = render_actions_dashboard(dashboard, base_trace)
-            trace = copy.deepcopy(base_trace)
-            trace["renderer_engine_sha256"] = _actions_layout_engine_sha256(
-                base_trace["renderer_engine_sha256"]
-            )
-        elif renderer == operational.HOUSE_RENDERER:
-            dashboard = operational.render_house_dashboard(
-                dashboard,
-                base_trace,
-                manifest,
-            )
-            trace = copy.deepcopy(base_trace)
-            trace["renderer_engine_sha256"] = operational._house_layout_engine_sha256(
-                base_trace["renderer_engine_sha256"]
-            )
-        elif renderer == SUMMARY_RENDERER:
-            dashboard = _infrastructure_summary_dashboard(dashboard, base_trace)
-            trace = _infrastructure_summary_filter_trace(base_trace)
-            trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
-                base_trace["renderer_engine_sha256"]
-            )
-        elif renderer == PLACEHOLDER_RENDERER:
-            dashboard = render_subpanel_placeholder_dashboard(dashboard, manifest)
-            trace = copy.deepcopy(base_trace)
-            trace["renderer_engine_sha256"] = _placeholder_layout_engine_sha256(
-                base_trace["renderer_engine_sha256"]
-            )
-        else:
-            dashboard = operational._operational_dashboard(
-                dashboard,
-                base_trace,
-                contracts,
-                manifest,
-            )
-            trace = operational._filter_trace(base_trace, contracts, manifest)
-            trace["renderer_engine_sha256"] = operational._layout_engine_sha256(
-                base_trace["renderer_engine_sha256"]
-            )
+    _compose_embedded(entries)
+    for entry in entries.values():
+        _finalize_trace(entry)
 
-        dashboard, navigation_groups = apply_navigation_shell(
-            dashboard,
-            manifest,
-            source_root,
-        )
-        trace["renderer_engine_sha256"] = navigation_shell_engine_sha256(
-            trace["renderer_engine_sha256"],
-            navigation_groups,
-        )
-
-        app_shell_config = manifest_app_shell_config(manifest)
-        if app_shell_config is not None:
-            app_shell_active, app_shell_routes = app_shell_config
-            dashboard = append_app_shell(
-                dashboard,
-                active=app_shell_active,
-                routes=app_shell_routes,
-            )
-            trace["renderer_engine_sha256"] = app_shell_engine_sha256(
-                trace["renderer_engine_sha256"]
-            )
-
-        canonical = json.dumps(
-            dashboard,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        trace["dashboard_sha256"] = hashlib.sha256(canonical).hexdigest()
-
+    artifacts: list[GeneratedArtifact] = []
+    for manifest_id in order:
+        entry = entries[manifest_id]
+        dashboard = entry["dashboard"]
+        trace = entry["trace"]
         output_path = generated_root / f"{manifest_id}.yaml"
         trace_path = generated_root / f"{manifest_id}.meta.json"
         yaml_text = yaml.safe_dump(dashboard, allow_unicode=True, sort_keys=False)

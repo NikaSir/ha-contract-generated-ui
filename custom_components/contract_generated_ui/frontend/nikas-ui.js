@@ -3,27 +3,13 @@ const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = true;
 
 const BAR_ID = "nikas-global-tabbar";
+const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 
 const FALLBACK_ITEMS = [
-  {
-    id: "home",
-    label: "Дом",
-    icon: "mdi:home-outline",
-    path: "/dashboard-house",
-  },
-  {
-    id: "actions",
-    label: "Действия",
-    icon: "mdi:lightning-bolt-outline",
-    path: "/dashboard-actions",
-  },
-  {
-    id: "infrastructure",
-    label: "Инфра",
-    icon: "mdi:server-network",
-    path: "/dashboard-infrastructure/overview",
-  },
+  { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house" },
+  { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions" },
+  { id: "infrastructure", label: "Инфра", icon: "mdi:server-network", path: "/dashboard-infrastructure/overview" },
 ];
 
 let navigationRegistry = null;
@@ -60,6 +46,7 @@ function registrySubpanelModel(pathname) {
         mode: `subpanel:${group.id}`,
         active: active.id,
         items: group.tabs,
+        group,
       };
     }
     if (!group.embedded && pathname === group.dashboard_path) {
@@ -67,6 +54,7 @@ function registrySubpanelModel(pathname) {
         mode: `subpanel:${group.id}`,
         active: group.tabs[0].id,
         items: group.tabs,
+        group,
       };
     }
   }
@@ -84,21 +72,13 @@ function registryGlobalModel(pathname) {
     active = tab?.id ?? null;
   }
   if (!active) return null;
-  return {
-    mode: "global",
-    active,
-    items: tabs,
-  };
+  return { mode: "global", active, items: tabs, group: null };
 }
 
 function fallbackGlobalModel(pathname) {
   const active = fallbackSurface(pathname);
   if (!active) return null;
-  return {
-    mode: "global-fallback",
-    active,
-    items: FALLBACK_ITEMS,
-  };
+  return { mode: "global-fallback", active, items: FALLBACK_ITEMS, group: null };
 }
 
 function navigationModel(pathname) {
@@ -118,92 +98,18 @@ function createBar(model) {
   const shadow = root.attachShadow({ mode: "open" });
   shadow.innerHTML = `
     <style>
-      :host {
-        position: fixed;
-        z-index: 20;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: block;
-        pointer-events: none;
-      }
-      .shell {
-        pointer-events: auto;
-        box-sizing: border-box;
-        padding: 6px max(8px, env(safe-area-inset-right, 0px))
-                 calc(6px + env(safe-area-inset-bottom, 0px))
-                 max(8px, env(safe-area-inset-left, 0px));
-        background: var(--card-background-color, var(--ha-card-background, #fff));
-        border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.08);
-      }
-      nav {
-        width: min(100%, 720px);
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: repeat(var(--nikas-nav-columns, 3), minmax(0, 1fr));
-        gap: 4px;
-      }
-      button {
-        appearance: none;
-        border: 0;
-        background: transparent;
-        color: var(--secondary-text-color, #666);
-        min-width: 0;
-        min-height: 62px;
-        padding: 7px 4px 5px;
-        border-radius: 16px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        font: inherit;
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-      button ha-icon {
-        --mdc-icon-size: 25px;
-        width: 25px;
-        height: 25px;
-      }
-      button span {
-        display: block;
-        width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        text-align: center;
-        font-size: 12px;
-        line-height: 16px;
-        font-weight: 500;
-      }
-      button.active {
-        color: var(--primary-color, #03a9f4);
-        background: var(--ha-color-primary-95, rgba(3, 169, 244, 0.12));
-        cursor: default;
-      }
-      button:focus-visible {
-        outline: 2px solid var(--primary-color, #03a9f4);
-        outline-offset: 1px;
-      }
-      @media (max-width: 430px) {
-        button {
-          min-height: 60px;
-          padding-left: 2px;
-          padding-right: 2px;
-        }
-        button span {
-          font-size: 11.5px;
-        }
-      }
-      @media (min-width: 900px) {
-        nav { width: min(70vw, 720px); }
-      }
+      :host{position:fixed;z-index:20;left:0;right:0;bottom:0;display:block;pointer-events:none}
+      .shell{pointer-events:auto;box-sizing:border-box;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
+      nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(var(--nikas-nav-columns,3),minmax(0,1fr));gap:4px}
+      button{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#666);min-width:0;min-height:62px;padding:7px 4px 5px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+      button ha-icon{--mdc-icon-size:25px;width:25px;height:25px}
+      button span{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:12px;line-height:16px;font-weight:500}
+      button.active{color:var(--primary-color,#03a9f4);background:var(--ha-color-primary-95,rgba(3,169,244,.12));cursor:default}
+      button:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}
+      @media(max-width:430px){button{min-height:60px;padding-left:2px;padding-right:2px}button span{font-size:11.5px}}
+      @media(min-width:900px){nav{width:min(70vw,720px)}}
     </style>
-    <div class="shell">
-      <nav></nav>
-    </div>`;
+    <div class="shell"><nav></nav></div>`;
 
   renderBar(root, model);
   return root;
@@ -222,8 +128,12 @@ function renderBar(root, model) {
     button.classList.toggle("active", isActive);
     button.disabled = isActive;
     if (isActive) button.setAttribute("aria-current", "page");
-    const label = item.label ?? item.title ?? item.id;
-    button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${label}</span>`;
+
+    const icon = document.createElement("ha-icon");
+    icon.setAttribute("icon", item.icon);
+    const label = document.createElement("span");
+    label.textContent = item.label ?? item.title ?? item.id;
+    button.append(icon, label);
     button.onclick = () => {
       if (!isActive) navigate(item.path);
     };
@@ -232,16 +142,48 @@ function renderBar(root, model) {
   root.dataset.mode = model.mode;
 }
 
-function syncBar() {
-  if (!document.body) return;
-  const model = navigationModel(window.location.pathname);
-  let root = document.getElementById(BAR_ID);
+function createHeader(group) {
+  const root = document.createElement("div");
+  root.id = HEADER_ID;
+  const shadow = root.attachShadow({ mode: "open" });
+  shadow.innerHTML = `
+    <style>
+      :host{position:fixed;z-index:35;left:0;right:0;top:0;display:block;pointer-events:none}
+      .shell{pointer-events:auto;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;min-height:62px;padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));box-sizing:border-box;background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 2px 12px rgba(0,0,0,.08);color:var(--primary-text-color,#111)}
+      button,.rail{width:52px;min-width:52px;min-height:44px;border:0;border-radius:14px;background:transparent;color:inherit;display:grid;place-items:center;padding:0}
+      button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+      button ha-icon{--mdc-icon-size:25px}
+      .title{min-width:0;text-align:center;line-height:1.15}
+      .title strong,.title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .title strong{font-size:18px;font-weight:760}
+      .title span{margin-top:2px;color:var(--secondary-text-color,#6b7280);font-size:12px;font-weight:600}
+      @media(max-width:390px){.shell{grid-template-columns:48px minmax(0,1fr) 48px}button,.rail{width:48px;min-width:48px}.title strong{font-size:17px}}
+    </style>
+    <div class="shell">
+      <button id="back" type="button" aria-label="Назад"><ha-icon icon="mdi:arrow-left"></ha-icon></button>
+      <div class="title"><strong></strong><span></span></div>
+      <button id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
+    </div>`;
+  shadow.getElementById("back").onclick = () => navigate(root._parentPath);
+  shadow.getElementById("refresh").onclick = () => window.location.reload();
+  renderHeader(root, group);
+  return root;
+}
 
+function renderHeader(root, group) {
+  root._parentPath = group.parent?.path || group.dashboard_path;
+  const shadow = root.shadowRoot;
+  shadow.querySelector(".title strong").textContent = group.title || "";
+  shadow.querySelector(".title span").textContent = group.subtitle || group.parent?.title || "";
+  root.dataset.subpanel = group.id || "";
+}
+
+function syncBar(model) {
+  let root = document.getElementById(BAR_ID);
   if (!model) {
     if (root) root.remove();
     return;
   }
-
   if (!root) {
     root = createBar(model);
     document.body.appendChild(root);
@@ -250,8 +192,30 @@ function syncBar() {
   }
 }
 
+function syncHeader(model) {
+  let root = document.getElementById(HEADER_ID);
+  const group = model?.group;
+  if (!group) {
+    if (root) root.remove();
+    return;
+  }
+  if (!root) {
+    root = createHeader(group);
+    document.body.appendChild(root);
+  } else {
+    renderHeader(root, group);
+  }
+}
+
+function syncChrome() {
+  if (!document.body) return;
+  const model = navigationModel(window.location.pathname);
+  syncBar(model);
+  syncHeader(model);
+}
+
 function scheduleSync() {
-  window.requestAnimationFrame(syncBar);
+  window.requestAnimationFrame(syncChrome);
 }
 
 async function loadNavigationRegistry() {
@@ -296,8 +260,8 @@ if (SHOULD_BOOTSTRAP) {
     loadNavigationRegistry();
   }
 
-  // Legacy custom-card modules remain a migration fallback only. Generated
-  // subpanels use native Home Assistant views plus this data-driven tab overlay.
+  // Legacy custom-card modules remain migration fallbacks only. Generated
+  // subpanels use native Lovelace content with common Header/Bottom overlays.
   Promise.allSettled([
     import("./nikas-app-shell.js"),
     import("./nikas-infrastructure-summary.js"),

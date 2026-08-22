@@ -10,6 +10,8 @@ from typing import Any, Iterable
 
 import yaml
 
+from .runtime_subpanel_shell import is_embedded_subpanel_manifest
+
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 SNIPPET_FILENAME = "lovelace_configuration_snippet.yaml"
 
@@ -78,13 +80,26 @@ def write_lovelace_registration_snippet(
         metadata = manifest.get("metadata")
         spec = manifest.get("spec")
         if not isinstance(metadata, dict) or not isinstance(spec, dict):
-            raise RuntimeRegistrationError(f"manifest metadata/spec missing in {manifest_path}")
+            raise RuntimeRegistrationError(
+                f"manifest metadata/spec missing in {manifest_path}"
+            )
+
+        try:
+            if is_embedded_subpanel_manifest(manifest, source_root):
+                continue
+        except ValueError as err:
+            raise RuntimeRegistrationError(str(err)) from err
 
         manifest_id = metadata.get("id")
         title = metadata.get("title")
         dashboard_path = spec.get("dashboard_path")
-        if not all(isinstance(value, str) and value for value in (manifest_id, title, dashboard_path)):
-            raise RuntimeRegistrationError(f"manifest registration fields missing in {manifest_path}")
+        if not all(
+            isinstance(value, str) and value
+            for value in (manifest_id, title, dashboard_path)
+        ):
+            raise RuntimeRegistrationError(
+                f"manifest registration fields missing in {manifest_path}"
+            )
         if not dashboard_path.startswith("/"):
             raise RuntimeRegistrationError(
                 f"dashboard path must be absolute in {manifest_path}: {dashboard_path!r}"
@@ -95,7 +110,9 @@ def write_lovelace_registration_snippet(
                 f"Home Assistant YAML dashboard url path must contain a hyphen: {url_path!r}"
             )
         if url_path in dashboards:
-            raise RuntimeRegistrationError(f"duplicate dashboard url path {url_path!r}")
+            raise RuntimeRegistrationError(
+                f"duplicate dashboard url path {url_path!r}"
+            )
 
         filename = f"{source_root.name}/{generated_root.name}/{manifest_id}.yaml"
         dashboards[url_path] = {
@@ -109,6 +126,7 @@ def write_lovelace_registration_snippet(
     document = {"lovelace": {"dashboards": dashboards}}
     header = (
         "# Contract Generated UI — registration snippet only.\n"
+        "# Embedded subpanels are composed into their parent dashboard and are not registered separately.\n"
         "# Merge this with any existing top-level `lovelace:` configuration;\n"
         "# do not replace existing Lovelace resources or dashboards blindly.\n"
         "# Home Assistant must reload/restart after configuration.yaml changes.\n"
