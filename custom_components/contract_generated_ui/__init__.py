@@ -17,20 +17,19 @@ async def async_setup_entry(
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
     """Set up Contract Generated UI from a config entry."""
-    from homeassistant.components.frontend import add_extra_js_url
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
     from .const import (
         APP_SHELL_FILENAME,
-        APP_SHELL_MODULE_URL,
         APP_SHELL_STATIC_PATH,
         DOMAIN,
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
         INFRA_SUMMARY_FILENAME,
-        INFRA_SUMMARY_MODULE_URL,
         INFRA_SUMMARY_STATIC_PATH,
+        UI_BUNDLE_FILENAME,
+        UI_BUNDLE_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
 
@@ -49,12 +48,14 @@ async def async_setup_entry(
                     str(frontend_root / INFRA_SUMMARY_FILENAME),
                     False,
                 ),
+                StaticPathConfig(
+                    UI_BUNDLE_STATIC_PATH,
+                    str(frontend_root / UI_BUNDLE_FILENAME),
+                    False,
+                ),
             ]
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
-
-    add_extra_js_url(hass, APP_SHELL_MODULE_URL)
-    add_extra_js_url(hass, INFRA_SUMMARY_MODULE_URL)
 
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
@@ -72,19 +73,9 @@ async def async_unload_entry(
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
     """Unload a Contract Generated UI config entry."""
-    from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
-    from .const import APP_SHELL_MODULE_URL, INFRA_SUMMARY_MODULE_URL
-
-    unloaded = await hass.config_entries.async_unload_platforms(
+    return await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
-    if unloaded:
-        for module_url in (APP_SHELL_MODULE_URL, INFRA_SUMMARY_MODULE_URL):
-            try:
-                remove_extra_js_url(hass, module_url)
-            except KeyError:
-                pass
-    return unloaded
