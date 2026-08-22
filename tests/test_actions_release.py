@@ -12,7 +12,7 @@ def test_release_version_and_schema_are_packaged() -> None:
             encoding="utf-8"
         )
     )
-    assert manifest["version"] == "0.14.0"
+    assert manifest["version"] == "0.15.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
@@ -40,11 +40,18 @@ def test_release_version_and_schema_are_packaged() -> None:
     }
 
 
-def test_app_shell_module_uses_public_cache_busted_static_path() -> None:
+def test_frontend_modules_use_public_cache_busted_static_paths() -> None:
     const_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "const.py"
     ).read_text(encoding="utf-8")
     assert 'APP_SHELL_STATIC_PATH = f"/{DOMAIN}/frontend/{APP_SHELL_FILENAME}"' in const_source
     assert 'APP_SHELL_MODULE_VERSION = "0.14.0"' in const_source
-    assert 'APP_SHELL_MODULE_URL = f"{APP_SHELL_STATIC_PATH}?v={APP_SHELL_MODULE_VERSION}"' in const_source
+    assert 'INFRA_SUMMARY_STATIC_PATH = f"/{DOMAIN}/frontend/{INFRA_SUMMARY_FILENAME}"' in const_source
+    assert 'INFRA_SUMMARY_MODULE_VERSION = "0.15.0"' in const_source
     assert '"/api/contract_generated_ui/frontend"' not in const_source
+
+    init_source = (
+        ROOT / "custom_components" / "contract_generated_ui" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    assert "add_extra_js_url(hass, APP_SHELL_MODULE_URL)" in init_source
+    assert "add_extra_js_url(hass, INFRA_SUMMARY_MODULE_URL)" in init_source
