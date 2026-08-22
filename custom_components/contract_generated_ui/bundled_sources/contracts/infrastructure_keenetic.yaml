@@ -1,0 +1,153 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: infrastructure.keenetic
+  title: Keenetic Hero 4G+
+  version: 0.2.0
+spec:
+  roles:
+    active_wan:
+      label: WAN
+      description: Текущий активный WAN-канал.
+      required: true
+      allowed_domains:
+      - sensor
+    ethernet_ping:
+      label: Ethernet ping
+      description: Задержка Ethernet WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    ethernet_packet_loss:
+      label: Ethernet loss
+      description: Потери пакетов Ethernet WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    lte_ping:
+      label: LTE ping
+      description: Задержка LTE WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    lte_packet_loss:
+      label: LTE loss
+      description: Потери пакетов LTE WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    last_wan_switch:
+      label: Смена WAN
+      description: Время последнего переключения WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    last_wan_switch_reason:
+      label: Причина WAN
+      description: Причина последнего переключения WAN.
+      required: true
+      allowed_domains:
+      - sensor
+    wan_switches_today:
+      label: Смен сегодня
+      description: Количество переключений WAN за сутки.
+      required: true
+      allowed_domains:
+      - sensor
+    lte_time_today:
+      label: LTE сегодня
+      description: Суммарное время через LTE за сутки.
+      required: true
+      allowed_domains:
+      - sensor
+    temperature:
+      label: Температура
+      description: Температура Keenetic.
+      required: true
+      allowed_domains:
+      - sensor
+  states:
+    normal:
+      description: Фактическое штатное состояние источника.
+      rules: []
+    event:
+      description: Фактическое событие или отклонение источника.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо не позволяет установить факт.
+      rules: []
+  actions:
+  - id: more_info_active_wan
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: active_wan
+  - id: more_info_ethernet_ping
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: ethernet_ping
+  - id: more_info_ethernet_packet_loss
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: ethernet_packet_loss
+  - id: more_info_lte_ping
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: lte_ping
+  - id: more_info_lte_packet_loss
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: lte_packet_loss
+  - id: more_info_last_wan_switch
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: last_wan_switch
+  - id: more_info_last_wan_switch_reason
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: last_wan_switch_reason
+  - id: more_info_wan_switches_today
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: wan_switches_today
+  - id: more_info_lte_time_today
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: lte_time_today
+  - id: more_info_temperature
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: temperature
+  presentation:
+    renderer: tiles_v1
+    columns: 3
+    role_order:
+    - active_wan
+    - ethernet_ping
+    - ethernet_packet_loss
+    - lte_ping
+    - lte_packet_loss
+    - last_wan_switch
+    - last_wan_switch_reason
+    - wan_switches_today
+    - lte_time_today
+    - temperature
+    role_groups:
+      status:
+      - active_wan
+      telemetry:
+      - last_wan_switch
+      - last_wan_switch_reason
+      - wan_switches_today
+      - lte_time_today
+      - temperature
+      diagnostic:
+      - ethernet_ping
+      - ethernet_packet_loss
+      - lte_ping
+      - lte_packet_loss
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+    - Read-only infrastructure slice; all primary actions are more-info.

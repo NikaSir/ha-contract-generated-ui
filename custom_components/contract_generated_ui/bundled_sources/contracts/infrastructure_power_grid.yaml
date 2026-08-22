@@ -1,0 +1,177 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: infrastructure.power_grid
+  title: Электросеть
+  version: 0.2.0
+spec:
+  roles:
+    grid_ok:
+      label: Три фазы
+      description: Сводное наличие трёх фаз.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    meter_online:
+      label: Измеритель
+      description: Доступность измерителя электросети.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    phase_a_present:
+      label: Фаза A
+      description: Наличие фазы A.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    phase_b_present:
+      label: Фаза B
+      description: Наличие фазы B.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    phase_c_present:
+      label: Фаза C
+      description: Наличие фазы C.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    phase_loss:
+      label: Потеря фазы
+      description: Флаг потери одной или нескольких фаз.
+      required: true
+      allowed_domains:
+      - binary_sensor
+    voltage_a:
+      label: Напряжение A
+      description: Напряжение фазы A.
+      required: true
+      allowed_domains:
+      - sensor
+    voltage_b:
+      label: Напряжение B
+      description: Напряжение фазы B.
+      required: true
+      allowed_domains:
+      - sensor
+    voltage_c:
+      label: Напряжение C
+      description: Напряжение фазы C.
+      required: true
+      allowed_domains:
+      - sensor
+    voltage_imbalance:
+      label: Перекос
+      description: Перекос фазных напряжений.
+      required: true
+      allowed_domains:
+      - sensor
+    total_power:
+      label: Мощность
+      description: Суммарная активная мощность.
+      required: true
+      allowed_domains:
+      - sensor
+    non_interruptible_voltage:
+      label: Неоткл. линия
+      description: Напряжение неотключаемой линии.
+      required: true
+      allowed_domains:
+      - sensor
+  states:
+    normal:
+      description: Фактическое штатное состояние источника.
+      rules: []
+    event:
+      description: Фактическое событие или отклонение источника.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо не позволяет установить факт.
+      rules: []
+  actions:
+  - id: more_info_grid_ok
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: grid_ok
+  - id: more_info_meter_online
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: meter_online
+  - id: more_info_phase_a_present
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: phase_a_present
+  - id: more_info_phase_b_present
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: phase_b_present
+  - id: more_info_phase_c_present
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: phase_c_present
+  - id: more_info_phase_loss
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: phase_loss
+  - id: more_info_voltage_a
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: voltage_a
+  - id: more_info_voltage_b
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: voltage_b
+  - id: more_info_voltage_c
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: voltage_c
+  - id: more_info_voltage_imbalance
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: voltage_imbalance
+  - id: more_info_total_power
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: total_power
+  - id: more_info_non_interruptible_voltage
+    kind: more_info
+    description: Открыть more-info сущности.
+    role: non_interruptible_voltage
+  presentation:
+    renderer: tiles_v1
+    columns: 3
+    role_order:
+    - grid_ok
+    - meter_online
+    - phase_a_present
+    - phase_b_present
+    - phase_c_present
+    - phase_loss
+    - voltage_a
+    - voltage_b
+    - voltage_c
+    - voltage_imbalance
+    - total_power
+    - non_interruptible_voltage
+    role_groups:
+      status:
+      - grid_ok
+      - meter_online
+      - phase_loss
+      - phase_a_present
+      - phase_b_present
+      - phase_c_present
+      telemetry:
+      - voltage_a
+      - voltage_b
+      - voltage_c
+      - voltage_imbalance
+      - total_power
+      - non_interruptible_voltage
+      diagnostic: []
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+    - Read-only infrastructure slice; all primary actions are more-info.
