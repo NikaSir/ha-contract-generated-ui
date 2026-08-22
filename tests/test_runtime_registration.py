@@ -7,17 +7,24 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).parents[1]
-REGISTRATION_PATH = (
-    ROOT
-    / "custom_components"
-    / "contract_generated_ui"
-    / "runtime_registration.py"
-)
+PACKAGE_PATH = ROOT / "custom_components" / "contract_generated_ui"
+REGISTRATION_PATH = PACKAGE_PATH / "runtime_registration.py"
 
 
 def _registration_module():
+    package_name = "contract_generated_ui_runtime_registration_test"
+    package_spec = importlib.util.spec_from_file_location(
+        package_name,
+        PACKAGE_PATH / "__init__.py",
+        submodule_search_locations=[str(PACKAGE_PATH)],
+    )
+    assert package_spec is not None and package_spec.loader is not None
+    package = importlib.util.module_from_spec(package_spec)
+    sys.modules[package_name] = package
+    package_spec.loader.exec_module(package)
+
     spec = importlib.util.spec_from_file_location(
-        "contract_generated_ui_runtime_registration_test",
+        f"{package_name}.runtime_registration",
         REGISTRATION_PATH,
     )
     assert spec is not None and spec.loader is not None
