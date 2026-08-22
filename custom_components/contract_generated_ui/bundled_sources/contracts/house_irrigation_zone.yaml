@@ -1,0 +1,70 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: house.irrigation.zone
+  title: HO-SC-8W Zone
+  version: 0.1.0
+spec:
+  roles:
+    schedule:
+      label: Программа
+      description: Декодированная фактическая программа DP38 выбранной зоны.
+      required: true
+      allowed_domains:
+        - sensor
+    time_remaining:
+      label: Осталось
+      description: Фактическое оставшееся время текущего полива зоны.
+      required: true
+      allowed_domains:
+        - sensor
+    time_elapsed:
+      label: Прошло
+      description: Фактическое прошедшее время текущего полива зоны.
+      required: true
+      allowed_domains:
+        - sensor
+  states:
+    normal:
+      description: Зона не активна, данные достоверны.
+      rules: []
+    event:
+      description: Зона активна либо находится в очереди.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо программа не подтверждена.
+      rules: []
+  actions:
+    - id: more_info_schedule
+      kind: more_info
+      description: Открыть more-info программы зоны.
+      role: schedule
+    - id: more_info_time_remaining
+      kind: more_info
+      description: Открыть more-info оставшегося времени.
+      role: time_remaining
+    - id: more_info_time_elapsed
+      kind: more_info
+      description: Открыть more-info прошедшего времени.
+      role: time_elapsed
+  presentation:
+    renderer: tiles_v1
+    columns: 3
+    role_order:
+      - schedule
+      - time_remaining
+      - time_elapsed
+    role_groups:
+      status:
+        - schedule
+      telemetry:
+        - time_remaining
+        - time_elapsed
+      diagnostic: []
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+      - Zones 1-6 are production channels and remain read-only in generated UI until verified actions exist.
+      - Zone 8 remains laboratory/diagnostics-only and is intentionally not a normal instance of this contract.

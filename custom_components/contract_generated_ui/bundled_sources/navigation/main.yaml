@@ -2,7 +2,7 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 1.0.0
+  version: 1.1.0
   description: Central route and tab ownership for NikaS generated UI.
 spec:
   routes:
@@ -27,10 +27,10 @@ spec:
       title: Уборка
       path: /dashboard-house/cleaning
       parent: home
-    house.irrigation:
-      title: Полив
-      path: /dashboard-house/irrigation
-      parent: home
+    actions.irrigation_candidate:
+      title: Полив · candidate
+      path: /dashboard-irrigation-generated/overview
+      parent: actions
   global_tabs:
     - id: home
       route: home

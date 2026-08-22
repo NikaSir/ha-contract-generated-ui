@@ -1,0 +1,142 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: house.irrigation.controller
+  title: HO-SC-8W Controller
+  version: 0.1.0
+spec:
+  roles:
+    connection_mode:
+      label: Связь
+      description: Фактический активный транспорт контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+    operation_mode:
+      label: Режим контроллера
+      description: Фактический Auto / Manual / OFF режим контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+    irrigation_mode:
+      label: Порядок полива
+      description: Фактический режим выполнения полива.
+      required: true
+      allowed_domains:
+        - sensor
+    active_zones:
+      label: Активные зоны
+      description: Фактические активные зоны контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+    queued_zones:
+      label: Очередь зон
+      description: Фактические зоны в очереди контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+    rain_sensor:
+      label: Датчик дождя
+      description: Глобальное состояние учёта датчика дождя.
+      required: true
+      allowed_domains:
+        - sensor
+    seasonal_adjustment:
+      label: Сезонная коррекция
+      description: Фактическая сезонная коррекция контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+    schedule_cache:
+      label: Кэш расписания
+      description: Достоверность и полнота кэша DP38.
+      required: true
+      allowed_domains:
+        - sensor
+    timer_error_alarm:
+      label: Ошибка таймера
+      description: Фактическое состояние ошибки таймера контроллера.
+      required: true
+      allowed_domains:
+        - sensor
+  states:
+    normal:
+      description: Фактическое штатное состояние источника.
+      rules: []
+    event:
+      description: Активный полив, очередь или подтверждённое отклонение.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо не позволяет установить факт.
+      rules: []
+  actions:
+    - id: more_info_connection_mode
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: connection_mode
+    - id: more_info_operation_mode
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: operation_mode
+    - id: more_info_irrigation_mode
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: irrigation_mode
+    - id: more_info_active_zones
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: active_zones
+    - id: more_info_queued_zones
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: queued_zones
+    - id: more_info_rain_sensor
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: rain_sensor
+    - id: more_info_seasonal_adjustment
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: seasonal_adjustment
+    - id: more_info_schedule_cache
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: schedule_cache
+    - id: more_info_timer_error_alarm
+      kind: more_info
+      description: Открыть more-info сущности.
+      role: timer_error_alarm
+  presentation:
+    renderer: tiles_v1
+    columns: 3
+    role_order:
+      - connection_mode
+      - operation_mode
+      - active_zones
+      - queued_zones
+      - irrigation_mode
+      - rain_sensor
+      - seasonal_adjustment
+      - schedule_cache
+      - timer_error_alarm
+    role_groups:
+      status:
+        - connection_mode
+        - operation_mode
+        - active_zones
+        - queued_zones
+      telemetry:
+        - irrigation_mode
+        - rain_sensor
+        - seasonal_adjustment
+      diagnostic:
+        - schedule_cache
+        - timer_error_alarm
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+      - Controller contract is read-only until verified integration-owned write actions exist.
+      - Raw Tuya DP writes are outside the generated UI boundary.
