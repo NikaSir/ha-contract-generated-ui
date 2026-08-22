@@ -10,13 +10,25 @@ The HO-SC-8W integration remains responsible for controller transport, entities,
 
 The generated panel is intentionally read-only for controller changes in this stage. It contains no raw Tuya DP write path.
 
-## Canonical route
+## Staged route and final cutover
+
+The production integration-owned panel already occupies `/dashboard-irrigation`. Therefore the generated candidate must be testable side-by-side without route collision.
+
+Staged route:
 
 ```text
 Действия
   ↓
+/dashboard-irrigation-generated/overview
+```
+
+After field acceptance, one coordinated cutover changes the generated dashboard to the canonical production route:
+
+```text
 /dashboard-irrigation/overview
 ```
+
+and retires only the old integration-owned shell registration/frontend from `ha-ho-sc-8w`. The controller/backend integration remains unchanged.
 
 Generated tabs:
 
@@ -98,8 +110,8 @@ The existing integration-owned `ha-ho-sc-8w` custom panel remains the fallback u
 
 1. every required semantic key is bound to a verified entity in private inventory;
 2. generation completes without unresolved bindings;
-3. `/dashboard-irrigation/overview` opens locally after a full Home Assistant restart;
-4. the same route opens through Home Assistant Cloud / Nabu Casa;
+3. `/dashboard-irrigation-generated/overview` opens locally after a full Home Assistant restart;
+4. the same staged route opens through Home Assistant Cloud / Nabu Casa;
 5. Header Back returns deterministically to `/dashboard-actions`;
 6. the four Bottom Tab Bar tabs switch correctly;
 7. `unknown` / `unavailable` remain visibly unreliable;
@@ -107,7 +119,7 @@ The existing integration-owned `ha-ho-sc-8w` custom panel remains the fallback u
 9. Zone 8 appears only in Diagnostics;
 10. no controller write is produced by the generated UI.
 
-Only after this PASS may the integration-owned shell registration/frontend in `ha-ho-sc-8w` be retired. Controller/backend code must remain in `ha-ho-sc-8w`.
+Only after this PASS may the coordinated production cutover occur. The cutover must not leave two owners of `/dashboard-irrigation` active at the same time.
 
 ## Non-goals of v1
 
