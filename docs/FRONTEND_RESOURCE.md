@@ -2,9 +2,9 @@
 
 Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central dashboards therefore keep their primary content native Lovelace. Frontend JavaScript is used only where an application shell materially improves navigation.
 
-## Global navigation — Contract Generated UI 0.20.0
+## Global navigation — Contract Generated UI 0.21.0
 
-The 0.20.0 line keeps the frontend cache generation globally monotonic at **b004** after the b001–b003 field-test sequence.
+The 0.21.0 line keeps the global-navigation cache generation at **b004** because `nikas-ui.js` itself is unchanged.
 
 Contract Generated UI automatically loads the global navigation enhancement through Home Assistant `frontend.add_extra_js_url()`:
 
@@ -23,7 +23,7 @@ Generated application subpanels such as ZONT and StarLine no longer require a ge
 They are **автоматически** registered as Home Assistant custom panels by Contract Generated UI using one shared web component and one self-contained frontend bundle:
 
 ```text
-/contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b004
+/contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b005
 ```
 
 The bundle contains no ZONT-, StarLine- or subsystem-specific route constants. Panel configuration is derived from:
@@ -32,14 +32,17 @@ The bundle contains no ZONT-, StarLine- or subsystem-specific route constants. P
 PanelManifest + NavigationContract
 ```
 
-The shared host receives only presentation/navigation metadata:
+The shared host receives presentation/navigation metadata plus an optional read-only runtime source declaration:
 
 - panel title and subtitle;
 - logical parent path for Back;
 - 2–5 tab IDs, labels and icons;
-- field-test placeholder text until real domain contracts are connected.
+- `subpanel.source` describing allowed Home Assistant integration platforms;
+- per-tab `readonly` domain/filter rules.
 
-Home Assistant entity IDs and private semantic inventory are not exposed through panel registration metadata.
+For read-only runtime panels, the host reads `config/entity_registry/list`, resolves current values from `hass.states`, and renders factual state text only. It does not call Home Assistant services, does not invoke `call_service`, and does not expose toggle/control handlers.
+
+Concrete Home Assistant entity IDs and private semantic inventory remain outside the public manifest. Entity discovery is performed against the live Home Assistant Entity Registry at runtime.
 
 ### Visual contract
 
@@ -77,6 +80,17 @@ StarLine → /dashboard-house/vehicles
 The shared Header uses this parent path directly. It does not depend on browser history.
 
 Tab switching inside the shared custom panel is owned by the common panel host. The tab list itself remains manifest-driven.
+
+## Read-only ZONT and StarLine profiles
+
+The first runtime data profiles are intentionally informational:
+
+- ZONT: `Обзор`, `Отопление`, `Датчики`, `Сервис`;
+- StarLine: `Обзор`, `Охрана`, `Двигатель`, `Авто`, `Сервис`.
+
+`unknown` and `unavailable` are displayed as unreliable states. The `Сервис` tabs can be restricted to unavailable/unknown entities. Read-only rendering may display the current state of a control-domain entity such as a StarLine `switch`, but the row remains non-interactive and no command path is registered.
+
+This runtime discovery layer does not replace semantic inventory for contract-rendered production panels. It provides a safe first stage when the live integration entity set has not yet been exported into a verified private inventory.
 
 ## Lovelace registration
 

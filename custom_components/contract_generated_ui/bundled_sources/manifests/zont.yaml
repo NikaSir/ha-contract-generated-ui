@@ -3,14 +3,20 @@ kind: PanelManifest
 metadata:
   id: zont
   title: ZONT
-  version: 0.3.0
-  description: Shared generated application-panel demonstration; domain content intentionally deferred.
+  version: 0.4.0
+  description: Read-only ZONT information panel sourced from the live Home Assistant entity registry at runtime.
 spec:
   dashboard_path: /dashboard-zont
   subpanel:
     template: standard_v1
     navigation: main
     parent: house.heating
+    source:
+      kind: entity_registry
+      platforms:
+        - zont
+        - zont_ha
+      include_disabled: false
   views:
     - id: overview
       title: Обзор
@@ -18,7 +24,26 @@ spec:
       path: overview
       order: 0
       renderer: subpanel_placeholder_v1
-      placeholder: Каркас готов. Предметный контракт ZONT будет подключён отдельной задачей.
+      placeholder: Информационный обзор ZONT. Управляющие команды намеренно отключены.
+      readonly:
+        domains:
+          - climate
+          - sensor
+          - binary_sensor
+        priority_keywords:
+          - error
+          - alarm
+          - fault
+          - ошибка
+          - авар
+          - котел
+          - котёл
+          - boiler
+          - heating
+          - отоп
+          - temperature
+          - температур
+        limit: 14
       modules: []
     - id: heating
       title: Отопление
@@ -26,7 +51,11 @@ spec:
       path: heating
       order: 1
       renderer: subpanel_placeholder_v1
-      placeholder: Раздел «Отопление» зарезервирован для реальных сущностей ZONT.
+      placeholder: Фактические состояния отопительных контуров ZONT без управления.
+      readonly:
+        domains:
+          - climate
+        limit: 30
       modules: []
     - id: sensors
       title: Датчики
@@ -34,7 +63,12 @@ spec:
       path: sensors
       order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Раздел «Датчики» зарезервирован для реальных сущностей ZONT.
+      placeholder: Датчики ZONT в режиме только чтения.
+      readonly:
+        domains:
+          - sensor
+          - binary_sensor
+        limit: 40
       modules: []
     - id: service
       title: Сервис
@@ -42,5 +76,12 @@ spec:
       path: service
       order: 3
       renderer: subpanel_placeholder_v1
-      placeholder: Раздел «Сервис» зарезервирован для диагностики ZONT.
+      placeholder: Контроль доступности сущностей ZONT без сервисных команд.
+      readonly:
+        domains:
+          - climate
+          - sensor
+          - binary_sensor
+        unavailable_only: true
+        limit: 40
       modules: []

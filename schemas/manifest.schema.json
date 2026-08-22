@@ -118,6 +118,9 @@
             "parent": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9._-]*$"
+            },
+            "source": {
+              "$ref": "#/$defs/subpanel_source"
             }
           }
         },
@@ -142,6 +145,82 @@
     }
   },
   "$defs": {
+    "subpanel_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "platforms"
+      ],
+      "properties": {
+        "kind": {
+          "const": "entity_registry"
+        },
+        "platforms": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          }
+        },
+        "include_disabled": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "readonly_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "domains": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "include_keywords": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude_keywords": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "priority_keywords": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "unavailable_only": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      }
+    },
     "module": {
       "type": "object",
       "additionalProperties": false,
@@ -235,6 +314,9 @@
         "placeholder": {
           "type": "string",
           "minLength": 1
+        },
+        "readonly": {
+          "$ref": "#/$defs/readonly_view"
         },
         "modules": {
           "type": "array",
