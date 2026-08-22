@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 SUMMARY_RENDERER = "infrastructure_summary_v1"
+SUMMARY_CARD_TYPE = "custom:nikas-infrastructure-summary-v2"
 
 SUMMARY_VARIANTS = {
     "infrastructure.power_grid": "power_grid",
@@ -109,7 +110,7 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
         )
 
     card: dict[str, Any] = {
-        "type": "custom:nikas-infrastructure-summary",
+        "type": SUMMARY_CARD_TYPE,
         "variant": variant,
         "title": title,
         "roles": role_config,
@@ -121,6 +122,7 @@ def build_summary_card(semantic_module: Mapping[str, Any]) -> dict[str, Any]:
 
 
 __all__ = [
+    "SUMMARY_CARD_TYPE",
     "SUMMARY_RENDERER",
     "SUMMARY_ROLE_ORDER",
     "SUMMARY_VARIANTS",

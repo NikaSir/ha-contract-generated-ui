@@ -3,15 +3,15 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.8.0
-  description: 'Production infrastructure panel v0.8: compact app-like summaries for power, UPS and Keenetic inside the NikaS shell.'
+  version: 0.9.0
+  description: 'Production infrastructure panel v0.9: polished app-like summaries with compact UPS cards and relative Keenetic failover timing.'
 spec:
   dashboard_path: /dashboard-infrastructure
   app_shell:
     active: infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.8
+    title: Инфраструктура · v0.9
     path: overview
     order: 0
     renderer: infrastructure_summary_v1

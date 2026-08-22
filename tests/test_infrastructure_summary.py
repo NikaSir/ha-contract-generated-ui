@@ -40,7 +40,7 @@ def _ups_module() -> dict:
 
 def test_summary_card_uses_selected_roles_and_contract_navigation() -> None:
     card = build_summary_card(_ups_module())
-    assert card["type"] == "custom:nikas-infrastructure-summary"
+    assert card["type"] == "custom:nikas-infrastructure-summary-v2"
     assert card["variant"] == "ups"
     assert card["title"] == "UPS Интернет"
     assert card["details_path"] == "/dashboard-ups"
@@ -95,7 +95,7 @@ def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
     view = rendered["views"][0]
     assert view["type"] == "sections"
     card = view["sections"][0]["cards"][0]
-    assert card["type"] == "custom:nikas-infrastructure-summary"
+    assert card["type"] == "custom:nikas-infrastructure-summary-v2"
 
     filtered = _filter_trace(trace)
     roles = filtered["semantics"]["views"][0]["modules"][0]["roles"]
@@ -110,7 +110,7 @@ def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
     assert "overview.ups_internet.data_age" not in filtered["bindings"]
 
 
-def test_infrastructure_v08_uses_summary_renderer_and_bundled_source_matches() -> None:
+def test_infrastructure_v09_uses_summary_renderer_and_bundled_source_matches() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -121,7 +121,7 @@ def test_infrastructure_v08_uses_summary_renderer_and_bundled_source_matches() -
         / "infrastructure.yaml"
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["metadata"]["version"] == "0.8.0"
+    assert manifest["metadata"]["version"] == "0.9.0"
     assert manifest["spec"]["views"][0]["renderer"] == "infrastructure_summary_v1"
     assert bundled_path.read_bytes() == manifest_path.read_bytes()
 
@@ -137,15 +137,20 @@ def test_summary_model_runtime_and_generator_sources_are_byte_equivalent() -> No
     assert generator_source == runtime_source
 
 
-def test_frontend_asset_registers_infrastructure_summary_card() -> None:
+def test_frontend_asset_registers_polished_summary_v2() -> None:
     asset = (
         ROOT
         / "custom_components"
         / "contract_generated_ui"
         / "frontend"
-        / "nikas-app-shell.js"
+        / "nikas-infrastructure-summary.js"
     ).read_text(encoding="utf-8")
-    assert 'customElements.define("nikas-infrastructure-summary"' in asset
-    assert 'type: "nikas-infrastructure-summary"' in asset
+    assert 'customElements.define("nikas-infrastructure-summary-v2"' in asset
+    assert 'type: "nikas-infrastructure-summary-v2"' in asset
+    assert "_relativeTime" in asset
+    assert "мин назад" in asset
+    assert "ч назад" in asset
+    assert "Причина ·" in asset
+    assert "ha-card.ups" in asset
     assert "Данные неполные" in asset
     assert "WAN неизвестен" in asset

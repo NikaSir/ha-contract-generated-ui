@@ -28,24 +28,33 @@ async def async_setup_entry(
         DOMAIN,
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
+        INFRA_SUMMARY_FILENAME,
+        INFRA_SUMMARY_MODULE_URL,
+        INFRA_SUMMARY_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     if not domain_data.get(FRONTEND_STATIC_REGISTERED):
-        frontend_asset = Path(__file__).parent / FRONTEND_DIRECTORY / APP_SHELL_FILENAME
+        frontend_root = Path(__file__).parent / FRONTEND_DIRECTORY
         await hass.http.async_register_static_paths(
             [
                 StaticPathConfig(
                     APP_SHELL_STATIC_PATH,
-                    str(frontend_asset),
+                    str(frontend_root / APP_SHELL_FILENAME),
                     False,
-                )
+                ),
+                StaticPathConfig(
+                    INFRA_SUMMARY_STATIC_PATH,
+                    str(frontend_root / INFRA_SUMMARY_FILENAME),
+                    False,
+                ),
             ]
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
     add_extra_js_url(hass, APP_SHELL_MODULE_URL)
+    add_extra_js_url(hass, INFRA_SUMMARY_MODULE_URL)
 
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
@@ -66,15 +75,16 @@ async def async_unload_entry(
     from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
-    from .const import APP_SHELL_MODULE_URL
+    from .const import APP_SHELL_MODULE_URL, INFRA_SUMMARY_MODULE_URL
 
     unloaded = await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
     if unloaded:
-        try:
-            remove_extra_js_url(hass, APP_SHELL_MODULE_URL)
-        except KeyError:
-            pass
+        for module_url in (APP_SHELL_MODULE_URL, INFRA_SUMMARY_MODULE_URL):
+            try:
+                remove_extra_js_url(hass, module_url)
+            except KeyError:
+                pass
     return unloaded
