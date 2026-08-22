@@ -16,6 +16,7 @@ from .const import (
     ATTR_ISSUE_COUNT,
     ATTR_ISSUES,
     ATTR_MANIFESTS,
+    ATTR_NAVIGATION,
     ATTR_SOURCE_DIRECTORY,
     ATTR_VALIDATION_LEVEL,
     MAX_ISSUES_IN_ATTRIBUTES,
@@ -71,6 +72,7 @@ class ContractGeneratedUISourceStatusSensor(
             ATTR_CONTRACTS: data.counts[ATTR_CONTRACTS],
             ATTR_INVENTORY: data.counts[ATTR_INVENTORY],
             ATTR_MANIFESTS: data.counts[ATTR_MANIFESTS],
+            ATTR_NAVIGATION: data.counts[ATTR_NAVIGATION],
             ATTR_DOCUMENT_COUNT: data.document_count,
             ATTR_ISSUE_COUNT: len(data.issues),
             ATTR_ISSUES: [

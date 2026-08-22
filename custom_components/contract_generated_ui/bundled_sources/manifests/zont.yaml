@@ -1,0 +1,46 @@
+api_version: nikas.home-assistant/panel-manifest/v1
+kind: PanelManifest
+metadata:
+  id: zont
+  title: ZONT
+  version: 0.1.0
+  description: Generated subpanel shell demonstration; domain content intentionally deferred.
+spec:
+  dashboard_path: /dashboard-zont
+  subpanel:
+    template: standard_v1
+    navigation: main
+    parent: house.heating
+  views:
+    - id: overview
+      title: Обзор
+      icon: mdi:view-dashboard-outline
+      path: overview
+      order: 0
+      renderer: subpanel_placeholder_v1
+      placeholder: Каркас готов. Предметный контракт ZONT будет подключён отдельной задачей.
+      modules: []
+    - id: heating
+      title: Отопление
+      icon: mdi:radiator
+      path: heating
+      order: 1
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Отопление» зарезервирован для реальных сущностей ZONT.
+      modules: []
+    - id: sensors
+      title: Датчики
+      icon: mdi:thermometer
+      path: sensors
+      order: 2
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Датчики» зарезервирован для реальных сущностей ZONT.
+      modules: []
+    - id: service
+      title: Сервис
+      icon: mdi:stethoscope
+      path: service
+      order: 3
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Сервис» зарезервирован для диагностики ZONT.
+      modules: []

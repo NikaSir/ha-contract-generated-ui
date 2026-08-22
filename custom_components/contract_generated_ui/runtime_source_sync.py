@@ -1,4 +1,4 @@
-"""Synchronize bundled public contracts/manifests into the runtime source tree."""
+"""Synchronize bundled public contracts/manifests/navigation into the runtime source tree."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests")
+PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests", "navigation")
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,7 +29,7 @@ def _atomic_sync(source: Path, target: Path) -> bool:
 
 
 def sync_bundled_public_sources(source_root: Path) -> SourceSyncResult:
-    """Sync only bundled contracts/manifests; never touch inventory or snapshots."""
+    """Sync only bundled public Architecture-as-Code sources; never touch private runtime data."""
     bundled_root = Path(__file__).with_name("bundled_sources")
     changed = 0
     checked = 0

@@ -1,6 +1,7 @@
 const BAR_ID = "nikas-global-tabbar";
+const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 
-const BASE_ITEMS = [
+const FALLBACK_ITEMS = [
   {
     id: "home",
     label: "Дом",
@@ -21,79 +22,92 @@ const BASE_ITEMS = [
   },
 ];
 
-const POWER_ITEMS = [
-  {
-    id: "power-overview",
-    label: "Обзор",
-    icon: "mdi:view-dashboard-outline",
-    path: "/dashboard-infrastructure/power-overview",
-  },
-  {
-    id: "power-before",
-    label: "До стаб.",
-    icon: "mdi:transmission-tower-import",
-    path: "/dashboard-infrastructure/power-before",
-  },
-  {
-    id: "power-after",
-    label: "После стаб.",
-    icon: "mdi:transmission-tower-export",
-    path: "/dashboard-infrastructure/power-after",
-  },
-  {
-    id: "power-history",
-    label: "История",
-    icon: "mdi:chart-line",
-    path: "/dashboard-infrastructure/power-history",
-  },
-];
+let navigationRegistry = null;
 
-function surfaceForPath(pathname) {
+function navigate(path) {
+  if (!path || window.location.pathname === path) return;
+  window.history.pushState(null, "", path);
+  window.dispatchEvent(new Event("location-changed"));
+}
+
+function fallbackSurface(pathname) {
   if (pathname.startsWith("/dashboard-house")) return "home";
   if (pathname.startsWith("/dashboard-actions")) return "actions";
   if (pathname.startsWith("/dashboard-infrastructure")) return "infrastructure";
   return null;
 }
 
-function routesForPath(pathname) {
-  const preview =
-    pathname.startsWith("/dashboard-house-preview") ||
-    pathname.startsWith("/dashboard-actions-preview");
-
-  return preview
-    ? {
-        home: "/dashboard-house-preview/home",
-        actions: "/dashboard-actions-preview/home",
-        infrastructure: "/dashboard-infrastructure/overview",
-      }
-    : Object.fromEntries(BASE_ITEMS.map((item) => [item.id, item.path]));
+function dashboardPrefix(path) {
+  const parts = String(path || "").split("/").filter(Boolean);
+  return parts.length ? `/${parts[0]}` : "";
 }
 
-function navigationModel(pathname) {
-  const powerItem = POWER_ITEMS.find((item) => pathname.startsWith(item.path));
-  if (powerItem) {
-    return {
-      mode: "power",
-      active: powerItem.id,
-      items: POWER_ITEMS,
-      routes: Object.fromEntries(POWER_ITEMS.map((item) => [item.id, item.path])),
-    };
-  }
+function registrySubpanelModel(pathname) {
+  const groups = navigationRegistry?.subpanels;
+  if (!Array.isArray(groups)) return null;
 
-  const active = surfaceForPath(pathname);
+  for (const group of groups) {
+    if (!group || !Array.isArray(group.tabs) || !group.tabs.length) continue;
+    const active = group.tabs.find(
+      (tab) =>
+        pathname === tab.path ||
+        pathname.startsWith(`${tab.path}/`)
+    );
+    if (active) {
+      return {
+        mode: `subpanel:${group.id}`,
+        active: active.id,
+        items: group.tabs,
+      };
+    }
+    if (
+      !group.embedded &&
+      pathname === group.dashboard_path
+    ) {
+      return {
+        mode: `subpanel:${group.id}`,
+        active: group.tabs[0].id,
+        items: group.tabs,
+      };
+    }
+  }
+  return null;
+}
+
+function registryGlobalModel(pathname) {
+  const tabs = navigationRegistry?.global_tabs;
+  if (!Array.isArray(tabs) || !tabs.length) return null;
+
+  let active = tabs.find((tab) => pathname === tab.path)?.id ?? null;
+  if (!active) {
+    const pathPrefix = dashboardPrefix(pathname);
+    const tab = tabs.find((item) => dashboardPrefix(item.path) === pathPrefix);
+    active = tab?.id ?? null;
+  }
   if (!active) return null;
   return {
     mode: "global",
     active,
-    items: BASE_ITEMS,
-    routes: routesForPath(pathname),
+    items: tabs,
   };
 }
 
-function navigate(path) {
-  if (!path || window.location.pathname === path) return;
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("location-changed"));
+function fallbackGlobalModel(pathname) {
+  const active = fallbackSurface(pathname);
+  if (!active) return null;
+  return {
+    mode: "global-fallback",
+    active,
+    items: FALLBACK_ITEMS,
+  };
+}
+
+function navigationModel(pathname) {
+  return (
+    registrySubpanelModel(pathname) ||
+    registryGlobalModel(pathname) ||
+    fallbackGlobalModel(pathname)
+  );
 }
 
 function createBar(model) {
@@ -174,6 +188,16 @@ function createBar(model) {
         outline: 2px solid var(--primary-color, #03a9f4);
         outline-offset: 1px;
       }
+      @media (max-width: 430px) {
+        button {
+          min-height: 60px;
+          padding-left: 2px;
+          padding-right: 2px;
+        }
+        button span {
+          font-size: 11.5px;
+        }
+      }
       @media (min-width: 900px) {
         nav { width: min(70vw, 720px); }
       }
@@ -199,9 +223,10 @@ function renderBar(root, model) {
     button.classList.toggle("active", isActive);
     button.disabled = isActive;
     if (isActive) button.setAttribute("aria-current", "page");
-    button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${item.label}</span>`;
+    const label = item.label ?? item.title ?? item.id;
+    button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${label}</span>`;
     button.onclick = () => {
-      if (!isActive) navigate(model.routes[item.id]);
+      if (!isActive) navigate(item.path);
     };
     nav.appendChild(button);
   }
@@ -210,8 +235,7 @@ function renderBar(root, model) {
 
 function syncBar() {
   if (!document.body) return;
-  const pathname = window.location.pathname;
-  const model = navigationModel(pathname);
+  const model = navigationModel(window.location.pathname);
   let root = document.getElementById(BAR_ID);
 
   if (!model) {
@@ -231,18 +255,50 @@ function scheduleSync() {
   window.requestAnimationFrame(syncBar);
 }
 
+async function loadNavigationRegistry() {
+  try {
+    const response = await fetch(REGISTRY_URL, {
+      cache: "no-store",
+      credentials: "same-origin",
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const candidate = await response.json();
+    if (
+      candidate?.api_version !==
+        "nikas.home-assistant/navigation-registry/v1" ||
+      !Array.isArray(candidate.global_tabs) ||
+      !Array.isArray(candidate.subpanels)
+    ) {
+      throw new Error("invalid navigation registry");
+    }
+    navigationRegistry = candidate;
+  } catch (err) {
+    console.warn("NikaS navigation registry unavailable; using global fallback", err);
+    navigationRegistry = null;
+  }
+  scheduleSync();
+}
+
 window.addEventListener("location-changed", scheduleSync);
 window.addEventListener("popstate", scheduleSync);
 window.addEventListener("pageshow", scheduleSync);
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", scheduleSync, { once: true });
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      scheduleSync();
+      loadNavigationRegistry();
+    },
+    { once: true }
+  );
 } else {
   scheduleSync();
+  loadNavigationRegistry();
 }
 
-// Legacy modules remain a migration fallback only. Primary v0.12 central
-// Infrastructure content and the electrical subpanel use native HA cards.
+// Legacy custom-card modules remain a migration fallback only. Generated
+// subpanels use native Home Assistant views plus this data-driven tab overlay.
 Promise.allSettled([
   import("./nikas-app-shell.js"),
   import("./nikas-infrastructure-summary.js"),

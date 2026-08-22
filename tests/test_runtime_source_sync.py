@@ -45,8 +45,8 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
     generated.write_text("GENERATED-CANDIDATE\n", encoding="utf-8")
 
     result = module.sync_bundled_public_sources(root)
-    assert result.checked_files == 4
-    assert result.changed_files == 4
+    assert result.checked_files == 7
+    assert result.changed_files == 7
 
     assert inventory.read_text(encoding="utf-8") == "PRIVATE-INVENTORY\n"
     assert snapshot.read_text(encoding="utf-8") == "PRIVATE-SNAPSHOT\n"
@@ -55,7 +55,10 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
     assert (root / "contracts" / "infrastructure_ups.yaml").exists()
     assert (root / "contracts" / "infrastructure_keenetic.yaml").exists()
     assert (root / "manifests" / "infrastructure.yaml").exists()
+    assert (root / "manifests" / "zont.yaml").exists()
+    assert (root / "manifests" / "starline.yaml").exists()
+    assert (root / "navigation" / "main.yaml").exists()
 
     second = module.sync_bundled_public_sources(root)
-    assert second.checked_files == 4
+    assert second.checked_files == 7
     assert second.changed_files == 0

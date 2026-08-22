@@ -54,6 +54,13 @@ def test_app_shell_uses_only_native_bottom_clearance_in_lovelace() -> None:
     assert "custom:" not in str(rendered)
 
 
+def test_app_shell_does_not_duplicate_clearance_for_local_subview() -> None:
+    source = _dashboard()
+    source["views"][0]["subview"] = True
+    rendered = append_app_shell(source, active="infrastructure")
+    assert len(rendered["views"][0]["sections"]) == 1
+
+
 def test_app_shell_route_overrides_remain_validated_without_custom_card() -> None:
     rendered = append_app_shell(
         _dashboard(),
@@ -138,7 +145,7 @@ def test_infrastructure_v012_uses_central_power_subviews() -> None:
     assert bundled_path.read_bytes() == manifest_path.read_bytes()
 
 
-def test_nikas_ui_bundle_switches_to_local_power_navigation() -> None:
+def test_nikas_ui_bundle_uses_registry_for_local_navigation() -> None:
     asset = (
         ROOT
         / "custom_components"
@@ -147,17 +154,11 @@ def test_nikas_ui_bundle_switches_to_local_power_navigation() -> None:
         / "nikas-ui.js"
     ).read_text(encoding="utf-8")
     assert 'const BAR_ID = "nikas-global-tabbar"' in asset
+    assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in asset
     assert "position: fixed" in asset
     assert "env(safe-area-inset-bottom" in asset
     assert 'window.addEventListener("location-changed"' in asset
-    assert 'pathname.startsWith("/dashboard-infrastructure")' in asset
-    assert "const POWER_ITEMS" in asset
-    assert 'label: "Обзор"' in asset
-    assert 'label: "До стаб."' in asset
-    assert 'label: "После стаб."' in asset
-    assert 'label: "История"' in asset
-    assert 'path: "/dashboard-infrastructure/power-overview"' in asset
-    assert 'path: "/dashboard-infrastructure/power-before"' in asset
-    assert 'path: "/dashboard-infrastructure/power-after"' in asset
-    assert 'path: "/dashboard-infrastructure/power-history"' in asset
+    assert "registrySubpanelModel" in asset
+    assert "POWER_ITEMS" not in asset
+    assert 'path: "/dashboard-infrastructure/power-overview"' not in asset
     assert "--nikas-nav-columns" in asset

@@ -13,11 +13,11 @@ ROOT_SCHEMAS = REPO_ROOT / "schemas"
 
 
 def _write_yaml(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(parents=True)
     path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
 
 
-def _valid_documents() -> tuple[dict, dict, dict]:
+def _valid_documents() -> tuple[dict, dict, dict, dict]:
     contract = {
         "api_version": "nikas.home-assistant/ui-contract/v1",
         "kind": "UIContract",
@@ -97,7 +97,25 @@ def _valid_documents() -> tuple[dict, dict, dict]:
             ],
         },
     }
-    return contract, inventory, manifest
+    navigation = {
+        "api_version": "nikas.home-assistant/navigation/v1",
+        "kind": "NavigationContract",
+        "metadata": {"id": "main", "version": "1.0"},
+        "spec": {
+            "routes": {
+                "home": {"title": "Home", "path": "/dashboard-test"},
+            },
+            "global_tabs": [
+                {
+                    "id": "home",
+                    "route": "home",
+                    "title": "Home",
+                    "icon": "mdi:home-outline",
+                }
+            ],
+        },
+    }
+    return contract, inventory, manifest, navigation
 
 
 def test_packaged_schemas_match_repository_schemas() -> None:
@@ -105,6 +123,7 @@ def test_packaged_schemas_match_repository_schemas() -> None:
         "contract.schema.json",
         "inventory.schema.json",
         "manifest.schema.json",
+        "navigation.schema.json",
         "registry-snapshot.schema.json",
     ):
         assert json.loads((PACKAGED_SCHEMAS / name).read_text(encoding="utf-8")) == json.loads(
@@ -120,22 +139,25 @@ def test_source_tree_status_progression(tmp_path: Path) -> None:
     source_root.mkdir()
     assert validate_source_tree(source_root, PACKAGED_SCHEMAS).status == "empty"
 
-    contract, inventory, manifest = _valid_documents()
+    contract, inventory, manifest, navigation = _valid_documents()
     _write_yaml(source_root / "contracts" / "test.yaml", contract)
     assert validate_source_tree(source_root, PACKAGED_SCHEMAS).status == "incomplete"
 
     _write_yaml(source_root / "inventory" / "test.yaml", inventory)
     _write_yaml(source_root / "manifests" / "test.yaml", manifest)
+    assert validate_source_tree(source_root, PACKAGED_SCHEMAS).status == "incomplete"
+
+    _write_yaml(source_root / "navigation" / "main.yaml", navigation)
 
     snapshot = validate_source_tree(source_root, PACKAGED_SCHEMAS)
     assert snapshot.status == "valid"
-    assert snapshot.document_count == 3
+    assert snapshot.document_count == 4
     assert snapshot.issues == ()
 
 
 def test_direct_binding_in_manifest_is_invalid(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
-    contract, inventory, manifest = _valid_documents()
+    contract, inventory, manifest, navigation = _valid_documents()
     manifest["spec"]["views"][0]["modules"][0]["bindings"]["entity_id"] = (
         "sensor.forbidden"
     )
@@ -143,6 +165,7 @@ def test_direct_binding_in_manifest_is_invalid(tmp_path: Path) -> None:
     _write_yaml(source_root / "contracts" / "test.yaml", contract)
     _write_yaml(source_root / "inventory" / "test.yaml", inventory)
     _write_yaml(source_root / "manifests" / "test.yaml", manifest)
+    _write_yaml(source_root / "navigation" / "main.yaml", navigation)
 
     snapshot = validate_source_tree(source_root, PACKAGED_SCHEMAS)
     assert snapshot.status == "invalid"
