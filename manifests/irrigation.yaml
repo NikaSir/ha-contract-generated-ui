@@ -4,9 +4,9 @@ metadata:
   id: irrigation
   title: Полив
   version: 0.1.0
-  description: Generated HO-SC-8W application subpanel; controller data remains integration-owned and write actions remain closed until verified.
+  description: Staged generated HO-SC-8W application subpanel; controller data remains integration-owned and write actions remain closed until verified.
 spec:
-  dashboard_path: /dashboard-irrigation
+  dashboard_path: /dashboard-irrigation-generated
   subpanel:
     template: standard_v1
     navigation: main
