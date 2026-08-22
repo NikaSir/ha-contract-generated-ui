@@ -3,13 +3,13 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.5.0
-  description: 'Production infrastructure panel v0.5: shorter operational overview and cleaner diagnostics.'
+  version: 0.6.0
+  description: 'Production infrastructure panel v0.6: compact UPS summaries hand off to the integration-owned Stark SolarPower panel.'
 spec:
   dashboard_path: /dashboard-infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.5
+    title: Инфраструктура · v0.6
     path: overview
     order: 0
     modules:
@@ -39,7 +39,6 @@ spec:
       order: 1
       groups:
       - status
-      - telemetry
       bindings: &ups_internet_bindings
         cloud_telemetry: infrastructure.ups.internet.cloud_telemetry
         data_stale: infrastructure.ups.internet.data_stale
@@ -61,7 +60,6 @@ spec:
       order: 2
       groups:
       - status
-      - telemetry
       bindings: &ups_boiler_bindings
         cloud_telemetry: infrastructure.ups.boiler.cloud_telemetry
         data_stale: infrastructure.ups.boiler.data_stale
@@ -100,24 +98,10 @@ spec:
     path: diagnostics
     order: 1
     modules:
-    - contract: infrastructure.ups
-      instance: ups_internet
-      title: UPS Интернет
-      order: 0
-      groups:
-      - diagnostic
-      bindings: *ups_internet_bindings
-    - contract: infrastructure.ups
-      instance: ups_boiler
-      title: UPS Котёл
-      order: 1
-      groups:
-      - diagnostic
-      bindings: *ups_boiler_bindings
     - contract: infrastructure.keenetic
       instance: keenetic
       title: Keenetic Hero 4G+
-      order: 2
+      order: 0
       groups:
       - diagnostic
       bindings: *keenetic_bindings
