@@ -36,11 +36,22 @@ def _load_object(path: Path) -> dict[str, Any]:
     return document
 
 
+def _dashboard_root(path: str) -> str:
+    parts = path.split("/")
+    parts = [part for part in parts if part]
+    if not parts:
+        raise RenderError(f"invalid dashboard route {path!r}")
+    return f"/{parts[0]}"
+
+
 def _load_navigation_contracts(source_root: Path) -> dict[str, dict[str, Any]]:
     contracts: dict[str, dict[str, Any]] = {}
     for path in _documents(source_root / "navigation"):
         document = _load_object(path)
-        if document.get("api_version") != NAVIGATION_API_VERSION or document.get("kind") != NAVIGATION_KIND:
+        if (
+            document.get("api_version") != NAVIGATION_API_VERSION
+            or document.get("kind") != NAVIGATION_KIND
+        ):
             raise RenderError(f"unexpected navigation document in {path}")
         nav_id = document.get("metadata", {}).get("id")
         if not isinstance(nav_id, str) or not nav_id:
@@ -89,7 +100,9 @@ def _validate_navigation_contract(document: Mapping[str, Any]) -> None:
             )
         view_ids = [tab["view"] for tab in group["tabs"]]
         if len(view_ids) != len(set(view_ids)):
-            raise RenderError(f"navigation {nav_id!r} tab group {group_id!r} has duplicate view ids")
+            raise RenderError(
+                f"navigation {nav_id!r} tab group {group_id!r} has duplicate view ids"
+            )
 
 
 def _view_specs(manifest: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
@@ -124,37 +137,53 @@ def _resolved_subpanel_group(
     navigation = navigation_contracts[nav_id]
     routes = navigation["spec"]["routes"]
     if not isinstance(parent_id, str) or parent_id not in routes:
-        raise RenderError(f"subpanel parent route {parent_id!r} not found in navigation {nav_id!r}")
+        raise RenderError(
+            f"subpanel parent route {parent_id!r} not found in navigation {nav_id!r}"
+        )
 
     metadata = manifest["metadata"]
     spec = manifest["spec"]
     dashboard_path = spec["dashboard_path"]
-    tabs = []
+    parent = routes[parent_id]
+    parent_dashboard = _dashboard_root(parent["path"])
+    embedded = dashboard_path == parent_dashboard
+
+    tabs: list[dict[str, Any]] = []
     for view in sorted(spec["views"], key=lambda item: item["order"]):
         icon = view.get("icon")
         if not isinstance(icon, str) or not icon.startswith("mdi:"):
             raise RenderError(f"subpanel view {view['id']!r} requires an mdi icon")
+        local_path = (
+            f"{metadata['id']}-{view['path']}" if embedded else view["path"]
+        )
         tabs.append(
             {
                 "id": view["id"],
                 "view": view["id"],
                 "title": view["title"],
                 "icon": icon,
-                "path": f"{dashboard_path}/{view['path']}",
+                "local_path": local_path,
+                "path": f"{dashboard_path}/{local_path}",
             }
         )
     if not 2 <= len(tabs) <= 5:
         raise RenderError("generated subpanel requires 2–5 tabs")
 
-    parent = routes[parent_id]
+    version = str(metadata.get("version", "")).lstrip("v")
+    subtitle = parent["title"] + (f" · UI v{version}" if version else "")
     return {
         "id": metadata["id"],
         "title": metadata["title"],
+        "subtitle": subtitle,
         "dashboard_path": dashboard_path,
-        "parent": {"id": parent_id, "title": parent["title"], "path": parent["path"]},
+        "parent": {
+            "id": parent_id,
+            "title": parent["title"],
+            "path": parent["path"],
+        },
         "tabs": tabs,
         "navigation": nav_id,
-        "embedded": False,
+        "embedded": embedded,
     }
 
 
@@ -189,6 +218,7 @@ def _resolved_embedded_groups(
                         "view": view_id,
                         "title": tab["title"],
                         "icon": tab["icon"],
+                        "local_path": view["path"],
                         "path": f"{dashboard_path}/{view['path']}",
                     }
                 )
@@ -196,8 +226,13 @@ def _resolved_embedded_groups(
                 {
                     "id": group["id"],
                     "title": group["title"],
+                    "subtitle": parent["title"],
                     "dashboard_path": dashboard_path,
-                    "parent": {"id": parent_id, "title": parent["title"], "path": parent["path"]},
+                    "parent": {
+                        "id": parent_id,
+                        "title": parent["title"],
+                        "path": parent["path"],
+                    },
                     "tabs": tabs,
                     "navigation": nav_id,
                     "embedded": True,
@@ -220,8 +255,20 @@ def resolved_navigation_groups(
     direct = _resolved_subpanel_group(manifest, navigation_contracts)
     embedded = _resolved_embedded_groups(manifest, navigation_contracts)
     if direct is not None and embedded:
-        raise RenderError("a manifest cannot be both a generated subpanel and host embedded tab groups")
+        raise RenderError(
+            "a manifest cannot be both a generated subpanel and host embedded tab groups"
+        )
     return [direct] if direct is not None else embedded
+
+
+def is_embedded_subpanel_manifest(
+    manifest: Mapping[str, Any],
+    source_root: Path,
+) -> bool:
+    if manifest.get("spec", {}).get("subpanel") is None:
+        return False
+    groups = resolved_navigation_groups(manifest, source_root)
+    return bool(groups and groups[0]["embedded"])
 
 
 def _append_bottom_clearance(view: dict[str, Any]) -> None:
@@ -251,7 +298,7 @@ def apply_navigation_shell(
     manifest: Mapping[str, Any],
     source_root: Path,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Apply native Home Assistant subview/back chrome from declarative navigation data."""
+    """Apply native subview fallback plus data-driven app navigation metadata."""
     groups = resolved_navigation_groups(manifest, source_root)
     if not groups:
         return copy.deepcopy(dashboard), []
@@ -273,16 +320,104 @@ def apply_navigation_shell(
         for tab in group["tabs"]:
             view_id = tab["view"]
             if view_id in claimed:
-                raise RenderError(f"view {view_id!r} belongs to more than one navigation group")
+                raise RenderError(
+                    f"view {view_id!r} belongs to more than one navigation group"
+                )
             claimed.add(view_id)
             view = rendered_by_id.get(view_id)
             if view is None:
-                raise RenderError(f"rendered view {view_id!r} not found for navigation shell")
+                raise RenderError(
+                    f"rendered view {view_id!r} not found for navigation shell"
+                )
+            view["path"] = tab["local_path"]
             view["title"] = group["title"]
             view["subview"] = True
             view["back_path"] = group["parent"]["path"]
             _append_bottom_clearance(view)
     return transformed, groups
+
+
+def _append_launch_card(parent_view: dict[str, Any], group: Mapping[str, Any]) -> None:
+    first_tab = group["tabs"][0]
+    card = {
+        "type": "markdown",
+        "content": (
+            f"<ha-icon icon=\"{first_tab['icon']}\"></ha-icon> "
+            f"### {group['title']}\n\n"
+            f"{group.get('subtitle', '')}\n\n"
+            "**Открыть ›**"
+        ),
+        "tap_action": {
+            "action": "navigate",
+            "navigation_path": first_tab["path"],
+        },
+        "grid_options": {"columns": "full"},
+    }
+    if parent_view.get("type") == "sections":
+        sections = parent_view.get("sections")
+        if not isinstance(sections, list):
+            raise RenderError("parent Sections view has no sections")
+        sections.append({"type": "grid", "cards": [card]})
+        return
+    if parent_view.get("type") == "masonry":
+        cards = parent_view.get("cards")
+        if not isinstance(cards, list):
+            raise RenderError("parent Masonry view has no cards")
+        cards.append(card)
+        return
+    raise RenderError(f"unsupported parent view type {parent_view.get('type')!r}")
+
+
+def embed_subpanel_dashboard(
+    host_dashboard: Mapping[str, Any],
+    host_manifest: Mapping[str, Any],
+    child_dashboard: Mapping[str, Any],
+    group: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Embed one generated application subpanel into its logical parent dashboard."""
+    if not group.get("embedded"):
+        raise RenderError("cannot embed a standalone subpanel group")
+    host_path = host_manifest.get("spec", {}).get("dashboard_path")
+    if host_path != group.get("dashboard_path"):
+        raise RenderError(
+            f"subpanel {group.get('id')!r} targets {group.get('dashboard_path')!r}, not host {host_path!r}"
+        )
+
+    transformed = copy.deepcopy(host_dashboard)
+    host_views = transformed.get("views")
+    child_views = child_dashboard.get("views")
+    if not isinstance(host_views, list) or not isinstance(child_views, list):
+        raise RenderError("embedded subpanel requires host and child views")
+
+    parent_path = group["parent"]["path"]
+    prefix = f"{host_path}/"
+    if not parent_path.startswith(prefix):
+        raise RenderError(
+            f"subpanel parent {parent_path!r} is outside host dashboard {host_path!r}"
+        )
+    parent_view_path = parent_path[len(prefix):]
+    parent_view = next(
+        (view for view in host_views if view.get("path") == parent_view_path),
+        None,
+    )
+    if parent_view is None:
+        raise RenderError(
+            f"subpanel {group['id']!r} parent view {parent_view_path!r} not found in {host_path!r}"
+        )
+
+    existing_paths = {view.get("path") for view in host_views}
+    child_paths = [view.get("path") for view in child_views]
+    conflicts = sorted(
+        path for path in child_paths if isinstance(path, str) and path in existing_paths
+    )
+    if conflicts:
+        raise RenderError(
+            f"embedded subpanel {group['id']!r} view path conflict: {', '.join(conflicts)}"
+        )
+
+    _append_launch_card(parent_view, group)
+    host_views.extend(copy.deepcopy(child_views))
+    return transformed
 
 
 def navigation_shell_engine_sha256(
@@ -329,10 +464,13 @@ def compile_navigation_registry(source_root: Path) -> dict[str, Any]:
     for manifest in manifests:
         for group in resolved_navigation_groups(manifest, source_root):
             if group["id"] in groups:
-                raise RenderError(f"duplicate resolved navigation group id {group['id']!r}")
+                raise RenderError(
+                    f"duplicate resolved navigation group id {group['id']!r}"
+                )
             groups[group["id"]] = {
                 "id": group["id"],
                 "title": group["title"],
+                "subtitle": group.get("subtitle", ""),
                 "dashboard_path": group["dashboard_path"],
                 "parent": group["parent"],
                 "embedded": group["embedded"],
@@ -386,6 +524,8 @@ __all__ = [
     "SUBPANEL_TEMPLATE",
     "apply_navigation_shell",
     "compile_navigation_registry",
+    "embed_subpanel_dashboard",
+    "is_embedded_subpanel_manifest",
     "navigation_shell_engine_sha256",
     "resolved_navigation_groups",
     "write_empty_navigation_registry",
