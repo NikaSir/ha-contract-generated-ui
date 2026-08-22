@@ -11,11 +11,17 @@ from typing import Any, Mapping
 import yaml
 
 from . import runtime_renderer as base
+from .runtime_house import (
+    HOUSE_RENDERER,
+    _layout_engine_sha256 as _house_layout_engine_sha256,
+    render_house_dashboard,
+)
 
 RuntimeRenderError = base.RuntimeRenderError
 GeneratedArtifact = base.GeneratedArtifact
 
 GROUP_NAMES = ("status", "telemetry", "diagnostic")
+DEFAULT_RENDERER = "operational_v1"
 MAX_SECTION_COLUMNS = 2
 STATUS_GRID_COLUMNS = 6
 TELEMETRY_GRID_COLUMNS = 4
@@ -121,6 +127,23 @@ def _diagnostic_entities_card(
     if selected_groups != ("diagnostic",):
         card["title"] = "Диагностика"
     return card
+
+
+def _manifest_renderer(manifest: Mapping[str, Any]) -> str:
+    views = manifest.get("spec", {}).get("views")
+    if not isinstance(views, list) or not views:
+        raise RuntimeRenderError("panel manifest has no views")
+    renderers: set[str] = set()
+    for view in views:
+        if not isinstance(view, dict):
+            raise RuntimeRenderError("panel manifest view must be an object")
+        renderer = view.get("renderer", DEFAULT_RENDERER)
+        if renderer not in {DEFAULT_RENDERER, HOUSE_RENDERER}:
+            raise RuntimeRenderError(f"unsupported view renderer {renderer!r}")
+        renderers.add(renderer)
+    if len(renderers) != 1:
+        raise RuntimeRenderError("mixed view renderers are not supported in one manifest")
+    return renderers.pop()
 
 
 def _operational_dashboard(
@@ -323,17 +346,26 @@ def render_all_manifests(
             inventory,
             snapshot_ids=snapshot_ids,
         )
-        dashboard = _operational_dashboard(dashboard, base_trace, contracts, manifest)
-        trace = _filter_trace(base_trace, contracts, manifest)
+        renderer = _manifest_renderer(manifest)
+        if renderer == HOUSE_RENDERER:
+            dashboard = render_house_dashboard(dashboard, base_trace, manifest)
+            trace = copy.deepcopy(base_trace)
+            trace["renderer_engine_sha256"] = _house_layout_engine_sha256(
+                base_trace["renderer_engine_sha256"]
+            )
+        else:
+            dashboard = _operational_dashboard(dashboard, base_trace, contracts, manifest)
+            trace = _filter_trace(base_trace, contracts, manifest)
+            trace["renderer_engine_sha256"] = _layout_engine_sha256(
+                base_trace["renderer_engine_sha256"]
+            )
+
         canonical = json.dumps(
             dashboard,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
-        trace["renderer_engine_sha256"] = _layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
         trace["dashboard_sha256"] = hashlib.sha256(canonical).hexdigest()
 
         output_path = generated_root / f"{manifest_id}.yaml"
@@ -356,6 +388,7 @@ def render_all_manifests(
 
 
 __all__ = [
+    "DEFAULT_RENDERER",
     "GeneratedArtifact",
     "RuntimeRenderError",
     "render_all_manifests",
