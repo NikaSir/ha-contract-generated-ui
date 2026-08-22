@@ -11,13 +11,17 @@ Integration-owned dashboards must behave and look like mobile applications insid
 The content and domain workflow remain integration-specific, but the application shell is shared:
 
 1. compact top Header;
-2. scrollable domain content;
-3. full-width fixed bottom Tab Bar for primary in-app navigation.
+2. optional persistent Device Selector when one application owns multiple peer physical devices of the same type;
+3. scrollable domain content;
+4. full-width fixed bottom Tab Bar for primary in-app navigation.
 
-The navigation model is app-like:
+The navigation model is app-like and separates three different questions:
 
-- Header Back = exit the specialized application to its declared parent surface;
-- Bottom Tab Bar = move between the main sections of the current specialized application.
+- Header Back = **where do I exit?** — leave the specialized application for its declared parent surface;
+- Device Selector = **which physical device am I looking at?**;
+- Bottom Tab Bar = **what aspect of that device am I looking at?** — move between the main sections of the current specialized application.
+
+These navigation levels must not be mixed.
 
 ## 2. Required top Header
 
@@ -143,9 +147,110 @@ If Failover becomes a full independent workflow, Keenetic may use five tabs:
 
 `Обзор · WAN/LTE · Failover · Трафик · Диагн.`
 
-## 5. Screen hierarchy
+## 5. Multi-device context — Device Selector
+
+If one integration-owned application serves **multiple peer physical devices of the same type**, device selection becomes a separate persistent navigation level.
+
+Required hierarchy:
+
+```text
+HEADER
+↓
+DEVICE SELECTOR
+↓
+CONTENT OF SELECTED DEVICE
+↓
+BOTTOM TAB BAR
+```
+
+The Device Selector answers **which device?**. The Bottom Tab Bar answers **which section?**. They must remain independent.
+
+### 5.1 Placement and persistence
+
+The Device Selector:
+
+- is located immediately below the Header on every primary section;
+- remains in the same geometric position when the Bottom Tab Bar section changes;
+- keeps a fixed device order;
+- never moves the selected device to the first position;
+- marks selection only through active-state presentation;
+- preserves the selected device when moving between Bottom Tab Bar sections during the application session;
+- does not disappear on one section and reappear on another.
+
+### 5.2 Device status in selector
+
+Compact status of non-selected devices may be shown directly in the selector, for example with a small status dot or badge.
+
+This may communicate concise states such as:
+
+- healthy;
+- warning;
+- fault;
+- unreliable/unavailable.
+
+The selector must not turn into a second telemetry panel. Detailed information belongs to the Content area of the selected device.
+
+### 5.3 Content ownership
+
+All primary Content below the Device Selector belongs to **only the selected device**.
+
+Do not render a full operational card for every peer device one after another on each section. That pattern:
+
+- duplicates information;
+- makes mobile pages unnecessarily long;
+- makes the selector semantically meaningless;
+- breaks the mobile-application context model.
+
+Changing the selected device must update the Content in place while preserving the current Bottom Tab Bar section.
+
+### 5.4 Scope
+
+Device Selector is for multiple **peer physical devices** represented by one specialized application.
+
+It is not automatically used for subordinate parts of one device/domain. For example:
+
+- irrigation zones are not peer controller devices;
+- S8 OMNI robot/station parts are one application domain, not two peer vacuums;
+- Ethernet/LTE are WAN channels of one Keenetic, not two peer routers.
+
+If only one physical device exists, no Device Selector is required.
+
+### 5.5 Stark SolarPower reference model
+
+Stark SolarPower is the reference multi-device implementation.
+
+The invariant layout on all three primary sections is:
+
+```text
+┌─────────────────────────────────┐
+│ ←       Stark SolarPower      ⟳ │
+│        UPS · UI vX.X.X          │
+├─────────────────────────────────┤
+│ [ UPS Интернет ] [ UPS Котёл ] │
+├─────────────────────────────────┤
+│                                 │
+│   CONTENT OF SELECTED UPS        │
+│                                 │
+├─────────────────────────────────┤
+│ Обзор │ Диагностика │ История  │
+└─────────────────────────────────┘
+```
+
+Rules:
+
+- `UPS Интернет` and `UPS Котёл` remain in a fixed order;
+- the chosen UPS remains selected when switching `Обзор ↔ Диагностика ↔ История`;
+- status dots may expose the health of both UPS without expanding both devices;
+- `Обзор` renders one complete card for the selected UPS only;
+- `Диагностика` renders technical data for the selected UPS only;
+- `История` renders graphs/events for the selected UPS only;
+- no second full UPS block is appended below the selected one.
+
+## 6. Screen hierarchy
 
 The first screen must prioritize current domain state, not navigation chrome.
+
+Single-device application:
 
 ```text
 HEADER
@@ -159,9 +264,25 @@ DOMAIN CONTENT
 BOTTOM TAB BAR
 ```
 
+Multi-device application:
+
+```text
+HEADER
+↓
+DEVICE SELECTOR
+↓
+PRIMARY STATUS OF SELECTED DEVICE
+↓
+FREQUENT ACTIONS / KEY TELEMETRY
+↓
+DOMAIN CONTENT OF SELECTED DEVICE
+↓
+BOTTOM TAB BAR
+```
+
 The user should understand the current operating state within a few seconds of opening the application.
 
-## 6. Mobile-first rules
+## 7. Mobile-first rules
 
 Acceptance is performed first on **iPhone Pro Max portrait**.
 
@@ -171,13 +292,14 @@ Required:
 - no clipped primary labels;
 - one-handed reachability for frequent navigation/actions;
 - Header remains compact;
+- Device Selector remains compact and does not displace primary status below the first useful viewport without justification;
 - Bottom Tab Bar does not hide content;
 - page has enough bottom clearance for the final card to scroll above the bar;
 - iOS safe areas are respected;
 - dark/light themes remain readable;
 - desktop/iPad layouts are adaptations of the accepted mobile hierarchy, not the source design.
 
-## 7. Entity/action behavior
+## 8. Entity/action behavior
 
 The shared shell must not weaken domain safety.
 
@@ -187,11 +309,11 @@ The shared shell must not weaken domain safety.
 - `unknown` / `unavailable` never mean healthy;
 - direct controls are exposed only through stable public APIs of the owning integration;
 - long press on factual entity-backed domain elements should open normal Home Assistant more-info where appropriate;
-- Header and Bottom Tab Bar themselves must never trigger entity/device actions.
+- Header, Device Selector and Bottom Tab Bar themselves must never trigger unrelated entity/device actions.
 
-## 8. Navigation metadata
+## 9. Navigation metadata
 
-Conceptual example:
+Conceptual single-device example:
 
 ```yaml
 panel:
@@ -213,9 +335,19 @@ panel:
     floating: false
 ```
 
+Conceptual multi-device addition:
+
+```yaml
+  device_context:
+    selector: persistent_below_header
+    preserve_across_views: true
+    reorder_selected: false
+    content_scope: selected_device_only
+```
+
 `icon` remains navigation/brand metadata. `show_brand_icon: false` defines the Header presentation.
 
-## 9. Application-specific corrections
+## 10. Application-specific corrections
 
 ### Stark SolarPower
 
@@ -223,8 +355,15 @@ panel:
 - center `Stark SolarPower` geometrically in the viewport;
 - keep `UPS · UI v…` as secondary centered text;
 - keep Back on the left and Refresh on the right;
-- retain the current full-width fixed bottom Tab Bar (`Обзор · Диагностика · История`);
-- retain the strong UPS operating-state cards and power-flow visualization.
+- keep `UPS Интернет / UPS Котёл` as a persistent Device Selector directly below Header on **Обзор**, **Диагностика** and **История**;
+- preserve the selected UPS when switching bottom tabs;
+- keep the selector device order fixed and use only active-state to indicate selection;
+- status dots/badges may expose health of the non-selected UPS;
+- `Обзор` shows one full operating-state/power-flow card for the selected UPS only;
+- `Диагностика` continues its current selected-UPS information architecture;
+- `История` shows graphs/events for the selected UPS only;
+- do not append a second full UPS card/history block below the selected device;
+- retain the full-width fixed bottom Tab Bar (`Обзор · Диагностика · История`).
 
 ### S8 OMNI
 
@@ -232,7 +371,8 @@ panel:
 - center `S8 OMNI` in the viewport;
 - no decorative robot/integration icon in the Header;
 - keep the full-width fixed bottom navigation (`Обзор · Уборка · Станция · Сервис · Диагн.`);
-- keep composite robot + station state as the hero information.
+- keep composite robot + station state as the hero information;
+- no Device Selector is required while the application owns one S8 OMNI system.
 
 ### HO-SC-8W irrigation
 
@@ -241,7 +381,8 @@ panel:
 - move model/version to secondary text;
 - remove the decorative droplet from the Header itself;
 - keep droplet/sprinkler iconography inside status/navigation content where useful;
-- keep primary navigation in the full-width fixed bottom Tab Bar (`Обзор · Зоны · Программы · Диагн.`).
+- keep primary navigation in the full-width fixed bottom Tab Bar (`Обзор · Зоны · Программы · Диагн.`);
+- zones are subordinate channels of one controller and must not be treated as peer devices by the Device Selector rule.
 
 ### Keenetic Hero 4G+
 
@@ -249,9 +390,10 @@ panel:
 - Back on the left, centered title, optional Refresh/overflow on the right;
 - no router icon beside the Header title;
 - full-width fixed bottom navigation;
-- first screen prioritizes Internet / active WAN / Ethernet / LTE / recent failover, not system diagnostics.
+- first screen prioritizes Internet / active WAN / Ethernet / LTE / recent failover, not system diagnostics;
+- Ethernet/LTE are channels of one router and do not constitute a Device Selector.
 
-## 10. Acceptance criteria
+## 11. Acceptance criteria
 
 An integration-owned dashboard is UI-complete only when:
 
@@ -265,9 +407,13 @@ An integration-owned dashboard is UI-complete only when:
 - the bottom bar is edge-attached, not floating;
 - the active tab is unambiguous;
 - the final content scrolls above the bottom bar;
+- if multiple peer devices exist, Device Selector is persistent directly below Header on all primary sections;
+- selected device is preserved across section changes;
+- device order never changes because of selection;
+- primary Content belongs only to the selected peer device rather than duplicating full blocks for every device;
 - `unknown` / `unavailable` remain visibly unreliable;
-- no navigation element can accidentally execute a domain action.
+- no navigation element can accidentally execute an unrelated domain action.
 
 ## Project rule
 
-> Integration-owned dashboards are mobile applications inside Home Assistant: explicit Back at top, geometrically centered application title, no decorative Header icon, domain content in the middle, and a full-width fixed Bottom Tab Bar for primary internal navigation.
+> Integration-owned dashboards are mobile applications inside Home Assistant: explicit Back at top, geometrically centered application title, no decorative Header icon, optional persistent Device Selector for peer physical devices, domain content scoped to the selected device, and a full-width fixed Bottom Tab Bar for primary internal navigation.
