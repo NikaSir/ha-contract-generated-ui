@@ -21,6 +21,12 @@ from .runtime_app_shell import (
     append_app_shell,
     manifest_app_shell_config,
 )
+from .runtime_render_infrastructure_summary import (
+    SUMMARY_RENDERER,
+    _filter_trace as _infrastructure_summary_filter_trace,
+    _layout_engine_sha256 as _infrastructure_summary_layout_engine_sha256,
+    _summary_dashboard as _infrastructure_summary_dashboard,
+)
 
 base = operational.base
 RuntimeRenderError = base.RuntimeRenderError
@@ -30,6 +36,7 @@ SUPPORTED_RENDERERS = frozenset({
     operational.DEFAULT_RENDERER,
     operational.HOUSE_RENDERER,
     ACTIONS_RENDERER,
+    SUMMARY_RENDERER,
 })
 
 
@@ -98,6 +105,12 @@ def render_all_manifests(
             )
             trace = copy.deepcopy(base_trace)
             trace["renderer_engine_sha256"] = operational._house_layout_engine_sha256(
+                base_trace["renderer_engine_sha256"]
+            )
+        elif renderer == SUMMARY_RENDERER:
+            dashboard = _infrastructure_summary_dashboard(dashboard, base_trace)
+            trace = _infrastructure_summary_filter_trace(base_trace)
+            trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
                 base_trace["renderer_engine_sha256"]
             )
         else:

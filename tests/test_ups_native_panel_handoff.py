@@ -49,7 +49,7 @@ def test_ups_contract_hands_detail_ui_to_stark_panel() -> None:
     assert "output_voltage" in groups["diagnostic"]
 
 
-def test_infrastructure_is_single_overview_with_integration_owned_diagnostics() -> None:
+def test_infrastructure_is_single_summary_overview_with_owned_diagnostics() -> None:
     manifest = _load(ROOT / "manifests" / "infrastructure.yaml")
     bundled = _load(
         ROOT
@@ -61,11 +61,12 @@ def test_infrastructure_is_single_overview_with_integration_owned_diagnostics() 
     )
 
     assert manifest == bundled
-    assert manifest["metadata"]["version"] == "0.7.0"
+    assert manifest["metadata"]["version"] == "0.8.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
 
     views = {view["id"]: view for view in manifest["spec"]["views"]}
     assert set(views) == {"overview"}
+    assert views["overview"]["renderer"] == "infrastructure_summary_v1"
 
     overview_ups = [
         module
