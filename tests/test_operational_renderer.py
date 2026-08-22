@@ -52,8 +52,10 @@ def _trace() -> dict:
         "semantics": {
             "views": [
                 {
+                    "id": "overview",
                     "modules": [
                         {
+                            "instance": "test",
                             "contract": "infra.test",
                             "roles": [
                                 {
@@ -76,7 +78,7 @@ def _trace() -> dict:
                                 },
                             ],
                         }
-                    ]
+                    ],
                 }
             ]
         }
