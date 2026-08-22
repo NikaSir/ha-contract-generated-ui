@@ -67,6 +67,7 @@ An integration-owned dashboard should expose stable metadata that can be consume
 - owner/integration id;
 - optional sidebar visibility;
 - optional preferred entry view;
+- unified header metadata including a stable canonical Back route;
 - compatibility/version metadata where required.
 
 Conceptual example:
@@ -79,9 +80,37 @@ panel:
   icon: mdi:sprinkler
   owner: ha-ho-sc-8w
   expose_in_generated_ui: true
+  header:
+    back:
+      label: Назад
+      icon: mdi:arrow-left
+      parent_path: /dashboard-actions
 ```
 
 This metadata describes navigation. It does not give `ha-contract-generated-ui` ownership of the specialized panel contents.
+
+#### 4.1 Unified specialized-dashboard header
+
+Every integration-owned specialized dashboard must use a common compact header pattern:
+
+- left-side **Назад** control using `mdi:arrow-left`;
+- concise dashboard title;
+- consistent touch geometry suitable for iPhone Pro Max portrait;
+- explicit Home Assistant `navigate` action to the declared canonical parent route;
+- no domain/service action on header long press or double tap.
+
+The canonical Back behavior **must not depend on browser history**. Specialized panels can be opened from house-wide dashboards, notifications, sidebar entries or direct links, so browser history is not a deterministic application-navigation contract.
+
+Initial canonical parents are:
+
+- HO-SC-8W irrigation → `/dashboard-actions`;
+- S8 OMNI vacuum → `/dashboard-actions`;
+- Keenetic Hero 4G+ → `/dashboard-infrastructure/overview`;
+- Stark SolarPower UPS → `/dashboard-infrastructure/overview`.
+
+The header is required on every top-level view of the specialized dashboard, while internal tabs/views remain responsible for navigation inside that dashboard.
+
+The full visual and acceptance standard is defined in [Integration dashboard unified header standard](INTEGRATION_DASHBOARD_HEADER_STANDARD.md).
 
 ### 5. Runtime and release boundary
 
@@ -98,13 +127,15 @@ Specialized dashboard code/configuration is released with its owning integration
 - central panels remain compact and operational;
 - device-specific UI can closely match the natural workflow of the device or vendor application;
 - release/version compatibility is easier to reason about;
-- failures and `unknown`/`unavailable` semantics remain owned by the integration that understands them.
+- failures and `unknown`/`unavailable` semantics remain owned by the integration that understands them;
+- every specialized dashboard has a predictable return path and a visually consistent mobile entry point.
 
 ### Costs
 
 - integrations with rich domains must maintain dashboard code/configuration in addition to entities;
 - a common navigation metadata contract is required;
-- visual consistency must be maintained through shared project rules rather than a single renderer owning every screen.
+- visual consistency must be maintained through shared project rules rather than a single renderer owning every screen;
+- canonical parent routes must be treated as stable application-navigation API.
 
 ## Initial implementation order
 
@@ -116,4 +147,4 @@ Specialized dashboard code/configuration is released with its owning integration
 
 ## Project rule
 
-> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation, and links into those specialized dashboards.
+> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation, and links into those specialized dashboards. Every specialized dashboard uses the project-standard header with an explicit stable Back route.
