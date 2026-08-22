@@ -1,3 +1,7 @@
+const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
+const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
+if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = true;
+
 const BAR_ID = "nikas-global-tabbar";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 
@@ -49,9 +53,7 @@ function registrySubpanelModel(pathname) {
   for (const group of groups) {
     if (!group || !Array.isArray(group.tabs) || !group.tabs.length) continue;
     const active = group.tabs.find(
-      (tab) =>
-        pathname === tab.path ||
-        pathname.startsWith(`${tab.path}/`)
+      (tab) => pathname === tab.path || pathname.startsWith(`${tab.path}/`)
     );
     if (active) {
       return {
@@ -60,10 +62,7 @@ function registrySubpanelModel(pathname) {
         items: group.tabs,
       };
     }
-    if (
-      !group.embedded &&
-      pathname === group.dashboard_path
-    ) {
+    if (!group.embedded && pathname === group.dashboard_path) {
       return {
         mode: `subpanel:${group.id}`,
         active: group.tabs[0].id,
@@ -264,8 +263,7 @@ async function loadNavigationRegistry() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const candidate = await response.json();
     if (
-      candidate?.api_version !==
-        "nikas.home-assistant/navigation-registry/v1" ||
+      candidate?.api_version !== "nikas.home-assistant/navigation-registry/v1" ||
       !Array.isArray(candidate.global_tabs) ||
       !Array.isArray(candidate.subpanels)
     ) {
@@ -279,27 +277,29 @@ async function loadNavigationRegistry() {
   scheduleSync();
 }
 
-window.addEventListener("location-changed", scheduleSync);
-window.addEventListener("popstate", scheduleSync);
-window.addEventListener("pageshow", scheduleSync);
+if (SHOULD_BOOTSTRAP) {
+  window.addEventListener("location-changed", scheduleSync);
+  window.addEventListener("popstate", scheduleSync);
+  window.addEventListener("pageshow", scheduleSync);
 
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-      scheduleSync();
-      loadNavigationRegistry();
-    },
-    { once: true }
-  );
-} else {
-  scheduleSync();
-  loadNavigationRegistry();
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        scheduleSync();
+        loadNavigationRegistry();
+      },
+      { once: true }
+    );
+  } else {
+    scheduleSync();
+    loadNavigationRegistry();
+  }
+
+  // Legacy custom-card modules remain a migration fallback only. Generated
+  // subpanels use native Home Assistant views plus this data-driven tab overlay.
+  Promise.allSettled([
+    import("./nikas-app-shell.js"),
+    import("./nikas-infrastructure-summary.js"),
+  ]);
 }
-
-// Legacy custom-card modules remain a migration fallback only. Generated
-// subpanels use native Home Assistant views plus this data-driven tab overlay.
-Promise.allSettled([
-  import("./nikas-app-shell.js"),
-  import("./nikas-infrastructure-summary.js"),
-]);

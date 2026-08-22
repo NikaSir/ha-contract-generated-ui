@@ -23,6 +23,7 @@ async def async_setup_entry(
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
     """Set up Contract Generated UI from a config entry."""
+    from homeassistant.components.frontend import add_extra_js_url
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
@@ -39,6 +40,7 @@ async def async_setup_entry(
         NAVIGATION_REGISTRY_STATIC_PATH,
         SOURCE_DIRECTORY,
         UI_BUNDLE_FILENAME,
+        UI_BUNDLE_MODULE_URL,
         UI_BUNDLE_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
@@ -98,6 +100,11 @@ async def async_setup_entry(
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
+    # The navigation bundle is progressive enhancement only: central and generated
+    # dashboards remain native Lovelace if it loads late. Auto-loading here removes
+    # the manual Lovelace-resource dependency while preserving race-proof content.
+    add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
+
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
@@ -114,9 +121,18 @@ async def async_unload_entry(
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
     """Unload a Contract Generated UI config entry."""
+    from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
-    return await hass.config_entries.async_unload_platforms(
+    from .const import UI_BUNDLE_MODULE_URL
+
+    unloaded = await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
+    if unloaded:
+        try:
+            remove_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
+        except KeyError:
+            pass
+    return unloaded

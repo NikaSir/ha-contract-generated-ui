@@ -4,9 +4,19 @@ Home Assistant 2026 can construct Lovelace before a late `custom:` element is re
 
 The frontend bundle is progressive enhancement for fixed navigation only.
 
-## Resource
+## Automatic loading — v0.19.0_b002+
 
-Add once under the existing `lovelace:` block:
+Starting with internal build **v0.19.0_b002**, Contract Generated UI **автоматически** registers the navigation bundle through Home Assistant `frontend.add_extra_js_url()` after its static paths are ready.
+
+The auto-loaded URL is build-versioned for cache invalidation:
+
+```text
+/contract_generated_ui/frontend/nikas-ui.js?build=b002
+```
+
+This removes the manual Lovelace-resource dependency for the Bottom Tab Bar. Because dashboard content is native Lovelace, late frontend loading cannot turn the dashboard into `Configuration error`; at worst the navigation overlay appears a little later.
+
+If an older installation already contains this manual resource:
 
 ```yaml
 lovelace:
@@ -15,7 +25,7 @@ lovelace:
       type: module
 ```
 
-Keep existing `lovelace.dashboards:` entries alongside `resources:`.
+it may be removed after upgrading to b002. Existing `lovelace.dashboards:` entries must be preserved.
 
 ## Data-driven navigation
 
@@ -49,4 +59,4 @@ Generated subpanel views use Home Assistant `subview: true` plus explicit `back_
 
 `nikas-app-shell.js` and `nikas-infrastructure-summary.js` remain loaded through `Promise.allSettled` only as migration fallback for already-generated older dashboards. New generated subpanels do not depend on them.
 
-After adding the resource initially, validate configuration and fully restart Home Assistant. After a Contract Generated UI update, regenerate dashboards so YAML and `navigation.json` are synchronized.
+After a Contract Generated UI update, fully restart Home Assistant and regenerate dashboards so YAML and `navigation.json` are synchronized.
