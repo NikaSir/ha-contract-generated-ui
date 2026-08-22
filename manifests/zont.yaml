@@ -3,10 +3,10 @@ kind: PanelManifest
 metadata:
   id: zont
   title: ZONT
-  version: 0.2.0
-  description: Embedded generated subpanel shell demonstration; domain content intentionally deferred.
+  version: 0.3.0
+  description: Shared generated application-panel demonstration; domain content intentionally deferred.
 spec:
-  dashboard_path: /dashboard-house
+  dashboard_path: /dashboard-zont
   subpanel:
     template: standard_v1
     navigation: main

@@ -57,40 +57,48 @@ def test_release_version_and_schema_are_packaged() -> None:
     }
 
 
-def test_frontend_bundle_is_progressive_enhancement_and_auto_loaded() -> None:
+def test_frontend_bundle_and_shared_generated_panel_host_are_packaged() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
+    panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
+
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
-    assert 'const HEADER_ID = "nikas-generated-subpanel-header"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
     assert "position:fixed" in bundle
     assert 'window.addEventListener("location-changed"' in bundle
     assert "Promise.allSettled" in bundle
-    assert "createHeader" in bundle
-    assert "mdi:arrow-left" in bundle
-    assert "mdi:refresh" in bundle
     assert 'import("./nikas-app-shell.js")' in bundle
     assert 'import("./nikas-infrastructure-summary.js")' in bundle
+
+    assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
+    assert "mdi:arrow-left" in panel_bundle
+    assert "mdi:refresh" in panel_bundle
+    assert "position:fixed" in panel_bundle
+    assert "safe-area-inset-bottom" in panel_bundle
+    assert "ZONT" not in panel_bundle
+    assert "StarLine" not in panel_bundle
 
     const_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "const.py"
     ).read_text(encoding="utf-8")
     assert 'UI_BUNDLE_FILENAME = "nikas-ui.js"' in const_source
-    assert 'UI_BUNDLE_STATIC_PATH = f"/{DOMAIN}/frontend/{UI_BUNDLE_FILENAME}"' in const_source
-    assert 'UI_BUNDLE_BUILD = "b003"' in const_source
-    assert 'UI_BUNDLE_MODULE_URL = f"{UI_BUNDLE_STATIC_PATH}?build={UI_BUNDLE_BUILD}"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b004"' in const_source
+    assert 'GENERATED_SUBPANEL_FILENAME = "nikas-generated-subpanel.js"' in const_source
+    assert 'GENERATED_SUBPANEL_BUILD = "b004"' in const_source
+    assert "GENERATED_SUBPANEL_MODULE_URL" in const_source
     assert 'NAVIGATION_REGISTRY_FILENAME = "navigation.json"' in const_source
 
     init_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "__init__.py"
     ).read_text(encoding="utf-8")
-    assert "UI_BUNDLE_STATIC_PATH" in init_source
-    assert "UI_BUNDLE_FILENAME" in init_source
-    assert "UI_BUNDLE_MODULE_URL" in init_source
-    assert "NAVIGATION_REGISTRY_STATIC_PATH" in init_source
+    assert "GENERATED_SUBPANEL_STATIC_PATH" in init_source
+    assert "GENERATED_SUBPANEL_FILENAME" in init_source
+    assert "async_register_generated_subpanels" in init_source
+    assert "strip_standalone_navigation_groups" in init_source
     assert "add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
     assert "remove_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
 
     doc = (ROOT / "docs" / "FRONTEND_RESOURCE.md").read_text(encoding="utf-8")
     assert "автоматически" in doc.lower()
-    assert "b003" in doc
+    assert "b004" in doc
+    assert "nikas-generated-subpanel.js" in doc

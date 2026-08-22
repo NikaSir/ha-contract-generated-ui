@@ -10,8 +10,6 @@ from typing import Any, Iterable
 
 import yaml
 
-from .runtime_subpanel_shell import is_embedded_subpanel_manifest
-
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 SNIPPET_FILENAME = "lovelace_configuration_snippet.yaml"
 
@@ -65,7 +63,7 @@ def write_lovelace_registration_snippet(
     source_root: Path,
     generated_root: Path,
 ) -> RegistrationExport:
-    """Write a deterministic, non-applied `lovelace:` configuration snippet."""
+    """Write deterministic registration for CGUI-owned Lovelace dashboards only."""
     dashboards: dict[str, dict[str, Any]] = {}
     manifest_paths = list(_documents(source_root / "manifests"))
     if not manifest_paths:
@@ -80,15 +78,13 @@ def write_lovelace_registration_snippet(
         metadata = manifest.get("metadata")
         spec = manifest.get("spec")
         if not isinstance(metadata, dict) or not isinstance(spec, dict):
-            raise RuntimeRegistrationError(
-                f"manifest metadata/spec missing in {manifest_path}"
-            )
+            raise RuntimeRegistrationError(f"manifest metadata/spec missing in {manifest_path}")
 
-        try:
-            if is_embedded_subpanel_manifest(manifest, source_root):
-                continue
-        except ValueError as err:
-            raise RuntimeRegistrationError(str(err)) from err
+        # Application subpanels are registered dynamically through the shared
+        # Contract Generated UI custom-panel host. They must never require a
+        # manual `lovelace.dashboards` entry in configuration.yaml.
+        if spec.get("subpanel") is not None:
+            continue
 
         manifest_id = metadata.get("id")
         title = metadata.get("title")
@@ -110,25 +106,23 @@ def write_lovelace_registration_snippet(
                 f"Home Assistant YAML dashboard url path must contain a hyphen: {url_path!r}"
             )
         if url_path in dashboards:
-            raise RuntimeRegistrationError(
-                f"duplicate dashboard url path {url_path!r}"
-            )
+            raise RuntimeRegistrationError(f"duplicate dashboard url path {url_path!r}")
 
         filename = f"{source_root.name}/{generated_root.name}/{manifest_id}.yaml"
         dashboards[url_path] = {
             "mode": "yaml",
             "filename": filename,
             "title": title,
-            "show_in_sidebar": spec.get("subpanel") is None,
+            "show_in_sidebar": True,
             "require_admin": False,
         }
 
     document = {"lovelace": {"dashboards": dashboards}}
     header = (
         "# Contract Generated UI — registration snippet only.\n"
-        "# Embedded subpanels are composed into their parent dashboard and are not registered separately.\n"
         "# Merge this with any existing top-level `lovelace:` configuration;\n"
         "# do not replace existing Lovelace resources or dashboards blindly.\n"
+        "# Generated application subpanels are registered automatically.\n"
         "# Home Assistant must reload/restart after configuration.yaml changes.\n"
     )
     text = header + yaml.safe_dump(document, allow_unicode=True, sort_keys=False)
