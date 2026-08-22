@@ -102,7 +102,7 @@ def write_lovelace_registration_snippet(
             "mode": "yaml",
             "filename": filename,
             "title": title,
-            "show_in_sidebar": True,
+            "show_in_sidebar": spec.get("subpanel") is None,
             "require_admin": False,
         }
 

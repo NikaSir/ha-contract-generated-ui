@@ -1,0 +1,29 @@
+api_version: nikas.home-assistant/panel-manifest/v1
+kind: PanelManifest
+metadata:
+  id: example-subpanel
+  title: Example
+  version: 0.1.0
+spec:
+  dashboard_path: /dashboard-example
+  subpanel:
+    template: standard_v1
+    navigation: main
+    parent: home
+  views:
+    - id: overview
+      title: Обзор
+      icon: mdi:view-dashboard-outline
+      path: overview
+      order: 0
+      renderer: subpanel_placeholder_v1
+      placeholder: Replace this with a verified domain contract later.
+      modules: []
+    - id: service
+      title: Сервис
+      icon: mdi:stethoscope
+      path: service
+      order: 1
+      renderer: subpanel_placeholder_v1
+      placeholder: Service placeholder.
+      modules: []

@@ -1,12 +1,12 @@
 # NikaS frontend resource
 
-Home Assistant 2026 has open frontend races around `custom:` Lovelace elements: both `add_extra_js_url()` modules and ordinary Lovelace resources can be loaded after the dashboard has already started constructing custom cards. A late element can therefore leave a permanent `Configuration error` until the view happens to rebuild.
+Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central and generated subpanel content therefore stays usable without frontend custom cards.
 
-NikaS central dashboards no longer rely on custom Lovelace cards for their primary content. Infrastructure summaries are rendered with the native Home Assistant Markdown card and the dashboard reserves bottom clearance with a native borderless Markdown spacer.
+The frontend bundle is progressive enhancement for fixed navigation only.
 
-The frontend bundle is retained only as progressive enhancement for the fixed NikaS bottom navigation. If the bundle loads late, the native dashboard remains fully usable; only the bottom bar can appear a little later. No Lovelace `custom:` card depends on the bundle in the v0.11+ Infrastructure dashboard.
+## Resource
 
-Add this once under the existing `lovelace:` block in `configuration.yaml`:
+Add once under the existing `lovelace:` block:
 
 ```yaml
 lovelace:
@@ -15,12 +15,38 @@ lovelace:
       type: module
 ```
 
-Keep existing `lovelace.dashboards:` entries alongside `resources:`. The URL is intentionally stable and does not need to change for later releases.
+Keep existing `lovelace.dashboards:` entries alongside `resources:`.
 
-`nikas-ui.js`:
+## Data-driven navigation
 
-- injects the fixed `Дом · Действия · Инфра` navigation as a global overlay outside Lovelace card construction;
-- listens for Home Assistant route changes and updates the active central surface;
-- keeps legacy custom-card modules available only as a migration fallback for already-generated older dashboards.
+Contract Generated UI `0.19+` compiles the formal navigation contract and panel manifests into:
 
-After initially adding the resource, validate configuration and fully restart Home Assistant. For v0.17.0 and later, regenerate the dashboards once so old `custom:nikas-*` cards are replaced by native cards.
+```text
+/config/contract_generated_ui/generated/navigation.json
+```
+
+The integration serves it at:
+
+```text
+/contract_generated_ui/navigation.json
+```
+
+`nikas-ui.js` loads that registry with `cache: no-store` and renders:
+
+- global `Дом · Действия · Инфра` navigation;
+- generated standalone subpanel tabs such as ZONT and StarLine;
+- embedded local tab groups such as the current electricity subpanel.
+
+Subsystem names, parent routes, tab labels, icons and tab URLs are **not** hardcoded in `nikas-ui.js`.
+
+If the registry loads late or cannot be read, native Lovelace content and native subview Back remain usable. Only local progressive-enhancement navigation may appear later; a minimal global fallback is retained.
+
+## Native subpanel header
+
+Generated subpanel views use Home Assistant `subview: true` plus explicit `back_path`. The frontend bundle does not draw a competing Header or implement browser-history Back.
+
+## Legacy modules
+
+`nikas-app-shell.js` and `nikas-infrastructure-summary.js` remain loaded through `Promise.allSettled` only as migration fallback for already-generated older dashboards. New generated subpanels do not depend on them.
+
+After adding the resource initially, validate configuration and fully restart Home Assistant. After a Contract Generated UI update, regenerate dashboards so YAML and `navigation.json` are synchronized.

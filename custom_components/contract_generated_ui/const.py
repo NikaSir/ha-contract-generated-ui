@@ -6,7 +6,7 @@ DOMAIN = "contract_generated_ui"
 NAME = "Contract Generated UI"
 
 SOURCE_DIRECTORY = "contract_generated_ui"
-SOURCE_KINDS = ("contracts", "inventory", "manifests")
+SOURCE_KINDS = ("contracts", "inventory", "manifests", "navigation")
 SOURCE_STATUSES = ("missing", "empty", "incomplete", "valid", "invalid")
 SNAPSHOT_DIRECTORY = "snapshots"
 GENERATED_DIRECTORY = "generated"
@@ -17,6 +17,8 @@ INFRA_SUMMARY_FILENAME = "nikas-infrastructure-summary.js"
 INFRA_SUMMARY_STATIC_PATH = f"/{DOMAIN}/frontend/{INFRA_SUMMARY_FILENAME}"
 UI_BUNDLE_FILENAME = "nikas-ui.js"
 UI_BUNDLE_STATIC_PATH = f"/{DOMAIN}/frontend/{UI_BUNDLE_FILENAME}"
+NAVIGATION_REGISTRY_FILENAME = "navigation.json"
+NAVIGATION_REGISTRY_STATIC_PATH = f"/{DOMAIN}/{NAVIGATION_REGISTRY_FILENAME}"
 FRONTEND_STATIC_REGISTERED = "frontend_static_registered"
 
 SCAN_INTERVAL = timedelta(minutes=1)
@@ -24,6 +26,7 @@ SCAN_INTERVAL = timedelta(minutes=1)
 ATTR_CONTRACTS = "contracts"
 ATTR_INVENTORY = "inventory"
 ATTR_MANIFESTS = "manifests"
+ATTR_NAVIGATION = "navigation"
 ATTR_DOCUMENT_COUNT = "document_count"
 ATTR_ISSUE_COUNT = "issue_count"
 ATTR_ISSUES = "issues"

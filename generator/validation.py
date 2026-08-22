@@ -12,11 +12,12 @@ SCHEMA_BY_DIRECTORY = {
     "contracts": "contract.schema.json",
     "inventory": "inventory.schema.json",
     "manifests": "manifest.schema.json",
+    "navigation": "navigation.schema.json",
     "snapshots": "registry-snapshot.schema.json",
 }
 
 FORBIDDEN_BINDING_KEYS = {"entity_id", "device_id", "area_id"}
-BINDING_FREE_DIRECTORIES = {"contracts", "manifests"}
+BINDING_FREE_DIRECTORIES = {"contracts", "manifests", "navigation"}
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 
 

@@ -148,6 +148,7 @@ def test_repository_validation_routes_documents_to_correct_schema(tmp_path: Path
         "contract.schema.json",
         "inventory.schema.json",
         "manifest.schema.json",
+        "navigation.schema.json",
         "registry-snapshot.schema.json",
     ):
         source = Path("schemas") / schema_name

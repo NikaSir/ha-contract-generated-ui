@@ -1,0 +1,54 @@
+api_version: nikas.home-assistant/panel-manifest/v1
+kind: PanelManifest
+metadata:
+  id: starline
+  title: StarLine
+  version: 0.1.0
+  description: Generated subpanel shell demonstration; domain content intentionally deferred.
+spec:
+  dashboard_path: /dashboard-starline
+  subpanel:
+    template: standard_v1
+    navigation: main
+    parent: house.vehicles
+  views:
+    - id: overview
+      title: Обзор
+      icon: mdi:view-dashboard-outline
+      path: overview
+      order: 0
+      renderer: subpanel_placeholder_v1
+      placeholder: Каркас готов. Предметный контракт StarLine будет подключён отдельной задачей.
+      modules: []
+    - id: security
+      title: Охрана
+      icon: mdi:shield-car
+      path: security
+      order: 1
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Охрана» зарезервирован для реальных сущностей StarLine.
+      modules: []
+    - id: engine
+      title: Двигатель
+      icon: mdi:engine
+      path: engine
+      order: 2
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Двигатель» зарезервирован для реальных сущностей StarLine.
+      modules: []
+    - id: vehicle
+      title: Авто
+      icon: mdi:car
+      path: vehicle
+      order: 3
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Авто» зарезервирован для реальных сущностей StarLine.
+      modules: []
+    - id: service
+      title: Сервис
+      icon: mdi:stethoscope
+      path: service
+      order: 4
+      renderer: subpanel_placeholder_v1
+      placeholder: Раздел «Сервис» зарезервирован для диагностики StarLine.
+      modules: []

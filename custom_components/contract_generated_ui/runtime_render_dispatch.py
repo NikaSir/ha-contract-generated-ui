@@ -27,6 +27,15 @@ from .runtime_render_infrastructure_summary import (
     _layout_engine_sha256 as _infrastructure_summary_layout_engine_sha256,
     _summary_dashboard as _infrastructure_summary_dashboard,
 )
+from .runtime_render_subpanel_placeholder import (
+    PLACEHOLDER_RENDERER,
+    _layout_engine_sha256 as _placeholder_layout_engine_sha256,
+    render_subpanel_placeholder_dashboard,
+)
+from .runtime_subpanel_shell import (
+    apply_navigation_shell,
+    navigation_shell_engine_sha256,
+)
 
 base = operational.base
 RuntimeRenderError = base.RuntimeRenderError
@@ -37,6 +46,7 @@ SUPPORTED_RENDERERS = frozenset({
     operational.HOUSE_RENDERER,
     ACTIONS_RENDERER,
     SUMMARY_RENDERER,
+    PLACEHOLDER_RENDERER,
 })
 
 
@@ -51,6 +61,22 @@ def manifest_renderer(manifest: Mapping[str, Any]) -> str:
         renderer = view.get("renderer", operational.DEFAULT_RENDERER)
         if renderer not in SUPPORTED_RENDERERS:
             raise RuntimeRenderError(f"unsupported view renderer {renderer!r}")
+        modules = view.get("modules")
+        if not isinstance(modules, list):
+            raise RuntimeRenderError("panel manifest view modules must be an array")
+        if renderer == PLACEHOLDER_RENDERER:
+            if modules:
+                raise RuntimeRenderError(
+                    "subpanel_placeholder_v1 views must not bind entity modules"
+                )
+            if not isinstance(view.get("placeholder"), str) or not view["placeholder"].strip():
+                raise RuntimeRenderError(
+                    "subpanel_placeholder_v1 requires placeholder text"
+                )
+        elif not modules:
+            raise RuntimeRenderError(
+                f"renderer {renderer!r} requires at least one entity module"
+            )
         renderers.add(renderer)
     if len(renderers) != 1:
         raise RuntimeRenderError(
@@ -113,6 +139,12 @@ def render_all_manifests(
             trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
                 base_trace["renderer_engine_sha256"]
             )
+        elif renderer == PLACEHOLDER_RENDERER:
+            dashboard = render_subpanel_placeholder_dashboard(dashboard, manifest)
+            trace = copy.deepcopy(base_trace)
+            trace["renderer_engine_sha256"] = _placeholder_layout_engine_sha256(
+                base_trace["renderer_engine_sha256"]
+            )
         else:
             dashboard = operational._operational_dashboard(
                 dashboard,
@@ -124,6 +156,16 @@ def render_all_manifests(
             trace["renderer_engine_sha256"] = operational._layout_engine_sha256(
                 base_trace["renderer_engine_sha256"]
             )
+
+        dashboard, navigation_groups = apply_navigation_shell(
+            dashboard,
+            manifest,
+            source_root,
+        )
+        trace["renderer_engine_sha256"] = navigation_shell_engine_sha256(
+            trace["renderer_engine_sha256"],
+            navigation_groups,
+        )
 
         app_shell_config = manifest_app_shell_config(manifest)
         if app_shell_config is not None:

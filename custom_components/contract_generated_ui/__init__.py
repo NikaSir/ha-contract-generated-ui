@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import logging
 from pathlib import Path
+
+import yaml
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,6 +14,8 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
     from .coordinator import ContractGeneratedUICoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -26,12 +32,42 @@ async def async_setup_entry(
         DOMAIN,
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
+        GENERATED_DIRECTORY,
         INFRA_SUMMARY_FILENAME,
         INFRA_SUMMARY_STATIC_PATH,
+        NAVIGATION_REGISTRY_FILENAME,
+        NAVIGATION_REGISTRY_STATIC_PATH,
+        SOURCE_DIRECTORY,
         UI_BUNDLE_FILENAME,
         UI_BUNDLE_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
+    from .runtime_source_sync import sync_bundled_public_sources
+    from .runtime_subpanel_shell import (
+        write_empty_navigation_registry,
+        write_navigation_registry,
+    )
+
+    source_root = Path(hass.config.path(SOURCE_DIRECTORY))
+    generated_root = source_root / GENERATED_DIRECTORY
+    navigation_registry_path = generated_root / NAVIGATION_REGISTRY_FILENAME
+
+    try:
+        await hass.async_add_executor_job(
+            sync_bundled_public_sources,
+            source_root,
+        )
+        await hass.async_add_executor_job(
+            write_navigation_registry,
+            source_root,
+            navigation_registry_path,
+        )
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
+        _LOGGER.warning("Cannot build NikaS navigation registry during setup: %s", err)
+        await hass.async_add_executor_job(
+            write_empty_navigation_registry,
+            navigation_registry_path,
+        )
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     if not domain_data.get(FRONTEND_STATIC_REGISTERED):
@@ -51,6 +87,11 @@ async def async_setup_entry(
                 StaticPathConfig(
                     UI_BUNDLE_STATIC_PATH,
                     str(frontend_root / UI_BUNDLE_FILENAME),
+                    False,
+                ),
+                StaticPathConfig(
+                    NAVIGATION_REGISTRY_STATIC_PATH,
+                    str(navigation_registry_path),
                     False,
                 ),
             ]

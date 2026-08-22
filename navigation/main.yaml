@@ -1,0 +1,64 @@
+api_version: nikas.home-assistant/navigation/v1
+kind: NavigationContract
+metadata:
+  id: main
+  version: 1.0.0
+  description: Central route and tab ownership for NikaS generated UI.
+spec:
+  routes:
+    home:
+      title: Дом
+      path: /dashboard-house
+    actions:
+      title: Действия
+      path: /dashboard-actions
+    infrastructure:
+      title: Инфраструктура
+      path: /dashboard-infrastructure/overview
+    house.heating:
+      title: Отопление и ГВС
+      path: /dashboard-house/heating
+      parent: home
+    house.vehicles:
+      title: Автомобили
+      path: /dashboard-house/vehicles
+      parent: home
+    house.cleaning:
+      title: Уборка
+      path: /dashboard-house/cleaning
+      parent: home
+    house.irrigation:
+      title: Полив
+      path: /dashboard-house/irrigation
+      parent: home
+  global_tabs:
+    - id: home
+      route: home
+      title: Дом
+      icon: mdi:home-outline
+    - id: actions
+      route: actions
+      title: Действия
+      icon: mdi:lightning-bolt-outline
+    - id: infrastructure
+      route: infrastructure
+      title: Инфра
+      icon: mdi:server-network
+  tab_groups:
+    - id: power
+      title: Электросеть
+      dashboard_path: /dashboard-infrastructure
+      parent: infrastructure
+      tabs:
+        - view: power-overview
+          title: Обзор
+          icon: mdi:view-dashboard-outline
+        - view: power-before
+          title: До стаб.
+          icon: mdi:transmission-tower-import
+        - view: power-after
+          title: После стаб.
+          icon: mdi:transmission-tower-export
+        - view: power-history
+          title: История
+          icon: mdi:chart-line
