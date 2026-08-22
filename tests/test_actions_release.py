@@ -57,7 +57,7 @@ def test_release_version_and_schema_are_packaged() -> None:
     }
 
 
-def test_frontend_bundle_is_progressive_enhancement_not_lovelace_card_dependency() -> None:
+def test_frontend_bundle_is_progressive_enhancement_and_auto_loaded() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
@@ -73,19 +73,20 @@ def test_frontend_bundle_is_progressive_enhancement_not_lovelace_card_dependency
     ).read_text(encoding="utf-8")
     assert 'UI_BUNDLE_FILENAME = "nikas-ui.js"' in const_source
     assert 'UI_BUNDLE_STATIC_PATH = f"/{DOMAIN}/frontend/{UI_BUNDLE_FILENAME}"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b002"' in const_source
+    assert 'UI_BUNDLE_MODULE_URL = f"{UI_BUNDLE_STATIC_PATH}?build={UI_BUNDLE_BUILD}"' in const_source
     assert 'NAVIGATION_REGISTRY_FILENAME = "navigation.json"' in const_source
-    assert "MODULE_VERSION" not in const_source
-    assert "MODULE_URL" not in const_source
 
     init_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "__init__.py"
     ).read_text(encoding="utf-8")
     assert "UI_BUNDLE_STATIC_PATH" in init_source
     assert "UI_BUNDLE_FILENAME" in init_source
+    assert "UI_BUNDLE_MODULE_URL" in init_source
     assert "NAVIGATION_REGISTRY_STATIC_PATH" in init_source
-    assert "add_extra_js_url" not in init_source
-    assert "remove_extra_js_url" not in init_source
+    assert "add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
+    assert "remove_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
 
     doc = (ROOT / "docs" / "FRONTEND_RESOURCE.md").read_text(encoding="utf-8")
-    assert "/contract_generated_ui/frontend/nikas-ui.js" in doc
-    assert "type: module" in doc
+    assert "автоматически" in doc.lower()
+    assert "b002" in doc
