@@ -3,7 +3,7 @@ kind: UIContract
 metadata:
   id: infrastructure.ups
   title: UPS
-  version: 0.1.0
+  version: 0.2.0
 spec:
   roles:
     cloud_telemetry:
@@ -49,37 +49,37 @@ spec:
       allowed_domains:
       - sensor
     battery_voltage:
-      label: Напряжение АКБ
+      label: АКБ U
       description: Напряжение батарейной сборки.
       required: true
       allowed_domains:
       - sensor
     input_voltage:
-      label: Входное напряжение
+      label: Вход U
       description: Входное напряжение UPS.
       required: true
       allowed_domains:
       - sensor
     input_frequency:
-      label: Входная частота
+      label: Вход Hz
       description: Входная частота UPS.
       required: true
       allowed_domains:
       - sensor
     output_voltage:
-      label: Выходное напряжение
+      label: Выход U
       description: Выходное напряжение UPS.
       required: true
       allowed_domains:
       - sensor
     output_frequency:
-      label: Выходная частота
+      label: Выход Hz
       description: Выходная частота UPS.
       required: true
       allowed_domains:
       - sensor
     output_current:
-      label: Выходной ток
+      label: Ток выхода
       description: Выходной ток UPS.
       required: true
       allowed_domains:
@@ -175,6 +175,24 @@ spec:
     - output_frequency
     - output_current
     - output_load
+    role_groups:
+      status:
+      - cloud_telemetry
+      - data_stale
+      - on_battery
+      - operating_mode
+      telemetry:
+      - data_age
+      - data_time
+      - battery_capacity
+      - input_voltage
+      - output_voltage
+      - output_load
+      diagnostic:
+      - battery_voltage
+      - input_frequency
+      - output_frequency
+      - output_current
   safety:
     unknown_is_unreliable: true
     unavailable_is_unreliable: true
