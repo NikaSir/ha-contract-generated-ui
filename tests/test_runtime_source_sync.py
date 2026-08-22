@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 PACKAGE_PATH = ROOT / "custom_components" / "contract_generated_ui"
+EXPECTED_PUBLIC_SOURCE_FILES = 11
 
 
 def _module():
@@ -45,20 +46,33 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
     generated.write_text("GENERATED-CANDIDATE\n", encoding="utf-8")
 
     result = module.sync_bundled_public_sources(root)
-    assert result.checked_files == 7
-    assert result.changed_files == 7
+    assert result.checked_files == EXPECTED_PUBLIC_SOURCE_FILES
+    assert result.changed_files == EXPECTED_PUBLIC_SOURCE_FILES
 
     assert inventory.read_text(encoding="utf-8") == "PRIVATE-INVENTORY\n"
     assert snapshot.read_text(encoding="utf-8") == "PRIVATE-SNAPSHOT\n"
     assert generated.read_text(encoding="utf-8") == "GENERATED-CANDIDATE\n"
-    assert (root / "contracts" / "infrastructure_power_grid.yaml").exists()
-    assert (root / "contracts" / "infrastructure_ups.yaml").exists()
-    assert (root / "contracts" / "infrastructure_keenetic.yaml").exists()
-    assert (root / "manifests" / "infrastructure.yaml").exists()
-    assert (root / "manifests" / "zont.yaml").exists()
-    assert (root / "manifests" / "starline.yaml").exists()
+
+    for name in (
+        "infrastructure_power_grid.yaml",
+        "infrastructure_ups.yaml",
+        "infrastructure_keenetic.yaml",
+        "house_irrigation_controller.yaml",
+        "house_irrigation_zone.yaml",
+        "house_irrigation_lab.yaml",
+    ):
+        assert (root / "contracts" / name).exists()
+
+    for name in (
+        "infrastructure.yaml",
+        "zont.yaml",
+        "starline.yaml",
+        "irrigation.yaml",
+    ):
+        assert (root / "manifests" / name).exists()
+
     assert (root / "navigation" / "main.yaml").exists()
 
     second = module.sync_bundled_public_sources(root)
-    assert second.checked_files == 7
+    assert second.checked_files == EXPECTED_PUBLIC_SOURCE_FILES
     assert second.changed_files == 0
