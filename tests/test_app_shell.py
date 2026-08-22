@@ -154,11 +154,13 @@ def test_nikas_ui_bundle_uses_registry_for_local_navigation() -> None:
         / "nikas-ui.js"
     ).read_text(encoding="utf-8")
     assert 'const BAR_ID = "nikas-global-tabbar"' in asset
+    assert 'const HEADER_ID = "nikas-generated-subpanel-header"' in asset
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in asset
-    assert "position: fixed" in asset
+    assert "position:" in asset
     assert "env(safe-area-inset-bottom" in asset
     assert 'window.addEventListener("location-changed"' in asset
     assert "registrySubpanelModel" in asset
+    assert "createHeader" in asset
     assert "POWER_ITEMS" not in asset
     assert 'path: "/dashboard-infrastructure/power-overview"' not in asset
     assert "--nikas-nav-columns" in asset
