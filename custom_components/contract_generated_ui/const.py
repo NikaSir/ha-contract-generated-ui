@@ -11,8 +11,10 @@ SOURCE_STATUSES = ("missing", "empty", "incomplete", "valid", "invalid")
 SNAPSHOT_DIRECTORY = "snapshots"
 GENERATED_DIRECTORY = "generated"
 FRONTEND_DIRECTORY = "frontend"
-FRONTEND_URL_PATH = "/api/contract_generated_ui/frontend"
-APP_SHELL_MODULE_URL = f"{FRONTEND_URL_PATH}/nikas-app-shell.js"
+APP_SHELL_FILENAME = "nikas-app-shell.js"
+APP_SHELL_STATIC_PATH = f"/{DOMAIN}/frontend/{APP_SHELL_FILENAME}"
+APP_SHELL_MODULE_VERSION = "0.13.0"
+APP_SHELL_MODULE_URL = f"{APP_SHELL_STATIC_PATH}?v={APP_SHELL_MODULE_VERSION}"
 FRONTEND_STATIC_REGISTERED = "frontend_static_registered"
 
 SCAN_INTERVAL = timedelta(minutes=1)
