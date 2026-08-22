@@ -32,5 +32,7 @@ ATTR_DOCUMENT_COUNT = "document_count"
 ATTR_ISSUE_COUNT = "issue_count"
 ATTR_ISSUES = "issues"
 ATTR_SOURCE_DIRECTORY = "source_directory"
-ATTR_VALIDATION_LEVEL = "contract_core_v1"
+ATTR_VALIDATION_LEVEL = "validation_level"
+
+VALIDATION_LEVEL = "contract_core_v1"
 MAX_ISSUES_IN_ATTRIBUTES = 10
