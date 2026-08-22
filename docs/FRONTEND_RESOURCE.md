@@ -6,7 +6,7 @@ The frontend bundle is progressive enhancement for fixed navigation only.
 
 ## Automatic loading — v0.19.0_b002+
 
-Starting with internal build **v0.19.0_b002**, Contract Generated UI automatically registers the navigation bundle through Home Assistant `frontend.add_extra_js_url()` after its static paths are ready.
+Starting with internal build **v0.19.0_b002**, Contract Generated UI **автоматически** registers the navigation bundle through Home Assistant `frontend.add_extra_js_url()` after its static paths are ready.
 
 The auto-loaded URL is build-versioned for cache invalidation:
 
