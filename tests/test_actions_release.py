@@ -13,7 +13,7 @@ def test_release_version_and_schema_are_packaged() -> None:
         )
     )
     assert manifest["version"] == "0.11.0"
-    assert "frontend" in manifest["dependencies"]
+    assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
         (ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8")
