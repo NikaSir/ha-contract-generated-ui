@@ -75,8 +75,8 @@ def test_frontend_bundle_and_shared_generated_panel_host_are_packaged() -> None:
     assert "mdi:refresh" in panel_bundle
     assert "position:fixed" in panel_bundle
     assert "safe-area-inset-bottom" in panel_bundle
-    assert "ZONT" not in panel_bundle
-    assert "StarLine" not in panel_bundle
+    assert '"/dashboard-zont"' not in panel_bundle
+    assert '"/dashboard-starline"' not in panel_bundle
 
     const_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "const.py"
