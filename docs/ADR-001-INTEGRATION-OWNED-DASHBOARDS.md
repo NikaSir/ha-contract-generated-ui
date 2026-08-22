@@ -67,7 +67,7 @@ An integration-owned dashboard should expose stable metadata that can be consume
 - owner/integration id;
 - optional sidebar visibility;
 - optional preferred entry view;
-- unified header metadata including a stable canonical Back route;
+- stable canonical parent route for Header Back;
 - compatibility/version metadata where required.
 
 Conceptual example:
@@ -77,40 +77,37 @@ panel:
   id: irrigation
   title: Полив
   path: /dashboard-irrigation
+  parent_route: /dashboard-actions
   icon: mdi:sprinkler
   owner: ha-ho-sc-8w
   expose_in_generated_ui: true
-  header:
-    back:
-      label: Назад
-      icon: mdi:arrow-left
-      parent_path: /dashboard-actions
+  navigation:
+    header_back: explicit_parent_route
+    primary_navigation: fixed_bottom_bar
 ```
 
 This metadata describes navigation. It does not give `ha-contract-generated-ui` ownership of the specialized panel contents.
 
-#### 4.1 Unified specialized-dashboard header
+### 4.1. Unified application shell
 
-Every integration-owned specialized dashboard must use a common compact header pattern:
+Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard](SPECIALIZED_PANEL_UI_STANDARD.md).
 
-- left-side **Назад** control using `mdi:arrow-left`;
-- concise dashboard title;
-- consistent touch geometry suitable for iPhone Pro Max portrait;
-- explicit Home Assistant `navigate` action to the declared canonical parent route;
-- no domain/service action on header long press or double tap.
+The shell contract is:
 
-The canonical Back behavior **must not depend on browser history**. Specialized panels can be opened from house-wide dashboards, notifications, sidebar entries or direct links, so browser history is not a deterministic application-navigation contract.
+- Header Back uses `mdi:arrow-left` and an **explicit Home Assistant navigation** to the declared parent route;
+- browser history is not an application-navigation contract;
+- Header is reserved for leaving the panel and global panel actions;
+- primary internal sections live in an iOS-safe **fixed bottom navigation bar**;
+- top primary tabs are not used;
+- factual Home Assistant entities retain long press → native more-info;
+- Header and bottom navigation never execute entity/device actions on hold or double tap.
 
-Initial canonical parents are:
+Canonical parent routes are:
 
 - HO-SC-8W irrigation → `/dashboard-actions`;
 - S8 OMNI vacuum → `/dashboard-actions`;
 - Keenetic Hero 4G+ → `/dashboard-infrastructure/overview`;
 - Stark SolarPower UPS → `/dashboard-infrastructure/overview`.
-
-The header is required on every top-level view of the specialized dashboard, while internal tabs/views remain responsible for navigation inside that dashboard.
-
-The full visual and acceptance standard is defined in [Integration dashboard unified header standard](INTEGRATION_DASHBOARD_HEADER_STANDARD.md).
 
 ### 5. Runtime and release boundary
 
@@ -128,7 +125,7 @@ Specialized dashboard code/configuration is released with its owning integration
 - device-specific UI can closely match the natural workflow of the device or vendor application;
 - release/version compatibility is easier to reason about;
 - failures and `unknown`/`unavailable` semantics remain owned by the integration that understands them;
-- every specialized dashboard has a predictable return path and a visually consistent mobile entry point.
+- every specialized dashboard has predictable Back semantics and a common one-handed mobile navigation model.
 
 ### Costs
 
@@ -139,12 +136,12 @@ Specialized dashboard code/configuration is released with its owning integration
 
 ## Initial implementation order
 
-1. `ha-ho-sc-8w` — irrigation dashboard, with a vendor-app-like zone/program workflow as the first reference implementation;
+1. `ha-ho-sc-8w` — irrigation dashboard;
 2. `ha-s8-omni` — robot and station dashboard;
 3. `ha-keenetic-hero-4g` — WAN/LTE/failover dashboard;
-4. Stark SolarPower — UPS overview and diagnostics dashboards;
-5. add stable deep links from house-wide generated dashboards to these integration-owned panels.
+4. Stark SolarPower — UPS overview and diagnostics dashboard;
+5. stable deep links from house-wide generated dashboards to these integration-owned panels.
 
 ## Project rule
 
-> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation, and links into those specialized dashboards. Every specialized dashboard uses the project-standard header with an explicit stable Back route.
+> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation. Every specialized dashboard uses the NikaS application shell: explicit Header Back + fixed bottom section navigation.
