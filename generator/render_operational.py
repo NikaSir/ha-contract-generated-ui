@@ -121,6 +121,20 @@ def _selected_role_names(
     }
 
 
+def _diagnostic_entities_card(
+    entities: list[dict[str, str]],
+    selected_groups: tuple[str, ...],
+) -> dict[str, Any]:
+    card: dict[str, Any] = {
+        "type": "entities",
+        "show_header_toggle": False,
+        "entities": entities,
+    }
+    if selected_groups != ("diagnostic",):
+        card["title"] = "Диагностика"
+    return card
+
+
 def _operational_dashboard(
     dashboard: dict[str, Any],
     trace: Mapping[str, Any],
@@ -221,12 +235,7 @@ def _operational_dashboard(
                     )
                 if diagnostic_entities:
                     section_cards.append(
-                        {
-                            "type": "entities",
-                            "title": "Диагностика",
-                            "show_header_toggle": False,
-                            "entities": diagnostic_entities,
-                        }
+                        _diagnostic_entities_card(diagnostic_entities, selected_groups)
                     )
 
             if len(section_cards) > 1:
