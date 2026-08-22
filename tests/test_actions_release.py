@@ -61,10 +61,14 @@ def test_frontend_bundle_is_progressive_enhancement_and_auto_loaded() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
+    assert 'const HEADER_ID = "nikas-generated-subpanel-header"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
-    assert "position: fixed" in bundle
+    assert "position:fixed" in bundle
     assert 'window.addEventListener("location-changed"' in bundle
     assert "Promise.allSettled" in bundle
+    assert "createHeader" in bundle
+    assert "mdi:arrow-left" in bundle
+    assert "mdi:refresh" in bundle
     assert 'import("./nikas-app-shell.js")' in bundle
     assert 'import("./nikas-infrastructure-summary.js")' in bundle
 
@@ -73,7 +77,7 @@ def test_frontend_bundle_is_progressive_enhancement_and_auto_loaded() -> None:
     ).read_text(encoding="utf-8")
     assert 'UI_BUNDLE_FILENAME = "nikas-ui.js"' in const_source
     assert 'UI_BUNDLE_STATIC_PATH = f"/{DOMAIN}/frontend/{UI_BUNDLE_FILENAME}"' in const_source
-    assert 'UI_BUNDLE_BUILD = "b002"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b003"' in const_source
     assert 'UI_BUNDLE_MODULE_URL = f"{UI_BUNDLE_STATIC_PATH}?build={UI_BUNDLE_BUILD}"' in const_source
     assert 'NAVIGATION_REGISTRY_FILENAME = "navigation.json"' in const_source
 
@@ -89,4 +93,4 @@ def test_frontend_bundle_is_progressive_enhancement_and_auto_loaded() -> None:
 
     doc = (ROOT / "docs" / "FRONTEND_RESOURCE.md").read_text(encoding="utf-8")
     assert "автоматически" in doc.lower()
-    assert "b002" in doc
+    assert "b003" in doc
