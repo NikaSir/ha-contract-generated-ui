@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+from pathlib import Path
 from typing import Any, Mapping
 
 APP_SHELL_ACTIVE = frozenset({"home", "actions", "infrastructure"})
@@ -27,6 +29,13 @@ APP_SHELL_ITEMS = (
         "path": "/dashboard-infrastructure/overview",
     },
 )
+
+
+def app_shell_engine_sha256(base_engine_sha256: str) -> str:
+    layer_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    return hashlib.sha256(
+        f"{base_engine_sha256}:{layer_sha}".encode("utf-8")
+    ).hexdigest()
 
 
 def manifest_app_shell_active(manifest: Mapping[str, Any]) -> str | None:
@@ -79,6 +88,7 @@ def append_app_shell(
 __all__ = [
     "APP_SHELL_ACTIVE",
     "APP_SHELL_ITEMS",
+    "app_shell_engine_sha256",
     "append_app_shell",
     "manifest_app_shell_active",
 ]
