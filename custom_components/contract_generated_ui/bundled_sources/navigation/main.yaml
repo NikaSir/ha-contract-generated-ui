@@ -27,9 +27,9 @@ spec:
       title: Уборка
       path: /dashboard-house/cleaning
       parent: home
-    actions.irrigation:
-      title: Полив
-      path: /dashboard-irrigation/overview
+    actions.irrigation_candidate:
+      title: Полив · candidate
+      path: /dashboard-irrigation-generated/overview
       parent: actions
   global_tabs:
     - id: home
