@@ -16,6 +16,11 @@ from .runtime_actions import (
     _layout_engine_sha256 as _actions_layout_engine_sha256,
     render_actions_dashboard,
 )
+from .runtime_app_shell import (
+    app_shell_engine_sha256,
+    append_app_shell,
+    manifest_app_shell_active,
+)
 
 base = operational.base
 RuntimeRenderError = base.RuntimeRenderError
@@ -105,6 +110,13 @@ def render_all_manifests(
             trace = operational._filter_trace(base_trace, contracts, manifest)
             trace["renderer_engine_sha256"] = operational._layout_engine_sha256(
                 base_trace["renderer_engine_sha256"]
+            )
+
+        app_shell_active = manifest_app_shell_active(manifest)
+        if app_shell_active is not None:
+            dashboard = append_app_shell(dashboard, active=app_shell_active)
+            trace["renderer_engine_sha256"] = app_shell_engine_sha256(
+                trace["renderer_engine_sha256"]
             )
 
         canonical = json.dumps(
