@@ -27,6 +27,12 @@ from .render_house import (
     _layout_engine_sha256 as _house_layout_engine_sha256,
     render_house_dashboard,
 )
+from .render_infrastructure_summary import (
+    SUMMARY_RENDERER,
+    _filter_trace as _infrastructure_summary_filter_trace,
+    _layout_engine_sha256 as _infrastructure_summary_layout_engine_sha256,
+    _summary_dashboard as _infrastructure_summary_dashboard,
+)
 from .render_operational import (
     DEFAULT_RENDERER,
     _contracts,
@@ -40,6 +46,7 @@ SUPPORTED_RENDERERS = frozenset({
     DEFAULT_RENDERER,
     HOUSE_RENDERER,
     ACTIONS_RENDERER,
+    SUMMARY_RENDERER,
 })
 
 
@@ -78,6 +85,12 @@ def render_repository_manifest(repo_root: Path, manifest_path: Path) -> RenderRe
         dashboard = render_actions_dashboard(base.dashboard, base.trace)
         trace = copy.deepcopy(base.trace)
         trace["renderer_engine_sha256"] = _actions_layout_engine_sha256(
+            base.trace["renderer_engine_sha256"]
+        )
+    elif renderer == SUMMARY_RENDERER:
+        dashboard = _infrastructure_summary_dashboard(base.dashboard, base.trace)
+        trace = _infrastructure_summary_filter_trace(base.trace)
+        trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
             base.trace["renderer_engine_sha256"]
         )
     else:
