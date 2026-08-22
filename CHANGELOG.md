@@ -67,3 +67,11 @@ All notable changes to this project will be documented in this file.
 - Diagnostic-only views omit the redundant inner `Диагностика` Entities-card title and retain only subsystem headings.
 - Infrastructure panel manifest `0.5.0` / title `Инфраструктура · v0.5`.
 - Regression tests require clean diagnostic-only cards in both repository and Home Assistant runtime renderers.
+- Staged House start-page renderer `house_home_v1` (`0.8.0`) with a mobile-first two-column Sections composition targeting iPhone Pro Max portrait.
+- House preview preserves the protected start-page order: `Дом сейчас` → `Активные события` → `Ресурсы` → `Отопление и ГВС` → `Автомобили` → `Ключевые точки доступа`.
+- House aggregate cards consume only semantic roles already resolved from verified private inventory; no production House entity IDs are embedded in the renderer.
+- Panel manifests can declare `renderer: operational_v1 | house_home_v1` and a stable `spec.navigation` route map; mixed renderer manifests fail closed.
+- House preview removes the obsolete `zone.home` dependency instead of guessing a replacement presence zone.
+- ADR-001 is applied to the House start page: central resources are concise summaries while detailed irrigation, vacuum, router and UPS UX remains integration-owned.
+- CLI rendering now uses the same operational renderer family as the Home Assistant runtime, with byte-locked House layout source parity.
+- House preview rollout is documented as dormant/staged: `0.8.0` does not replace the live `/dashboard-house` until a separately activated preview is accepted on iPhone.
