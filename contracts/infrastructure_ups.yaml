@@ -3,7 +3,8 @@ kind: UIContract
 metadata:
   id: infrastructure.ups
   title: UPS
-  version: 0.3.0
+  version: 0.4.0
+  description: Compact infrastructure UPS summary with hand-off to the integration-owned Stark SolarPower panel.
 spec:
   roles:
     cloud_telemetry:
@@ -37,8 +38,8 @@ spec:
       allowed_domains:
       - sensor
     operating_mode:
-      label: Режим
-      description: Текущий режим работы UPS.
+      label: Режим · Подробнее
+      description: Текущий режим UPS; основное нажатие открывает специализированную панель Stark SolarPower.
       required: true
       allowed_domains:
       - sensor
@@ -121,10 +122,11 @@ spec:
     kind: more_info
     description: Открыть more-info сущности.
     role: data_time
-  - id: more_info_operating_mode
-    kind: more_info
-    description: Открыть more-info сущности.
+  - id: open_stark_solarpower_panel
+    kind: navigate
+    description: Открыть каноническую специализированную UPS-панель Stark SolarPower.
     role: operating_mode
+    target: /dashboard-ups
   - id: more_info_battery_capacity
     kind: more_info
     description: Открыть more-info сущности.
@@ -161,36 +163,36 @@ spec:
     renderer: tiles_v1
     columns: 3
     role_order:
+    - operating_mode
+    - battery_capacity
+    - output_load
     - cloud_telemetry
     - data_stale
     - on_battery
     - data_age
     - data_time
-    - operating_mode
-    - battery_capacity
     - battery_voltage
     - input_voltage
     - input_frequency
     - output_voltage
     - output_frequency
     - output_current
-    - output_load
     role_groups:
       status:
+      - operating_mode
+      - battery_capacity
+      - output_load
       - cloud_telemetry
       - data_stale
       - on_battery
-      - operating_mode
-      telemetry:
-      - battery_capacity
-      - input_voltage
-      - output_voltage
-      - output_load
+      telemetry: []
       diagnostic:
       - data_age
       - data_time
       - battery_voltage
+      - input_voltage
       - input_frequency
+      - output_voltage
       - output_frequency
       - output_current
   safety:
@@ -198,4 +200,5 @@ spec:
     unavailable_is_unreliable: true
     invent_entity_ids: false
     notes:
-    - Read-only infrastructure slice; all primary actions are more-info.
+    - Central infrastructure UI is a read-only summary; detailed UPS UX is owned by Stark SolarPower at /dashboard-ups.
+    - Tap on the operating-mode tile navigates to the specialized panel; hold remains Home Assistant more-info.
