@@ -1,79 +1,115 @@
-# NikaS frontend resource
+# NikaS frontend resources
 
-Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central and generated subpanel content therefore stays usable without frontend custom cards.
+Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central dashboards therefore keep their primary content native Lovelace. Frontend JavaScript is used only where an application shell materially improves navigation.
 
-The frontend bundle is progressive enhancement for shared navigation and application chrome only.
+## Global navigation — Contract Generated UI 0.20.0
 
-## Automatic loading — v0.19.0_b003
+The 0.20.0 line keeps the frontend cache generation globally monotonic at **b004** after the b001–b003 field-test sequence.
 
-Contract Generated UI **автоматически** registers the UI bundle through Home Assistant `frontend.add_extra_js_url()` after its static paths are ready.
-
-The b003 URL is build-versioned for cache invalidation:
+Contract Generated UI automatically loads the global navigation enhancement through Home Assistant `frontend.add_extra_js_url()`:
 
 ```text
-/contract_generated_ui/frontend/nikas-ui.js?build=b003
+/contract_generated_ui/frontend/nikas-ui.js?build=b004
 ```
 
-Manual `lovelace.resources` registration is not required. Existing `lovelace.dashboards:` entries must be preserved.
+It renders the common `Дом · Действия · Инфра` Bottom Tab Bar and Lovelace-embedded tab groups described by the formal navigation contract. If this progressive enhancement loads late, native Lovelace content remains usable.
 
-Because dashboard content is native Lovelace, late frontend loading cannot turn dashboard content into `Configuration error`; at worst Header/Bottom Tab Bar progressive chrome appears a little later.
+No manual `lovelace.resources` entry is required.
 
-## Data-driven navigation
+## Shared generated application panels
 
-Contract Generated UI compiles the formal navigation contract and panel manifests into:
+Generated application subpanels such as ZONT and StarLine no longer require a generated Lovelace host dashboard when their logical parent surface is external to Contract Generated UI.
+
+They are **автоматически** registered as Home Assistant custom panels by Contract Generated UI using one shared web component and one self-contained frontend bundle:
+
+```text
+/contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b004
+```
+
+The bundle contains no ZONT-, StarLine- or subsystem-specific route constants. Panel configuration is derived from:
+
+```text
+PanelManifest + NavigationContract
+```
+
+The shared host receives only presentation/navigation metadata:
+
+- panel title and subtitle;
+- logical parent path for Back;
+- 2–5 tab IDs, labels and icons;
+- field-test placeholder text until real domain contracts are connected.
+
+Home Assistant entity IDs and private semantic inventory are not exposed through panel registration metadata.
+
+### Visual contract
+
+Generated custom panels intentionally use the same application language as external NikaS specialized panels:
+
+- Back button in the upper-left;
+- geometrically centered title/subtitle;
+- common action rail in the upper-right;
+- Hero status section;
+- rounded application cards;
+- fixed edge-attached Bottom Tab Bar;
+- safe-area handling on iPhone;
+- the same state and spacing hierarchy.
+
+Architectural invariant:
+
+> One CGUI-owned shared custom-panel host; external-panel-like appearance.
+
+## Routing and Back
+
+A generated custom panel has one Home Assistant panel route, for example:
+
+```text
+/dashboard-zont
+/dashboard-starline
+```
+
+Its logical parent remains declarative in `navigation/main.yaml`:
+
+```text
+ZONT     → /dashboard-house/heating
+StarLine → /dashboard-house/vehicles
+```
+
+The shared Header uses this parent path directly. It does not depend on browser history.
+
+Tab switching inside the shared custom panel is owned by the common panel host. The tab list itself remains manifest-driven.
+
+## Lovelace registration
+
+Generated application subpanels are **not** exported under `lovelace.dashboards:` and therefore require no manual edit of `configuration.yaml`.
+
+`lovelace_configuration_snippet.yaml` contains only CGUI-owned Lovelace dashboards that genuinely require YAML-dashboard registration.
+
+During field validation generated ZONT and StarLine panels are intentionally visible in the Home Assistant sidebar so their mobile shell can be tested directly. Parent launch-card integration can be enabled when the relevant parent dashboard is itself CGUI-owned or exposes a supported declarative extension point.
+
+## Embedded mode
+
+The renderer still supports embedded generated subviews when a real CGUI host manifest exists for the target dashboard. In that case native `subview: true` and explicit `back_path` remain the reliability fallback and the shared navigation contract remains authoritative.
+
+The renderer must not require an embedded host manifest merely because a logical parent path exists outside CGUI.
+
+## Navigation registry
+
+Contract Generated UI compiles navigation data to:
 
 ```text
 /config/contract_generated_ui/generated/navigation.json
 ```
 
-The integration serves it at:
+and serves it at:
 
 ```text
 /contract_generated_ui/navigation.json
 ```
 
-`nikas-ui.js` loads that registry with `cache: no-store` and renders:
+Standalone custom-panel groups are removed from the **served global-overlay registry** so `nikas-ui.js` cannot draw a second Header or Bottom Tab Bar over the dedicated custom-panel host. Embedded Lovelace tab groups such as the existing electricity subpanel remain in the registry.
 
-- global `Дом · Действия · Инфра` navigation;
-- local Bottom Tab Bar for generated application subpanels;
-- local embedded tab groups such as the electrical subpanel;
-- a shared external-panel-like Header for active generated subpanels.
+## Legacy frontend modules
 
-Subsystem names, parent routes, tab labels, icons and tab URLs are **not** hardcoded in `nikas-ui.js`.
+`nikas-app-shell.js` and `nikas-infrastructure-summary.js` remain migration fallbacks for older generated dashboards. New generated application subpanels do not depend on them.
 
-## Embedded application subpanels — b003
-
-ZONT and StarLine demonstrate the preferred route model:
-
-```text
-/dashboard-house/zont-overview
-/dashboard-house/zont-heating
-...
-/dashboard-house/starline-overview
-/dashboard-house/starline-security
-...
-```
-
-They are composed into the existing parent dashboard YAML rather than registered as separate Lovelace dashboards. Their parent views receive generated launch cards.
-
-The route is embedded, but the visual language is the same as external NikaS specialized panels:
-
-```text
-App Header: Back | centered title/subtitle | Refresh
-↓
-Hero / current state
-↓
-Native Lovelace content
-↓
-Fixed Bottom Tab Bar
-```
-
-The shared Header uses the same symmetric rail principle as `NikaS Integration Panel Template v1.0`; the lower navigation is fixed, edge-attached and safe-area aware.
-
-Native Home Assistant `subview: true` and explicit `back_path` remain in generated YAML as a reliability fallback. If the progressive shell cannot load, native Lovelace content and native Back remain usable.
-
-## Legacy modules
-
-`nikas-app-shell.js` and `nikas-infrastructure-summary.js` remain loaded through `Promise.allSettled` only as migration fallback for already-generated older dashboards. New generated subpanels do not depend on them.
-
-After a Contract Generated UI update, fully restart Home Assistant and regenerate dashboards so YAML and `navigation.json` are synchronized.
+After a Contract Generated UI update, fully restart Home Assistant. Regenerate dashboards when deterministic YAML/trace artifacts need to be refreshed or reviewed.

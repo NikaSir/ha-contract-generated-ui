@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -34,6 +34,8 @@ async def async_setup_entry(
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
         GENERATED_DIRECTORY,
+        GENERATED_SUBPANEL_FILENAME,
+        GENERATED_SUBPANEL_STATIC_PATH,
         INFRA_SUMMARY_FILENAME,
         INFRA_SUMMARY_STATIC_PATH,
         NAVIGATION_REGISTRY_FILENAME,
@@ -44,6 +46,10 @@ async def async_setup_entry(
         UI_BUNDLE_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
+    from .generated_panels import (
+        async_register_generated_subpanels,
+        strip_standalone_navigation_groups,
+    )
     from .runtime_source_sync import sync_bundled_public_sources
     from .runtime_subpanel_shell import (
         write_empty_navigation_registry,
@@ -62,6 +68,10 @@ async def async_setup_entry(
         await hass.async_add_executor_job(
             write_navigation_registry,
             source_root,
+            navigation_registry_path,
+        )
+        await hass.async_add_executor_job(
+            strip_standalone_navigation_groups,
             navigation_registry_path,
         )
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
@@ -92,6 +102,11 @@ async def async_setup_entry(
                     False,
                 ),
                 StaticPathConfig(
+                    GENERATED_SUBPANEL_STATIC_PATH,
+                    str(frontend_root / GENERATED_SUBPANEL_FILENAME),
+                    False,
+                ),
+                StaticPathConfig(
                     NAVIGATION_REGISTRY_STATIC_PATH,
                     str(navigation_registry_path),
                     False,
@@ -100,10 +115,12 @@ async def async_setup_entry(
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
-    # The navigation bundle is progressive enhancement only: central and generated
-    # dashboards remain native Lovelace if it loads late. Auto-loading here removes
-    # the manual Lovelace-resource dependency while preserving race-proof content.
     add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
+
+    try:
+        await async_register_generated_subpanels(hass, source_root)
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
+        _LOGGER.warning("Cannot register generated NikaS subpanels: %s", err)
 
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
@@ -120,17 +137,19 @@ async def async_unload_entry(
     hass: HomeAssistant,
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
-    """Unload a Contract Generated UI config entry."""
+    """Unload Contract Generated UI config entry."""
     from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
     from .const import UI_BUNDLE_MODULE_URL
+    from .generated_panels import async_unregister_generated_subpanels
 
     unloaded = await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
     if unloaded:
+        async_unregister_generated_subpanels(hass)
         try:
             remove_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
         except KeyError:

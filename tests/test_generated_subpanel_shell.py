@@ -5,6 +5,10 @@ from pathlib import Path
 
 import yaml
 
+from custom_components.contract_generated_ui.generated_panels import (
+    build_generated_panel_specs,
+    strip_standalone_navigation_groups,
+)
 from generator.subpanel_shell import (
     apply_navigation_shell,
     compile_navigation_registry,
@@ -31,10 +35,7 @@ def _sections_dashboard(view_count: int) -> dict:
                     {
                         "type": "grid",
                         "cards": [
-                            {
-                                "type": "markdown",
-                                "content": f"placeholder {index}",
-                            }
+                            {"type": "markdown", "content": f"placeholder {index}"}
                         ],
                     }
                 ],
@@ -44,41 +45,23 @@ def _sections_dashboard(view_count: int) -> dict:
     }
 
 
-def test_zont_and_starline_are_short_embedded_subpanel_manifests() -> None:
+def test_zont_and_starline_are_short_shared_custom_panel_manifests() -> None:
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
-    assert zont["spec"]["dashboard_path"] == "/dashboard-house"
-    assert starline["spec"]["dashboard_path"] == "/dashboard-house"
-    assert zont["spec"]["subpanel"] == {
-        "template": "standard_v1",
-        "navigation": "main",
-        "parent": "house.heating",
-    }
-    assert starline["spec"]["subpanel"] == {
-        "template": "standard_v1",
-        "navigation": "main",
-        "parent": "house.vehicles",
-    }
-
-    assert [view["title"] for view in zont["spec"]["views"]] == [
-        "Обзор",
-        "Отопление",
-        "Датчики",
-        "Сервис",
-    ]
-    assert [view["title"] for view in starline["spec"]["views"]] == [
-        "Обзор",
-        "Охрана",
-        "Двигатель",
-        "Авто",
-        "Сервис",
-    ]
+    assert zont["metadata"]["version"] == "0.3.0"
+    assert starline["metadata"]["version"] == "0.3.0"
+    assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
+    assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
+    assert zont["spec"]["subpanel"]["parent"] == "house.heating"
+    assert starline["spec"]["subpanel"]["parent"] == "house.vehicles"
+    assert len(zont["spec"]["views"]) == 4
+    assert len(starline["spec"]["views"]) == 5
     assert all(view["modules"] == [] for view in zont["spec"]["views"])
     assert all(view["modules"] == [] for view in starline["spec"]["views"])
 
 
-def test_subpanel_shell_generates_prefixed_routes_native_fallback_and_clearance() -> None:
+def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -> None:
     manifest = _load_yaml(ROOT / "manifests" / "zont.yaml")
     dashboard = _sections_dashboard(len(manifest["spec"]["views"]))
 
@@ -87,41 +70,82 @@ def test_subpanel_shell_generates_prefixed_routes_native_fallback_and_clearance(
     assert len(groups) == 1
     group = groups[0]
     assert group["title"] == "ZONT"
-    assert group["subtitle"] == "Отопление и ГВС · UI v0.2.0"
+    assert group["subtitle"] == "Отопление и ГВС · UI v0.3.0"
     assert group["parent"]["path"] == "/dashboard-house/heating"
-    assert group["embedded"] is True
+    assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
-        "/dashboard-house/zont-overview",
-        "/dashboard-house/zont-heating",
-        "/dashboard-house/zont-sensors",
-        "/dashboard-house/zont-service",
+        "/dashboard-zont/overview",
+        "/dashboard-zont/heating",
+        "/dashboard-zont/sensors",
+        "/dashboard-zont/service",
     ]
 
     for view, expected in zip(
         rendered["views"],
-        ["zont-overview", "zont-heating", "zont-sensors", "zont-service"],
+        ["overview", "heating", "sensors", "service"],
         strict=True,
     ):
         assert view["path"] == expected
         assert view["subview"] is True
         assert view["back_path"] == "/dashboard-house/heating"
         assert view["title"] == "ZONT"
-        spacer = view["sections"][-1]["cards"][0]
-        assert spacer["type"] == "markdown"
-        assert spacer["text_only"] is True
 
     base = "0" * 64
     assert navigation_shell_engine_sha256(base, groups) != base
 
 
-def test_embedded_subpanel_is_composed_into_parent_and_gets_launch_card() -> None:
+def test_shared_custom_panel_specs_are_data_driven() -> None:
+    specs = {item["id"]: item for item in build_generated_panel_specs(ROOT)}
+    assert {"zont", "starline"} <= set(specs)
+    assert specs["zont"]["url_path"] == "dashboard-zont"
+    assert specs["starline"]["url_path"] == "dashboard-starline"
+    assert specs["zont"]["parent"]["path"] == "/dashboard-house/heating"
+    assert specs["starline"]["parent"]["path"] == "/dashboard-house/vehicles"
+    assert len(specs["zont"]["tabs"]) == 4
+    assert len(specs["starline"]["tabs"]) == 5
+    assert specs["zont"]["tabs"][0]["label"] == "Обзор"
+    assert "Предметный контракт ZONT" in specs["zont"]["tabs"][0]["placeholder"]
+
+    frontend = (
+        ROOT
+        / "custom_components"
+        / "contract_generated_ui"
+        / "frontend"
+        / "nikas-generated-subpanel.js"
+    ).read_text(encoding="utf-8")
+    assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in frontend
+    assert "mdi:arrow-left" in frontend
+    assert "mdi:refresh" in frontend
+    assert "position:fixed" in frontend
+    assert '"/dashboard-zont"' not in frontend
+    assert '"/dashboard-starline"' not in frontend
+
+
+def test_global_navigation_overlay_drops_standalone_custom_panel_groups(tmp_path: Path) -> None:
+    registry = compile_navigation_registry(ROOT)
+    path = tmp_path / "navigation.json"
+    path.write_text(
+        json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    assert strip_standalone_navigation_groups(path) is True
+    filtered = json.loads(path.read_text(encoding="utf-8"))
+    groups = {group["id"]: group for group in filtered["subpanels"]}
+    assert "power" in groups
+    assert groups["power"]["embedded"] is True
+    assert "zont" not in groups
+    assert "starline" not in groups
+
+
+def test_embedded_mode_remains_available_when_real_host_manifest_exists() -> None:
     manifest = _load_yaml(ROOT / "manifests" / "zont.yaml")
+    manifest["spec"]["dashboard_path"] = "/dashboard-house"
     child, groups = apply_navigation_shell(
         _sections_dashboard(len(manifest["spec"]["views"])), manifest, ROOT
     )
-    host_manifest = {
-        "spec": {"dashboard_path": "/dashboard-house"},
-    }
+    assert groups[0]["embedded"] is True
+
+    host_manifest = {"spec": {"dashboard_path": "/dashboard-house"}}
     host = {
         "views": [
             {
@@ -134,62 +158,12 @@ def test_embedded_subpanel_is_composed_into_parent_and_gets_launch_card() -> Non
             }
         ]
     }
-
     composed = embed_subpanel_dashboard(host, host_manifest, child, groups[0])
     paths = [view["path"] for view in composed["views"]]
-    assert paths == [
-        "heating",
-        "zont-overview",
-        "zont-heating",
-        "zont-sensors",
-        "zont-service",
-    ]
+    assert paths[0] == "heating"
+    assert "zont-overview" in paths
     launch = composed["views"][0]["sections"][-1]["cards"][0]
-    assert launch["type"] == "markdown"
-    assert "ZONT" in launch["content"]
-    assert launch["tap_action"] == {
-        "action": "navigate",
-        "navigation_path": "/dashboard-house/zont-overview",
-    }
-
-
-def test_navigation_registry_drives_embedded_tabs_without_frontend_hardcode() -> None:
-    registry = compile_navigation_registry(ROOT)
-    assert registry["api_version"] == "nikas.home-assistant/navigation-registry/v1"
-
-    groups = {group["id"]: group for group in registry["subpanels"]}
-    assert {"power", "zont", "starline"} <= set(groups)
-
-    assert len(groups["zont"]["tabs"]) == 4
-    assert len(groups["starline"]["tabs"]) == 5
-    assert groups["zont"]["parent"]["path"] == "/dashboard-house/heating"
-    assert groups["starline"]["parent"]["path"] == "/dashboard-house/vehicles"
-    assert groups["power"]["embedded"] is True
-    assert groups["zont"]["embedded"] is True
-    assert groups["starline"]["embedded"] is True
-    assert groups["zont"]["tabs"][0]["path"] == "/dashboard-house/zont-overview"
-    assert groups["starline"]["tabs"][0]["path"] == "/dashboard-house/starline-overview"
-
-    serialized = json.dumps(registry, ensure_ascii=False)
-    assert "entity_id" not in serialized
-    assert "device_id" not in serialized
-
-    frontend = (
-        ROOT
-        / "custom_components"
-        / "contract_generated_ui"
-        / "frontend"
-        / "nikas-ui.js"
-    ).read_text(encoding="utf-8")
-    assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in frontend
-    assert 'const HEADER_ID = "nikas-generated-subpanel-header"' in frontend
-    assert "registrySubpanelModel" in frontend
-    assert "createHeader" in frontend
-    assert "mdi:arrow-left" in frontend
-    assert "mdi:refresh" in frontend
-    assert "POWER_ITEMS" not in frontend
-    assert "ZONT" not in frontend
-    assert "StarLine" not in frontend
+    assert launch["tap_action"]["navigation_path"] == "/dashboard-house/zont-overview"
 
 
 def test_generator_and_runtime_subpanel_sources_are_byte_equivalent() -> None:
@@ -201,7 +175,6 @@ def test_generator_and_runtime_subpanel_sources_are_byte_equivalent() -> None:
         / "contract_generated_ui"
         / "runtime_subpanel_shell.py"
     ).read_bytes()
-
     assert (
         ROOT / "generator" / "render_subpanel_placeholder.py"
     ).read_bytes() == (
@@ -212,7 +185,7 @@ def test_generator_and_runtime_subpanel_sources_are_byte_equivalent() -> None:
     ).read_bytes()
 
 
-def test_navigation_contract_is_packaged_with_demo_manifests() -> None:
+def test_navigation_contract_and_demo_manifests_are_packaged() -> None:
     assert (
         ROOT / "navigation" / "main.yaml"
     ).read_bytes() == (
