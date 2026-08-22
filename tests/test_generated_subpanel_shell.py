@@ -117,8 +117,8 @@ def test_shared_custom_panel_specs_are_data_driven() -> None:
     assert "mdi:arrow-left" in frontend
     assert "mdi:refresh" in frontend
     assert "position:fixed" in frontend
-    assert "ZONT" not in frontend
-    assert "StarLine" not in frontend
+    assert '"/dashboard-zont"' not in frontend
+    assert '"/dashboard-starline"' not in frontend
 
 
 def test_global_navigation_overlay_drops_standalone_custom_panel_groups(tmp_path: Path) -> None:
