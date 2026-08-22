@@ -9,7 +9,7 @@ from typing import Any, Mapping
 from .app_shell import (
     app_shell_engine_sha256,
     append_app_shell,
-    manifest_app_shell_active,
+    manifest_app_shell_config,
 )
 from .render import (
     RenderError,
@@ -88,9 +88,14 @@ def render_repository_manifest(repo_root: Path, manifest_path: Path) -> RenderRe
             base.trace["renderer_engine_sha256"]
         )
 
-    app_shell_active = manifest_app_shell_active(manifest)
-    if app_shell_active is not None:
-        dashboard = append_app_shell(dashboard, active=app_shell_active)
+    app_shell_config = manifest_app_shell_config(manifest)
+    if app_shell_config is not None:
+        app_shell_active, app_shell_routes = app_shell_config
+        dashboard = append_app_shell(
+            dashboard,
+            active=app_shell_active,
+            routes=app_shell_routes,
+        )
         trace["renderer_engine_sha256"] = app_shell_engine_sha256(
             trace["renderer_engine_sha256"]
         )

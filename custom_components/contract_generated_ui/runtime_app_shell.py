@@ -38,31 +38,76 @@ def app_shell_engine_sha256(base_engine_sha256: str) -> str:
     ).hexdigest()
 
 
-def manifest_app_shell_active(manifest: Mapping[str, Any]) -> str | None:
+def manifest_app_shell_config(
+    manifest: Mapping[str, Any],
+) -> tuple[str, dict[str, str]] | None:
     app_shell = manifest.get("spec", {}).get("app_shell")
     if app_shell is None:
         return None
     if not isinstance(app_shell, Mapping):
         raise ValueError("spec.app_shell must be an object")
+
     active = app_shell.get("active")
     if active not in APP_SHELL_ACTIVE:
         raise ValueError(f"unsupported app shell active surface {active!r}")
-    return active
+
+    raw_routes = app_shell.get("routes", {})
+    if not isinstance(raw_routes, Mapping):
+        raise ValueError("spec.app_shell.routes must be an object")
+
+    routes: dict[str, str] = {}
+    for surface, path in raw_routes.items():
+        if surface not in APP_SHELL_ACTIVE:
+            raise ValueError(f"unsupported app shell route surface {surface!r}")
+        if not isinstance(path, str) or not path.startswith("/"):
+            raise ValueError(
+                f"app shell route {surface!r} must be an absolute Home Assistant path"
+            )
+        routes[surface] = path
+
+    return active, routes
+
+
+def manifest_app_shell_active(manifest: Mapping[str, Any]) -> str | None:
+    config = manifest_app_shell_config(manifest)
+    return config[0] if config is not None else None
+
+
+def _navigation_items(routes: Mapping[str, str]) -> list[dict[str, str]]:
+    items: list[dict[str, str]] = []
+    for base_item in APP_SHELL_ITEMS:
+        item = dict(base_item)
+        override = routes.get(item["id"])
+        if override is not None:
+            item["path"] = override
+        items.append(item)
+    return items
 
 
 def append_app_shell(
     dashboard: Mapping[str, Any],
     *,
     active: str,
+    routes: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     if active not in APP_SHELL_ACTIVE:
         raise ValueError(f"unsupported app shell active surface {active!r}")
+
+    normalized_routes = dict(routes or {})
+    for surface, path in normalized_routes.items():
+        if surface not in APP_SHELL_ACTIVE:
+            raise ValueError(f"unsupported app shell route surface {surface!r}")
+        if not isinstance(path, str) or not path.startswith("/"):
+            raise ValueError(
+                f"app shell route {surface!r} must be an absolute Home Assistant path"
+            )
 
     transformed = copy.deepcopy(dashboard)
     views = transformed.get("views")
     if not isinstance(views, list) or not views:
         raise ValueError("NikaS app shell requires dashboard views")
 
+    items = _navigation_items(normalized_routes)
     for view in views:
         if not isinstance(view, dict) or view.get("type") != "sections":
             raise ValueError("NikaS app shell requires Sections views")
@@ -76,7 +121,7 @@ def append_app_shell(
                     {
                         "type": "custom:nikas-app-shell",
                         "active": active,
-                        "items": [dict(item) for item in APP_SHELL_ITEMS],
+                        "items": [dict(item) for item in items],
                         "grid_options": {"columns": "full"},
                     }
                 ],
@@ -91,4 +136,5 @@ __all__ = [
     "app_shell_engine_sha256",
     "append_app_shell",
     "manifest_app_shell_active",
+    "manifest_app_shell_config",
 ]

@@ -5,7 +5,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from generator.app_shell import APP_SHELL_ITEMS, append_app_shell, manifest_app_shell_active
+from generator.app_shell import (
+    APP_SHELL_ITEMS,
+    append_app_shell,
+    manifest_app_shell_active,
+    manifest_app_shell_config,
+)
 
 ROOT = Path(__file__).parents[1]
 
@@ -29,6 +34,10 @@ def _dashboard() -> dict:
     }
 
 
+def _shell_card(rendered: dict) -> dict:
+    return rendered["views"][0]["sections"][-1]["cards"][0]
+
+
 def test_app_shell_is_full_width_fixed_navigation_placeholder() -> None:
     source = _dashboard()
     rendered = append_app_shell(source, active="infrastructure")
@@ -36,7 +45,7 @@ def test_app_shell_is_full_width_fixed_navigation_placeholder() -> None:
     assert len(source["views"][0]["sections"]) == 1
     sections = rendered["views"][0]["sections"]
     assert len(sections) == 2
-    card = sections[-1]["cards"][0]
+    card = _shell_card(rendered)
     assert card["type"] == "custom:nikas-app-shell"
     assert card["active"] == "infrastructure"
     assert card["grid_options"] == {"columns": "full"}
@@ -50,12 +59,54 @@ def test_app_shell_is_full_width_fixed_navigation_placeholder() -> None:
     )
 
 
+def test_app_shell_route_overrides_are_explicit_and_partial() -> None:
+    rendered = append_app_shell(
+        _dashboard(),
+        active="home",
+        routes={
+            "home": "/dashboard-house-preview/home",
+            "actions": "/dashboard-actions-preview/home",
+        },
+    )
+    paths = {item["id"]: item["path"] for item in _shell_card(rendered)["items"]}
+    assert paths == {
+        "home": "/dashboard-house-preview/home",
+        "actions": "/dashboard-actions-preview/home",
+        "infrastructure": "/dashboard-infrastructure/overview",
+    }
+
+
 def test_app_shell_manifest_contract_is_explicit() -> None:
-    manifest = {"spec": {"app_shell": {"active": "home"}}}
+    manifest = {
+        "spec": {
+            "app_shell": {
+                "active": "home",
+                "routes": {
+                    "home": "/dashboard-house-preview/home",
+                    "actions": "/dashboard-actions-preview/home",
+                },
+            }
+        }
+    }
     assert manifest_app_shell_active(manifest) == "home"
+    assert manifest_app_shell_config(manifest) == (
+        "home",
+        {
+            "home": "/dashboard-house-preview/home",
+            "actions": "/dashboard-actions-preview/home",
+        },
+    )
     assert manifest_app_shell_active({"spec": {}}) is None
     with pytest.raises(ValueError):
         manifest_app_shell_active({"spec": {"app_shell": {"active": "other"}}})
+    with pytest.raises(ValueError):
+        manifest_app_shell_config(
+            {"spec": {"app_shell": {"active": "home", "routes": {"other": "/x"}}}}
+        )
+    with pytest.raises(ValueError):
+        manifest_app_shell_config(
+            {"spec": {"app_shell": {"active": "home", "routes": {"home": "relative"}}}}
+        )
 
 
 def test_runtime_and_generator_app_shell_sources_are_byte_equivalent() -> None:

@@ -19,7 +19,7 @@ from .runtime_actions import (
 from .runtime_app_shell import (
     app_shell_engine_sha256,
     append_app_shell,
-    manifest_app_shell_active,
+    manifest_app_shell_config,
 )
 
 base = operational.base
@@ -112,9 +112,14 @@ def render_all_manifests(
                 base_trace["renderer_engine_sha256"]
             )
 
-        app_shell_active = manifest_app_shell_active(manifest)
-        if app_shell_active is not None:
-            dashboard = append_app_shell(dashboard, active=app_shell_active)
+        app_shell_config = manifest_app_shell_config(manifest)
+        if app_shell_config is not None:
+            app_shell_active, app_shell_routes = app_shell_config
+            dashboard = append_app_shell(
+                dashboard,
+                active=app_shell_active,
+                routes=app_shell_routes,
+            )
             trace["renderer_engine_sha256"] = app_shell_engine_sha256(
                 trace["renderer_engine_sha256"]
             )

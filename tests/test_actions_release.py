@@ -12,7 +12,7 @@ def test_release_version_and_schema_are_packaged() -> None:
             encoding="utf-8"
         )
     )
-    assert manifest["version"] == "0.11.0"
+    assert manifest["version"] == "0.12.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
@@ -30,6 +30,10 @@ def test_release_version_and_schema_are_packaged() -> None:
     assert repo_schema == packaged_schema
     enum_values = repo_schema["$defs"]["view"]["properties"]["renderer"]["enum"]
     assert "actions_home_v1" in enum_values
-    assert repo_schema["properties"]["spec"]["properties"]["app_shell"]["properties"][
-        "active"
-    ]["enum"] == ["home", "actions", "infrastructure"]
+    app_shell = repo_schema["properties"]["spec"]["properties"]["app_shell"]["properties"]
+    assert app_shell["active"]["enum"] == ["home", "actions", "infrastructure"]
+    assert set(app_shell["routes"]["properties"]) == {
+        "home",
+        "actions",
+        "infrastructure",
+    }
