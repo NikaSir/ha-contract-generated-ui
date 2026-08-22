@@ -22,8 +22,9 @@ Production contracts and bindings are introduced only from verified Home Assista
 - `schemas/` — machine-readable schemas for contracts, inventory, manifests, snapshots, render traces, diffs and approvals.
 - `approvals/` — intentionally reviewed exact semantic-change approvals.
 - `custom_components/contract_generated_ui/` — Home Assistant custom integration, runtime renderer and packaged schemas.
+- `templates/integration-panel-v1/` — copy/adapt reference implementation for integration-owned specialized panels; never a shared runtime dependency.
 - `tests/` — contract, integration, snapshot, semantic-diff, rendering and release-gate regression tests.
-- `docs/` — architecture, operating and release documentation.
+- `docs/` — architecture, operating, specialized-panel UI and release documentation.
 
 ## Contract boundary
 
@@ -84,6 +85,18 @@ This is a reviewable snippet using Home Assistant's supported `lovelace: dashboa
 
 See `docs/YAML_DASHBOARD_REGISTRATION.md`.
 
+## Integration-owned specialized panels
+
+Specialized applications such as UPS, irrigation, vacuum and network control use a common NikaS mobile shell rather than inventing independent navigation and geometry.
+
+Normative documents:
+
+- `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` — required app navigation, Header, Device Selector, Bottom Tab Bar and state semantics;
+- `docs/NIKAS_INTEGRATION_PANEL_TEMPLATE_V1.md` — shared visual primitives, typography and copy/adapt implementation contract;
+- `docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md` — one self-contained production frontend bundle per integration.
+
+The runnable reference is under `templates/integration-panel-v1/`. It is copied/adapted into an integration repository and must **not** become a runtime dependency on `ha-contract-generated-ui`.
+
 ## Deterministic Lovelace renderer
 
 Renderer v1 resolves explicit manifest role bindings through verified semantic inventory and produces Home Assistant core Heading, Grid and Tile cards.
@@ -129,7 +142,7 @@ python -m generator validate .
 python -m pytest -q
 ```
 
-Home Assistant metadata and translation structure are additionally checked by the official Hassfest workflow.
+Home Assistant metadata and translation structure are additionally checked by the official Hassfest workflow. Repository CI also syntax-checks the shared integration-panel reference and rejects browser-history Back or runtime ES-module dependencies in that reference.
 
 ## Design principles
 
@@ -141,6 +154,8 @@ Home Assistant metadata and translation structure are additionally checked by th
 6. **Home Assistant entity IDs are never invented.** Generation consumes verified inventory.
 7. **Private runtime bindings stay private.** Public contracts/manifests do not reveal the Home Assistant entity catalog.
 8. **Deployment uses supported Home Assistant mechanisms.** The integration does not mutate Lovelace `.storage` through private APIs.
+9. **Specialized applications share one shell language.** Domain panels customize content, not global mobile navigation mechanics.
+10. **Specialized production frontends are autonomous.** Shared source patterns never become cross-repository runtime dependencies.
 
 ## License
 

@@ -1,0 +1,55 @@
+{
+  "api_version": "nikas.home-assistant/integration-panel/v1",
+  "template": "NikaS Integration Panel Template v1.0",
+  "panel": {
+    "id": "example",
+    "title": "Example Panel",
+    "path": "/dashboard-example",
+    "owner": "example_integration",
+    "parent_route": "/dashboard-actions",
+    "preferred_view": "overview",
+    "ui_version": "1.0.0"
+  },
+  "header": {
+    "grid": "52px minmax(0,1fr) 52px",
+    "back_icon": "mdi:arrow-left",
+    "back_text": false,
+    "explicit_parent_navigation": true,
+    "title_alignment": "viewport_center",
+    "show_brand_icon": false,
+    "actions": ["refresh"]
+  },
+  "device_context": {
+    "enabled": false,
+    "placement": "below_header",
+    "fixed_order": true,
+    "persist_across_views": true,
+    "selected_device_only_content": true
+  },
+  "navigation": {
+    "mode": "full_width_fixed_bottom_tab_bar",
+    "floating": false,
+    "safe_area": true,
+    "max_primary_items": 5,
+    "views": ["overview", "control", "diagnostics"]
+  },
+  "semantics": {
+    "healthy": "green",
+    "active": "primary",
+    "warning": "amber",
+    "fault": "red",
+    "unknown": "grey",
+    "unknown_is_healthy": false,
+    "unavailable_is_healthy": false
+  },
+  "frontend_delivery": {
+    "mode": "self_contained_bundle",
+    "runtime_shared_template_dependency": false,
+    "runtime_previous_version_imports": false,
+    "cache_busting": "query_ui_version"
+  },
+  "target": {
+    "primary": "iPhone Pro Max portrait",
+    "desktop_is_secondary": true
+  }
+}
