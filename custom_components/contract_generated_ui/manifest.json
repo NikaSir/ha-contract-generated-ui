@@ -5,7 +5,9 @@
     "@NikaSir"
   ],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": [
+    "frontend"
+  ],
   "documentation": "https://github.com/NikaSir/ha-contract-generated-ui",
   "integration_type": "service",
   "iot_class": "calculated",
@@ -15,5 +17,5 @@
     "PyYAML==6.0.3"
   ],
   "single_config_entry": true,
-  "version": "0.10.0"
+  "version": "0.11.0"
 }
