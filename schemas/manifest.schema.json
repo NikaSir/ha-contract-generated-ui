@@ -36,6 +36,14 @@
             "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
           }
         },
+        "app_shell": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["active"],
+          "properties": {
+            "active": {"enum": ["home", "actions", "infrastructure"]}
+          }
+        },
         "views": {
           "type": "array",
           "minItems": 1,
