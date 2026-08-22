@@ -49,7 +49,7 @@ def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
-    assert zont["metadata"]["version"] == "0.4.0"
+    assert zont["metadata"]["version"] == "0.5.0"
     assert starline["metadata"]["version"] == "0.5.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
     assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
@@ -65,12 +65,22 @@ def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None
         "platforms": ["starline"],
         "include_disabled": False,
     }
-    assert len(zont["spec"]["views"]) == 4
+    assert len(zont["spec"]["views"]) == 5
     assert len(starline["spec"]["views"]) == 5
+    assert [view["id"] for view in zont["spec"]["views"]] == [
+        "overview",
+        "circuits",
+        "rooms",
+        "diagnostics",
+        "ebus",
+    ]
     assert all(view["modules"] == [] for view in zont["spec"]["views"])
     assert all(view["modules"] == [] for view in starline["spec"]["views"])
     assert all(view["readonly"] for view in zont["spec"]["views"])
     assert all(view["readonly"] for view in starline["spec"]["views"])
+    assert "радиатор" in zont["spec"]["views"][1]["readonly"]["include_keywords"]
+    assert "rssi" in zont["spec"]["views"][2]["readonly"]["include_keywords"]
+    assert zont["spec"]["views"][4]["readonly"]["include_keywords"] == ["ebus"]
     assert starline["spec"]["views"][0]["readonly"]["limit"] == 6
     assert "пробег" in starline["spec"]["views"][0]["readonly"]["priority_keywords"]
     assert "капот" in starline["spec"]["views"][0]["readonly"]["exclude_keywords"]
@@ -85,19 +95,20 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert len(groups) == 1
     group = groups[0]
     assert group["title"] == "ZONT"
-    assert group["subtitle"] == "Отопление и ГВС · UI v0.4.0"
+    assert group["subtitle"] == "Отопление и ГВС · UI v0.5.0"
     assert group["parent"]["path"] == "/dashboard-house/heating"
     assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
         "/dashboard-zont/overview",
-        "/dashboard-zont/heating",
-        "/dashboard-zont/sensors",
-        "/dashboard-zont/service",
+        "/dashboard-zont/circuits",
+        "/dashboard-zont/rooms",
+        "/dashboard-zont/diagnostics",
+        "/dashboard-zont/ebus",
     ]
 
     for view, expected in zip(
         rendered["views"],
-        ["overview", "heating", "sensors", "service"],
+        ["overview", "circuits", "rooms", "diagnostics", "ebus"],
         strict=True,
     ):
         assert view["path"] == expected
@@ -118,10 +129,16 @@ def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     assert specs["starline"]["parent"]["path"] == "/dashboard-house/vehicles"
     assert specs["zont"]["source"]["platforms"] == ["zont", "zont_ha"]
     assert specs["starline"]["source"]["platforms"] == ["starline"]
-    assert len(specs["zont"]["tabs"]) == 4
+    assert len(specs["zont"]["tabs"]) == 5
     assert len(specs["starline"]["tabs"]) == 5
-    assert specs["zont"]["tabs"][0]["label"] == "Обзор"
-    assert specs["zont"]["tabs"][0]["readonly"]["limit"] == 14
+    assert [tab["label"] for tab in specs["zont"]["tabs"]] == [
+        "Обзор",
+        "Контуры",
+        "Помещения",
+        "Диагностика",
+        "eBUS",
+    ]
+    assert specs["zont"]["tabs"][0]["readonly"]["limit"] == 18
     assert specs["starline"]["tabs"][0]["readonly"]["limit"] == 6
     assert specs["starline"]["tabs"][1]["readonly"]["domains"] == [
         "binary_sensor",
