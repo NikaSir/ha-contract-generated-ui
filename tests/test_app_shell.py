@@ -120,7 +120,7 @@ def test_runtime_and_generator_app_shell_sources_are_byte_equivalent() -> None:
     assert generator_source == runtime_source
 
 
-def test_infrastructure_v09_uses_single_view_app_shell() -> None:
+def test_infrastructure_v010_uses_single_view_app_shell() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -132,7 +132,7 @@ def test_infrastructure_v09_uses_single_view_app_shell() -> None:
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
 
-    assert manifest["metadata"]["version"] == "0.9.0"
+    assert manifest["metadata"]["version"] == "0.10.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
     assert [view["id"] for view in manifest["spec"]["views"]] == ["overview"]
     assert manifest["spec"]["views"][0]["renderer"] == "infrastructure_summary_v1"

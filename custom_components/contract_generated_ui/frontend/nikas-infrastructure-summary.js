@@ -205,12 +205,14 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         ${this._metric("АКБ", this._format("battery_capacity"), "mdi:battery")}
         ${this._metric("Нагрузка", this._format("output_load"), "mdi:gauge")}
       </div>
-      <div class="summary-line ups-summary">
-        <span>${this._escape(cloudText)}</span>
-        <span>·</span>
-        <span>${this._escape(staleText)}</span>
-      </div>
-      ${details}`;
+      <div class="ups-footer">
+        <div class="summary-line ups-summary">
+          <span>${this._escape(cloudText)}</span>
+          <span>·</span>
+          <span>${this._escape(staleText)}</span>
+        </div>
+        ${details}
+      </div>`;
   }
 
   _keeneticMarkup() {
@@ -223,7 +225,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
     const switchTime = this._relativeTime("last_wan_switch");
 
     return `
-      <div class="card-header">
+      <div class="card-header keenetic-header">
         <div><h2>${this._escape(this._config.title)}</h2><p>WAN / LTE</p></div>
         ${status}
       </div>
@@ -232,7 +234,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         <div><span>Последняя смена</span><strong>${this._escape(switchTime)}</strong></div>
       </div>
       <div class="reason" title="${this._escape(reason)}"><span>Причина ·</span> ${this._escape(reason)}</div>
-      <div class="metric-grid three">
+      <div class="metric-grid three keenetic-metrics">
         ${this._metric("Смен сегодня", this._format("wan_switches_today"), "mdi:swap-horizontal")}
         ${this._metric("LTE сегодня", this._format("lte_time_today"), "mdi:timer-outline")}
         ${this._metric("Температура", this._format("temperature"), "mdi:thermometer")}
@@ -250,27 +252,29 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
       <style>
         :host { display: block; width: 100%; }
         ha-card {
-          padding: 18px;
+          padding: 14px 16px;
           border-radius: var(--ha-card-border-radius, 24px);
           box-sizing: border-box;
           overflow: hidden;
         }
-        ha-card.ups { padding: 15px 18px 10px; }
+        ha-card.ups { padding: 12px 16px 8px; }
+        ha-card.keenetic { padding: 14px 16px 13px; }
         .card-header {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 16px;
+          gap: 10px;
+          margin-bottom: 10px;
         }
-        .ups-header { margin-bottom: 11px; }
-        h2 { margin: 0; font-size: 22px; line-height: 1.15; font-weight: 700; }
-        p { margin: 5px 0 0; color: var(--secondary-text-color); font-size: 14px; }
+        .ups-header { margin-bottom: 8px; }
+        .keenetic-header { margin-bottom: 8px; }
+        h2 { margin: 0; font-size: 21px; line-height: 1.12; font-weight: 700; }
+        p { margin: 3px 0 0; color: var(--secondary-text-color); font-size: 13px; }
         .status {
           flex: 0 0 auto;
           border-radius: 999px;
-          padding: 8px 11px;
-          font-size: 13px;
+          padding: 7px 10px;
+          font-size: 12px;
           line-height: 1;
           font-weight: 700;
           white-space: nowrap;
@@ -280,11 +284,11 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .status.event { color: var(--error-color, #db4437); background: color-mix(in srgb, var(--error-color, #db4437) 12%, transparent); }
         .status.unreliable { color: var(--secondary-text-color); background: var(--secondary-background-color, #eee); }
         .status.info { color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 12%, transparent); }
-        .phase-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .phase-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 7px; }
         .phase {
           min-width: 0;
-          padding: 12px 8px;
-          border-radius: 16px;
+          padding: 8px 6px;
+          border-radius: 14px;
           background: var(--secondary-background-color, #f4f4f4);
           text-align: center;
           border: 1px solid transparent;
@@ -292,57 +296,71 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .phase.ok { border-color: color-mix(in srgb, var(--success-color, #43a047) 30%, transparent); }
         .phase.event { border-color: color-mix(in srgb, var(--error-color, #db4437) 40%, transparent); }
         .phase.unreliable { opacity: .68; }
-        .phase-name { display: block; color: var(--secondary-text-color); font-size: 13px; margin-bottom: 3px; }
-        .phase strong { display: block; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .metric-grid { display: grid; gap: 8px; }
+        .phase-name { display: block; color: var(--secondary-text-color); font-size: 12px; margin-bottom: 1px; }
+        .phase strong { display: block; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .metric-grid { display: grid; gap: 6px; }
         .metric-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .metric-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         .metric {
           min-width: 0;
           display: flex;
           align-items: center;
-          gap: 9px;
-          padding: 11px;
-          border-radius: 16px;
+          gap: 8px;
+          padding: 8px 10px;
+          border-radius: 14px;
           background: var(--secondary-background-color, #f4f4f4);
         }
-        .ups-metrics .metric { padding: 9px 11px; }
-        .metric ha-icon { color: var(--primary-color); --mdc-icon-size: 22px; flex: 0 0 auto; }
+        .ups-metrics .metric { padding: 7px 10px; }
+        .metric ha-icon { color: var(--primary-color); --mdc-icon-size: 20px; flex: 0 0 auto; }
         .metric > div { min-width: 0; }
-        .metric-label { display: block; color: var(--secondary-text-color); font-size: 12px; line-height: 1.2; }
-        .metric strong { display: block; margin-top: 2px; font-size: 16px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .summary-line { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 11px; color: var(--secondary-text-color); font-size: 13px; }
-        .ups-summary { margin-top: 7px; }
+        .metric-label { display: block; color: var(--secondary-text-color); font-size: 11.5px; line-height: 1.15; }
+        .metric strong { display: block; margin-top: 1px; font-size: 15.5px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .summary-line { display: flex; gap: 4px; flex-wrap: wrap; color: var(--secondary-text-color); font-size: 12px; line-height: 1.2; }
+        .ups-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          min-height: 44px;
+          margin-top: 5px;
+        }
+        .ups-summary { min-width: 0; flex: 1 1 auto; }
         .details {
           appearance: none;
           border: 0;
           background: transparent;
           color: var(--primary-color);
           min-height: 44px;
-          margin: 1px -6px -6px auto;
-          padding: 7px 6px;
+          margin: 0 -4px 0 0;
+          padding: 6px 4px;
           display: flex;
           align-items: center;
-          gap: 2px;
+          gap: 1px;
           font: inherit;
           font-weight: 700;
           cursor: pointer;
+          flex: 0 0 auto;
         }
-        .details ha-icon { --mdc-icon-size: 20px; }
-        .keenetic-primary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 9px; }
-        .keenetic-primary > div { padding: 12px; border-radius: 16px; background: var(--secondary-background-color, #f4f4f4); min-width: 0; }
-        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 12px; }
-        .keenetic-primary strong { display: block; margin-top: 3px; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .reason { margin: 0 2px 11px; color: var(--secondary-text-color); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .details ha-icon { --mdc-icon-size: 19px; }
+        .keenetic-primary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
+        .keenetic-primary > div { padding: 9px 10px; border-radius: 14px; background: var(--secondary-background-color, #f4f4f4); min-width: 0; }
+        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 11.5px; }
+        .keenetic-primary strong { display: block; margin-top: 2px; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .reason { margin: 0 2px 7px; color: var(--secondary-text-color); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason span { font-weight: 600; color: var(--primary-text-color); }
+        .keenetic-metrics .metric { padding: 7px 8px; }
         @media (max-width: 420px) {
-          ha-card { padding: 16px; }
-          ha-card.ups { padding: 13px 16px 8px; }
-          h2 { font-size: 20px; }
-          .status { font-size: 12px; padding: 7px 9px; }
-          .metric-grid.three .metric { display: block; padding: 10px 8px; text-align: center; }
-          .metric-grid.three .metric ha-icon { margin-bottom: 4px; }
-          .metric-grid.three .metric strong { font-size: 14px; }
+          ha-card { padding: 13px 14px; }
+          ha-card.ups { padding: 11px 14px 6px; }
+          ha-card.keenetic { padding: 13px 14px 11px; }
+          h2 { font-size: 19px; }
+          .status { font-size: 11.5px; padding: 6px 8px; }
+          .phase { padding: 7px 4px; }
+          .metric-grid.three .metric { display: block; padding: 7px 5px; text-align: center; }
+          .metric-grid.three .metric ha-icon { --mdc-icon-size: 18px; margin-bottom: 2px; }
+          .metric-grid.three .metric strong { font-size: 13.5px; }
+          .ups-footer { gap: 6px; }
+          .ups-summary { font-size: 11.5px; }
         }
       </style>
       <ha-card class="${this._config.variant}">${content}</ha-card>`;
@@ -363,7 +381,7 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
   window.customCards.push({
     type: "nikas-infrastructure-summary-v2",
     name: "NikaS Infrastructure Summary v2",
-    description: "Polished infrastructure summary for generated NikaS dashboards",
+    description: "Compact infrastructure summary for generated NikaS dashboards",
     preview: false,
   });
 }
