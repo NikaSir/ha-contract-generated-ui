@@ -58,3 +58,8 @@ All notable changes to this project will be documented in this file.
 - Managed-source synchronization explicitly excludes `inventory/`, `snapshots/` and `generated/` so private Home Assistant bindings and runtime history remain local.
 - Infrastructure panel manifest `0.3.0` / title `Инфраструктура · v0.3`.
 - Regression tests for operational role-group coverage, deterministic v3 rendering and private-source sync protection.
+- Manifest-level operational group filters (`0.6.0`) so each view explicitly selects `status`, `telemetry` and/or `diagnostic` roles.
+- Separate `Диагностика` view for UPS and Keenetic technical sensors while the main infrastructure overview keeps only operational status and telemetry.
+- RenderTrace filtering so semantic roles and binding keys match exactly what each generated view displays.
+- Infrastructure panel manifest `0.4.0` / title `Инфраструктура · v0.4` with `overview` and `diagnostics` views.
+- Generator and Home Assistant runtime regression tests for the diagnostics-view boundary.
