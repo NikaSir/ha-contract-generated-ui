@@ -72,6 +72,16 @@
               "minItems": 1,
               "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
               "uniqueItems": true
+            },
+            "role_groups": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["status", "telemetry", "diagnostic"],
+              "properties": {
+                "status": {"$ref": "#/$defs/role_group"},
+                "telemetry": {"$ref": "#/$defs/role_group"},
+                "diagnostic": {"$ref": "#/$defs/role_group"}
+              }
             }
           }
         },
@@ -98,6 +108,11 @@
     }
   },
   "$defs": {
+    "role_group": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+      "uniqueItems": true
+    },
     "state_rule": {
       "type": "object",
       "additionalProperties": false,
