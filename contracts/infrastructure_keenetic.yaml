@@ -3,11 +3,11 @@ kind: UIContract
 metadata:
   id: infrastructure.keenetic
   title: Keenetic Hero 4G+
-  version: 0.1.0
+  version: 0.2.0
 spec:
   roles:
     active_wan:
-      label: Активный WAN
+      label: WAN
       description: Текущий активный WAN-канал.
       required: true
       allowed_domains:
@@ -37,25 +37,25 @@ spec:
       allowed_domains:
       - sensor
     last_wan_switch:
-      label: Последнее переключение
+      label: Смена WAN
       description: Время последнего переключения WAN.
       required: true
       allowed_domains:
       - sensor
     last_wan_switch_reason:
-      label: Причина переключения
+      label: Причина WAN
       description: Причина последнего переключения WAN.
       required: true
       allowed_domains:
       - sensor
     wan_switches_today:
-      label: Переключений сегодня
+      label: Смен сегодня
       description: Количество переключений WAN за сутки.
       required: true
       allowed_domains:
       - sensor
     lte_time_today:
-      label: Время через LTE
+      label: LTE сегодня
       description: Суммарное время через LTE за сутки.
       required: true
       allowed_domains:
@@ -131,6 +131,20 @@ spec:
     - wan_switches_today
     - lte_time_today
     - temperature
+    role_groups:
+      status:
+      - active_wan
+      telemetry:
+      - last_wan_switch
+      - last_wan_switch_reason
+      - wan_switches_today
+      - lte_time_today
+      - temperature
+      diagnostic:
+      - ethernet_ping
+      - ethernet_packet_loss
+      - lte_ping
+      - lte_packet_loss
   safety:
     unknown_is_unreliable: true
     unavailable_is_unreliable: true
