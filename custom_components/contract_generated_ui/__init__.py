@@ -22,22 +22,23 @@ async def async_setup_entry(
     from homeassistant.const import Platform
 
     from .const import (
+        APP_SHELL_FILENAME,
         APP_SHELL_MODULE_URL,
+        APP_SHELL_STATIC_PATH,
         DOMAIN,
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
-        FRONTEND_URL_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     if not domain_data.get(FRONTEND_STATIC_REGISTERED):
-        frontend_path = Path(__file__).parent / FRONTEND_DIRECTORY
+        frontend_asset = Path(__file__).parent / FRONTEND_DIRECTORY / APP_SHELL_FILENAME
         await hass.http.async_register_static_paths(
             [
                 StaticPathConfig(
-                    FRONTEND_URL_PATH,
-                    str(frontend_path),
+                    APP_SHELL_STATIC_PATH,
+                    str(frontend_asset),
                     False,
                 )
             ]
