@@ -12,7 +12,7 @@ def test_release_version_and_schema_are_packaged() -> None:
             encoding="utf-8"
         )
     )
-    assert manifest["version"] == "0.16.1"
+    assert manifest["version"] == "0.17.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
@@ -40,11 +40,15 @@ def test_release_version_and_schema_are_packaged() -> None:
     }
 
 
-def test_frontend_uses_stable_lovelace_bundle_without_extra_js_race() -> None:
+def test_frontend_bundle_is_progressive_enhancement_not_lovelace_card_dependency() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
-    assert 'import "./nikas-app-shell.js";' in bundle
-    assert 'import "./nikas-infrastructure-summary.js";' in bundle
+    assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
+    assert "position: fixed" in bundle
+    assert 'window.addEventListener("location-changed"' in bundle
+    assert "Promise.allSettled" in bundle
+    assert 'import("./nikas-app-shell.js")' in bundle
+    assert 'import("./nikas-infrastructure-summary.js")' in bundle
 
     const_source = (
         ROOT / "custom_components" / "contract_generated_ui" / "const.py"
