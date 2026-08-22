@@ -6,6 +6,11 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from .app_shell import (
+    app_shell_engine_sha256,
+    append_app_shell,
+    manifest_app_shell_active,
+)
 from .render import (
     RenderError,
     RenderResult,
@@ -81,6 +86,13 @@ def render_repository_manifest(repo_root: Path, manifest_path: Path) -> RenderRe
         trace = _filter_trace(base.trace, contracts, manifest)
         trace["renderer_engine_sha256"] = _operational_layout_engine_sha256(
             base.trace["renderer_engine_sha256"]
+        )
+
+    app_shell_active = manifest_app_shell_active(manifest)
+    if app_shell_active is not None:
+        dashboard = append_app_shell(dashboard, active=app_shell_active)
+        trace["renderer_engine_sha256"] = app_shell_engine_sha256(
+            trace["renderer_engine_sha256"]
         )
 
     canonical = json.dumps(

@@ -3,13 +3,15 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.6.0
-  description: 'Production infrastructure panel v0.6: compact UPS summaries hand off to the integration-owned Stark SolarPower panel.'
+  version: 0.7.0
+  description: 'Production infrastructure panel v0.7: single operational overview inside the NikaS central app shell.'
 spec:
   dashboard_path: /dashboard-infrastructure
+  app_shell:
+    active: infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.6
+    title: Инфраструктура · v0.7
     path: overview
     order: 0
     modules:
@@ -20,7 +22,7 @@ spec:
       groups:
       - status
       - telemetry
-      bindings: &power_bindings
+      bindings:
         grid_ok: infrastructure.power.grid_ok
         meter_online: infrastructure.power.meter_online
         phase_a_present: infrastructure.power.phase_a_present
@@ -39,7 +41,7 @@ spec:
       order: 1
       groups:
       - status
-      bindings: &ups_internet_bindings
+      bindings:
         cloud_telemetry: infrastructure.ups.internet.cloud_telemetry
         data_stale: infrastructure.ups.internet.data_stale
         on_battery: infrastructure.ups.internet.on_battery
@@ -60,7 +62,7 @@ spec:
       order: 2
       groups:
       - status
-      bindings: &ups_boiler_bindings
+      bindings:
         cloud_telemetry: infrastructure.ups.boiler.cloud_telemetry
         data_stale: infrastructure.ups.boiler.data_stale
         on_battery: infrastructure.ups.boiler.on_battery
@@ -82,7 +84,7 @@ spec:
       groups:
       - status
       - telemetry
-      bindings: &keenetic_bindings
+      bindings:
         active_wan: infrastructure.network.keenetic.active_wan
         ethernet_ping: infrastructure.network.keenetic.ethernet_ping
         ethernet_packet_loss: infrastructure.network.keenetic.ethernet_packet_loss
@@ -93,15 +95,3 @@ spec:
         wan_switches_today: infrastructure.network.keenetic.wan_switches_today
         lte_time_today: infrastructure.network.keenetic.lte_time_today
         temperature: infrastructure.network.keenetic.temperature
-  - id: diagnostics
-    title: Диагностика
-    path: diagnostics
-    order: 1
-    modules:
-    - contract: infrastructure.keenetic
-      instance: keenetic
-      title: Keenetic Hero 4G+
-      order: 0
-      groups:
-      - diagnostic
-      bindings: *keenetic_bindings

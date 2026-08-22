@@ -87,3 +87,8 @@ All notable changes to this project will be documented in this file.
 - Actions rendering rejects unsupported/service-style action kinds and continues to rely on the base verified-inventory and toggle-domain safety gates.
 - Runtime and CLI use a common multi-renderer dispatch layer supporting `operational_v1`, `house_home_v1` and `actions_home_v1` without rewriting the existing operational/House engines.
 - Regression tests cover Actions deterministic sizing, unsupported-action rejection, runtime second-render stability and `python -m generator render` parity.
+- NikaS App Shell v1 (`0.11.0`) adds a shared fixed, edge-attached bottom Tab Bar for central `Дом`, `Действия` and `Инфраструктура` surfaces without Card Mod or an external frontend dependency.
+- The integration now serves its packaged `nikas-app-shell.js` through `async_register_static_paths` and registers it through Home Assistant's supported `frontend.add_extra_js_url()` API, so no manual Lovelace resource entry is required.
+- `PanelManifest.spec.app_shell.active` explicitly selects the active central surface and app-shell composition participates in `renderer_engine_sha256` / deterministic RenderTrace output.
+- Infrastructure panel `0.7.0` becomes a single operational overview with `app_shell.active: infrastructure`; the central top-level `Диагностика` view is removed as detailed diagnostics move to integration-owned panels.
+- Generator/runtime app-shell transformer parity, manifest schema packaging, frontend asset presence and infrastructure single-view ownership boundary are regression-tested.

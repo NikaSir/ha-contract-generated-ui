@@ -49,7 +49,7 @@ def test_ups_contract_hands_detail_ui_to_stark_panel() -> None:
     assert "output_voltage" in groups["diagnostic"]
 
 
-def test_infrastructure_keeps_only_compact_ups_summary() -> None:
+def test_infrastructure_is_single_overview_with_integration_owned_diagnostics() -> None:
     manifest = _load(ROOT / "manifests" / "infrastructure.yaml")
     bundled = _load(
         ROOT
@@ -61,9 +61,12 @@ def test_infrastructure_keeps_only_compact_ups_summary() -> None:
     )
 
     assert manifest == bundled
-    assert manifest["metadata"]["version"] == "0.6.0"
+    assert manifest["metadata"]["version"] == "0.7.0"
+    assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
 
     views = {view["id"]: view for view in manifest["spec"]["views"]}
+    assert set(views) == {"overview"}
+
     overview_ups = [
         module
         for module in views["overview"]["modules"]
@@ -72,8 +75,7 @@ def test_infrastructure_keeps_only_compact_ups_summary() -> None:
     assert len(overview_ups) == 2
     assert all(module["groups"] == ["status"] for module in overview_ups)
 
-    diagnostics_contracts = [
-        module["contract"] for module in views["diagnostics"]["modules"]
-    ]
-    assert "infrastructure.ups" not in diagnostics_contracts
-    assert diagnostics_contracts == ["infrastructure.keenetic"]
+    assert any(
+        module["contract"] == "infrastructure.keenetic"
+        for module in views["overview"]["modules"]
+    )
