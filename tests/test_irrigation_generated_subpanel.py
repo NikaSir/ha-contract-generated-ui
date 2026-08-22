@@ -8,6 +8,7 @@ import yaml
 from generator.subpanel_shell import apply_navigation_shell, compile_navigation_registry
 
 ROOT = Path(__file__).parents[1]
+CANDIDATE_DASHBOARD = "/dashboard-irrigation-generated"
 
 
 def _load_yaml(path: Path) -> dict:
@@ -39,7 +40,7 @@ def test_irrigation_manifest_uses_generated_subpanel_shell() -> None:
 
     assert manifest["metadata"]["id"] == "irrigation"
     assert manifest["metadata"]["title"] == "Полив"
-    assert manifest["spec"]["dashboard_path"] == "/dashboard-irrigation"
+    assert manifest["spec"]["dashboard_path"] == CANDIDATE_DASHBOARD
     assert manifest["spec"]["subpanel"] == {
         "template": "standard_v1",
         "navigation": "main",
@@ -69,10 +70,10 @@ def test_irrigation_shell_has_actions_back_and_four_standalone_tabs() -> None:
     assert group["parent"]["path"] == "/dashboard-actions"
     assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
-        "/dashboard-irrigation/overview",
-        "/dashboard-irrigation/manual",
-        "/dashboard-irrigation/settings",
-        "/dashboard-irrigation/diagnostics",
+        f"{CANDIDATE_DASHBOARD}/overview",
+        f"{CANDIDATE_DASHBOARD}/manual",
+        f"{CANDIDATE_DASHBOARD}/settings",
+        f"{CANDIDATE_DASHBOARD}/diagnostics",
     ]
 
     for view, expected_path in zip(
@@ -98,11 +99,12 @@ def test_navigation_registry_contains_irrigation_without_private_bindings() -> N
     assert irrigation["embedded"] is False
     assert irrigation["parent"]["path"] == "/dashboard-actions"
     assert len(irrigation["tabs"]) == 4
-    assert irrigation["tabs"][0]["path"] == "/dashboard-irrigation/overview"
+    assert irrigation["tabs"][0]["path"] == f"{CANDIDATE_DASHBOARD}/overview"
 
     serialized = json.dumps(registry, ensure_ascii=False)
     assert "entity_id" not in serialized
     assert "device_id" not in serialized
+    assert "/dashboard-irrigation/overview" not in serialized
 
 
 def test_irrigation_contracts_are_read_only_and_fail_closed() -> None:
