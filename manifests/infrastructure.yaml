@@ -3,13 +3,13 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.3.0
-  description: 'Production infrastructure panel v0.3: operational status, telemetry and diagnostics layout.'
+  version: 0.4.0
+  description: 'Production infrastructure panel v0.4: operational overview with a separate diagnostics view.'
 spec:
   dashboard_path: /dashboard-infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.3
+    title: Инфраструктура · v0.4
     path: overview
     order: 0
     modules:
@@ -17,7 +17,10 @@ spec:
       instance: power
       title: Электросеть
       order: 0
-      bindings:
+      groups:
+      - status
+      - telemetry
+      bindings: &power_bindings
         grid_ok: infrastructure.power.grid_ok
         meter_online: infrastructure.power.meter_online
         phase_a_present: infrastructure.power.phase_a_present
@@ -34,7 +37,10 @@ spec:
       instance: ups_internet
       title: UPS Интернет
       order: 1
-      bindings:
+      groups:
+      - status
+      - telemetry
+      bindings: &ups_internet_bindings
         cloud_telemetry: infrastructure.ups.internet.cloud_telemetry
         data_stale: infrastructure.ups.internet.data_stale
         on_battery: infrastructure.ups.internet.on_battery
@@ -53,7 +59,10 @@ spec:
       instance: ups_boiler
       title: UPS Котёл
       order: 2
-      bindings:
+      groups:
+      - status
+      - telemetry
+      bindings: &ups_boiler_bindings
         cloud_telemetry: infrastructure.ups.boiler.cloud_telemetry
         data_stale: infrastructure.ups.boiler.data_stale
         on_battery: infrastructure.ups.boiler.on_battery
@@ -72,7 +81,10 @@ spec:
       instance: keenetic
       title: Keenetic Hero 4G+
       order: 3
-      bindings:
+      groups:
+      - status
+      - telemetry
+      bindings: &keenetic_bindings
         active_wan: infrastructure.network.keenetic.active_wan
         ethernet_ping: infrastructure.network.keenetic.ethernet_ping
         ethernet_packet_loss: infrastructure.network.keenetic.ethernet_packet_loss
@@ -83,3 +95,29 @@ spec:
         wan_switches_today: infrastructure.network.keenetic.wan_switches_today
         lte_time_today: infrastructure.network.keenetic.lte_time_today
         temperature: infrastructure.network.keenetic.temperature
+  - id: diagnostics
+    title: Диагностика
+    path: diagnostics
+    order: 1
+    modules:
+    - contract: infrastructure.ups
+      instance: ups_internet
+      title: UPS Интернет
+      order: 0
+      groups:
+      - diagnostic
+      bindings: *ups_internet_bindings
+    - contract: infrastructure.ups
+      instance: ups_boiler
+      title: UPS Котёл
+      order: 1
+      groups:
+      - diagnostic
+      bindings: *ups_boiler_bindings
+    - contract: infrastructure.keenetic
+      instance: keenetic
+      title: Keenetic Hero 4G+
+      order: 2
+      groups:
+      - diagnostic
+      bindings: *keenetic_bindings
