@@ -175,10 +175,12 @@ def test_runtime_filter_matches_rendered_views() -> None:
         "tile",
         "tile",
     ]
-    assert [card["type"] for card in dashboard["views"][1]["sections"][0]["cards"]] == [
+    diagnostic_cards = dashboard["views"][1]["sections"][0]["cards"]
+    assert [card["type"] for card in diagnostic_cards] == [
         "heading",
         "entities",
     ]
+    assert "title" not in diagnostic_cards[1]
 
     trace = module._filter_trace(_trace(), contracts, manifest)
     assert set(trace["bindings"]) == {

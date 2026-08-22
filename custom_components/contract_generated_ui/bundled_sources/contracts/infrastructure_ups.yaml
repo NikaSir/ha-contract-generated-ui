@@ -3,7 +3,7 @@ kind: UIContract
 metadata:
   id: infrastructure.ups
   title: UPS
-  version: 0.2.0
+  version: 0.3.0
 spec:
   roles:
     cloud_telemetry:
@@ -182,13 +182,13 @@ spec:
       - on_battery
       - operating_mode
       telemetry:
-      - data_age
-      - data_time
       - battery_capacity
       - input_voltage
       - output_voltage
       - output_load
       diagnostic:
+      - data_age
+      - data_time
       - battery_voltage
       - input_frequency
       - output_frequency

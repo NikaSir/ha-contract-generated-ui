@@ -63,3 +63,7 @@ All notable changes to this project will be documented in this file.
 - RenderTrace filtering so semantic roles and binding keys match exactly what each generated view displays.
 - Infrastructure panel manifest `0.4.0` / title `Инфраструктура · v0.4` with `overview` and `diagnostics` views.
 - Generator and Home Assistant runtime regression tests for the diagnostics-view boundary.
+- Mobile polish for `0.7.0`: UPS `Возраст данных` and `Время данных` move from overview telemetry to the diagnostics group while `Данные устарели` remains the operational freshness indicator.
+- Diagnostic-only views omit the redundant inner `Диагностика` Entities-card title and retain only subsystem headings.
+- Infrastructure panel manifest `0.5.0` / title `Инфраструктура · v0.5`.
+- Regression tests require clean diagnostic-only cards in both repository and Home Assistant runtime renderers.
