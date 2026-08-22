@@ -3,7 +3,7 @@ kind: UIContract
 metadata:
   id: infrastructure.power_grid
   title: Электросеть
-  version: 0.1.0
+  version: 0.2.0
 spec:
   roles:
     grid_ok:
@@ -67,13 +67,13 @@ spec:
       allowed_domains:
       - sensor
     total_power:
-      label: Суммарная мощность
+      label: Мощность
       description: Суммарная активная мощность.
       required: true
       allowed_domains:
       - sensor
     non_interruptible_voltage:
-      label: Неотключаемая линия
+      label: Неоткл. линия
       description: Напряжение неотключаемой линии.
       required: true
       allowed_domains:
@@ -153,6 +153,22 @@ spec:
     - voltage_imbalance
     - total_power
     - non_interruptible_voltage
+    role_groups:
+      status:
+      - grid_ok
+      - meter_online
+      - phase_loss
+      - phase_a_present
+      - phase_b_present
+      - phase_c_present
+      telemetry:
+      - voltage_a
+      - voltage_b
+      - voltage_c
+      - voltage_imbalance
+      - total_power
+      - non_interruptible_voltage
+      diagnostic: []
   safety:
     unknown_is_unreliable: true
     unavailable_is_unreliable: true
