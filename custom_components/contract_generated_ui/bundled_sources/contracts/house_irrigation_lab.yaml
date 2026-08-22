@@ -1,0 +1,46 @@
+api_version: nikas.home-assistant/ui-contract/v1
+kind: UIContract
+metadata:
+  id: house.irrigation.lab
+  title: HO-SC-8W Laboratory
+  version: 0.1.0
+spec:
+  roles:
+    zone_8_schedule:
+      label: Зона 8 · лабораторная
+      description: Фактический read-only DP38 блок физически неиспользуемой зоны 8.
+      required: true
+      allowed_domains:
+        - sensor
+  states:
+    normal:
+      description: Лабораторный источник доступен и декодирован.
+      rules: []
+    event:
+      description: Лабораторный источник изменился.
+      rules: []
+    unreliable:
+      description: Источник unknown/unavailable либо не подтверждён.
+      rules: []
+  actions:
+    - id: more_info_zone_8_schedule
+      kind: more_info
+      description: Открыть more-info лабораторной зоны 8.
+      role: zone_8_schedule
+  presentation:
+    renderer: tiles_v1
+    columns: 1
+    role_order:
+      - zone_8_schedule
+    role_groups:
+      status: []
+      telemetry: []
+      diagnostic:
+        - zone_8_schedule
+  safety:
+    unknown_is_unreliable: true
+    unavailable_is_unreliable: true
+    invent_entity_ids: false
+    notes:
+      - Zone 8 is physically unused and development-only.
+      - Generated UI never exposes raw DP38 write controls.
