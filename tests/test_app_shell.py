@@ -110,7 +110,7 @@ def test_runtime_and_generator_app_shell_sources_are_byte_equivalent() -> None:
     assert generator_source == runtime_source
 
 
-def test_infrastructure_v011_uses_single_view_app_shell() -> None:
+def test_infrastructure_v012_uses_central_power_subviews() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -122,14 +122,23 @@ def test_infrastructure_v011_uses_single_view_app_shell() -> None:
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
 
-    assert manifest["metadata"]["version"] == "0.11.0"
+    assert manifest["metadata"]["version"] == "0.12.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
-    assert [view["id"] for view in manifest["spec"]["views"]] == ["overview"]
-    assert manifest["spec"]["views"][0]["renderer"] == "infrastructure_summary_v1"
+    assert [view["id"] for view in manifest["spec"]["views"]] == [
+        "overview",
+        "power-overview",
+        "power-before",
+        "power-after",
+        "power-history",
+    ]
+    assert all(
+        view["renderer"] == "infrastructure_summary_v1"
+        for view in manifest["spec"]["views"]
+    )
     assert bundled_path.read_bytes() == manifest_path.read_bytes()
 
 
-def test_nikas_ui_bundle_injects_global_bottom_navigation_without_custom_card_dependency() -> None:
+def test_nikas_ui_bundle_switches_to_local_power_navigation() -> None:
     asset = (
         ROOT
         / "custom_components"
@@ -142,3 +151,13 @@ def test_nikas_ui_bundle_injects_global_bottom_navigation_without_custom_card_de
     assert "env(safe-area-inset-bottom" in asset
     assert 'window.addEventListener("location-changed"' in asset
     assert 'pathname.startsWith("/dashboard-infrastructure")' in asset
+    assert "const POWER_ITEMS" in asset
+    assert 'label: "Обзор"' in asset
+    assert 'label: "До стаб."' in asset
+    assert 'label: "После стаб."' in asset
+    assert 'label: "История"' in asset
+    assert 'path: "/dashboard-infrastructure/power-overview"' in asset
+    assert 'path: "/dashboard-infrastructure/power-before"' in asset
+    assert 'path: "/dashboard-infrastructure/power-after"' in asset
+    assert 'path: "/dashboard-infrastructure/power-history"' in asset
+    assert "--nikas-nav-columns" in asset

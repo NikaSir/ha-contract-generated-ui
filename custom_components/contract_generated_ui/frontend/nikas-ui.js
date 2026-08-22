@@ -21,6 +21,33 @@ const BASE_ITEMS = [
   },
 ];
 
+const POWER_ITEMS = [
+  {
+    id: "power-overview",
+    label: "Обзор",
+    icon: "mdi:view-dashboard-outline",
+    path: "/dashboard-infrastructure/power-overview",
+  },
+  {
+    id: "power-before",
+    label: "До стаб.",
+    icon: "mdi:transmission-tower-import",
+    path: "/dashboard-infrastructure/power-before",
+  },
+  {
+    id: "power-after",
+    label: "После стаб.",
+    icon: "mdi:transmission-tower-export",
+    path: "/dashboard-infrastructure/power-after",
+  },
+  {
+    id: "power-history",
+    label: "История",
+    icon: "mdi:chart-line",
+    path: "/dashboard-infrastructure/power-history",
+  },
+];
+
 function surfaceForPath(pathname) {
   if (pathname.startsWith("/dashboard-house")) return "home";
   if (pathname.startsWith("/dashboard-actions")) return "actions";
@@ -42,13 +69,34 @@ function routesForPath(pathname) {
     : Object.fromEntries(BASE_ITEMS.map((item) => [item.id, item.path]));
 }
 
+function navigationModel(pathname) {
+  const powerItem = POWER_ITEMS.find((item) => pathname.startsWith(item.path));
+  if (powerItem) {
+    return {
+      mode: "power",
+      active: powerItem.id,
+      items: POWER_ITEMS,
+      routes: Object.fromEntries(POWER_ITEMS.map((item) => [item.id, item.path])),
+    };
+  }
+
+  const active = surfaceForPath(pathname);
+  if (!active) return null;
+  return {
+    mode: "global",
+    active,
+    items: BASE_ITEMS,
+    routes: routesForPath(pathname),
+  };
+}
+
 function navigate(path) {
   if (!path || window.location.pathname === path) return;
   window.history.pushState(null, "", path);
   window.dispatchEvent(new Event("location-changed"));
 }
 
-function createBar(active, routes) {
+function createBar(model) {
   const root = document.createElement("div");
   root.id = BAR_ID;
   root.setAttribute("role", "navigation");
@@ -80,7 +128,7 @@ function createBar(active, routes) {
         width: min(100%, 720px);
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(var(--nikas-nav-columns, 3), minmax(0, 1fr));
         gap: 4px;
       }
       button {
@@ -134,50 +182,48 @@ function createBar(active, routes) {
       <nav></nav>
     </div>`;
 
-  const nav = shadow.querySelector("nav");
-  for (const item of BASE_ITEMS) {
-    const button = document.createElement("button");
-    button.dataset.surface = item.id;
-    button.type = "button";
-    button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${item.label}</span>`;
-    nav.appendChild(button);
-  }
-
-  updateBar(root, active, routes);
+  renderBar(root, model);
   return root;
 }
 
-function updateBar(root, active, routes) {
-  root.shadowRoot.querySelectorAll("button[data-surface]").forEach((button) => {
-    const surface = button.dataset.surface;
-    const isActive = surface === active;
+function renderBar(root, model) {
+  const nav = root.shadowRoot.querySelector("nav");
+  nav.style.setProperty("--nikas-nav-columns", String(model.items.length));
+  nav.replaceChildren();
+
+  for (const item of model.items) {
+    const button = document.createElement("button");
+    const isActive = item.id === model.active;
+    button.dataset.surface = item.id;
+    button.type = "button";
     button.classList.toggle("active", isActive);
     button.disabled = isActive;
     if (isActive) button.setAttribute("aria-current", "page");
-    else button.removeAttribute("aria-current");
+    button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${item.label}</span>`;
     button.onclick = () => {
-      if (!isActive) navigate(routes[surface]);
+      if (!isActive) navigate(model.routes[item.id]);
     };
-  });
+    nav.appendChild(button);
+  }
+  root.dataset.mode = model.mode;
 }
 
 function syncBar() {
   if (!document.body) return;
   const pathname = window.location.pathname;
-  const active = surfaceForPath(pathname);
+  const model = navigationModel(pathname);
   let root = document.getElementById(BAR_ID);
 
-  if (!active) {
+  if (!model) {
     if (root) root.remove();
     return;
   }
 
-  const routes = routesForPath(pathname);
   if (!root) {
-    root = createBar(active, routes);
+    root = createBar(model);
     document.body.appendChild(root);
   } else {
-    updateBar(root, active, routes);
+    renderBar(root, model);
   }
 }
 
@@ -195,9 +241,8 @@ if (document.readyState === "loading") {
   scheduleSync();
 }
 
-// Keep old card modules available for already-generated dashboards during the
-// migration to native cards. Their success or failure no longer affects the
-// native v0.11+ dashboard or the global bottom navigation above.
+// Legacy modules remain a migration fallback only. Primary v0.12 central
+// Infrastructure content and the electrical subpanel use native HA cards.
 Promise.allSettled([
   import("./nikas-app-shell.js"),
   import("./nikas-infrastructure-summary.js"),
