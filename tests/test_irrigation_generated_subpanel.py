@@ -4,10 +4,12 @@ import json
 from pathlib import Path
 
 import yaml
+from jsonschema import Draft202012Validator
 
 from generator.subpanel_shell import apply_navigation_shell, compile_navigation_registry
 
 ROOT = Path(__file__).parents[1]
+CANDIDATE_MANIFEST = ROOT / "staged" / "irrigation" / "panel-manifest.yaml"
 CANDIDATE_DASHBOARD = "/dashboard-irrigation-generated"
 
 
@@ -35,8 +37,16 @@ def _sections_dashboard(view_count: int) -> dict:
     }
 
 
-def test_irrigation_manifest_uses_generated_subpanel_shell() -> None:
-    manifest = _load_yaml(ROOT / "manifests" / "irrigation.yaml")
+def test_irrigation_candidate_manifest_is_valid_but_not_active() -> None:
+    manifest = _load_yaml(CANDIDATE_MANIFEST)
+    schema = json.loads(
+        (ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8")
+    )
+    errors = sorted(
+        Draft202012Validator(schema).iter_errors(manifest),
+        key=lambda error: list(error.absolute_path),
+    )
+    assert not errors, [error.message for error in errors]
 
     assert manifest["metadata"]["id"] == "irrigation"
     assert manifest["metadata"]["title"] == "Полив"
@@ -55,9 +65,19 @@ def test_irrigation_manifest_uses_generated_subpanel_shell() -> None:
     assert all(view["renderer"] == "operational_v1" for view in manifest["spec"]["views"])
     assert all(view["modules"] for view in manifest["spec"]["views"])
 
+    assert not (ROOT / "manifests" / "irrigation.yaml").exists()
+    assert not (
+        ROOT
+        / "custom_components"
+        / "contract_generated_ui"
+        / "bundled_sources"
+        / "manifests"
+        / "irrigation.yaml"
+    ).exists()
 
-def test_irrigation_shell_has_actions_back_and_four_standalone_tabs() -> None:
-    manifest = _load_yaml(ROOT / "manifests" / "irrigation.yaml")
+
+def test_irrigation_candidate_shell_has_actions_back_and_four_tabs() -> None:
+    manifest = _load_yaml(CANDIDATE_MANIFEST)
     rendered, groups = apply_navigation_shell(
         _sections_dashboard(len(manifest["spec"]["views"])), manifest, ROOT
     )
@@ -90,21 +110,23 @@ def test_irrigation_shell_has_actions_back_and_four_standalone_tabs() -> None:
         assert spacer["text_only"] is True
 
 
-def test_navigation_registry_contains_irrigation_without_private_bindings() -> None:
+def test_irrigation_candidate_route_is_declared_but_registry_stays_dormant() -> None:
+    navigation = _load_yaml(ROOT / "navigation" / "main.yaml")
+    candidate = navigation["spec"]["routes"]["actions.irrigation_candidate"]
+    assert candidate == {
+        "title": "Полив · candidate",
+        "path": f"{CANDIDATE_DASHBOARD}/overview",
+        "parent": "actions",
+    }
+
     registry = compile_navigation_registry(ROOT)
     groups = {group["id"]: group for group in registry["subpanels"]}
-
-    assert "irrigation" in groups
-    irrigation = groups["irrigation"]
-    assert irrigation["embedded"] is False
-    assert irrigation["parent"]["path"] == "/dashboard-actions"
-    assert len(irrigation["tabs"]) == 4
-    assert irrigation["tabs"][0]["path"] == f"{CANDIDATE_DASHBOARD}/overview"
+    assert "irrigation" not in groups
 
     serialized = json.dumps(registry, ensure_ascii=False)
     assert "entity_id" not in serialized
     assert "device_id" not in serialized
-    assert "/dashboard-irrigation/overview" not in serialized
+    assert CANDIDATE_DASHBOARD not in serialized
 
 
 def test_irrigation_contracts_are_read_only_and_fail_closed() -> None:
@@ -123,7 +145,7 @@ def test_irrigation_contracts_are_read_only_and_fail_closed() -> None:
         )
 
 
-def test_irrigation_public_sources_match_bundled_runtime_sources() -> None:
+def test_irrigation_public_runtime_sources_match_bundled_copies() -> None:
     for name in (
         "house_irrigation_controller.yaml",
         "house_irrigation_zone.yaml",
@@ -138,14 +160,6 @@ def test_irrigation_public_sources_match_bundled_runtime_sources() -> None:
             / name
         ).read_bytes()
 
-    assert (ROOT / "manifests" / "irrigation.yaml").read_bytes() == (
-        ROOT
-        / "custom_components"
-        / "contract_generated_ui"
-        / "bundled_sources"
-        / "manifests"
-        / "irrigation.yaml"
-    ).read_bytes()
     assert (ROOT / "navigation" / "main.yaml").read_bytes() == (
         ROOT
         / "custom_components"
