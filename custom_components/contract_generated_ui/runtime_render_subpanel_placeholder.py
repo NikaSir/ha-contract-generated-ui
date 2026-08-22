@@ -21,10 +21,12 @@ def render_subpanel_placeholder_dashboard(
     dashboard: Mapping[str, Any],
     manifest: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Render entity-free demo content while preserving the generated shell boundary."""
+    """Render entity-free demo content with the shared application hierarchy."""
     transformed = copy.deepcopy(dashboard)
     views = transformed.get("views")
     manifest_views = manifest.get("spec", {}).get("views")
+    metadata = manifest.get("metadata", {})
+    panel_title = metadata.get("title", "Субпанель")
     if not isinstance(views, list) or not isinstance(manifest_views, list):
         raise RenderError("subpanel_placeholder_v1 requires dashboard and manifest views")
     if len(views) != len(manifest_views):
@@ -51,18 +53,21 @@ def render_subpanel_placeholder_dashboard(
                 "type": "grid",
                 "cards": [
                     {
-                        "type": "heading",
-                        "heading": tab_title,
-                        "heading_style": "title",
+                        "type": "markdown",
+                        "content": (
+                            f"## ⚪ {panel_title}\n\n"
+                            f"**{tab_title} · каркас готов**\n\n"
+                            "Предметные данные пока не подключены."
+                        ),
                         "grid_options": {"columns": "full"},
                     },
                     {
                         "type": "markdown",
                         "content": (
-                            "### Каркас субпанели\n\n"
+                            f"### {tab_title}\n\n"
                             f"{placeholder}\n\n"
-                            "_Навигация, заголовок и кнопка «Назад» сформированы "
-                            "централизованно Contract Generated UI._"
+                            "_Header, Back и нижние вкладки сформированы единым "
+                            "Contract Generated UI shell._"
                         ),
                         "grid_options": {"columns": "full"},
                     },
