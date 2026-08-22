@@ -83,7 +83,7 @@ spec:
       path: rooms
       order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Комнатные и уличные датчики ZONT: температура, влажность, батарея и RSSI.
+      placeholder: "Комнатные и уличные датчики ZONT: температура, влажность, батарея и RSSI."
       readonly:
         domains:
           - sensor
@@ -148,7 +148,7 @@ spec:
       path: ebus
       order: 4
       renderer: subpanel_placeholder_v1
-      placeholder: Дополнительный eBUS-канал: давление, модуляция и температуры второго котлового канала.
+      placeholder: "Дополнительный eBUS-канал: давление, модуляция и температуры второго котлового канала."
       readonly:
         domains:
           - sensor
