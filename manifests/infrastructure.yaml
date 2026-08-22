@@ -3,15 +3,15 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.10.0
-  description: 'Production infrastructure panel v0.10: denser mobile-first summaries with reduced vertical whitespace.'
+  version: 0.11.0
+  description: 'Production infrastructure panel v0.11: native compact Markdown summaries with no Lovelace custom-card dependency.'
 spec:
   dashboard_path: /dashboard-infrastructure
   app_shell:
     active: infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.10
+    title: Инфраструктура · v0.11
     path: overview
     order: 0
     renderer: infrastructure_summary_v1

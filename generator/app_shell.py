@@ -107,7 +107,10 @@ def append_app_shell(
     if not isinstance(views, list) or not views:
         raise ValueError("NikaS app shell requires dashboard views")
 
-    items = _navigation_items(normalized_routes)
+    # The fixed bottom navigation is injected globally by nikas-ui.js and is no
+    # longer represented as a Lovelace custom card.  Keeping only a native,
+    # borderless spacer here prevents the last content card from sitting under
+    # the overlay while avoiding Home Assistant custom-element load races.
     for view in views:
         if not isinstance(view, dict) or view.get("type") != "sections":
             raise ValueError("NikaS app shell requires Sections views")
@@ -119,9 +122,9 @@ def append_app_shell(
                 "type": "grid",
                 "cards": [
                     {
-                        "type": "custom:nikas-app-shell",
-                        "active": active,
-                        "items": [dict(item) for item in items],
+                        "type": "markdown",
+                        "content": "<br><br><br>",
+                        "text_only": True,
                         "grid_options": {"columns": "full"},
                     }
                 ],

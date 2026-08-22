@@ -61,7 +61,7 @@ def test_infrastructure_is_single_summary_overview_with_owned_diagnostics() -> N
     )
 
     assert manifest == bundled
-    assert manifest["metadata"]["version"] == "0.10.0"
+    assert manifest["metadata"]["version"] == "0.11.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
 
     views = {view["id"]: view for view in manifest["spec"]["views"]}

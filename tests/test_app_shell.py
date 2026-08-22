@@ -6,7 +6,6 @@ import pytest
 import yaml
 
 from generator.app_shell import (
-    APP_SHELL_ITEMS,
     append_app_shell,
     manifest_app_shell_active,
     manifest_app_shell_config,
@@ -34,32 +33,28 @@ def _dashboard() -> dict:
     }
 
 
-def _shell_card(rendered: dict) -> dict:
+def _spacer_card(rendered: dict) -> dict:
     return rendered["views"][0]["sections"][-1]["cards"][0]
 
 
-def test_app_shell_is_full_width_fixed_navigation_placeholder() -> None:
+def test_app_shell_uses_only_native_bottom_clearance_in_lovelace() -> None:
     source = _dashboard()
     rendered = append_app_shell(source, active="infrastructure")
 
     assert len(source["views"][0]["sections"]) == 1
     sections = rendered["views"][0]["sections"]
     assert len(sections) == 2
-    card = _shell_card(rendered)
-    assert card["type"] == "custom:nikas-app-shell"
-    assert card["active"] == "infrastructure"
-    assert card["grid_options"] == {"columns": "full"}
-    assert tuple(item["id"] for item in card["items"]) == (
-        "home",
-        "actions",
-        "infrastructure",
-    )
-    assert tuple(item["path"] for item in card["items"]) == tuple(
-        item["path"] for item in APP_SHELL_ITEMS
-    )
+    card = _spacer_card(rendered)
+    assert card == {
+        "type": "markdown",
+        "content": "<br><br><br>",
+        "text_only": True,
+        "grid_options": {"columns": "full"},
+    }
+    assert "custom:" not in str(rendered)
 
 
-def test_app_shell_route_overrides_are_explicit_and_partial() -> None:
+def test_app_shell_route_overrides_remain_validated_without_custom_card() -> None:
     rendered = append_app_shell(
         _dashboard(),
         active="home",
@@ -68,12 +63,7 @@ def test_app_shell_route_overrides_are_explicit_and_partial() -> None:
             "actions": "/dashboard-actions-preview/home",
         },
     )
-    paths = {item["id"]: item["path"] for item in _shell_card(rendered)["items"]}
-    assert paths == {
-        "home": "/dashboard-house-preview/home",
-        "actions": "/dashboard-actions-preview/home",
-        "infrastructure": "/dashboard-infrastructure/overview",
-    }
+    assert _spacer_card(rendered)["type"] == "markdown"
 
 
 def test_app_shell_manifest_contract_is_explicit() -> None:
@@ -120,7 +110,7 @@ def test_runtime_and_generator_app_shell_sources_are_byte_equivalent() -> None:
     assert generator_source == runtime_source
 
 
-def test_infrastructure_v010_uses_single_view_app_shell() -> None:
+def test_infrastructure_v011_uses_single_view_app_shell() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -132,22 +122,23 @@ def test_infrastructure_v010_uses_single_view_app_shell() -> None:
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
 
-    assert manifest["metadata"]["version"] == "0.10.0"
+    assert manifest["metadata"]["version"] == "0.11.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
     assert [view["id"] for view in manifest["spec"]["views"]] == ["overview"]
     assert manifest["spec"]["views"][0]["renderer"] == "infrastructure_summary_v1"
     assert bundled_path.read_bytes() == manifest_path.read_bytes()
 
 
-def test_app_shell_frontend_asset_is_packaged() -> None:
+def test_nikas_ui_bundle_injects_global_bottom_navigation_without_custom_card_dependency() -> None:
     asset = (
         ROOT
         / "custom_components"
         / "contract_generated_ui"
         / "frontend"
-        / "nikas-app-shell.js"
+        / "nikas-ui.js"
     ).read_text(encoding="utf-8")
-    assert 'customElements.define("nikas-app-shell"' in asset
+    assert 'const BAR_ID = "nikas-global-tabbar"' in asset
     assert "position: fixed" in asset
     assert "env(safe-area-inset-bottom" in asset
-    assert 'window.dispatchEvent(new Event("location-changed"))' in asset
+    assert 'window.addEventListener("location-changed"' in asset
+    assert 'pathname.startsWith("/dashboard-infrastructure")' in asset

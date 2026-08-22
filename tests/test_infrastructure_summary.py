@@ -38,22 +38,27 @@ def _ups_module() -> dict:
     }
 
 
-def test_summary_card_uses_selected_roles_and_contract_navigation() -> None:
+def test_summary_card_is_native_markdown_with_contract_navigation() -> None:
     card = build_summary_card(_ups_module())
-    assert card["type"] == "custom:nikas-infrastructure-summary-v2"
-    assert card["variant"] == "ups"
-    assert card["title"] == "UPS Интернет"
-    assert card["details_path"] == "/dashboard-ups"
-    assert set(card["roles"]) == {
-        "operating_mode",
-        "battery_capacity",
-        "output_load",
-        "cloud_telemetry",
-        "data_stale",
-        "on_battery",
+    assert card["type"] == "markdown"
+    assert card["tap_action"] == {
+        "action": "navigate",
+        "navigation_path": "/dashboard-ups",
     }
-    assert "data_age" not in card["roles"]
-    assert card["grid_options"] == {"columns": "full", "rows": "auto"}
+    assert card["grid_options"] == {"columns": "full"}
+    assert set(card["entity_id"]) == {
+        "sensor.ups_mode",
+        "sensor.ups_battery",
+        "sensor.ups_load",
+        "binary_sensor.ups_cloud",
+        "binary_sensor.ups_stale",
+        "binary_sensor.ups_on_battery",
+    }
+    assert "sensor.ups_age" not in card["entity_id"]
+    assert "UPS Интернет" in card["content"]
+    assert "Подробнее" in card["content"]
+    assert "state_translated" in card["content"]
+    assert "custom:" not in str(card)
 
 
 def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
@@ -95,7 +100,8 @@ def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
     view = rendered["views"][0]
     assert view["type"] == "sections"
     card = view["sections"][0]["cards"][0]
-    assert card["type"] == "custom:nikas-infrastructure-summary-v2"
+    assert card["type"] == "markdown"
+    assert "custom:" not in str(rendered)
 
     filtered = _filter_trace(trace)
     roles = filtered["semantics"]["views"][0]["modules"][0]["roles"]
@@ -110,7 +116,7 @@ def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
     assert "overview.ups_internet.data_age" not in filtered["bindings"]
 
 
-def test_infrastructure_v010_uses_summary_renderer_and_bundled_source_matches() -> None:
+def test_infrastructure_v011_uses_summary_renderer_and_bundled_source_matches() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -121,7 +127,7 @@ def test_infrastructure_v010_uses_summary_renderer_and_bundled_source_matches() 
         / "infrastructure.yaml"
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["metadata"]["version"] == "0.10.0"
+    assert manifest["metadata"]["version"] == "0.11.0"
     assert manifest["spec"]["views"][0]["renderer"] == "infrastructure_summary_v1"
     assert bundled_path.read_bytes() == manifest_path.read_bytes()
 
@@ -137,23 +143,11 @@ def test_summary_model_runtime_and_generator_sources_are_byte_equivalent() -> No
     assert generator_source == runtime_source
 
 
-def test_frontend_asset_registers_dense_summary_v2() -> None:
-    asset = (
-        ROOT
-        / "custom_components"
-        / "contract_generated_ui"
-        / "frontend"
-        / "nikas-infrastructure-summary.js"
-    ).read_text(encoding="utf-8")
-    assert 'customElements.define("nikas-infrastructure-summary-v2"' in asset
-    assert 'type: "nikas-infrastructure-summary-v2"' in asset
-    assert "_relativeTime" in asset
-    assert "мин назад" in asset
-    assert "ч назад" in asset
-    assert "Причина ·" in asset
-    assert "ha-card.ups" in asset
-    assert ".ups-footer" in asset
-    assert "min-height: 44px" in asset
-    assert "padding: 7px 10px" in asset
-    assert "Данные неполные" in asset
-    assert "WAN неизвестен" in asset
+def test_native_summary_uses_supported_markdown_features_only() -> None:
+    card = build_summary_card(_ups_module())
+    content = card["content"]
+    assert '<table role="presentation"' in content
+    assert '<ha-icon icon="mdi:battery"></ha-icon>' in content
+    assert "has_value" in content
+    assert "state_translated" in content
+    assert "customElements" not in content
