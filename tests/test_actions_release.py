@@ -12,7 +12,7 @@ def test_release_version_and_schema_are_packaged() -> None:
             encoding="utf-8"
         )
     )
-    assert manifest["version"] == "0.15.0"
+    assert manifest["version"] == "0.16.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads(
@@ -47,7 +47,7 @@ def test_frontend_modules_use_public_cache_busted_static_paths() -> None:
     assert 'APP_SHELL_STATIC_PATH = f"/{DOMAIN}/frontend/{APP_SHELL_FILENAME}"' in const_source
     assert 'APP_SHELL_MODULE_VERSION = "0.14.0"' in const_source
     assert 'INFRA_SUMMARY_STATIC_PATH = f"/{DOMAIN}/frontend/{INFRA_SUMMARY_FILENAME}"' in const_source
-    assert 'INFRA_SUMMARY_MODULE_VERSION = "0.15.0"' in const_source
+    assert 'INFRA_SUMMARY_MODULE_VERSION = "0.16.0"' in const_source
     assert '"/api/contract_generated_ui/frontend"' not in const_source
 
     init_source = (
