@@ -75,3 +75,8 @@ All notable changes to this project will be documented in this file.
 - ADR-001 is applied to the House start page: central resources are concise summaries while detailed irrigation, vacuum, router and UPS UX remains integration-owned.
 - CLI rendering now uses the same operational renderer family as the Home Assistant runtime, with byte-locked House layout source parity.
 - House preview rollout is documented as dormant/staged: `0.8.0` does not replace the live `/dashboard-house` until a separately activated preview is accepted on iPhone.
+- UPS native-panel handoff (`0.9.0`): the central infrastructure UI now keeps only a compact UPS operational summary and delegates detailed UPS UX to Stark SolarPower at `/dashboard-ups`.
+- `infrastructure.ups` contract `0.4.0` makes the operating-mode tile a stable **Подробнее** navigation action while preserving hold → more-info and strict `unknown` / `unavailable` semantics.
+- Infrastructure panel manifest `0.6.0` removes duplicated UPS technical diagnostics from the central `Диагностика` view and keeps UPS Internet / UPS Boiler as status-only overview modules.
+- Bundled runtime contract/manifest sources stay byte-equivalent to repository sources for the UPS handoff.
+- Regression tests lock the `/dashboard-ups` navigation target and prevent UPS diagnostic duplication from returning to the central infrastructure panel.
