@@ -55,6 +55,8 @@ Allowed active values:
 - `actions`
 - `infrastructure`
 
+Optional staging route overrides may be declared under `app_shell.routes`; omitted routes keep their canonical production targets.
+
 The renderer injects the shell only when this metadata is present.
 
 ## Frontend ownership
@@ -67,9 +69,10 @@ custom_components/contract_generated_ui/frontend/nikas-app-shell.js
 
 Home Assistant runtime setup:
 
-1. serves the packaged frontend directory through `hass.http.async_register_static_paths`;
-2. registers the module through `frontend.add_extra_js_url()`;
-3. does not require Card Mod, Browser Mod, an external CDN or a separate HACS frontend package.
+1. serves the exact packaged asset at the public static path `/contract_generated_ui/frontend/nikas-app-shell.js` through `hass.http.async_register_static_paths`;
+2. registers the cache-busted module URL `/contract_generated_ui/frontend/nikas-app-shell.js?v=<integration-version>` through `frontend.add_extra_js_url()`;
+3. deliberately does not place the frontend module below `/api`, so the browser can load it as a frontend static asset;
+4. does not require Card Mod, Browser Mod, an external CDN or a separate HACS frontend package.
 
 The generated dashboard uses:
 
@@ -95,6 +98,7 @@ The first shell release deliberately does **not** simultaneously redesign every 
 
 NikaS App Shell v1 is accepted when, on iPhone Pro Max portrait:
 
+- the custom element loads without a Lovelace configuration-error card;
 - the Tab Bar is visually attached to the bottom edge;
 - there are no floating side/bottom gaps;
 - the final content can scroll completely above the Tab Bar;
