@@ -140,9 +140,6 @@ function createBar(active, routes) {
     button.dataset.surface = item.id;
     button.type = "button";
     button.innerHTML = `<ha-icon icon="${item.icon}"></ha-icon><span>${item.label}</span>`;
-    button.addEventListener("click", () => {
-      if (item.id !== active) navigate(routes[item.id]);
-    });
     nav.appendChild(button);
   }
 
@@ -151,7 +148,6 @@ function createBar(active, routes) {
 }
 
 function updateBar(root, active, routes) {
-  root._nikasRoutes = routes;
   root.shadowRoot.querySelectorAll("button[data-surface]").forEach((button) => {
     const surface = button.dataset.surface;
     const isActive = surface === active;
