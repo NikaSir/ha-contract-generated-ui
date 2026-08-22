@@ -10,27 +10,66 @@
     "preferred_view": "overview",
     "ui_version": "1.0.0"
   },
+  "target": {
+    "primary": "iPhone Pro Max portrait",
+    "control_viewport_css_px": [430, 932],
+    "mobile_first": true,
+    "desktop_is_secondary": true,
+    "horizontal_scroll_allowed": false,
+    "desktop_max_content_width_px": 1280
+  },
   "header": {
     "grid": "52px minmax(0,1fr) 52px",
+    "narrow_grid": "48px minmax(0,1fr) 48px",
     "back_icon": "mdi:arrow-left",
     "back_text": false,
     "explicit_parent_navigation": true,
+    "min_touch_target_px": 44,
     "title_alignment": "viewport_center",
     "show_brand_icon": false,
-    "actions": ["refresh"]
+    "max_actions": 1,
+    "preferred_action": "refresh"
   },
   "device_context": {
     "enabled": false,
     "placement": "below_header",
+    "peer_physical_devices_only": true,
     "fixed_order": true,
     "persist_across_views": true,
     "selected_device_only_content": true
+  },
+  "hero": {
+    "required_on_overview": true,
+    "purpose": "answer current system state",
+    "max_primary_statuses": 1,
+    "optional_compact_badge": true
+  },
+  "cards": {
+    "radius_px": 22,
+    "padding_px": 18,
+    "vertical_gap_px": 14,
+    "shadow": "minimal"
+  },
+  "content": {
+    "mobile_columns": 1,
+    "desktop_columns": 2,
+    "primitives": [
+      "status_card",
+      "metric_card",
+      "state_row",
+      "action_card",
+      "alert",
+      "diagram"
+    ]
   },
   "navigation": {
     "mode": "full_width_fixed_bottom_tab_bar",
     "floating": false,
     "safe_area": true,
+    "outside_scroll_region": true,
+    "min_primary_items": 3,
     "max_primary_items": 5,
+    "equal_dynamic_columns": true,
     "views": ["overview", "control", "diagnostics"]
   },
   "semantics": {
@@ -42,14 +81,22 @@
     "unknown_is_healthy": false,
     "unavailable_is_healthy": false
   },
+  "loading": {
+    "show_shell": true,
+    "show_header": true,
+    "show_bottom_tab_bar": true,
+    "show_skeleton": true,
+    "blank_screen_allowed": false
+  },
+  "long_press": {
+    "entity_backed_elements": "home_assistant_more_info",
+    "header_actions": "none",
+    "bottom_navigation": "none"
+  },
   "frontend_delivery": {
     "mode": "self_contained_bundle",
     "runtime_shared_template_dependency": false,
     "runtime_previous_version_imports": false,
     "cache_busting": "query_ui_version"
-  },
-  "target": {
-    "primary": "iPhone Pro Max portrait",
-    "desktop_is_secondary": true
   }
 }

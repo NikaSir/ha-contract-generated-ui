@@ -53,7 +53,7 @@ jobs:
       - name: Validate integration panel reference JavaScript
         run: node --check templates/integration-panel-v1/panel-shell-reference.js
 
-      - name: Enforce reference frontend independence
+      - name: Enforce Integration Panel Template v1.0 invariants
         shell: bash
         run: |
           reference="templates/integration-panel-v1/panel-shell-reference.js"
@@ -65,6 +65,15 @@ jobs:
             echo "Reference template must use explicit parent navigation, not browser history."
             exit 1
           fi
+          grep -Fq 'grid-template-columns:52px minmax(0,1fr) 52px' "$reference"
+          grep -Fq 'grid-template-columns:48px minmax(0,1fr) 48px' "$reference"
+          grep -Fq 'grid-template-columns:repeat(var(--nika-tab-count),minmax(0,1fr))' "$reference"
+          grep -Fq '.content-grid{display:grid;grid-template-columns:1fr' "$reference"
+          grep -Fq '.metrics{grid-template-columns:1fr}' "$reference"
+          grep -Fq 'max-width:1280px' "$reference"
+          grep -Fq 'mdi:arrow-left' "$reference"
+          grep -Fq 'mdi:refresh' "$reference"
+          echo "Integration Panel Template v1.0 shell invariants OK"
 
       - name: Validate contract-generated UI inputs
         run: python -m generator validate .
