@@ -41,7 +41,16 @@
           "additionalProperties": false,
           "required": ["active"],
           "properties": {
-            "active": {"enum": ["home", "actions", "infrastructure"]}
+            "active": {"enum": ["home", "actions", "infrastructure"]},
+            "routes": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "home": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"},
+                "actions": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"},
+                "infrastructure": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"}
+              }
+            }
           }
         },
         "views": {
