@@ -50,7 +50,7 @@ def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
     assert zont["metadata"]["version"] == "0.4.0"
-    assert starline["metadata"]["version"] == "0.4.0"
+    assert starline["metadata"]["version"] == "0.5.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
     assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
     assert zont["spec"]["subpanel"]["parent"] == "house.heating"
@@ -71,6 +71,9 @@ def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None
     assert all(view["modules"] == [] for view in starline["spec"]["views"])
     assert all(view["readonly"] for view in zont["spec"]["views"])
     assert all(view["readonly"] for view in starline["spec"]["views"])
+    assert starline["spec"]["views"][0]["readonly"]["limit"] == 6
+    assert "пробег" in starline["spec"]["views"][0]["readonly"]["priority_keywords"]
+    assert "капот" in starline["spec"]["views"][0]["readonly"]["exclude_keywords"]
 
 
 def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -> None:
@@ -119,6 +122,7 @@ def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     assert len(specs["starline"]["tabs"]) == 5
     assert specs["zont"]["tabs"][0]["label"] == "Обзор"
     assert specs["zont"]["tabs"][0]["readonly"]["limit"] == 14
+    assert specs["starline"]["tabs"][0]["readonly"]["limit"] == 6
     assert specs["starline"]["tabs"][1]["readonly"]["domains"] == [
         "binary_sensor",
         "lock",
@@ -136,6 +140,9 @@ def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     assert "mdi:refresh" in frontend
     assert "position:fixed" in frontend
     assert 'type: "config/entity_registry/list"' in frontend
+    assert 'type: "config/device_registry/list"' in frontend
+    assert "_deviceGroups" in frontend
+    assert "_deviceSelectorHtml" in frontend
     assert ".callWS(" in frontend
     assert ".callService(" not in frontend
     assert 'type: "call_service"' not in frontend
