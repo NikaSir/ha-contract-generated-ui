@@ -3,13 +3,13 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.4.0
-  description: 'Production infrastructure panel v0.4: operational overview with a separate diagnostics view.'
+  version: 0.5.0
+  description: 'Production infrastructure panel v0.5: shorter operational overview and cleaner diagnostics.'
 spec:
   dashboard_path: /dashboard-infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.4
+    title: Инфраструктура · v0.5
     path: overview
     order: 0
     modules:
