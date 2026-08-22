@@ -51,7 +51,8 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
 
     for manifest in _manifests(source_root):
         spec = manifest.get("spec", {})
-        if spec.get("subpanel") is None:
+        subpanel = spec.get("subpanel")
+        if subpanel is None:
             continue
         groups = resolved_navigation_groups(manifest, source_root)
         if len(groups) != 1:
@@ -89,6 +90,7 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
                     "label": tab.get("title", tab["id"]),
                     "icon": tab.get("icon", "mdi:view-dashboard-outline"),
                     "placeholder": view.get("placeholder", "Раздел готов к наполнению."),
+                    "readonly": view.get("readonly"),
                 }
             )
         if not 2 <= len(tabs) <= 5:
@@ -101,6 +103,7 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
                 "subtitle": group.get("subtitle", group["parent"].get("title", "")),
                 "url_path": url_path,
                 "parent": group["parent"],
+                "source": subpanel.get("source"),
                 "tabs": tabs,
                 "sidebar_icon": tabs[0]["icon"],
             }
@@ -159,6 +162,7 @@ async def async_register_generated_subpanels(
                 "title": spec["title"],
                 "subtitle": spec["subtitle"],
                 "parent": spec["parent"],
+                "source": spec["source"],
                 "tabs": spec["tabs"],
             },
         )

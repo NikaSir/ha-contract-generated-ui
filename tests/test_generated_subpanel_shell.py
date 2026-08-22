@@ -45,20 +45,32 @@ def _sections_dashboard(view_count: int) -> dict:
     }
 
 
-def test_zont_and_starline_are_short_shared_custom_panel_manifests() -> None:
+def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None:
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
-    assert zont["metadata"]["version"] == "0.3.0"
-    assert starline["metadata"]["version"] == "0.3.0"
+    assert zont["metadata"]["version"] == "0.4.0"
+    assert starline["metadata"]["version"] == "0.4.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
     assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
     assert zont["spec"]["subpanel"]["parent"] == "house.heating"
     assert starline["spec"]["subpanel"]["parent"] == "house.vehicles"
+    assert zont["spec"]["subpanel"]["source"] == {
+        "kind": "entity_registry",
+        "platforms": ["zont", "zont_ha"],
+        "include_disabled": False,
+    }
+    assert starline["spec"]["subpanel"]["source"] == {
+        "kind": "entity_registry",
+        "platforms": ["starline"],
+        "include_disabled": False,
+    }
     assert len(zont["spec"]["views"]) == 4
     assert len(starline["spec"]["views"]) == 5
     assert all(view["modules"] == [] for view in zont["spec"]["views"])
     assert all(view["modules"] == [] for view in starline["spec"]["views"])
+    assert all(view["readonly"] for view in zont["spec"]["views"])
+    assert all(view["readonly"] for view in starline["spec"]["views"])
 
 
 def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -> None:
@@ -70,7 +82,7 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert len(groups) == 1
     group = groups[0]
     assert group["title"] == "ZONT"
-    assert group["subtitle"] == "Отопление и ГВС · UI v0.3.0"
+    assert group["subtitle"] == "Отопление и ГВС · UI v0.4.0"
     assert group["parent"]["path"] == "/dashboard-house/heating"
     assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
@@ -94,17 +106,23 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert navigation_shell_engine_sha256(base, groups) != base
 
 
-def test_shared_custom_panel_specs_are_data_driven() -> None:
+def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     specs = {item["id"]: item for item in build_generated_panel_specs(ROOT)}
     assert {"zont", "starline"} <= set(specs)
     assert specs["zont"]["url_path"] == "dashboard-zont"
     assert specs["starline"]["url_path"] == "dashboard-starline"
     assert specs["zont"]["parent"]["path"] == "/dashboard-house/heating"
     assert specs["starline"]["parent"]["path"] == "/dashboard-house/vehicles"
+    assert specs["zont"]["source"]["platforms"] == ["zont", "zont_ha"]
+    assert specs["starline"]["source"]["platforms"] == ["starline"]
     assert len(specs["zont"]["tabs"]) == 4
     assert len(specs["starline"]["tabs"]) == 5
     assert specs["zont"]["tabs"][0]["label"] == "Обзор"
-    assert "Предметный контракт ZONT" in specs["zont"]["tabs"][0]["placeholder"]
+    assert specs["zont"]["tabs"][0]["readonly"]["limit"] == 14
+    assert specs["starline"]["tabs"][1]["readonly"]["domains"] == [
+        "binary_sensor",
+        "lock",
+    ]
 
     frontend = (
         ROOT
@@ -117,6 +135,10 @@ def test_shared_custom_panel_specs_are_data_driven() -> None:
     assert "mdi:arrow-left" in frontend
     assert "mdi:refresh" in frontend
     assert "position:fixed" in frontend
+    assert 'type: "config/entity_registry/list"' in frontend
+    assert ".callWS(" in frontend
+    assert ".callService(" not in frontend
+    assert 'type: "call_service"' not in frontend
     assert '"/dashboard-zont"' not in frontend
     assert '"/dashboard-starline"' not in frontend
 
