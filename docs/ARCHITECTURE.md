@@ -15,6 +15,14 @@ The project treats Home Assistant dashboards as generated artifacts derived from
 7. **Validation** — reject unknown entity references, contract/schema violations and unsafe state handling.
 8. **Release** — publish only validated generated output with traceable inputs.
 
+## Ownership boundary
+
+The central generator is the **house-wide overview, composition and navigation layer**. It is not the canonical owner of every detailed device/domain workflow.
+
+For complex domains, the custom integration that owns the entities and actions should also own its specialized dashboard. Examples include irrigation, robot vacuum, router/WAN failover and UPS telemetry. `ha-contract-generated-ui` may show verified summaries and selected quick actions, then navigate to the integration-owned deep interface.
+
+This rule is formally recorded in [ADR-001: Integration-owned specialized dashboards](ADR-001-INTEGRATION-OWNED-DASHBOARDS.md).
+
 ## Non-negotiable rules
 
 - `unknown` / `unavailable` are distinct from normal/healthy states.
@@ -23,7 +31,9 @@ The project treats Home Assistant dashboards as generated artifacts derived from
 - Controls must preserve subsystem safety constraints defined by their contracts.
 - A panel manifest is concise; reusable behavior belongs in contract modules and generator components.
 - Input snapshots committed to Git must be scrubbed of secrets and private data.
+- Detailed device/domain UX has one canonical owner; the central generator must not silently duplicate a specialized integration's full interaction model.
+- Cross-dashboard links must target stable declared routes rather than invented paths.
 
 ## Current stage
 
-Contract core v1 is implemented as the first executable architectural layer. `UIContract`, `SemanticInventory` and `PanelManifest` have machine-readable schemas; repository validation enforces their boundaries and regression tests protect the core safety invariants. The next milestone is to ingest a scrubbed, verified Home Assistant registry snapshot and create the first real Home Assistant NikaS semantic inventory and subsystem contract without introducing fabricated production entities.
+Contract core v1 is implemented as the first executable architectural layer. `UIContract`, `SemanticInventory` and `PanelManifest` have machine-readable schemas; repository validation enforces their boundaries and regression tests protect the core safety invariants. Production infrastructure generation is operating from verified Home Assistant inventory, and the next architectural extension is a stable navigation contract for linking house-wide generated panels to integration-owned specialized dashboards.
