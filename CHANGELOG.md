@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Clarified the normative specialized-panel UI standard to **v1.1**: primary navigation must use a full-width, edge-attached fixed bottom Tab Bar on iPhone; floating/pill navigation bars with external side/bottom gaps are explicitly non-conforming.
+- Standardized active-tab treatment inside the shared bottom bar, mobile safe-area handling, 44 pt-class touch targets, and content bottom clearance so the final card scrolls fully above navigation.
 - Initial Architecture-as-Code repository bootstrap.
 - Formal directories for contracts, inventory, manifests, schemas, generator and tests.
 - Repository validation workflow and Dependabot configuration.
