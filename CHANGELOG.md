@@ -80,3 +80,8 @@ All notable changes to this project will be documented in this file.
 - Infrastructure panel manifest `0.6.0` removes duplicated UPS technical diagnostics from the central `Диагностика` view and keeps UPS Internet / UPS Boiler as status-only overview modules.
 - Bundled runtime contract/manifest sources stay byte-equivalent to repository sources for the UPS handoff.
 - Regression tests lock the `/dashboard-ups` navigation target and prevent UPS diagnostic duplication from returning to the central infrastructure panel.
+- Staged Actions renderer `actions_home_v1` (`0.10.0`) for a mobile-first quick-operation/navigation surface.
+- Actions `navigate` roles render full-width to emphasize transition into the canonical integration-owned panel; safe `toggle` and `more_info` actions remain compact half-width tiles.
+- Actions rendering rejects unsupported/service-style action kinds and continues to rely on the base verified-inventory and toggle-domain safety gates.
+- Runtime and CLI use a common multi-renderer dispatch layer supporting `operational_v1`, `house_home_v1` and `actions_home_v1` without rewriting the existing operational/House engines.
+- Regression tests cover Actions deterministic sizing, unsupported-action rejection, runtime second-render stability and `python -m generator render` parity.
