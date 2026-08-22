@@ -49,7 +49,7 @@ def test_ups_contract_hands_detail_ui_to_stark_panel() -> None:
     assert "output_voltage" in groups["diagnostic"]
 
 
-def test_infrastructure_is_single_summary_overview_with_owned_diagnostics() -> None:
+def test_infrastructure_keeps_ups_handoff_outside_central_power_subviews() -> None:
     manifest = _load(ROOT / "manifests" / "infrastructure.yaml")
     bundled = _load(
         ROOT
@@ -61,12 +61,18 @@ def test_infrastructure_is_single_summary_overview_with_owned_diagnostics() -> N
     )
 
     assert manifest == bundled
-    assert manifest["metadata"]["version"] == "0.11.0"
+    assert manifest["metadata"]["version"] == "0.12.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
 
     views = {view["id"]: view for view in manifest["spec"]["views"]}
-    assert set(views) == {"overview"}
-    assert views["overview"]["renderer"] == "infrastructure_summary_v1"
+    assert set(views) == {
+        "overview",
+        "power-overview",
+        "power-before",
+        "power-after",
+        "power-history",
+    }
+    assert all(view["renderer"] == "infrastructure_summary_v1" for view in views.values())
 
     overview_ups = [
         module
@@ -75,6 +81,12 @@ def test_infrastructure_is_single_summary_overview_with_owned_diagnostics() -> N
     ]
     assert len(overview_ups) == 2
     assert all(module["groups"] == ["status"] for module in overview_ups)
+
+    for view_id in ("power-overview", "power-before", "power-after", "power-history"):
+        assert all(
+            module["contract"] != "infrastructure.ups"
+            for module in views[view_id]["modules"]
+        )
 
     assert any(
         module["contract"] == "infrastructure.keenetic"
