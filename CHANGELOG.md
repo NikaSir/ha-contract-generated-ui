@@ -50,3 +50,11 @@ All notable changes to this project will be documented in this file.
 - Explicit Tile card Sections sizing (`grid_options: columns: 6, rows: 1`) to improve label readability.
 - CLI and Home Assistant runtime parity for Sections v2 generation.
 - Infrastructure panel manifest `0.2.0` / title `Инфраструктура · v0.2` for the new layout baseline.
+- Operational Renderer v3 (`0.5.0`) with explicit `status`, `telemetry` and `diagnostic` role groups in UI contracts.
+- Two-column dense Sections composition for subsystem cards on desktop.
+- Larger status tiles, denser telemetry tiles and compact core Entities cards for diagnostic roles.
+- Short operational labels for power, UPS and Keenetic telemetry without changing verified bindings.
+- Bundled public contracts/manifests inside the custom integration and atomic synchronization into `/config/contract_generated_ui` during generation.
+- Managed-source synchronization explicitly excludes `inventory/`, `snapshots/` and `generated/` so private Home Assistant bindings and runtime history remain local.
+- Infrastructure panel manifest `0.3.0` / title `Инфраструктура · v0.3`.
+- Regression tests for operational role-group coverage, deterministic v3 rendering and private-source sync protection.

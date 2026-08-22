@@ -16,11 +16,11 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import GENERATED_DIRECTORY, SNAPSHOT_DIRECTORY, SOURCE_DIRECTORY
 from .coordinator import ContractGeneratedUICoordinator
 from .registry_snapshot import capture_registry_snapshot, write_registry_snapshot
+from .runtime_dispatch import RuntimeRenderError, render_all_manifests
 from .runtime_registration import (
     RuntimeRegistrationError,
     write_lovelace_registration_snippet,
 )
-from .runtime_sections import RuntimeRenderError, render_all_manifests
 
 
 async def async_setup_entry(
