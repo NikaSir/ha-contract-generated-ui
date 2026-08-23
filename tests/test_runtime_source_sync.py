@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 PACKAGE_PATH = ROOT / "custom_components" / "contract_generated_ui"
-EXPECTED_PUBLIC_SOURCE_FILES = 11
+EXPECTED_PUBLIC_SOURCE_FILES = 12
 
 
 def _module():
@@ -68,6 +68,7 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
         "infrastructure.yaml",
         "zont.yaml",
         "starline.yaml",
+        "house_v11_preview.yaml",
     ):
         assert (root / "manifests" / name).exists()
     assert not (root / "manifests" / "irrigation.yaml").exists()
