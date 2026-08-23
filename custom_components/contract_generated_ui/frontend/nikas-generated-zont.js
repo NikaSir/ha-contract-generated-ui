@@ -1,8 +1,16 @@
-// Semantic read-only ZONT panel for Contract Generated UI.
-// Inspired by the information density of the native ZONT app, without controls.
+// Semantic ZONT panel for Contract Generated UI.
+// Read-mostly: physical actuators are monitored; only ZONT heating-mode buttons are actionable.
 (() => {
   const ELEMENT_NAME = "nikas-generated-zont";
   if (customElements.get(ELEMENT_NAME)) return;
+
+  const CONTROLLER_FACTS = [
+    ["Модель", "H2000 PRO", "mdi:router-wireless"],
+    ["Плата", "710", "mdi:chip"],
+    ["Прошивка", "670", "mdi:memory"],
+    ["Память", "68%", "mdi:chart-donut"],
+    ["Входы / выходы / реле", "18 занято", "mdi:connection"],
+  ];
 
   const esc = (value) => String(value ?? "")
     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
@@ -10,6 +18,9 @@
   const low = (...values) => values.filter((v) => v != null).map((v) => String(v).toLocaleLowerCase()).join(" ");
   const has = (text, words) => words.some((word) => text.includes(String(word).toLocaleLowerCase()));
   const domainOf = (entityId) => String(entityId || "").split(".", 1)[0];
+  const stateLow = (item) => String(item?.state?.state ?? "").toLocaleLowerCase();
+  const activeStates = new Set(["on", "open", "opening", "active", "running", "heat", "heating", "true", "1"]);
+  const inactiveStates = new Set(["off", "closed", "idle", "false", "0", "standby"]);
 
   function navigate(path) {
     if (!path) return;
@@ -29,6 +40,7 @@
       this._loading = null;
       this._error = null;
       this._queued = false;
+      this._busyMode = null;
       this._onHash = () => { this._active = this._tabFromLocation(); this._queue(); };
     }
 
@@ -89,11 +101,12 @@
         .map((entry) => ({ entry, state: this._hass.states[entry.entity_id] }));
     }
 
-    _rawName(item) {
-      return item.state?.attributes?.friendly_name || item.entry.name || item.entry.original_name || item.entry.entity_id;
-    }
+    _device(item) { return this._devices.get(item?.entry?.device_id) || {}; }
+    _rawName(item) { return item.state?.attributes?.friendly_name || item.entry.name || item.entry.original_name || item.entry.entity_id; }
     _text(item) {
-      return low(item.entry.entity_id, this._rawName(item), item.entry.original_name, item.entry.name, item.state?.attributes?.device_class);
+      const device = this._device(item);
+      return low(item.entry.entity_id, this._rawName(item), item.entry.original_name, item.entry.name,
+        item.state?.attributes?.device_class, device.name_by_user, device.name, device.model);
     }
     _number(item) {
       const value = Number(String(item?.state?.state ?? "").replace(",", "."));
@@ -103,10 +116,13 @@
     _formatted(item) {
       if (!item) return "—";
       if (typeof this._hass?.formatEntityState === "function") {
-        try { return this._hass.formatEntityState(item.state); } catch (_error) { /* factual fallback */ }
+        try { return this._hass.formatEntityState(item.state); } catch (_error) { /* fallback */ }
       }
       return `${item.state?.state ?? "—"}${this._unit(item) ? ` ${this._unit(item)}` : ""}`;
     }
+    _isProblem(item) { return item && ["unknown", "unavailable"].includes(stateLow(item)); }
+    _isActive(item) { return item && activeStates.has(stateLow(item)); }
+    _isInactive(item) { return item && inactiveStates.has(stateLow(item)); }
 
     _semanticName(item) {
       let name = String(this._rawName(item)).trim();
@@ -128,9 +144,6 @@
 
     _find(items, include, exclude = []) {
       return items.find((item) => has(this._text(item), include) && (!exclude.length || !has(this._text(item), exclude)));
-    }
-    _filter(items, include, exclude = []) {
-      return items.filter((item) => has(this._text(item), include) && (!exclude.length || !has(this._text(item), exclude)));
     }
     _unique(items) {
       const seen = new Set();
@@ -180,6 +193,8 @@
 
     _icon(item, context = "") {
       const t = `${this._text(item)} ${context}`;
+      if (has(t, ["насос", "pump"])) return "mdi:pump";
+      if (has(t, ["смесител", "mixer", "кран", "valve"])) return "mdi:valve";
       if (has(t, ["радиатор"])) return "mdi:radiator";
       if (has(t, ["тёпл", "тепл", "floor"])) return "mdi:heating-coil";
       if (has(t, ["гвс", "горяч", "dhw"])) return "mdi:water-boiler";
@@ -194,7 +209,6 @@
     }
 
     _value(item, fallback = "—") { return item ? this._formatted(item) : fallback; }
-    _isProblem(item) { return item && ["unknown", "unavailable"].includes(item.state?.state); }
 
     _meterScale(item) {
       const role = this._role(item);
@@ -218,9 +232,13 @@
       </div>`;
     }
 
-    _compactCard(item, label = null) {
-      if (!item) return "";
-      return `<div class="compact-card ${this._isProblem(item) ? "problem" : ""}"><ha-icon icon="${esc(this._icon(item))}"></ha-icon><div><strong>${esc(label || this._shortLabel(item))}</strong><span>${esc(this._formatted(item))}</span></div></div>`;
+    _compactCard(item, label = null, value = null, icon = null) {
+      if (!item && !label) return "";
+      return `<div class="compact-card ${item && this._isProblem(item) ? "problem" : ""}"><ha-icon icon="${esc(icon || (item ? this._icon(item) : "mdi:information-outline"))}"></ha-icon><div><strong>${esc(label || this._shortLabel(item))}</strong><span>${esc(value ?? this._value(item))}</span></div></div>`;
+    }
+
+    _factCard(label, value, icon) {
+      return `<div class="compact-card fact-card"><ha-icon icon="${esc(icon)}"></ha-icon><div><strong>${esc(label)}</strong><span>${esc(value)}</span></div></div>`;
     }
 
     _boilerSet(items, reserve = false) {
@@ -247,19 +265,18 @@
         ["Модуляция", this._value(set.modulation)], ["Давление", this._value(set.pressure)],
         ["Ошибка", this._value(set.error, "Ошибок нет")],
       ].filter(([, value]) => value !== "—");
-      return `<div class="system-card boiler-card"><div class="system-title"><ha-icon icon="${reserve ? "mdi:water-boiler-off" : "mdi:water-boiler"}"></ha-icon><strong>${esc(title)}</strong></div><div class="system-rows">${rows.map(([k,v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>${set.supply || set.ret ? `<div class="flow-line"><span>→ ${esc(this._value(set.supply))}</span><span>← ${esc(this._value(set.ret))}</span></div>` : ""}</div>`;
+      return `<div class="system-card"><div class="system-title"><ha-icon icon="${reserve ? "mdi:water-boiler-off" : "mdi:water-boiler"}"></ha-icon><strong>${esc(title)}</strong></div><div class="system-rows">${rows.map(([k,v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>${set.supply || set.ret ? `<div class="flow-line"><span>→ ${esc(this._value(set.supply))}</span><span>← ${esc(this._value(set.ret))}</span></div>` : ""}</div>`;
     }
 
-    _circuitItems(items, words) { return items.filter((item) => has(this._text(item), words)); }
     _circuitCard(items, title, words, icon) {
-      const scoped = this._circuitItems(items, words);
+      const scoped = items.filter((item) => has(this._text(item), words));
       if (!scoped.length) return "";
-      const current = this._find(scoped, ["текущ", "current", "температур", "t°"], ["целев", "target", ">>>", "<<<"] ) || scoped.find((i) => this._number(i) != null);
+      const current = this._find(scoped, ["текущ", "current", "температур", "t°"], ["целев", "target", ">>>", "<<<"]) || scoped.find((i) => this._number(i) != null);
       const target = this._find(scoped, ["целев", "target", "расчёт", "расчет", "уставк"]);
       const supply = this._find(scoped, ["подач", "supply", ">>>"]);
       const ret = this._find(scoped, ["обрат", "return", "<<<"]);
       const state = this._find(scoped, ["включ", "active", "состояни", "status"]);
-      return `<div class="system-card circuit-card"><div class="system-title"><ha-icon icon="${esc(icon)}"></ha-icon><strong>${esc(title)}</strong></div><div class="current-line"><span>Сейчас</span><b>${esc(this._value(current))}</b></div>${target ? `<div class="target-line"><span>Расчётная</span><b>${esc(this._value(target))}</b></div>` : ""}${supply || ret ? `<div class="flow-line"><span>→ ${esc(this._value(supply))}</span><span>← ${esc(this._value(ret))}</span></div>` : ""}${state ? `<div class="card-foot">${esc(this._formatted(state))}</div>` : ""}</div>`;
+      return `<div class="system-card"><div class="system-title"><ha-icon icon="${esc(icon)}"></ha-icon><strong>${esc(title)}</strong></div><div class="current-line"><span>Сейчас</span><b>${esc(this._value(current))}</b></div>${target ? `<div class="target-line"><span>Расчётная</span><b>${esc(this._value(target))}</b></div>` : ""}${supply || ret ? `<div class="flow-line"><span>→ ${esc(this._value(supply))}</span><span>← ${esc(this._value(ret))}</span></div>` : ""}${state ? `<div class="card-foot">${esc(this._formatted(state))}</div>` : ""}</div>`;
     }
 
     _roomName(item) {
@@ -288,32 +305,97 @@
       const bat = this._find(items, ["батар", "battery"]);
       const rssi = this._find(items, ["rssi", "signal"]);
       const main = temp || hum || items[0];
-      const value = this._value(main);
       const [min,max] = this._meterScale(main);
       const n = this._number(main);
       const pct = n == null ? 0 : Math.max(0, Math.min(1, (n-min)/(max-min)));
-      return `<div class="room-card"><div class="room-meter"><span>${esc(max)}</span><i></i><b style="bottom:${(pct*100).toFixed(1)}%"></b><small>${esc(min)}</small></div><div class="room-body"><div class="room-value">${esc(value)}</div><ha-icon icon="${name === "Улица" ? "mdi:weather-partly-cloudy" : "mdi:home-thermometer-outline"}"></ha-icon><strong>${esc(name)}</strong><div class="room-meta">${hum ? `<span>💧 ${esc(this._formatted(hum))}</span>` : ""}${bat ? `<span>🔋 ${esc(this._formatted(bat))}</span>` : ""}${rssi ? `<span>📶 ${esc(this._formatted(rssi))}</span>` : ""}</div></div></div>`;
+      return `<div class="room-card"><div class="room-meter"><span>${esc(max)}</span><i></i><b style="bottom:${(pct*100).toFixed(1)}%"></b><small>${esc(min)}</small></div><div class="room-body"><div class="room-value">${esc(this._value(main))}</div><ha-icon icon="${name === "Улица" ? "mdi:weather-partly-cloudy" : "mdi:home-thermometer-outline"}"></ha-icon><strong>${esc(name)}</strong><div class="room-meta">${hum ? `<span>💧 ${esc(this._formatted(hum))}</span>` : ""}${bat ? `<span>🔋 ${esc(this._formatted(bat))}</span>` : ""}${rssi ? `<span>📶 ${esc(this._formatted(rssi))}</span>` : ""}</div></div></div>`;
     }
 
     _section(title, content) { return content ? `<section><h2>${esc(title)}</h2>${content}</section>` : ""; }
-    _grid(content, cls = "card-grid") { return content ? `<div class="${cls}">${content}</div>` : ""; }
+    _grid(content) { return content ? `<div class="card-grid">${content}</div>` : ""; }
 
-    _overview(items) {
-      const boilers = this._grid(this._boilerCard("Основной котёл", this._boilerSet(items, false)) + this._boilerCard("Резервный котёл", this._boilerSet(items, true)));
-      const circuits = [
-        this._circuitCard(items, "Радиаторы", ["радиатор"], "mdi:radiator"),
-        this._circuitCard(items, "Тёплый пол", ["тёпл", "тепл", "floor"], "mdi:heating-coil"),
-        this._circuitCard(items, "ГВС", ["гвс", "горяч", "dhw"], "mdi:water-boiler"),
-        this._circuitCard(items, "Циркуляция", ["циркуляц", "circulation"], "mdi:pump"),
+    _isStateLike(item) {
+      const domain = domainOf(item.entry.entity_id);
+      if (["switch", "binary_sensor", "input_boolean"].includes(domain)) return true;
+      if (activeStates.has(stateLow(item)) || inactiveStates.has(stateLow(item))) return true;
+      return has(this._text(item), ["включено", "выключено", "работает", "работа"]);
+    }
+    _findState(items, include, exclude = []) {
+      return items.find((item) => this._isStateLike(item) && has(this._text(item), include) && (!exclude.length || !has(this._text(item), exclude)));
+    }
+    _stateText(item) {
+      if (!item) return "Нет данных";
+      if (this._isProblem(item)) return "Нет данных";
+      const state = stateLow(item);
+      if (activeStates.has(state)) return "Включено";
+      if (inactiveStates.has(state)) return "Выключено";
+      if (state === "opening") return "Открывается";
+      if (state === "closing") return "Закрывается";
+      return this._formatted(item);
+    }
+    _statusTile(label, item, icon, tone = "") {
+      const active = this._isActive(item);
+      return `<div class="status-tile ${active ? "active" : ""} ${esc(tone)} ${this._isProblem(item) ? "problem" : ""}"><div class="status-title"><span>${esc(label)}</span><ha-icon icon="${esc(icon)}"></ha-icon></div><div class="status-value">${esc(this._stateText(item))}</div></div>`;
+    }
+
+    _mixerState(opening, closing) {
+      if (this._isActive(opening) && !this._isActive(closing)) return "Открывается";
+      if (this._isActive(closing) && !this._isActive(opening)) return "Закрывается";
+      if (this._isProblem(opening) || this._isProblem(closing)) return "Нет данных";
+      if (opening || closing) return "Стоит";
+      return "Сущности не найдены";
+    }
+
+    _modeButtons(items) {
+      const words = ["режим", "mode", "полная автоматика", "резервное питание", "отпуск", "комфорт", "все отключено", "дома", "ноч", "эконом"];
+      return this._unique(items.filter((item) => domainOf(item.entry.entity_id) === "button" && has(this._text(item), words)));
+    }
+    _modeLabel(item) {
+      const t = this._text(item);
+      if (has(t, ["полная автоматика"])) return "Полная автоматика";
+      if (has(t, ["резервное питание"])) return "Резервное питание";
+      if (has(t, ["отпуск все дома", "отпуск все", "отпуск_все"])) return "Отпуск · все дома";
+      if (has(t, ["отпуск не дома", "отпуск не", "отпуск_не"])) return "Отпуск · не дома";
+      if (has(t, ["комфорт"])) return "Комфорт";
+      if (has(t, ["все отключено", "всё отключено"])) return "Всё отключено";
+      return this._semanticName(item).replace(/^режим\s*/i, "").slice(0, 32);
+    }
+    _currentMode(items) {
+      const climate = items.find((item) => domainOf(item.entry.entity_id) === "climate" && item.state?.attributes?.preset_mode);
+      if (climate?.state?.attributes?.preset_mode) return String(climate.state.attributes.preset_mode);
+      const mode = this._find(items, ["режим отоп", "heating mode", "thermostat mode"]);
+      return mode ? this._formatted(mode) : "Определяется ZONT";
+    }
+    _modeActive(item, current) {
+      const a = String(this._modeLabel(item)).toLocaleLowerCase();
+      const b = String(current || "").toLocaleLowerCase();
+      return b !== "определяется zont" && b !== "—" && (a.includes(b) || b.includes(a));
+    }
+
+    _states(items) {
+      const opening = this._findState(items, ["открытие", "opening"], ["двер", "окно"]);
+      const closing = this._findState(items, ["закрытие", "closing"], ["двер", "окно"]);
+      const radiators = this._findState(items, ["радиатор"], ["температур", "t°", ">>>", "<<<", "датчик"]);
+      const floor = this._findState(items, ["тёпл", "тепл", "floor"], ["температур", "t°", ">>>", "<<<", "датчик"]);
+      const circulation = this._findState(items, ["циркуляц"], ["температур", "t°", "гвс"]);
+      const reserve = this._findState(items, ["резерв", "reserve"], ["температур", "t°", "котел", "котёл", "ошиб"]);
+      const pumpTiles = [
+        this._statusTile("Радиаторы", radiators, "mdi:radiator", "heat"),
+        this._statusTile("Тёплый пол", floor, "mdi:heating-coil", "heat"),
+        this._statusTile("Циркуляция", circulation, "mdi:pump", "circulation"),
+        this._statusTile("Резерв", reserve, "mdi:water-boiler", "reserve"),
       ].join("");
-      const rooms = [...this._roomGroups(items).entries()].slice(0, 4).map(([n,e]) => this._roomCard(n,e)).join("");
-      return `${this._section("Котлы", boilers)}${this._section("Отопление", this._grid(circuits))}${this._section("Дом", this._grid(rooms))}`;
+      const mixer = `<div class="mixer-card"><div class="system-title"><ha-icon icon="mdi:valve"></ha-icon><strong>Смесительный привод</strong></div><div class="mixer-state">${esc(this._mixerState(opening, closing))}</div><div class="mixer-flags"><span class="${this._isActive(opening) ? "on" : ""}">Открытие · ${esc(this._stateText(opening))}</span><span class="${this._isActive(closing) ? "on" : ""}">Закрытие · ${esc(this._stateText(closing))}</span></div></div>`;
+      const modes = this._modeButtons(items);
+      const current = this._currentMode(items);
+      const modeHtml = modes.length ? `<div class="mode-card"><div class="mode-current"><span>Текущий режим</span><b>${esc(current)}</b></div><div class="mode-buttons">${modes.map((item) => `<button class="${this._modeActive(item, current) ? "selected" : ""}" data-mode-entity="${esc(item.entry.entity_id)}" data-mode-label="${esc(this._modeLabel(item))}" ${this._busyMode === item.entry.entity_id ? "disabled" : ""}><ha-icon icon="mdi:radiator"></ha-icon><span>${esc(this._modeLabel(item))}</span></button>`).join("")}</div></div>` : `<div class="empty">Кнопки режимов ZONT в Home Assistant не найдены.</div>`;
+      return `${this._section("Насосы и исполнительные устройства", this._grid(pumpTiles))}${this._section("Смесительный контур", mixer)}${this._section("Режим отопления", modeHtml)}`;
     }
 
     _boilers(items) {
       const main = this._boilerSet(items, false);
       const reserve = this._boilerSet(items, true);
-      const meters = this._unique([main.current, main.target, main.modulation, main.pressure, main.supply, main.ret, reserve.current, reserve.target]).map((i) => this._meterCard(i)).join("");
+      const meters = this._unique([main.current, main.target, main.modulation, main.pressure, main.supply, main.ret, reserve.current, reserve.target]).map((item) => this._meterCard(item)).join("");
       return `${this._section("Котловые контуры", this._grid(this._boilerCard("Основной", main) + this._boilerCard("Резервный", reserve)))}${this._section("Параметры", this._grid(meters))}`;
     }
 
@@ -326,36 +408,47 @@
         this._circuitCard(items, "Резервный контур", ["резерв", "reserve"], "mdi:water-boiler-off"),
       ].join("");
       const metricWords = ["радиатор", "тёпл", "тепл", "гвс", "циркуляц", "резерв", "гидрострел"];
-      const metrics = this._unique(items.filter((i) => has(this._text(i), metricWords) && this._number(i) != null)).slice(0, 12).map((i) => this._meterCard(i)).join("");
+      const metrics = this._unique(items.filter((item) => has(this._text(item), metricWords) && this._number(item) != null)).slice(0, 12).map((item) => this._meterCard(item)).join("");
       return `${this._section("Отопительные контуры", this._grid(cards))}${this._section("Температуры", this._grid(metrics))}`;
     }
 
     _sensors(items) {
       const rooms = [...this._roomGroups(items).entries()].map(([name,entries]) => this._roomCard(name, entries)).join("");
-      const pressures = this._unique(items.filter((i) => this._role(i).startsWith("pressure_") && !has(this._text(i), ["котел", "котёл", "ebus"]))).slice(0, 6).map((i) => this._meterCard(i)).join("");
+      const pressures = this._unique(items.filter((item) => this._role(item).startsWith("pressure_") && !has(this._text(item), ["котел", "котёл", "ebus"]))).slice(0, 6).map((item) => this._meterCard(item)).join("");
       return `${this._section("Помещения и улица", this._grid(rooms))}${this._section("Давление", this._grid(pressures))}`;
     }
 
     _diagnostics(items) {
-      const controller = this._unique(items.filter((i) => ["online","power","voltage"].includes(this._role(i)))).slice(0, 8).map((i) => this._compactCard(i)).join("");
-      const errors = this._unique(items.filter((i) => this._role(i) === "error"));
-      const actualProblems = this._unique(items.filter((i) => this._isProblem(i) && !["rssi","battery"].includes(this._role(i)))).slice(0, 8);
-      const eBus = this._unique(items.filter((i) => has(this._text(i), ["ebus"]) && ["modulation","pressure_boiler","temperature","dhw","return","supply"].includes(this._role(i)))).slice(0, 8).map((i) => this._compactCard(i)).join("");
-      const errorHtml = errors.length ? errors.slice(0, 6).map((i) => this._compactCard(i)).join("") : `<div class="ok-card"><ha-icon icon="mdi:check-circle-outline"></ha-icon><span>Ошибок нет</span></div>`;
-      const problemsHtml = actualProblems.length ? actualProblems.map((i) => this._compactCard(i)).join("") : "";
-      return `${this._section("Контроллер", this._grid(controller))}${this._section("Ошибки", this._grid(errorHtml))}${problemsHtml ? this._section("Проблемы доступности", this._grid(problemsHtml)) : ""}${this._section("eBUS", this._grid(eBus))}`;
+      const facts = CONTROLLER_FACTS.map(([label,value,icon]) => this._factCard(label, value, icon)).join("");
+      const controller = this._unique(items.filter((item) => ["online","power","voltage"].includes(this._role(item)))).slice(0, 8).map((item) => this._compactCard(item)).join("");
+      const errors = this._unique(items.filter((item) => this._role(item) === "error"));
+      const actualProblems = this._unique(items.filter((item) => this._isProblem(item) && !["rssi","battery"].includes(this._role(item)))).slice(0, 8);
+      const eBus = this._unique(items.filter((item) => has(this._text(item), ["ebus"]) && ["modulation","pressure_boiler","temperature","dhw","return","supply"].includes(this._role(item)))).slice(0, 8).map((item) => this._compactCard(item)).join("");
+      const errorHtml = errors.length ? errors.slice(0, 6).map((item) => this._compactCard(item)).join("") : `<div class="ok-card"><ha-icon icon="mdi:check-circle-outline"></ha-icon><span>Ошибок нет</span></div>`;
+      const problemsHtml = actualProblems.length ? actualProblems.map((item) => this._compactCard(item)).join("") : "";
+      return `${this._section("Контроллер H2000+ Pro", this._grid(facts + controller))}${this._section("Ошибки", this._grid(errorHtml))}${problemsHtml ? this._section("Проблемы доступности", this._grid(problemsHtml)) : ""}${this._section("eBUS", this._grid(eBus))}`;
     }
 
     _content(active, items) {
       if (this._error) return `<div class="empty problem">Ошибка чтения реестра: ${esc(this._error)}</div>`;
       if (!Array.isArray(this._registry)) return `<div class="empty">Читаю данные ZONT…</div>`;
       if (!items.length) return `<div class="empty">Сущности ZONT не найдены.</div>`;
-      if (active.id === "overview") return this._overview(items);
+      if (active.id === "states") return this._states(items);
       if (active.id === "boilers") return this._boilers(items);
       if (active.id === "heating") return this._heating(items);
       if (active.id === "sensors") return this._sensors(items);
       if (active.id === "diagnostics") return this._diagnostics(items);
-      return this._overview(items);
+      return this._states(items);
+    }
+
+    async _pressMode(entityId, label) {
+      const item = this._entries().find((entry) => entry.entry.entity_id === entityId);
+      if (!item || domainOf(entityId) !== "button" || !["zont", "zont_ha"].includes(item.entry.platform)) return;
+      if (!window.confirm(`Переключить режим отопления на «${label}»?`)) return;
+      this._busyMode = entityId;
+      this._queue();
+      try { await this._hass.callService("button", "press", { entity_id: entityId }); }
+      finally { this._busyMode = null; this._queue(); }
     }
 
     _render() {
@@ -367,19 +460,25 @@
       const nav = tabs.map((tab) => `<button class="tab ${tab.id === active.id ? "active" : ""}" data-tab="${esc(tab.id)}" ${tab.id === active.id ? "disabled" : ""}><ha-icon icon="${esc(tab.icon || "mdi:view-dashboard-outline")}"></ha-icon><span>${esc(tab.label || tab.id)}</span></button>`).join("");
       this.shadowRoot.innerHTML = `
         <style>
-          :host{display:block;min-height:100vh;background:var(--primary-background-color,#f2f3f5);color:var(--primary-text-color,#202124);font-family:var(--paper-font-body1_-_font-family,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}*{box-sizing:border-box}
-          .app{min-height:100vh;padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))}.header{position:sticky;top:0;z-index:10;display:grid;grid-template-columns:50px 1fr 50px;align-items:center;min-height:70px;padding:max(6px,env(safe-area-inset-top,0px)) 10px 6px;background:var(--card-background-color,#fff);border-bottom:1px solid var(--divider-color,#ddd)}.rail{width:46px;height:46px;border:0;background:transparent;color:var(--primary-text-color,#202124);display:grid;place-items:center}.rail ha-icon{--mdc-icon-size:28px}.heading{text-align:center;min-width:0}.heading strong,.heading span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.heading strong{font-size:21px}.heading span{margin-top:3px;font-size:12px;color:var(--secondary-text-color,#777)}
-          main{width:min(100%,920px);margin:auto;padding:14px 16px 28px}section{margin-bottom:24px}section h2{margin:0 0 11px 3px;font-size:18px;font-weight:500}.card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.system-card,.meter-card,.room-card,.compact-card,.ok-card{background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#ddd);border-radius:16px}.system-card{padding:14px}.system-title{display:flex;align-items:center;gap:9px;font-size:18px}.system-title ha-icon{color:var(--primary-color,#0097a7);--mdc-icon-size:28px}.system-title strong{font-weight:600}.system-rows{margin-top:12px;display:grid;gap:7px}.system-rows>div,.flow-line,.current-line,.target-line{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.system-rows span,.target-line span{color:var(--secondary-text-color,#777);font-size:12px}.system-rows b,.current-line b,.target-line b{font-size:15px;font-weight:650}.current-line{margin-top:12px}.current-line span{color:#ef8b00;font-size:13px}.current-line b{font-size:20px}.target-line{margin-top:5px}.flow-line{margin-top:9px;padding-top:8px;border-top:1px solid var(--divider-color,#eee);font-size:12px;color:var(--secondary-text-color,#666)}.card-foot{margin-top:8px;font-size:12px;color:var(--secondary-text-color,#777)}
-          .meter-card{min-height:170px;padding:12px;display:grid;grid-template-columns:42px 1fr;gap:7px}.meter{position:relative;height:140px}.meter i{position:absolute;left:20px;top:8px;bottom:8px;width:5px;border-radius:6px;background:color-mix(in srgb,var(--primary-color,#00aeb7) 22%,transparent)}.meter b{position:absolute;left:16px;width:13px;height:4px;border-radius:4px;background:var(--primary-color,#00aeb7);transform:translateY(50%)}.meter-max,.meter-min{position:absolute;left:0;font-size:10px;color:var(--secondary-text-color,#777)}.meter-max{top:0}.meter-min{bottom:0}.meter-body{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between}.meter-value{align-self:flex-start;font-size:25px;font-weight:450;white-space:nowrap}.meter-body ha-icon{--mdc-icon-size:46px;color:var(--primary-color,#0097a7)}.meter-label{width:100%;font-size:14px;line-height:1.2;text-align:left;overflow:hidden;text-overflow:ellipsis}
+          :host{display:block;min-height:100vh;background:var(--primary-background-color,#f2f3f5);color:var(--primary-text-color,#202124);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}
+          .app{min-height:100vh;padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))}.header{position:sticky;top:0;z-index:10;display:grid;grid-template-columns:50px 1fr 50px;align-items:center;min-height:70px;padding:max(6px,env(safe-area-inset-top,0px)) 10px 6px;background:var(--card-background-color,#fff);border-bottom:1px solid var(--divider-color,#ddd)}.rail{width:46px;height:46px;border:0;background:transparent;color:inherit;display:grid;place-items:center}.rail ha-icon{--mdc-icon-size:28px}.heading{text-align:center;min-width:0}.heading strong,.heading span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.heading strong{font-size:21px}.heading span{margin-top:3px;font-size:12px;color:var(--secondary-text-color,#777)}
+          main{width:min(100%,920px);margin:auto;padding:14px 16px 28px}section{margin-bottom:24px}section h2{margin:0 0 11px 3px;font-size:18px;font-weight:500}.card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.system-card,.meter-card,.room-card,.compact-card,.ok-card,.mixer-card,.mode-card,.status-tile,.empty{background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#ddd);border-radius:16px}
+          .system-card{padding:14px}.system-title{display:flex;align-items:center;gap:9px;font-size:18px}.system-title ha-icon{color:var(--primary-color,#0097a7);--mdc-icon-size:28px}.system-title strong{font-weight:600}.system-rows{margin-top:12px;display:grid;gap:7px}.system-rows>div,.flow-line,.current-line,.target-line{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.system-rows span,.target-line span{color:var(--secondary-text-color,#777);font-size:12px}.system-rows b,.current-line b,.target-line b{font-size:15px;font-weight:650}.current-line{margin-top:12px}.current-line span{color:#ef8b00;font-size:13px}.current-line b{font-size:20px}.target-line{margin-top:5px}.flow-line{margin-top:9px;padding-top:8px;border-top:1px solid var(--divider-color,#eee);font-size:12px;color:var(--secondary-text-color,#666)}.card-foot{margin-top:8px;font-size:12px;color:var(--secondary-text-color,#777)}
+          .meter-card{min-height:170px;padding:12px;display:grid;grid-template-columns:42px 1fr;gap:7px}.meter{position:relative;height:140px}.meter i{position:absolute;left:20px;top:8px;bottom:8px;width:5px;border-radius:6px;background:color-mix(in srgb,var(--primary-color,#00aeb7) 22%,transparent)}.meter b{position:absolute;left:16px;width:13px;height:4px;border-radius:4px;background:var(--primary-color,#00aeb7);transform:translateY(50%)}.meter-max,.meter-min{position:absolute;left:0;font-size:10px;color:var(--secondary-text-color,#777)}.meter-max{top:0}.meter-min{bottom:0}.meter-body{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between}.meter-value{align-self:flex-start;font-size:25px;white-space:nowrap}.meter-body ha-icon{--mdc-icon-size:46px;color:var(--primary-color,#0097a7)}.meter-label{width:100%;font-size:14px;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
           .room-card{min-height:185px;padding:12px;display:grid;grid-template-columns:42px 1fr;gap:8px}.room-meter{position:relative;height:160px}.room-meter i{position:absolute;left:20px;top:7px;bottom:7px;width:5px;border-radius:6px;background:color-mix(in srgb,var(--primary-color,#00aeb7) 22%,transparent)}.room-meter b{position:absolute;left:16px;width:13px;height:4px;border-radius:4px;background:var(--primary-color,#00aeb7);transform:translateY(50%)}.room-meter span,.room-meter small{position:absolute;left:0;font-size:10px;color:var(--secondary-text-color,#777)}.room-meter span{top:0}.room-meter small{bottom:0}.room-body{min-width:0;display:flex;flex-direction:column;align-items:center}.room-value{align-self:flex-start;font-size:25px}.room-body>ha-icon{margin:9px 0 7px;--mdc-icon-size:48px;color:var(--primary-color,#0097a7)}.room-body>strong{font-size:15px}.room-meta{margin-top:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;font-size:10px;color:var(--secondary-text-color,#777)}
-          .compact-card{min-height:72px;padding:11px 13px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;align-items:center}.compact-card ha-icon{--mdc-icon-size:25px;color:var(--primary-color,#0097a7)}.compact-card strong,.compact-card span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.compact-card strong{font-size:14px}.compact-card span{margin-top:3px;font-size:12px;color:var(--secondary-text-color,#777)}.ok-card{min-height:72px;padding:14px;display:flex;align-items:center;gap:9px;color:var(--success-color,#43a047)}.ok-card ha-icon{--mdc-icon-size:25px}.problem{border-color:var(--warning-color,#ff9800)!important}.empty{padding:18px;border:1px solid var(--divider-color,#ddd);border-radius:16px;background:var(--card-background-color,#fff)}
+          .compact-card{min-height:72px;padding:11px 13px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;align-items:center}.compact-card ha-icon{--mdc-icon-size:25px;color:var(--primary-color,#0097a7)}.compact-card strong,.compact-card span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.compact-card strong{font-size:14px}.compact-card span{margin-top:3px;font-size:12px;color:var(--secondary-text-color,#777)}.fact-card{min-height:68px}
+          .status-tile{min-height:118px;padding:13px;border-width:2px}.status-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:17px}.status-title ha-icon{--mdc-icon-size:34px;color:var(--secondary-text-color,#777)}.status-value{margin-top:24px;font-size:16px;font-weight:650;color:var(--secondary-text-color,#777)}.status-tile.active{border-color:var(--success-color,#43a047)}.status-tile.active .status-value,.status-tile.active ha-icon{color:var(--success-color,#43a047)}.status-tile.circulation.active{border-color:#f3b51b}.status-tile.reserve.active{border-color:#00a9b7}
+          .mixer-card{padding:14px}.mixer-state{margin:18px 0 12px;font-size:25px;font-weight:600}.mixer-flags{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mixer-flags span{padding:9px;border-radius:12px;background:var(--secondary-background-color,#f5f5f5);font-size:12px;color:var(--secondary-text-color,#777)}.mixer-flags span.on{color:var(--primary-color,#0097a7);font-weight:700}
+          .mode-card{padding:14px}.mode-current{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:12px}.mode-current span{font-size:12px;color:var(--secondary-text-color,#777)}.mode-current b{font-size:17px}.mode-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.mode-buttons button{min-height:66px;border:1.5px solid var(--divider-color,#ddd);border-radius:14px;background:var(--card-background-color,#fff);color:inherit;display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:10px 12px;text-align:left}.mode-buttons button ha-icon{color:var(--primary-color,#0097a7)}.mode-buttons button span{font-size:13px;font-weight:600}.mode-buttons button.selected{background:var(--primary-color,#0097a7);border-color:var(--primary-color,#0097a7);color:#fff}.mode-buttons button.selected ha-icon{color:#fff}.mode-buttons button:disabled{opacity:.55}
+          .ok-card{min-height:72px;padding:14px;display:flex;align-items:center;gap:9px;color:var(--success-color,#43a047)}.ok-card ha-icon{--mdc-icon-size:25px}.problem{border-color:var(--warning-color,#ff9800)!important}.empty{padding:18px}
           .bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#ddd)}nav{width:min(100%,700px);margin:auto;display:grid;grid-template-columns:repeat(${tabs.length},minmax(0,1fr));gap:3px}.tab{border:0;background:transparent;color:var(--secondary-text-color,#777);min-width:0;min-height:60px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px 2px}.tab.active{color:var(--primary-color,#0097a7);background:color-mix(in srgb,var(--primary-color,#0097a7) 10%,transparent)}.tab ha-icon{--mdc-icon-size:24px}.tab span{width:100%;font-size:10.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-          @media(max-width:420px){main{padding-left:10px;padding-right:10px}.system-card{padding:12px}.system-title{font-size:16px}.meter-card{min-height:160px}.meter-value,.room-value{font-size:23px}.room-card{min-height:175px}.room-meta{font-size:9.5px}}
+          @media(max-width:420px){main{padding-left:10px;padding-right:10px}.system-card{padding:12px}.system-title{font-size:16px}.meter-card{min-height:160px}.meter-value,.room-value{font-size:23px}.room-card{min-height:175px}.room-meta{font-size:9.5px}.status-tile{min-height:110px}.mode-buttons button{min-height:62px;padding:8px}}
         </style>
         <div class="app"><header class="header"><button class="rail" id="back" aria-label="Назад"><ha-icon icon="mdi:arrow-left"></ha-icon></button><div class="heading"><strong>ZONT</strong><span>${esc(config.subtitle || "Отопление и ГВС")}</span></div><button class="rail" id="refresh" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button></header><main>${this._content(active, items)}</main><div class="bottom"><nav>${nav}</nav></div></div>`;
       this.shadowRoot.getElementById("back").onclick = () => navigate(config.parent?.path || "/dashboard-house/heating");
       this.shadowRoot.getElementById("refresh").onclick = () => { this._registry = null; this._load(true); };
       for (const button of this.shadowRoot.querySelectorAll("button[data-tab]")) button.onclick = () => this._selectTab(button.dataset.tab);
+      for (const button of this.shadowRoot.querySelectorAll("button[data-mode-entity]")) button.onclick = () => this._pressMode(button.dataset.modeEntity, button.dataset.modeLabel);
     }
   }
 
