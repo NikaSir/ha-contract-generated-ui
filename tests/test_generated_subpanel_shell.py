@@ -38,11 +38,11 @@ def _sections_dashboard(view_count: int) -> dict:
     }
 
 
-def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None:
+def test_zont_and_starline_are_shared_custom_panel_manifests() -> None:
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
-    assert zont["metadata"]["version"] == "0.6.0"
+    assert zont["metadata"]["version"] == "0.7.0"
     assert starline["metadata"]["version"] == "0.5.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
     assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
@@ -59,13 +59,15 @@ def test_zont_and_starline_are_read_only_shared_custom_panel_manifests() -> None
         "include_disabled": False,
     }
     assert [view["id"] for view in zont["spec"]["views"]] == [
-        "overview", "boilers", "heating", "sensors", "diagnostics"
+        "states", "boilers", "heating", "sensors", "diagnostics"
     ]
     assert len(starline["spec"]["views"]) == 5
     assert all(view["modules"] == [] for view in zont["spec"]["views"])
     assert all(view["modules"] == [] for view in starline["spec"]["views"])
     assert all(view["readonly"] for view in zont["spec"]["views"])
     assert all(view["readonly"] for view in starline["spec"]["views"])
+    assert "button" in zont["spec"]["views"][0]["readonly"]["domains"]
+    assert "насос" in zont["spec"]["views"][0]["readonly"]["include_keywords"]
     assert "радиатор" in zont["spec"]["views"][2]["readonly"]["include_keywords"]
     assert "rssi" in zont["spec"]["views"][3]["readonly"]["include_keywords"]
     assert starline["spec"]["views"][0]["readonly"]["limit"] == 6
@@ -79,10 +81,10 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert len(groups) == 1
     group = groups[0]
     assert group["title"] == "ZONT"
-    assert group["subtitle"] == "Отопление и ГВС · UI v0.6.0"
+    assert group["subtitle"] == "Отопление и ГВС · UI v0.7.0"
     assert group["parent"]["path"] == "/dashboard-house/heating"
     assert group["embedded"] is False
-    expected = ["overview", "boilers", "heating", "sensors", "diagnostics"]
+    expected = ["states", "boilers", "heating", "sensors", "diagnostics"]
     assert [tab["path"] for tab in group["tabs"]] == [f"/dashboard-zont/{item}" for item in expected]
 
     for view, name in zip(rendered["views"], expected, strict=True):
@@ -94,7 +96,7 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert navigation_shell_engine_sha256("0" * 64, groups) != "0" * 64
 
 
-def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
+def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
     specs = {item["id"]: item for item in build_generated_panel_specs(ROOT)}
     assert {"zont", "starline"} <= set(specs)
     assert specs["zont"]["url_path"] == "dashboard-zont"
@@ -102,7 +104,7 @@ def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     assert specs["zont"]["parent"]["path"] == "/dashboard-house/heating"
     assert specs["zont"]["source"]["platforms"] == ["zont", "zont_ha"]
     assert [tab["label"] for tab in specs["zont"]["tabs"]] == [
-        "Обзор", "Котлы", "Отопление", "Датчики", "Диагностика"
+        "Состояния", "Котлы", "Отопление", "Датчики", "Диагностика"
     ]
     assert len(specs["starline"]["tabs"]) == 5
 
@@ -115,8 +117,14 @@ def test_shared_custom_panel_specs_are_read_only_and_data_driven() -> None:
     assert "_boilerCard" in zont_frontend
     assert "_roomCard" in zont_frontend
     assert "_meterCard" in zont_frontend
-    assert ".callService(" not in zont_frontend
-    assert 'type: "call_service"' not in zont_frontend
+    assert "_states" in zont_frontend
+    assert "_modeButtons" in zont_frontend
+    assert "_mixerState" in zont_frontend
+    assert 'callService("button", "press"' in zont_frontend
+    assert 'domainOf(entityId) !== "button"' in zont_frontend
+    assert '["zont", "zont_ha"].includes(item.entry.platform)' in zont_frontend
+    assert 'callService("switch"' not in zont_frontend
+    assert 'callService("climate"' not in zont_frontend
 
 
 def test_global_navigation_overlay_drops_standalone_custom_panel_groups(tmp_path: Path) -> None:
@@ -143,9 +151,9 @@ def test_embedded_mode_remains_available_when_real_host_manifest_exists() -> Non
     composed = embed_subpanel_dashboard(host, host_manifest, child, groups[0])
     paths = [view["path"] for view in composed["views"]]
     assert paths[0] == "heating"
-    assert "zont-overview" in paths
+    assert "zont-states" in paths
     launch = composed["views"][0]["sections"][-1]["cards"][0]
-    assert launch["tap_action"]["navigation_path"] == "/dashboard-house/zont-overview"
+    assert launch["tap_action"]["navigation_path"] == "/dashboard-house/zont-states"
 
 
 def test_generator_and_runtime_subpanel_sources_are_byte_equivalent() -> None:
