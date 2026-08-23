@@ -36,6 +36,8 @@ async def async_setup_entry(
         GENERATED_DIRECTORY,
         GENERATED_SUBPANEL_FILENAME,
         GENERATED_SUBPANEL_STATIC_PATH,
+        GENERATED_ZONT_FILENAME,
+        GENERATED_ZONT_STATIC_PATH,
         INFRA_SUMMARY_FILENAME,
         INFRA_SUMMARY_STATIC_PATH,
         NAVIGATION_REGISTRY_FILENAME,
@@ -61,56 +63,24 @@ async def async_setup_entry(
     navigation_registry_path = generated_root / NAVIGATION_REGISTRY_FILENAME
 
     try:
-        await hass.async_add_executor_job(
-            sync_bundled_public_sources,
-            source_root,
-        )
-        await hass.async_add_executor_job(
-            write_navigation_registry,
-            source_root,
-            navigation_registry_path,
-        )
-        await hass.async_add_executor_job(
-            strip_standalone_navigation_groups,
-            navigation_registry_path,
-        )
+        await hass.async_add_executor_job(sync_bundled_public_sources, source_root)
+        await hass.async_add_executor_job(write_navigation_registry, source_root, navigation_registry_path)
+        await hass.async_add_executor_job(strip_standalone_navigation_groups, navigation_registry_path)
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
         _LOGGER.warning("Cannot build NikaS navigation registry during setup: %s", err)
-        await hass.async_add_executor_job(
-            write_empty_navigation_registry,
-            navigation_registry_path,
-        )
+        await hass.async_add_executor_job(write_empty_navigation_registry, navigation_registry_path)
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     if not domain_data.get(FRONTEND_STATIC_REGISTERED):
         frontend_root = Path(__file__).parent / FRONTEND_DIRECTORY
         await hass.http.async_register_static_paths(
             [
-                StaticPathConfig(
-                    APP_SHELL_STATIC_PATH,
-                    str(frontend_root / APP_SHELL_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    INFRA_SUMMARY_STATIC_PATH,
-                    str(frontend_root / INFRA_SUMMARY_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    UI_BUNDLE_STATIC_PATH,
-                    str(frontend_root / UI_BUNDLE_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    GENERATED_SUBPANEL_STATIC_PATH,
-                    str(frontend_root / GENERATED_SUBPANEL_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    NAVIGATION_REGISTRY_STATIC_PATH,
-                    str(navigation_registry_path),
-                    False,
-                ),
+                StaticPathConfig(APP_SHELL_STATIC_PATH, str(frontend_root / APP_SHELL_FILENAME), False),
+                StaticPathConfig(INFRA_SUMMARY_STATIC_PATH, str(frontend_root / INFRA_SUMMARY_FILENAME), False),
+                StaticPathConfig(UI_BUNDLE_STATIC_PATH, str(frontend_root / UI_BUNDLE_FILENAME), False),
+                StaticPathConfig(GENERATED_SUBPANEL_STATIC_PATH, str(frontend_root / GENERATED_SUBPANEL_FILENAME), False),
+                StaticPathConfig(GENERATED_ZONT_STATIC_PATH, str(frontend_root / GENERATED_ZONT_FILENAME), False),
+                StaticPathConfig(NAVIGATION_REGISTRY_STATIC_PATH, str(navigation_registry_path), False),
             ]
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
@@ -126,10 +96,7 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
-    await hass.config_entries.async_forward_entry_setups(
-        entry,
-        (Platform.SENSOR, Platform.BUTTON),
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, (Platform.SENSOR, Platform.BUTTON))
     return True
 
 
@@ -144,10 +111,7 @@ async def async_unload_entry(
     from .const import UI_BUNDLE_MODULE_URL
     from .generated_panels import async_unregister_generated_subpanels
 
-    unloaded = await hass.config_entries.async_unload_platforms(
-        entry,
-        (Platform.SENSOR, Platform.BUTTON),
-    )
+    unloaded = await hass.config_entries.async_unload_platforms(entry, (Platform.SENSOR, Platform.BUTTON))
     if unloaded:
         async_unregister_generated_subpanels(hass)
         try:
