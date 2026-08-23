@@ -3,8 +3,8 @@ kind: PanelManifest
 metadata:
   id: starline
   title: StarLine
-  version: 0.5.0
-  description: Read-only StarLine vehicle panel with automatic multi-vehicle grouping from the live Home Assistant registries.
+  version: 0.6.0
+  description: Native-inspired read-only StarLine vehicle panel with multi-vehicle overview, security, engine telemetry, map and Home Assistant history.
 spec:
   dashboard_path: /dashboard-starline
   subpanel:
@@ -19,11 +19,11 @@ spec:
   views:
     - id: overview
       title: Обзор
-      icon: mdi:view-dashboard-outline
+      icon: mdi:car-connected
       path: overview
       order: 0
       renderer: subpanel_placeholder_v1
-      placeholder: Краткая сводка по каждому автомобилю StarLine. Управляющие команды намеренно отключены.
+      placeholder: Сводка выбранного автомобиля: связь, АКБ, топливо, температуры, пробег, моточасы, последнее событие и карта.
       readonly:
         domains:
           - binary_sensor
@@ -31,41 +31,7 @@ spec:
           - sensor
           - switch
           - device_tracker
-        priority_keywords:
-          - security
-          - охран
-          - alarm
-          - mileage
-          - odometer
-          - пробег
-          - fuel
-          - топлив
-          - battery
-          - аккумуля
-          - акб
-          - engine
-          - двигат
-          - cabin
-          - interior
-          - салон
-          - temperature
-          - температур
-        exclude_keywords:
-          - door
-          - двер
-          - hood
-          - капот
-          - trunk
-          - багаж
-          - brake
-          - тормоз
-          - hands free
-          - hands_free
-          - movement
-          - движен
-          - program
-          - программ
-        limit: 6
+        limit: 40
       modules: []
     - id: security
       title: Охрана
@@ -73,12 +39,12 @@ spec:
       path: security
       order: 1
       renderer: subpanel_placeholder_v1
-      placeholder: Состояния охраны и периметра выбранного автомобиля без команд постановки или снятия.
+      placeholder: Состояния охраны, замков, дверей, капота, багажника и ручного тормоза без управляющих команд.
       readonly:
         domains:
           - binary_sensor
           - lock
-        limit: 30
+        limit: 40
       modules: []
     - id: engine
       title: Двигатель
@@ -86,51 +52,44 @@ spec:
       path: engine
       order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Состояния двигателя, зажигания и отопителя выбранного автомобиля без запуска или остановки.
+      placeholder: Двигатель, зажигание, отопитель и автомобильная телеметрия в режиме только чтения.
       readonly:
         domains:
           - switch
           - binary_sensor
           - sensor
-        include_keywords:
-          - engine
-          - ignition
-          - autostart
-          - heater
-          - webasto
-          - двигат
-          - зажиган
-          - автозапуск
-          - отопител
-        limit: 24
-      modules: []
-    - id: vehicle
-      title: Авто
-      icon: mdi:car
-      path: vehicle
-      order: 3
-      renderer: subpanel_placeholder_v1
-      placeholder: Телеметрия и местоположение выбранного автомобиля в режиме только чтения.
-      readonly:
-        domains:
-          - sensor
-          - device_tracker
         limit: 40
       modules: []
-    - id: service
-      title: Сервис
-      icon: mdi:stethoscope
-      path: service
+    - id: location
+      title: Карта
+      icon: mdi:map-marker-path
+      path: location
+      order: 3
+      renderer: subpanel_placeholder_v1
+      placeholder: Текущее местоположение и маршрут по истории Home Assistant.
+      readonly:
+        domains:
+          - device_tracker
+          - sensor
+        include_keywords:
+          - gps
+          - location
+          - местополож
+          - speed
+          - скорост
+        limit: 20
+      modules: []
+    - id: history
+      title: История
+      icon: mdi:history
+      path: history
       order: 4
       renderer: subpanel_placeholder_v1
-      placeholder: Контроль недоступных сущностей выбранного автомобиля StarLine без сервисных команд.
+      placeholder: Хронология изменений дверей, двигателя, зажигания, охраны и замков за последние 24 часа из Recorder Home Assistant.
       readonly:
         domains:
           - binary_sensor
           - lock
-          - sensor
           - switch
-          - device_tracker
-        unavailable_only: true
-        limit: 40
+        limit: 80
       modules: []
