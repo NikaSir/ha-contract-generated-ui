@@ -15,3 +15,14 @@ def test_house_layout_source_is_identical_in_cli_and_runtime() -> None:
         / "runtime_house.py"
     ).read_bytes()
     assert generator == runtime
+
+
+def test_house_base_source_is_identical_in_cli_and_runtime() -> None:
+    generator = (ROOT / "generator" / "house_base.py").read_bytes()
+    runtime = (
+        ROOT
+        / "custom_components"
+        / "contract_generated_ui"
+        / "house_base.py"
+    ).read_bytes()
+    assert generator == runtime
