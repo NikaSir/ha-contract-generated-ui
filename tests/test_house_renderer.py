@@ -147,7 +147,7 @@ def _walk(value):
             yield from _walk(child)
 
 
-def test_house_preview_preserves_protected_mobile_order() -> None:
+def test_house_preview_preserves_protected_mobile_order_without_duplicate_title() -> None:
     first = render_house_dashboard(_dashboard(), _trace(), _manifest())
     second = render_house_dashboard(_dashboard(), _trace(), _manifest())
     assert first == second
@@ -157,7 +157,7 @@ def test_house_preview_preserves_protected_mobile_order() -> None:
     assert view["max_columns"] == 2
     assert view["dense_section_placement"] is True
 
-    assert [_section_heading(section) for section in view["sections"][1:]] == [
+    assert [_section_heading(section) for section in view["sections"]] == [
         "Дом сейчас",
         "Активные события",
         "Ресурсы",
@@ -165,6 +165,38 @@ def test_house_preview_preserves_protected_mobile_order() -> None:
         "Автомобили",
         "Ключевые точки доступа",
     ]
+    assert all(
+        card.get("heading") != view["title"]
+        for section in view["sections"]
+        for card in section.get("cards", [])
+        if isinstance(card, dict) and card.get("type") == "heading"
+    )
+
+
+def test_house_summary_heating_reflects_active_circuits_and_data_quality() -> None:
+    dashboard = render_house_dashboard(_dashboard(), _trace(), _manifest())
+    cards = dashboard["views"][0]["sections"][0]["cards"]
+    heating = next(
+        card
+        for card in cards
+        if isinstance(card, dict)
+        and card.get("type") == "custom:mushroom-template-card"
+        and card.get("primary") == "Отопление"
+    )
+
+    secondary = heating["secondary"]
+    assert "Контуры активны" in secondary
+    assert "Система в ожидании" in secondary
+    assert "Нет данных" in secondary
+    assert "binary_sensor.test_radiators" in secondary
+    assert "binary_sensor.test_floor" in secondary
+    assert "binary_sensor.test_circulation" in secondary
+    assert "Котлы не активны" not in secondary
+
+    icon_color = heating["icon_color"]
+    assert "orange" in icon_color
+    assert "green" in icon_color
+    assert "grey" in icon_color
 
 
 def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None:
@@ -183,7 +215,7 @@ def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None
 
 def test_house_resources_are_household_summary_only() -> None:
     dashboard = render_house_dashboard(_dashboard(), _trace(), _manifest())
-    resources = dashboard["views"][0]["sections"][3]["cards"]
+    resources = dashboard["views"][0]["sections"][2]["cards"]
     assert resources[0]["heading"] == "Ресурсы"
     assert [card.get("primary") for card in resources[1:]] == [
         "Электросеть дома",
