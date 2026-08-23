@@ -3,8 +3,8 @@ kind: PanelManifest
 metadata:
   id: zont
   title: ZONT
-  version: 0.6.0
-  description: Read-only semantic ZONT panel organized around boilers, heating, sensors and diagnostics.
+  version: 0.7.0
+  description: Semantic ZONT panel with actuator status and safe heating-mode controls.
 spec:
   dashboard_path: /dashboard-zont
   subpanel:
@@ -18,19 +18,38 @@ spec:
         - zont_ha
       include_disabled: false
   views:
-    - id: overview
-      title: Обзор
-      icon: mdi:view-dashboard-outline
-      path: overview
+    - id: states
+      title: Состояния
+      icon: mdi:pump
+      path: states
       order: 0
       renderer: subpanel_placeholder_v1
-      placeholder: Сводка по котлам, отопительным контурам и помещениям. Только просмотр.
+      placeholder: Насосы, смесительный привод и режимы отопления.
       readonly:
         domains:
-          - climate
           - sensor
           - binary_sensor
-        limit: 50
+          - switch
+          - climate
+          - button
+        include_keywords:
+          - насос
+          - pump
+          - открытие
+          - закрытие
+          - смеситель
+          - valve
+          - радиатор
+          - тёплый пол
+          - теплый пол
+          - циркуляц
+          - резерв
+          - режим
+          - mode
+          - комфорт
+          - отпуск
+          - автоматика
+        limit: 100
       modules: []
     - id: boilers
       title: Котлы
@@ -38,7 +57,7 @@ spec:
       path: boilers
       order: 1
       renderer: subpanel_placeholder_v1
-      placeholder: Основной и резервный котлы, температуры, давление и модуляция. Только просмотр.
+      placeholder: Основной и резервный котлы, температуры, давление и модуляция.
       readonly:
         domains:
           - climate
@@ -63,7 +82,7 @@ spec:
       path: heating
       order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Радиаторы, тёплый пол, ГВС, циркуляция и резервный контур. Только просмотр.
+      placeholder: Радиаторы, тёплый пол, ГВС, циркуляция и резервный контур.
       readonly:
         domains:
           - climate
@@ -91,7 +110,7 @@ spec:
       path: sensors
       order: 3
       renderer: subpanel_placeholder_v1
-      placeholder: Помещения, улица, влажность, батареи, RSSI и давление. Только просмотр.
+      placeholder: Помещения, улица, влажность, батареи, RSSI и давление.
       readonly:
         domains:
           - sensor
@@ -120,7 +139,7 @@ spec:
       path: diagnostics
       order: 4
       renderer: subpanel_placeholder_v1
-      placeholder: Контроллер, питание, ошибки, доступность и eBUS. Только просмотр.
+      placeholder: Контроллер H2000+ Pro, питание, ошибки, доступность и eBUS.
       readonly:
         domains:
           - sensor
