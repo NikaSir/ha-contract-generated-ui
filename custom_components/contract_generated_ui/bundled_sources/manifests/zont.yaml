@@ -3,8 +3,8 @@ kind: PanelManifest
 metadata:
   id: zont
   title: ZONT
-  version: 0.5.0
-  description: Read-only ZONT engineering panel organized around boilers, heating circuits, rooms, diagnostics and eBUS.
+  version: 0.6.0
+  description: Read-only semantic ZONT panel organized around boilers, heating, sensors and diagnostics.
 spec:
   dashboard_path: /dashboard-zont
   subpanel:
@@ -20,42 +20,50 @@ spec:
   views:
     - id: overview
       title: Обзор
-      icon: mdi:water-boiler
+      icon: mdi:view-dashboard-outline
       path: overview
       order: 0
       renderer: subpanel_placeholder_v1
-      placeholder: Инженерная сводка ZONT по котлам, давлениям и ключевым состояниям. Только просмотр.
+      placeholder: Сводка по котлам, отопительным контурам и помещениям. Только просмотр.
       readonly:
         domains:
           - climate
           - sensor
           - binary_sensor
-        priority_keywords:
-          - error
-          - ошибка
-          - авар
-          - pressure
-          - давлен
-          - modulation
-          - модуляц
+        limit: 50
+      modules: []
+    - id: boilers
+      title: Котлы
+      icon: mdi:water-boiler
+      path: boilers
+      order: 1
+      renderer: subpanel_placeholder_v1
+      placeholder: Основной и резервный котлы, температуры, давление и модуляция. Только просмотр.
+      readonly:
+        domains:
+          - climate
+          - sensor
+          - binary_sensor
+        include_keywords:
           - boiler
           - котел
           - котёл
-          - current temperature
-          - текущая температур
-          - target temperature
-          - целевая температур
-          - controller online
-          - контроллер online
-        limit: 18
+          - основной
+          - резерв
+          - ebus
+          - modulation
+          - модуляц
+          - pressure
+          - давлен
+        limit: 50
       modules: []
-    - id: circuits
-      title: Контуры
+    - id: heating
+      title: Отопление
       icon: mdi:radiator
-      path: circuits
-      order: 1
+      path: heating
+      order: 2
       renderer: subpanel_placeholder_v1
-      placeholder: Радиаторы, тёплый пол, резервный контур и циркуляция без управляющих действий.
+      placeholder: Радиаторы, тёплый пол, ГВС, циркуляция и резервный контур. Только просмотр.
       readonly:
         domains:
           - climate
@@ -72,18 +80,18 @@ spec:
           - циркуляц
           - reserve
           - резерв
-          - heating circuit
-          - контур
           - гвс
-        limit: 40
+          - dhw
+          - гидрострел
+        limit: 50
       modules: []
-    - id: rooms
-      title: Помещения
+    - id: sensors
+      title: Датчики
       icon: mdi:home-thermometer-outline
-      path: rooms
-      order: 2
+      path: sensors
+      order: 3
       renderer: subpanel_placeholder_v1
-      placeholder: "Комнатные и уличные датчики ZONT: температура, влажность, батарея и RSSI."
+      placeholder: Помещения, улица, влажность, батареи, RSSI и давление. Только просмотр.
       readonly:
         domains:
           - sensor
@@ -102,58 +110,20 @@ spec:
           - улиц
           - weather
           - погод
-        exclude_keywords:
-          - boiler
-          - котел
-          - котёл
-          - supply
-          - подача
-          - return
-          - обратка
-          - гвс
+          - pressure
+          - давлен
         limit: 50
       modules: []
     - id: diagnostics
       title: Диагностика
       icon: mdi:heart-pulse
       path: diagnostics
-      order: 3
-      renderer: subpanel_placeholder_v1
-      placeholder: Контроллер, питание, исполнительные механизмы и ошибки ZONT. Только просмотр.
-      readonly:
-        domains:
-          - sensor
-          - binary_sensor
-        include_keywords:
-          - controller
-          - контроллер
-          - online
-          - power
-          - питание
-          - voltage
-          - напряжен
-          - opening
-          - открытие
-          - closing
-          - закрытие
-          - error
-          - ошибка
-          - fault
-          - авар
-        limit: 40
-      modules: []
-    - id: ebus
-      title: eBUS
-      icon: mdi:stethoscope
-      path: ebus
       order: 4
       renderer: subpanel_placeholder_v1
-      placeholder: "Дополнительный eBUS-канал: давление, модуляция и температуры второго котлового канала."
+      placeholder: Контроллер, питание, ошибки, доступность и eBUS. Только просмотр.
       readonly:
         domains:
           - sensor
           - binary_sensor
-        include_keywords:
-          - ebus
-        limit: 40
+        limit: 50
       modules: []
