@@ -13,6 +13,7 @@ from .const import (
     DOMAIN,
     GENERATED_SUBPANEL_MODULE_URL,
     GENERATED_SUBPANEL_PATHS,
+    GENERATED_ZONT_MODULE_URL,
 )
 from .runtime_subpanel_shell import resolved_navigation_groups
 
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 WEB_COMPONENT_NAME = "nikas-generated-subpanel"
+ZONT_WEB_COMPONENT_NAME = "nikas-generated-zont"
 
 
 def _load_object(path: Path) -> dict[str, Any]:
@@ -106,6 +108,8 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
                 "source": subpanel.get("source"),
                 "tabs": tabs,
                 "sidebar_icon": tabs[0]["icon"],
+                "webcomponent_name": ZONT_WEB_COMPONENT_NAME if panel_id == "zont" else WEB_COMPONENT_NAME,
+                "module_url": GENERATED_ZONT_MODULE_URL if panel_id == "zont" else GENERATED_SUBPANEL_MODULE_URL,
             }
         )
 
@@ -135,7 +139,7 @@ async def async_register_generated_subpanels(
     hass: HomeAssistant,
     source_root: Path,
 ) -> None:
-    """Register standalone generated subpanels with one shared web component."""
+    """Register standalone generated subpanels with manifest-selected web components."""
     from homeassistant.components import frontend, panel_custom
 
     specs = await hass.async_add_executor_job(build_generated_panel_specs, source_root)
@@ -150,10 +154,10 @@ async def async_register_generated_subpanels(
         await panel_custom.async_register_panel(
             hass=hass,
             frontend_url_path=url_path,
-            webcomponent_name=WEB_COMPONENT_NAME,
+            webcomponent_name=spec["webcomponent_name"],
             sidebar_title=spec["title"],
             sidebar_icon=spec["sidebar_icon"],
-            module_url=GENERATED_SUBPANEL_MODULE_URL,
+            module_url=spec["module_url"],
             embed_iframe=False,
             require_admin=False,
             handle_safe_area=True,
@@ -182,6 +186,7 @@ def async_unregister_generated_subpanels(hass: HomeAssistant) -> None:
 
 __all__ = [
     "WEB_COMPONENT_NAME",
+    "ZONT_WEB_COMPONENT_NAME",
     "async_register_generated_subpanels",
     "async_unregister_generated_subpanels",
     "build_generated_panel_specs",
