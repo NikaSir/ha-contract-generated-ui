@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.25.0"
+    assert manifest["version"] == "0.26.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -40,17 +40,22 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "_circuitCard" in zont_bundle
     assert "_roomCard" in zont_bundle
     assert "_meterCard" in zont_bundle
+    assert "_states" in zont_bundle
+    assert "_modeButtons" in zont_bundle
+    assert "_mixerState" in zont_bundle
     assert 'type: "config/entity_registry/list"' in zont_bundle
     assert 'type: "config/device_registry/list"' in zont_bundle
     assert ".callService(" not in panel_bundle
-    assert ".callService(" not in zont_bundle
+    assert 'callService("button", "press"' in zont_bundle
+    assert 'callService("switch"' not in zont_bundle
+    assert 'callService("climate"' not in zont_bundle
     assert 'type: "call_service"' not in panel_bundle
     assert 'type: "call_service"' not in zont_bundle
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b003"' in const_source
+    assert 'GENERATED_ZONT_BUILD = "b004"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
