@@ -29,7 +29,9 @@ def test_house_contract_is_public_semantic_only() -> None:
     assert len(roles) == 128
     assert len(contract["spec"]["actions"]) == len(roles)
     assert contract["spec"]["presentation"]["role_order"] == list(roles)
-    assert "entity_id" not in contract_path.read_text(encoding="utf-8")
+    # The schema-mandated safety flag is named `invent_entity_ids`; reject only
+    # concrete binding-style `entity_id:` fields in the public semantic contract.
+    assert "entity_id:" not in contract_path.read_text(encoding="utf-8")
 
 
 def test_house_v11_preview_is_staged_and_does_not_replace_live_house() -> None:
