@@ -112,7 +112,7 @@ spec:
           - погод
           - pressure
           - давлен
-        limit: 60
+        limit: 50
       modules: []
     - id: diagnostics
       title: Диагностика
@@ -125,5 +125,5 @@ spec:
         domains:
           - sensor
           - binary_sensor
-        limit: 60
+        limit: 50
       modules: []
