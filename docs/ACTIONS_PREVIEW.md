@@ -1,16 +1,17 @@
-# Actions preview
+# Actions main-panel release candidate
 
-`actions_home_v1` is the staged renderer for the Home Assistant NikaS **Действия** surface.
+`actions_home_v1` is the renderer for the Home Assistant NikaS **Действия** central surface.
 
 ## Role
 
 The central Actions dashboard is intentionally shallow. It is responsible for:
 
 - safe, frequent quick operations;
-- navigation into canonical integration-owned dashboards;
+- factual status immediately before a consequential action;
+- navigation into canonical subsystem panels;
 - keeping high-risk or domain-specific workflows out of the house-wide UI.
 
-It follows ADR-001: irrigation, S8 OMNI, Keenetic and UPS deep interaction models belong to their owning integrations.
+Deep interaction models remain owned by the corresponding subsystem implementations.
 
 ## Mobile target
 
@@ -19,25 +20,44 @@ Primary target: **iPhone Pro Max, portrait**.
 Layout rules:
 
 - maximum two Sections columns;
-- direct `toggle` actions: half-width (`6/12`);
-- `more_info`: half-width (`6/12`);
-- deep `navigate`: full-width (`12/12`);
-- unsupported/service-style actions: fail closed.
+- generic `toggle` actions: half-width (`6/12`);
+- generic `more_info`: half-width (`6/12`);
+- generic deep `navigate`: full-width (`12/12`);
+- unsupported contract action kinds, including generic service actions: fail closed.
+
+The complete v11 main Actions manifest uses three top-level sections:
+
+1. `Ворота и доступ`;
+2. `Уборка`;
+3. `Полив`.
 
 ## Safety
 
-The renderer does not create new action semantics. It consumes the already validated `UIContract` action for each resolved semantic role.
+The base renderer consumes only validated `UIContract` action semantics. The main-panel specialization adds exactly two fixed S8 OMNI quick operations after the semantic layer has resolved the verified `vacuum.*` entity:
 
-Therefore:
+- `vacuum.start` — `Начать уборку`;
+- `vacuum.return_to_base` — `На базу`.
 
-- `entity_id` still comes only from verified `SemanticInventory`;
-- toggle-domain safety remains enforced by the base renderer (`light`, `switch`, `input_boolean` only);
-- navigation targets must be absolute paths;
+Both commands require an explicit confirmation dialog. The renderer contains a strict allowlist and rejects any other vacuum service name. This is not a generic service-action mechanism.
+
+Additional safety rules:
+
+- `entity_id` for factual data still comes only from verified `SemanticInventory`;
+- sectional-gate position is displayed only from the physical contact sensor;
+- cover state is never treated as physical position confirmation;
+- swing-gate position is explicitly shown as `Физический датчик не установлен`;
+- ROXIMO cover controls are absent from the working main Actions panel because the controller devices are retired from active operation;
 - raw Tuya/RCI/SNMP writes are not an Actions-panel feature;
-- gates/covers or other consequential controls are not enabled merely because a UI card could be drawn.
+- irrigation is a navigation entry to the irrigation panel until a current verified central quick-action contract is accepted.
 
-## Staged rollout
+## v11 complete-set RC
 
-`0.10.0` adds renderer capability only. It does not replace the current `/dashboard-actions` automatically.
+Contract Generated UI `0.29.0` moves Actions from renderer-only staging to the generated main-panel set at `/dashboard-actions`.
 
-A private preview manifest/inventory is generated separately from the current Home Assistant registry and first reviewed on iPhone. Production replacement requires explicit acceptance.
+The release-candidate set is evaluated together:
+
+- `Дом` — `/dashboard-house-v11/home`;
+- `Действия` — `/dashboard-actions/home`;
+- `Инфраструктура` — `/dashboard-infrastructure/overview`.
+
+Production cut-over of the House route remains a separate acceptance gate after the three-panel mobile test.
