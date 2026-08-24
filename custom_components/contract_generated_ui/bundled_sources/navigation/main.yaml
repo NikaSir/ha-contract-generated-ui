@@ -31,6 +31,10 @@ spec:
       title: Полив
       path: /dashboard-irrigation
       parent: actions
+    actions.irrigation_candidate:
+      title: Полив · candidate
+      path: /dashboard-irrigation-generated/overview
+      parent: actions
   global_tabs:
     - id: home
       route: home
