@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.28.1"
+    assert manifest["version"] == "0.29.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -23,6 +23,16 @@ def test_release_version_and_schema_are_packaged() -> None:
     navigation_schema = json.loads((ROOT / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     packaged_navigation_schema = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     assert navigation_schema == packaged_navigation_schema
+
+    assert (ROOT / "contracts" / "actions_home.yaml").read_bytes() == (
+        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "contracts" / "actions_home.yaml"
+    ).read_bytes()
+    assert (ROOT / "manifests" / "actions.yaml").read_bytes() == (
+        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "manifests" / "actions.yaml"
+    ).read_bytes()
+    assert (ROOT / "navigation" / "main.yaml").read_bytes() == (
+        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "navigation" / "main.yaml"
+    ).read_bytes()
 
 
 def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
