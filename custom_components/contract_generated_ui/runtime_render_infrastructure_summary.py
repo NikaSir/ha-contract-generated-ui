@@ -26,6 +26,153 @@ def _layout_engine_sha256(base_engine_sha256: str) -> str:
     ).hexdigest()
 
 
+def _role_entities(semantic_module: Mapping[str, Any]) -> dict[str, str]:
+    roles = semantic_module.get("roles")
+    if not isinstance(roles, list):
+        raise RuntimeRenderError("infrastructure summary roles missing")
+    return {
+        role["role"]: role["entity_id"]
+        for role in roles
+        if isinstance(role, Mapping)
+        and isinstance(role.get("role"), str)
+        and isinstance(role.get("entity_id"), str)
+    }
+
+
+def _power_quality_prefix(entities: Mapping[str, str]) -> str:
+    required = (
+        "grid_ok",
+        "meter_online",
+        "phase_loss",
+        "phase_a_present",
+        "phase_b_present",
+        "phase_c_present",
+        "voltage_a",
+        "voltage_b",
+        "voltage_c",
+    )
+    missing = [name for name in required if name not in entities]
+    if missing:
+        raise RuntimeRenderError("infrastructure power quality missing roles: " + ", ".join(missing))
+
+    grid = entities["grid_ok"]
+    meter = entities["meter_online"]
+    phase_loss = entities["phase_loss"]
+    phase_a = entities["phase_a_present"]
+    phase_b = entities["phase_b_present"]
+    phase_c = entities["phase_c_present"]
+    voltage_a = entities["voltage_a"]
+    voltage_b = entities["voltage_b"]
+    voltage_c = entities["voltage_c"]
+    return (
+        "{% set reliable = has_value('" + grid + "') and has_value('" + meter + "') and has_value('" + phase_loss + "') and has_value('" + phase_a + "') and has_value('" + phase_b + "') and has_value('" + phase_c + "') and is_number(states('" + voltage_a + "')) and is_number(states('" + voltage_b + "')) and is_number(states('" + voltage_c + "')) %}"
+        "{% set event = reliable and (is_state('" + grid + "','off') or is_state('" + meter + "','off') or is_state('" + phase_loss + "','on') or is_state('" + phase_a + "','off') or is_state('" + phase_b + "','off') or is_state('" + phase_c + "','off')) %}"
+        "{% if reliable %}{% set volts=[states('" + voltage_a + "')|float,states('" + voltage_b + "')|float,states('" + voltage_c + "')|float] %}{% else %}{% set volts=[] %}{% endif %}"
+    )
+
+
+def _power_quality_short(entities: Mapping[str, str]) -> str:
+    return (
+        _power_quality_prefix(entities)
+        + "{% if not reliable %}⚪ Нет данных"
+        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария"
+        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение"
+        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание"
+        + "{% else %}🟢 Нормально{% endif %}"
+    )
+
+
+def _power_quality_heading(entities: Mapping[str, str]) -> str:
+    return (
+        _power_quality_prefix(entities)
+        + "## {% if not reliable %}⚪ Данные входящей сети неполные"
+        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария входящей сети"
+        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение входящей сети"
+        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание · входящая сеть"
+        + "{% else %}🟢 Входящая сеть в норме{% endif %}"
+    )
+
+
+def _polish_power_summary(
+    card: dict[str, Any],
+    semantic_module: Mapping[str, Any],
+    *,
+    view_id: str,
+) -> None:
+    if semantic_module.get("contract") != "infrastructure.power_grid":
+        return
+    entities = _role_entities(semantic_module)
+    voltage_entities = [
+        entities.get("voltage_a"),
+        entities.get("voltage_b"),
+        entities.get("voltage_c"),
+    ]
+    if not all(isinstance(entity, str) for entity in voltage_entities):
+        raise RuntimeRenderError("infrastructure power voltage roles missing")
+
+    if view_id == "overview":
+        content = card.get("content")
+        if not isinstance(content, str):
+            raise RuntimeRenderError("infrastructure power overview content missing")
+        grid = entities["grid_ok"]
+        meter = entities["meter_online"]
+        phase_loss = entities["phase_loss"]
+        phase_a = entities["phase_a_present"]
+        phase_b = entities["phase_b_present"]
+        phase_c = entities["phase_c_present"]
+        voltage_a = entities["voltage_a"]
+        voltage_b = entities["voltage_b"]
+        voltage_c = entities["voltage_c"]
+        old_prefix = (
+            "{% set before_reliable = has_value('" + grid + "') and has_value('" + meter + "') and has_value('" + phase_loss + "') and has_value('" + phase_a + "') and has_value('" + phase_b + "') and has_value('" + phase_c + "') and has_value('" + voltage_a + "') and has_value('" + voltage_b + "') and has_value('" + voltage_c + "') and has_value('" + entities["voltage_imbalance"] + "') and has_value('" + entities["total_power"] + "') %}"
+            "\n{% set before_event = before_reliable and (is_state('" + grid + "', 'off') or is_state('" + meter + "', 'off') or is_state('" + phase_loss + "', 'on') or is_state('" + phase_a + "', 'off') or is_state('" + phase_b + "', 'off') or is_state('" + phase_c + "', 'off')) %}"
+        )
+        old_status = (
+            "{% if not before_reliable %}⚪ Нет данных"
+            "{% elif before_event %}🔴 Отклонение"
+            "{% else %}🟢 Нормально{% endif %}"
+        )
+        if old_prefix not in content or old_status not in content:
+            raise RuntimeRenderError("infrastructure power overview template shape changed")
+        card["content"] = content.replace(old_prefix, _power_quality_prefix(entities)).replace(
+            old_status, _power_quality_short(entities)
+        )
+        return
+
+    if view_id not in {"power-overview", "power-before"}:
+        return
+    cards = card.get("cards")
+    if not isinstance(cards, list) or not cards or not isinstance(cards[0], dict):
+        raise RuntimeRenderError("infrastructure power detail status card missing")
+    status_card = cards[0]
+    entity_ids = status_card.get("entity_id")
+    if not isinstance(entity_ids, list):
+        raise RuntimeRenderError("infrastructure power detail entity tracking missing")
+    for entity in voltage_entities:
+        if entity not in entity_ids:
+            entity_ids.append(entity)
+
+    if view_id == "power-before":
+        status_card["content"] = (
+            _power_quality_heading(entities)
+            + "\nКонтроль входящей трёхфазной сети **до стабилизаторов**."
+        )
+        return
+
+    line_mode = entities.get("non_interruptible_mode")
+    line_stale = entities.get("non_interruptible_data_stale")
+    if not isinstance(line_mode, str) or not isinstance(line_stale, str):
+        raise RuntimeRenderError("infrastructure boiler-line status roles missing")
+    status_card["content"] = (
+        _power_quality_heading(entities)
+        + "\nТри физические точки контроля: **до стабилизаторов**, **после стабилизаторов**, **неотключаемая линия**."
+        + "\n\nЛиния котла: **{{ state_translated('" + line_mode + "') if has_value('" + line_mode + "') else 'Недоступно' }}** · "
+        + "{% if not has_value('" + line_stale + "') %}свежесть неизвестна"
+        + "{% elif is_state('" + line_stale + "', 'on') %}данные устарели"
+        + "{% else %}данные актуальны{% endif %}."
+    )
+
+
 def _polish_ups_summary(card: dict[str, Any], semantic_module: Mapping[str, Any]) -> None:
     if semantic_module.get("contract") != "infrastructure.ups":
         return
@@ -94,6 +241,7 @@ def _summary_dashboard(
                 card = build_summary_card(semantic_module, view_id=view_id)
             except ValueError as err:
                 raise RuntimeRenderError(str(err)) from err
+            _polish_power_summary(card, semantic_module, view_id=view_id)
             _polish_ups_summary(card, semantic_module)
             sections.append({"type": "grid", "cards": [card]})
 

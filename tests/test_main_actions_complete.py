@@ -93,7 +93,7 @@ def test_complete_actions_panel_keeps_gate_controls_read_only_and_adds_safe_vacu
 
     access = view["sections"][0]["cards"]
     assert access[2]["primary"] == "Распашные ворота"
-    assert access[2]["secondary"] == "Датчика положения нет"
+    assert access[2]["secondary"] == "Нет датчика"
     assert access[2]["tap_action"] == {"action": "none"}
 
     cleaning = view["sections"][1]["cards"]

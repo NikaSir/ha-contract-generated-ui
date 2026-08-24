@@ -56,7 +56,7 @@ def _swing_gate_placeholder() -> dict[str, Any]:
     return {
         "type": "custom:mushroom-template-card",
         "primary": "Распашные ворота",
-        "secondary": "Датчика положения нет",
+        "secondary": "Нет датчика",
         "icon": "mdi:gate",
         "icon_color": "grey",
         "tap_action": {"action": "none"},
