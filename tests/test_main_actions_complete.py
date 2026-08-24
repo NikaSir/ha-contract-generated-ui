@@ -93,11 +93,14 @@ def test_complete_actions_panel_keeps_gate_controls_read_only_and_adds_safe_vacu
 
     access = view["sections"][0]["cards"]
     assert access[2]["primary"] == "Распашные ворота"
-    assert access[2]["secondary"] == "Физический датчик не установлен"
+    assert access[2]["secondary"] == "Датчика положения нет"
     assert access[2]["tap_action"] == {"action": "none"}
 
     cleaning = view["sections"][1]["cards"]
     assert cleaning[1]["grid_options"] == {"columns": 12, "rows": 1}
+    assert cleaning[2]["primary"] == "Ошибки S8 OMNI"
+    assert "Ошибок нет" in cleaning[2]["secondary"]
+    assert cleaning[2]["entity"] == "sensor.s8_fault"
     assert cleaning[4]["grid_options"] == {"columns": 4, "rows": 1}
     assert cleaning[5]["grid_options"] == {"columns": 4, "rows": 1}
     assert cleaning[6]["grid_options"] == {"columns": 4, "rows": 1}
