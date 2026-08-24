@@ -2,19 +2,33 @@
 
 This document covers only the three central NikaS surfaces:
 
-- `Дом` (`/dashboard-house`)
-- `Действия` (`/dashboard-actions`)
-- `Инфраструктура` (`/dashboard-infrastructure`)
+- `Дом`;
+- `Действия`;
+- `Инфраструктура`.
 
 Integration-owned application panels are outside this migration scope.
 
-## House phase 1 — safe preview
+## Complete-set release candidate — CGUI 0.29.0
 
-The first v11 main-panel candidate is staged at:
+The isolated mock-up phase is closed. The next field-test unit is the complete three-panel application shell:
 
-`staged/main_panels/house/panel-manifest.yaml`
+1. `Дом` — `/dashboard-house-v11/home`;
+2. `Действия` — `/dashboard-actions/home`;
+3. `Инфраструктура` — `/dashboard-infrastructure/overview`.
 
-It deliberately uses `/dashboard-house-v11` so the accepted live `/dashboard-house` remains untouched while mobile layout is reviewed.
+The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
+
+The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. The central `Дом` tab temporarily targets `/dashboard-house-v11/home`. After mobile acceptance, House is promoted to `/dashboard-house` and the route is returned to the production path.
+
+Canonical deep routes in this release candidate point to integration-owned applications rather than recreating them inside Contract Generated UI:
+
+- heating — `/dashboard-zont`;
+- vehicles — `/dashboard-starline`;
+- cleaning — `/dashboard-s8-omni`;
+- irrigation — `/dashboard-irrigation`;
+- UPS — `/dashboard-ups`.
+
+## Дом
 
 The formal public contract is `contracts/house_home.yaml`. It contains semantic roles only and no private Home Assistant entity ids. The matching private semantic inventory remains local to the Home Assistant installation and is not tracked in Git.
 
@@ -27,31 +41,53 @@ The `house_home_v1` renderer preserves the approved top-level order:
 5. Автомобили
 6. Ключевые точки доступа
 
-Main-panel resources remain intentionally compact: electrical supply after stabilizers, drinking water and internet. Detailed subsystem telemetry belongs to the owning application panel.
+Main-panel resources remain intentionally compact. Detailed subsystem telemetry belongs to the owning subsystem panel.
 
-## Preview activation
+## Действия
 
-For a field preview only:
+The formal public contract is `contracts/actions_home.yaml`. The generated main manifest is `manifests/actions.yaml`.
 
-1. install/update Contract Generated UI so the `house.home` contract is synchronized;
-2. place the private `house.home.*` inventory bindings in `/config/contract_generated_ui/inventory/`;
-3. copy the staged House manifest to `/config/contract_generated_ui/manifests/house_v11_preview.yaml`;
-4. run `Сгенерировать панели`;
-5. add the generated `/dashboard-house-v11` YAML dashboard using the emitted Lovelace registration snippet;
-6. test `/dashboard-house-v11/home` on iPhone;
-7. do not replace `/dashboard-house` until field acceptance is complete.
+The central Actions surface contains:
 
-## Promotion gate
+1. `Ворота и доступ` — physical sectional-gate status and an explicit no-sensor state for swing gates; no retired ROXIMO cover controls;
+2. `Уборка` — S8 OMNI factual status plus two strictly allowlisted, confirmed quick commands: start cleaning and return to base; details go to `/dashboard-s8-omni`;
+3. `Полив` — navigation into `/dashboard-irrigation` while the central quick-action contract remains deliberately conservative.
 
-Promotion from preview to `/dashboard-house` requires:
+The renderer does not introduce a generic service-call mechanism. Unsupported contract service actions still fail closed.
 
-- current-registry verification of every private semantic binding;
-- no broken navigation targets;
+## Инфраструктура
+
+`manifests/infrastructure.yaml` remains the current generated infrastructure main panel. It is tested in the same global shell without a parallel replacement.
+
+The overview remains summary-first. Detailed electricity, UPS, WAN/LTE and other diagnostics stay in their owned detail views/panels.
+
+A future `Здоровье системы` semantic source may be backed by Gatus after the integration is installed and verified; no synthetic Gatus entities are introduced by this release candidate.
+
+## Ownership boundary
+
+Contract Generated UI owns the central shell, contracts, generation and navigation. It does not reclaim specialized application ownership that has already moved out:
+
+- ZONT application/UI is owned by the dedicated ZONT project;
+- StarLine application/UI is owned by `ha-starline-telemetry`;
+- S8 OMNI, irrigation and UPS keep their dedicated panels.
+
+## Private semantic inventory
+
+Public contracts/manifests are synchronized from the integration package. Private Home Assistant bindings remain local under:
+
+`/config/contract_generated_ui/inventory/`
+
+The release candidate therefore requires the verified House and Actions private inventory files on the target Home Assistant instance before generation.
+
+## Acceptance gate
+
+Promotion of the complete set requires:
+
+- successful generation with current private semantic inventory;
+- no broken global or integration-owned navigation targets;
 - correct `unknown` / `unavailable` handling;
-- protected section order preserved;
-- mobile acceptance on the real Home Assistant frontend;
-- semantic diff reviewed before route cut-over.
-
-## Next central surfaces
-
-After House acceptance the same process is used for `Действия`. `Инфраструктура` already has a production manifest and is refined in place only after House/Actions central-shell acceptance.
+- no retired gate-control actions in `Действия`;
+- S8 OMNI commands confirmed and working;
+- the House protected section order preserved;
+- all three main panels reviewed on the real iPhone frontend;
+- semantic diff reviewed before House route cut-over.
