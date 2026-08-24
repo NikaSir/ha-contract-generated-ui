@@ -30,7 +30,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     zont_bundle = (frontend_root / "nikas-generated-zont.js").read_text(encoding="utf-8")
-    zont_v080 = (frontend_root / "nikas-generated-zont-v080.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
@@ -53,15 +52,15 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'type: "call_service"' not in panel_bundle
     assert 'type: "call_service"' not in zont_bundle
 
-    assert "_systemOverviewV080" in zont_v080
-    assert 'new Event("hass-toggle-menu"' in zont_v080
-    assert 'icon.setAttribute("icon", "mdi:menu")' in zont_v080
-    assert "history.back" not in zont_v080
+    # Contract Generated UI owns only the generic renderer. ZONT-specific
+    # application/UI releases are HACS-managed by NikaSir/ha-zont.
+    assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b002"' in const_source
+    assert 'GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"' in const_source
+    assert 'GENERATED_ZONT_BUILD = "b005"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
