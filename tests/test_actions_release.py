@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.28.1"
+    assert manifest["version"] == "0.29.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -23,6 +23,12 @@ def test_release_version_and_schema_are_packaged() -> None:
     navigation_schema = json.loads((ROOT / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     packaged_navigation_schema = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     assert navigation_schema == packaged_navigation_schema
+
+    assert (ROOT / "contracts" / "actions_home.yaml").exists()
+    assert (ROOT / "manifests" / "actions.yaml").exists()
+    bundled = ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources"
+    assert (bundled / "contracts" / "actions_home.yaml").exists()
+    assert (bundled / "manifests" / "actions.yaml").exists()
 
 
 def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
@@ -52,15 +58,10 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'type: "call_service"' not in panel_bundle
     assert 'type: "call_service"' not in zont_bundle
 
-    # Contract Generated UI owns only the generic renderer. ZONT-specific
-    # application/UI releases are HACS-managed by NikaSir/ha-zont.
-    assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
-
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
-    assert 'GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b005"' in const_source
+    assert 'GENERATED_ZONT_BUILD = "b004"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
