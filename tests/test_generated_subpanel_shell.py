@@ -42,7 +42,7 @@ def test_zont_and_starline_are_shared_custom_panel_manifests() -> None:
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
     starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
-    assert zont["metadata"]["version"] == "0.7.0"
+    assert zont["metadata"]["version"] == "0.8.0"
     assert starline["metadata"]["version"] == "0.5.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
     assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
@@ -81,7 +81,7 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
     assert len(groups) == 1
     group = groups[0]
     assert group["title"] == "ZONT"
-    assert group["subtitle"] == "Отопление и ГВС · UI v0.7.0"
+    assert group["subtitle"] == "Отопление и ГВС · UI v0.8.0"
     assert group["parent"]["path"] == "/dashboard-house/heating"
     assert group["embedded"] is False
     expected = ["states", "boilers", "heating", "sensors", "diagnostics"]
@@ -110,6 +110,7 @@ def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
 
     shared_frontend = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     zont_frontend = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-zont.js").read_text(encoding="utf-8")
+    zont_v080 = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-zont-v080.js").read_text(encoding="utf-8")
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in shared_frontend
     assert 'const ELEMENT_NAME = "nikas-generated-zont"' in zont_frontend
     assert 'type: "config/entity_registry/list"' in zont_frontend
@@ -125,6 +126,9 @@ def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
     assert '["zont", "zont_ha"].includes(item.entry.platform)' in zont_frontend
     assert 'callService("switch"' not in zont_frontend
     assert 'callService("climate"' not in zont_frontend
+    assert "_systemOverviewV080" in zont_v080
+    assert 'new Event("hass-toggle-menu"' in zont_v080
+    assert "history.back" not in zont_v080
 
 
 def test_global_navigation_overlay_drops_standalone_custom_panel_groups(tmp_path: Path) -> None:
