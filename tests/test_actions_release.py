@@ -61,7 +61,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b004"' in const_source
+    assert 'GENERATED_ZONT_BUILD = "b005"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
