@@ -53,7 +53,7 @@ Additional safety rules:
 
 ## v11 complete-set RC
 
-Contract Generated UI `0.29.0` moves Actions from renderer-only staging to the generated main-panel set at `/dashboard-actions`.
+Contract Generated UI `0.29.0` moved Actions from renderer-only staging to the generated main-panel set at `/dashboard-actions`. Version `0.29.1` keeps the global `Дом` tab on `/dashboard-house-v11/home` during the complete-set field test, so leaving Actions does not accidentally return to the accepted production House.
 
 The release-candidate set is evaluated together:
 
