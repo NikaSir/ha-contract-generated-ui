@@ -17,7 +17,7 @@ TILE_ROWS = 1
 
 ACCESS_INSTANCE = "access"
 CLEANING_INSTANCE = "cleaning"
-CLEANING_DETAILS_PATH = "/dashboard-house/cleaning"
+CLEANING_DETAILS_PATH = "/dashboard-s8-omni"
 IRRIGATION_PATH = "/dashboard-irrigation"
 
 
