@@ -107,10 +107,12 @@ def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
         "Состояния", "Котлы", "Отопление", "Датчики", "Диагностика"
     ]
     assert len(specs["starline"]["tabs"]) == 5
+    assert specs["zont"]["module_url"].startswith(
+        "/contract_generated_ui/frontend/nikas-generated-zont.js"
+    )
 
     shared_frontend = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     zont_frontend = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-zont.js").read_text(encoding="utf-8")
-    zont_v080 = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-zont-v080.js").read_text(encoding="utf-8")
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in shared_frontend
     assert 'const ELEMENT_NAME = "nikas-generated-zont"' in zont_frontend
     assert 'type: "config/entity_registry/list"' in zont_frontend
@@ -126,9 +128,7 @@ def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
     assert '["zont", "zont_ha"].includes(item.entry.platform)' in zont_frontend
     assert 'callService("switch"' not in zont_frontend
     assert 'callService("climate"' not in zont_frontend
-    assert "_systemOverviewV080" in zont_v080
-    assert 'new Event("hass-toggle-menu"' in zont_v080
-    assert "history.back" not in zont_v080
+    assert not (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-generated-zont-v080.js").exists()
 
 
 def test_global_navigation_overlay_drops_standalone_custom_panel_groups(tmp_path: Path) -> None:
