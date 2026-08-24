@@ -10,12 +10,8 @@ This patch is based on the first complete iPhone field run of the central `До�
 
 ## Private House inventory field correction
 
-The live infrastructure inventory confirms the verified incoming three-phase voltage entities:
+The live infrastructure inventory confirms that `infrastructure.power.voltage_a/b/c` are the verified incoming three-phase voltage source. The private House RC inventory must rebind `house.home.power_a/b/c` to the same three verified entities before regeneration.
 
-- `infrastructure.power.voltage_a` → `sensor.power_monitor_voltage_a`;
-- `infrastructure.power.voltage_b` → `sensor.power_monitor_voltage_b`;
-- `infrastructure.power.voltage_c` → `sensor.power_monitor_voltage_c`.
-
-The private House RC inventory must therefore rebind `house.home.power_a/b/c` to those same verified entities before regeneration. Private Home Assistant entity bindings remain outside the public repository.
+Concrete Home Assistant entity ids remain exclusively in the private runtime inventory and are intentionally not recorded in this public repository.
 
 This is deliberately a private-inventory correction rather than a generated-YAML edit. Generated dashboards remain reproducible from contracts, manifests and verified inventory.
