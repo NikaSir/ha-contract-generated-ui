@@ -18,9 +18,9 @@ The isolated mock-up phase is closed. The next field-test unit is the complete t
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
 
-The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. The central `Дом` tab temporarily targets `/dashboard-house-v11/home`. After mobile acceptance, House is promoted to `/dashboard-house` and the route is returned to the production path.
+The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. The House preview manifest overrides its shell Home target to `/dashboard-house-v11/home`; the shared navigation contract remains at version `1.1.0` so existing subpanel parent semantics and dormant candidate routes are not rewritten during this RC.
 
-Canonical deep routes in this release candidate point to integration-owned applications rather than recreating them inside Contract Generated UI:
+Canonical deep routes used by the House/Actions release-candidate manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
 - heating — `/dashboard-zont`;
 - vehicles — `/dashboard-starline`;
