@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 PACKAGE_PATH = ROOT / "custom_components" / "contract_generated_ui"
-EXPECTED_PUBLIC_SOURCE_FILES = 12
+EXPECTED_PUBLIC_SOURCE_FILES = 11
 
 
 def _module():
@@ -38,20 +38,27 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
     (root / "inventory").mkdir(parents=True)
     (root / "snapshots").mkdir(parents=True)
     (root / "generated").mkdir(parents=True)
+    (root / "manifests").mkdir(parents=True)
     inventory = root / "inventory" / "home.yaml"
     snapshot = root / "snapshots" / "current.json"
     generated = root / "generated" / "infrastructure.yaml"
+    retired_starline = root / "manifests" / "starline.yaml"
+    private_manifest = root / "manifests" / "private_runtime.yaml"
     inventory.write_text("PRIVATE-INVENTORY\n", encoding="utf-8")
     snapshot.write_text("PRIVATE-SNAPSHOT\n", encoding="utf-8")
     generated.write_text("GENERATED-CANDIDATE\n", encoding="utf-8")
+    retired_starline.write_text("LEGACY-PUBLIC-STARLINE\n", encoding="utf-8")
+    private_manifest.write_text("PRIVATE-RUNTIME-MANIFEST\n", encoding="utf-8")
 
     result = module.sync_bundled_public_sources(root)
     assert result.checked_files == EXPECTED_PUBLIC_SOURCE_FILES
-    assert result.changed_files == EXPECTED_PUBLIC_SOURCE_FILES
+    assert result.changed_files == EXPECTED_PUBLIC_SOURCE_FILES + 1
 
     assert inventory.read_text(encoding="utf-8") == "PRIVATE-INVENTORY\n"
     assert snapshot.read_text(encoding="utf-8") == "PRIVATE-SNAPSHOT\n"
     assert generated.read_text(encoding="utf-8") == "GENERATED-CANDIDATE\n"
+    assert private_manifest.read_text(encoding="utf-8") == "PRIVATE-RUNTIME-MANIFEST\n"
+    assert not retired_starline.exists()
 
     for name in (
         "infrastructure_power_grid.yaml",
@@ -67,10 +74,10 @@ def test_bundled_sync_updates_only_public_source_directories(tmp_path: Path) -> 
     for name in (
         "infrastructure.yaml",
         "zont.yaml",
-        "starline.yaml",
         "house_v11_preview.yaml",
     ):
         assert (root / "manifests" / name).exists()
+    assert not (root / "manifests" / "starline.yaml").exists()
     assert not (root / "manifests" / "irrigation.yaml").exists()
     assert not (root / "manifests" / "house.yaml").exists()
 
