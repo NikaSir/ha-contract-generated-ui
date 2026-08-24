@@ -2,13 +2,13 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 1.1.0
-  description: Central route and tab ownership for NikaS generated UI.
+  version: 1.1.1
+  description: Central route and tab ownership for the NikaS v11 complete-set release candidate.
 spec:
   routes:
     home:
       title: Дом
-      path: /dashboard-house
+      path: /dashboard-house-v11/home
     actions:
       title: Действия
       path: /dashboard-actions
