@@ -8,7 +8,7 @@ This document covers only the three central NikaS surfaces:
 
 Integration-owned application panels are outside this migration scope.
 
-## Complete-set release candidate — CGUI 0.29.0
+## Complete-set release candidate — CGUI 0.29.1
 
 The isolated mock-up phase is closed. The next field-test unit is the complete three-panel application shell:
 
@@ -18,7 +18,7 @@ The isolated mock-up phase is closed. The next field-test unit is the complete t
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
 
-The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. The House preview manifest overrides its shell Home target to `/dashboard-house-v11/home`; the shared navigation contract remains at version `1.1.0` so existing subpanel parent semantics and dormant candidate routes are not rewritten during this RC.
+The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. Navigation contract `1.1.1` temporarily points only the global `Дом` tab to `/dashboard-house-v11/home`, so transitions from `Действия` and `Инфраструктура` return to the preview rather than the accepted production House. Existing `house.heating`, `actions` and generated-irrigation parent routes remain unchanged for subpanel compatibility.
 
 Canonical deep routes used by the House/Actions release-candidate manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
