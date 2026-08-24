@@ -3,8 +3,8 @@ kind: PanelManifest
 metadata:
   id: zont
   title: ZONT
-  version: 0.7.0
-  description: Semantic ZONT panel with actuator status and safe heating-mode controls.
+  version: 0.8.0
+  description: Semantic ZONT panel with unified application header, actuator status and safe heating-mode controls.
 spec:
   dashboard_path: /dashboard-zont
   subpanel:
