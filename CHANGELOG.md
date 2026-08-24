@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.29.3` closes the final complete-set field-polish discrepancies: Infrastructure now evaluates incoming-grid quality with the same 198/205/210/230/235/242 V thresholds used by House, the Actions swing-gate placeholder is shortened to `Нет датчика`, and the House heating summary uses mobile-safe `Основной` / `Резервный` labels while preserving the existing fail-closed state semantics.
 - Contract Generated UI `0.29.1` keeps the complete-set global `Дом` tab on `/dashboard-house-v11/home` during field acceptance; navigation contract `1.1.1` changes only that global route while preserving existing subpanel parent routes and the dormant generated-irrigation candidate.
 - Contract Generated UI `0.29.0` promotes `Действия` from renderer-only staging to the complete v11 central release-candidate set with public `actions.home` contract and generated `/dashboard-actions/home` manifest.
 - The complete Actions renderer keeps gate control read-only (physical sectional sensor plus explicit swing-gate no-sensor placeholder), adds only allowlisted confirmed `vacuum.start` / `vacuum.return_to_base` quick commands, and delegates deep S8 OMNI and irrigation workflows to `/dashboard-s8-omni` and `/dashboard-irrigation`.
