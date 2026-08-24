@@ -117,7 +117,7 @@ def test_complete_actions_panel_keeps_gate_controls_read_only_and_adds_safe_vacu
         "target": {"entity_id": "vacuum.s8_omni"},
         "confirmation": {"text": "Отправить S8 OMNI на базу?"},
     }
-    assert details["tap_action"]["navigation_path"] == "/dashboard-house/cleaning"
+    assert details["tap_action"]["navigation_path"] == "/dashboard-s8-omni"
 
     irrigation = view["sections"][2]["cards"][1]
     assert irrigation["tap_action"]["navigation_path"] == "/dashboard-irrigation"
