@@ -56,12 +56,35 @@ def _swing_gate_placeholder() -> dict[str, Any]:
     return {
         "type": "custom:mushroom-template-card",
         "primary": "Распашные ворота",
-        "secondary": "Физический датчик не установлен",
+        "secondary": "Датчика положения нет",
         "icon": "mdi:gate",
         "icon_color": "grey",
         "tap_action": {"action": "none"},
         "hold_action": {"action": "none"},
         "grid_options": {"columns": 6},
+    }
+
+
+def _vacuum_fault_card(entity_id: str) -> dict[str, Any]:
+    return {
+        "type": "custom:mushroom-template-card",
+        "entity": entity_id,
+        "primary": "Ошибки S8 OMNI",
+        "secondary": (
+            "{% set s=states(entity) %}"
+            "{% if s in ['unknown','unavailable'] %}Нет данных"
+            "{% elif s|int(0)==0 %}Ошибок нет"
+            "{% else %}Код {{ s }}{% endif %}"
+        ),
+        "icon": "mdi:alert-circle-outline",
+        "icon_color": (
+            "{% set s=states(entity) %}"
+            "{% if s in ['unknown','unavailable'] %}grey"
+            "{% elif s|int(0)==0 %}green{% else %}red{% endif %}"
+        ),
+        "tap_action": {"action": "more-info"},
+        "hold_action": {"action": "more-info"},
+        "grid_options": {"columns": 6, "rows": TILE_ROWS},
     }
 
 
@@ -234,6 +257,11 @@ def render_actions_dashboard(
                         columns = 12
                     elif role_name in {"station_clean", "station_dust", "station_dry"}:
                         columns = 4
+                    elif role_name == "vacuum_fault":
+                        entity_id = role.get("entity_id")
+                        if not isinstance(entity_id, str) or not entity_id:
+                            raise RenderError("actions_home_v1 vacuum fault entity missing")
+                        tile = _vacuum_fault_card(entity_id)
                 tile["grid_options"] = {"columns": columns, "rows": TILE_ROWS}
                 section_cards.append(tile)
 

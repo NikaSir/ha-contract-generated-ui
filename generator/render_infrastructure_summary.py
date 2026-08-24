@@ -25,6 +25,39 @@ def _layout_engine_sha256(base_engine_sha256: str) -> str:
     ).hexdigest()
 
 
+def _polish_ups_summary(card: dict[str, Any], semantic_module: Mapping[str, Any]) -> None:
+    if semantic_module.get("contract") != "infrastructure.ups":
+        return
+    roles = semantic_module.get("roles")
+    if not isinstance(roles, list):
+        raise RenderError("infrastructure UPS summary roles missing")
+    role_entities = {
+        role.get("role"): role.get("entity_id")
+        for role in roles
+        if isinstance(role, Mapping)
+        and isinstance(role.get("role"), str)
+        and isinstance(role.get("entity_id"), str)
+    }
+    stale = role_entities.get("data_stale")
+    content = card.get("content")
+    if not isinstance(stale, str) or not isinstance(content, str):
+        raise RenderError("infrastructure UPS summary freshness source missing")
+    old = (
+        "{% if not has_value('" + stale + "') %}Свежесть неизвестна"
+        "{% elif is_state('" + stale + "', 'on') %}Данные устарели"
+        "{% else %}Данные актуальны{% endif %}"
+    )
+    new = (
+        "{% if not reliable %}Данные недоступны"
+        "{% elif not has_value('" + stale + "') %}Свежесть неизвестна"
+        "{% elif is_state('" + stale + "', 'on') %}Данные устарели"
+        "{% else %}Данные актуальны{% endif %}"
+    )
+    if old not in content:
+        raise RenderError("infrastructure UPS freshness template shape changed")
+    card["content"] = content.replace(old, new)
+
+
 def _summary_dashboard(
     dashboard: Mapping[str, Any],
     trace: Mapping[str, Any],
@@ -58,6 +91,7 @@ def _summary_dashboard(
                 card = build_summary_card(semantic_module, view_id=view_id)
             except ValueError as err:
                 raise RenderError(str(err)) from err
+            _polish_ups_summary(card, semantic_module)
             sections.append({"type": "grid", "cards": [card]})
 
         if not sections:
