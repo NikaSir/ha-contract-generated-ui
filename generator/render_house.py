@@ -86,8 +86,8 @@ def _replace_heating_summary(view: dict[str, Any], entities: Mapping[str, str]) 
         entities["heating_floor"],
         entities["heating_circulation"],
     ]
-    main_text = "Основной котёл" + _temperature_suffix(entities.get("heating_main_temp"))
-    reserve_text = "Резервный котёл" + _temperature_suffix(entities.get("heating_reserve_temp"))
+    main_text = "Основной" + _temperature_suffix(entities.get("heating_main_temp"))
+    reserve_text = "Резервный" + _temperature_suffix(entities.get("heating_reserve_temp"))
     prefix = (
         "{% set main=states('" + main + "') %}"
         "{% set reserve=states('" + reserve + "') %}"
