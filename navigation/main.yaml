@@ -2,34 +2,34 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 1.2.0
-  description: Central route and tab ownership for the NikaS v11 main-panel release candidate.
+  version: 1.1.0
+  description: Central route and tab ownership for NikaS generated UI.
 spec:
   routes:
     home:
       title: Дом
-      path: /dashboard-house-v11/home
+      path: /dashboard-house
     actions:
       title: Действия
-      path: /dashboard-actions/home
+      path: /dashboard-actions
     infrastructure:
       title: Инфраструктура
       path: /dashboard-infrastructure/overview
     house.heating:
       title: Отопление и ГВС
-      path: /dashboard-zont
+      path: /dashboard-house/heating
       parent: home
     house.vehicles:
       title: Автомобили
-      path: /dashboard-starline
+      path: /dashboard-house/vehicles
       parent: home
     house.cleaning:
       title: Уборка
-      path: /dashboard-s8-omni
+      path: /dashboard-house/cleaning
       parent: home
-    actions.irrigation:
-      title: Полив
-      path: /dashboard-irrigation
+    actions.irrigation_candidate:
+      title: Полив · candidate
+      path: /dashboard-irrigation-generated/overview
       parent: actions
   global_tabs:
     - id: home
