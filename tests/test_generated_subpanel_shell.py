@@ -38,39 +38,27 @@ def _sections_dashboard(view_count: int) -> dict:
     }
 
 
-def test_zont_and_starline_are_shared_custom_panel_manifests() -> None:
+def test_zont_remains_shared_custom_panel_and_starline_is_retired() -> None:
     zont = _load_yaml(ROOT / "manifests" / "zont.yaml")
-    starline = _load_yaml(ROOT / "manifests" / "starline.yaml")
 
     assert zont["metadata"]["version"] == "0.8.0"
-    assert starline["metadata"]["version"] == "0.5.0"
     assert zont["spec"]["dashboard_path"] == "/dashboard-zont"
-    assert starline["spec"]["dashboard_path"] == "/dashboard-starline"
     assert zont["spec"]["subpanel"]["parent"] == "house.heating"
-    assert starline["spec"]["subpanel"]["parent"] == "house.vehicles"
     assert zont["spec"]["subpanel"]["source"] == {
         "kind": "entity_registry",
         "platforms": ["zont", "zont_ha"],
         "include_disabled": False,
     }
-    assert starline["spec"]["subpanel"]["source"] == {
-        "kind": "entity_registry",
-        "platforms": ["starline"],
-        "include_disabled": False,
-    }
     assert [view["id"] for view in zont["spec"]["views"]] == [
         "states", "boilers", "heating", "sensors", "diagnostics"
     ]
-    assert len(starline["spec"]["views"]) == 5
     assert all(view["modules"] == [] for view in zont["spec"]["views"])
-    assert all(view["modules"] == [] for view in starline["spec"]["views"])
     assert all(view["readonly"] for view in zont["spec"]["views"])
-    assert all(view["readonly"] for view in starline["spec"]["views"])
     assert "button" in zont["spec"]["views"][0]["readonly"]["domains"]
     assert "насос" in zont["spec"]["views"][0]["readonly"]["include_keywords"]
     assert "радиатор" in zont["spec"]["views"][2]["readonly"]["include_keywords"]
     assert "rssi" in zont["spec"]["views"][3]["readonly"]["include_keywords"]
-    assert starline["spec"]["views"][0]["readonly"]["limit"] == 6
+    assert not (ROOT / "manifests" / "starline.yaml").exists()
 
 
 def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -> None:
@@ -98,15 +86,14 @@ def test_standalone_subpanel_shell_keeps_explicit_parent_and_reviewable_yaml() -
 
 def test_shared_custom_panel_specs_and_zont_control_scope() -> None:
     specs = {item["id"]: item for item in build_generated_panel_specs(ROOT)}
-    assert {"zont", "starline"} <= set(specs)
+    assert "zont" in specs
+    assert "starline" not in specs
     assert specs["zont"]["url_path"] == "dashboard-zont"
-    assert specs["starline"]["url_path"] == "dashboard-starline"
     assert specs["zont"]["parent"]["path"] == "/dashboard-house/heating"
     assert specs["zont"]["source"]["platforms"] == ["zont", "zont_ha"]
     assert [tab["label"] for tab in specs["zont"]["tabs"]] == [
         "Состояния", "Котлы", "Отопление", "Датчики", "Диагностика"
     ]
-    assert len(specs["starline"]["tabs"]) == 5
     assert specs["zont"]["module_url"].startswith(
         "/contract_generated_ui/frontend/nikas-generated-zont.js"
     )
@@ -165,7 +152,8 @@ def test_generator_and_runtime_subpanel_sources_are_byte_equivalent() -> None:
     assert (ROOT / "generator" / "render_subpanel_placeholder.py").read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "runtime_render_subpanel_placeholder.py").read_bytes()
 
 
-def test_navigation_contract_and_demo_manifests_are_packaged() -> None:
+def test_navigation_contract_and_active_demo_manifests_are_packaged() -> None:
     assert (ROOT / "navigation" / "main.yaml").read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "navigation" / "main.yaml").read_bytes()
-    for name in ("zont.yaml", "starline.yaml"):
+    for name in ("zont.yaml",):
         assert (ROOT / "manifests" / name).read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "manifests" / name).read_bytes()
+    assert not (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "manifests" / "starline.yaml").exists()
