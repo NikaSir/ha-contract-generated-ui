@@ -6,9 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.29.1` keeps the complete-set global `Дом` tab on `/dashboard-house-v11/home` during field acceptance; navigation contract `1.1.1` changes only that global route while preserving existing subpanel parent routes and the dormant generated-irrigation candidate.
 - Contract Generated UI `0.29.0` promotes `Действия` from renderer-only staging to the complete v11 central release-candidate set with public `actions.home` contract and generated `/dashboard-actions/home` manifest.
 - The complete Actions renderer keeps gate control read-only (physical sectional sensor plus explicit swing-gate no-sensor placeholder), adds only allowlisted confirmed `vacuum.start` / `vacuum.return_to_base` quick commands, and delegates deep S8 OMNI and irrigation workflows to `/dashboard-s8-omni` and `/dashboard-irrigation`.
-- The complete `Дом / Действия / Инфра` RC uses per-manifest shell route overrides while preserving navigation contract `1.1.0`, existing subpanel parent semantics and the dormant generated-irrigation candidate route.
+- The complete `Дом / Действия / Инфра` RC preserves existing subpanel parent semantics while the global shell is switched to the temporary House preview route for field testing.
 - Bundled public sources now include Actions contract/manifest; regression coverage locks source-package parity, rejects retired ROXIMO controls and unsafe vacuum services, and preserves StarLine public-source retirement.
 - Clarified the normative specialized-panel UI standard to **v1.1**: primary navigation must use a full-width, edge-attached fixed bottom Tab Bar on iPhone; floating/pill navigation bars with external side/bottom gaps are explicitly non-conforming.
 - Standardized active-tab treatment inside the shared bottom bar, mobile safe-area handling, 44 pt-class touch targets, and content bottom clearance so the final card scrolls fully above navigation.
