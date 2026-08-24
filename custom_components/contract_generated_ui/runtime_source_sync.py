@@ -8,6 +8,13 @@ from pathlib import Path
 
 PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests", "navigation")
 
+# Public Architecture-as-Code files that were previously shipped by this integration
+# but are now owned by dedicated repositories. These are managed public runtime
+# sources, not private inventory or user data, so removing them during sync is safe.
+RETIRED_PUBLIC_SOURCE_FILES = (
+    Path("manifests") / "starline.yaml",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class SourceSyncResult:
@@ -28,10 +35,22 @@ def _atomic_sync(source: Path, target: Path) -> bool:
     return True
 
 
-def sync_bundled_public_sources(source_root: Path) -> SourceSyncResult:
-    """Sync only bundled public Architecture-as-Code sources; never touch private runtime data."""
-    bundled_root = Path(__file__).with_name("bundled_sources")
+def _remove_retired_public_sources(source_root: Path) -> int:
+    """Remove only explicitly retired integration-managed public source files."""
     changed = 0
+    for relative in RETIRED_PUBLIC_SOURCE_FILES:
+        target = source_root / relative
+        if not target.exists():
+            continue
+        target.unlink()
+        changed += 1
+    return changed
+
+
+def sync_bundled_public_sources(source_root: Path) -> SourceSyncResult:
+    """Sync bundled public Architecture-as-Code sources and retire managed legacy files."""
+    bundled_root = Path(__file__).with_name("bundled_sources")
+    changed = _remove_retired_public_sources(source_root)
     checked = 0
     for directory in PUBLIC_SOURCE_DIRECTORIES:
         packaged = bundled_root / directory
