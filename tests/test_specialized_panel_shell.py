@@ -62,7 +62,7 @@ def test_specialized_shell_contract_is_documented() -> None:
     assert "Integration-owned dashboard UI standard v1.4" in ui_doc
     assert "hass-toggle-menu" in ui_doc
     assert "no permanent `− / % / +` controls" in ui_doc
-    assert "normal factual measurements use neutral typography" in ui_doc.lower()
+    assert "normal measurements use neutral typography" in ui_doc.lower()
     assert "backend owns validated thresholds" in ui_doc.lower()
     assert "Stark SolarPower" in ui_doc
 
