@@ -9,7 +9,7 @@ from . import house_base as _base
 HOUSE_RENDERER = _base.HOUSE_RENDERER
 MAX_COLUMNS = _base.MAX_COLUMNS
 RenderError = _base.RenderError
-HOUSE_HERO_ASSET_URL = "/contract_generated_ui/frontend/assets/house-hero-day-v1.svg?build=0310b001"
+HOUSE_HERO_ASSET_URL = "/contract_generated_ui/frontend/assets/house-hero-photo-day-v1.webp?build=0320b001"
 
 
 def _layout_engine_sha256(base_engine_sha256: str) -> str:
