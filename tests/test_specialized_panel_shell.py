@@ -51,7 +51,7 @@ def test_specialized_shell_contract_is_documented() -> None:
 
     assert "Specialized Panel Zoom Standard v1.4" in zoom_doc
     assert "transform-owned fixed canvas" in zoom_doc.lower()
-    assert "two-finger focal-point pinch" in zoom_doc
+    assert "two-finger focal-point pinch" in zoom_doc.lower()
     assert "controls: none" in zoom_doc
     assert "reset_gesture: two_finger_double_tap" in zoom_doc
     assert "snap_to_100_percent_range: [97, 103]" in zoom_doc
@@ -66,9 +66,9 @@ def test_specialized_shell_contract_is_documented() -> None:
 
     assert "Integration-owned dashboard UI standard v1.5" in ui_doc
     assert "hass-toggle-menu" in ui_doc
-    assert "no permanent `− / % / +` controls" in ui_doc
-    assert "normal measurements use neutral typography" in ui_doc.lower()
-    assert "backend owns validated thresholds" in ui_doc.lower()
+    assert "permanent `− / % / +` controls are not used" in ui_doc.lower()
+    assert "normal factual measurements use neutral typography" in ui_doc.lower()
+    assert "backend validated thresholds" in ui_doc.lower()
     assert "Stark SolarPower" in ui_doc
 
     assert "Specialized Panel Frontend Delivery Standard v1.2" in delivery_doc
@@ -76,7 +76,7 @@ def test_specialized_shell_contract_is_documented() -> None:
     assert "hass-toggle-menu" in delivery_doc
     assert "deterministic" in delivery_doc.lower()
     assert "cache busting" in delivery_doc.lower()
-    assert "local static assets" in delivery_doc.lower()
+    assert "local static routes" in delivery_doc.lower()
     assert "transform_owned_canvas" in delivery_doc
     assert "restore_before_paint: true" in delivery_doc
 
