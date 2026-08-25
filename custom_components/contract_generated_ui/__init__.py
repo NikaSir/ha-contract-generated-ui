@@ -50,6 +50,9 @@ async def async_setup_entry(
         PANEL_ZOOM_MODULE_URL,
         PANEL_ZOOM_STATIC_PATH,
         SOURCE_DIRECTORY,
+        SPECIALIZED_SHELL_FILENAME,
+        SPECIALIZED_SHELL_MODULE_URL,
+        SPECIALIZED_SHELL_STATIC_PATH,
         UI_BUNDLE_FILENAME,
         UI_BUNDLE_MODULE_URL,
         UI_BUNDLE_STATIC_PATH,
@@ -86,6 +89,7 @@ async def async_setup_entry(
                 StaticPathConfig(INFRA_SUMMARY_STATIC_PATH, str(frontend_root / INFRA_SUMMARY_FILENAME), False),
                 StaticPathConfig(UI_BUNDLE_STATIC_PATH, str(frontend_root / UI_BUNDLE_FILENAME), False),
                 StaticPathConfig(PANEL_ZOOM_STATIC_PATH, str(frontend_root / PANEL_ZOOM_FILENAME), False),
+                StaticPathConfig(SPECIALIZED_SHELL_STATIC_PATH, str(frontend_root / SPECIALIZED_SHELL_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_STATIC_PATH, str(frontend_root / HOUSE_HERO_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False),
                 StaticPathConfig(GENERATED_SUBPANEL_STATIC_PATH, str(frontend_root / GENERATED_SUBPANEL_FILENAME), False),
@@ -97,6 +101,7 @@ async def async_setup_entry(
 
     add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
     add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)
+    add_extra_js_url(hass, SPECIALIZED_SHELL_MODULE_URL)
     add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)
 
     try:
@@ -120,13 +125,23 @@ async def async_unload_entry(
     from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
-    from .const import HOUSE_HERO_MODULE_URL, PANEL_ZOOM_MODULE_URL, UI_BUNDLE_MODULE_URL
+    from .const import (
+        HOUSE_HERO_MODULE_URL,
+        PANEL_ZOOM_MODULE_URL,
+        SPECIALIZED_SHELL_MODULE_URL,
+        UI_BUNDLE_MODULE_URL,
+    )
     from .generated_panels import async_unregister_generated_subpanels
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, (Platform.SENSOR, Platform.BUTTON))
     if unloaded:
         async_unregister_generated_subpanels(hass)
-        for module_url in (UI_BUNDLE_MODULE_URL, PANEL_ZOOM_MODULE_URL, HOUSE_HERO_MODULE_URL):
+        for module_url in (
+            UI_BUNDLE_MODULE_URL,
+            PANEL_ZOOM_MODULE_URL,
+            SPECIALIZED_SHELL_MODULE_URL,
+            HOUSE_HERO_MODULE_URL,
+        ):
             try:
                 remove_extra_js_url(hass, module_url)
             except KeyError:
