@@ -1,4 +1,4 @@
-# Specialized Panel Shell Standard v1.0
+# Specialized Panel Shell Standard v1.1
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
@@ -34,7 +34,7 @@ A specialized domain module MUST NOT independently implement:
 
 - top safe-area offsets;
 - Header height or geometry;
-- Back-button geometry;
+- Home Assistant main-menu button geometry;
 - title centering rules;
 - zoom controls;
 - pinch-to-zoom;
@@ -65,14 +65,7 @@ env(safe-area-inset-bottom, 0px)
 env(safe-area-inset-left, 0px)
 ```
 
-The panel must remain valid on devices with:
-
-- Dynamic Island;
-- display notch;
-- rounded display corners;
-- iOS Home Indicator;
-- no cutout/safe-area requirement;
-- tablet or desktop viewport.
+The panel must remain valid on devices with Dynamic Island, display notch, rounded display corners, iOS Home Indicator, no cutout/safe-area requirement, tablet and desktop viewports.
 
 Hard-coded fixes such as `top: 47px` for one phone are non-conforming.
 
@@ -82,7 +75,7 @@ Hard-coded fixes such as `top: 47px` for one phone are non-conforming.
 
 The Header is the first shell-owned visual surface and MUST remain below the effective top safe area.
 
-The shell must compute its top padding from the safe area, for example conceptually:
+Conceptually:
 
 ```css
 padding-top: max(var(--nika-shell-top-padding), env(safe-area-inset-top, 0px));
@@ -96,34 +89,41 @@ Canonical mobile Header:
 
 ```text
 ┌─────────────────────────────────────┐
-│  ←           PANEL TITLE          ⟳ │
+│  ☰           PANEL TITLE          ⟳ │
 │              subtitle               │
 └─────────────────────────────────────┘
 ```
 
 Required:
 
-- Back control on the left;
-- geometrically viewport-centered title;
-- at most one primary shell-level action on the right;
-- matching left/right rail geometry whenever practical;
-- minimum touch target approximately 44×44 pt;
-- concise one-line primary title on the reference iPhone viewport;
-- optional secondary line for model/context/version;
-- no decorative integration/device icon next to the Header title;
-- no duplicated oversized title immediately below the Header.
+- **the left rail is always the Home Assistant main-system menu button**;
+- the left rail MUST NOT be a panel-specific Back button;
+- the menu button must open/toggle the standard Home Assistant main navigation/sidebar/drawer appropriate to the client;
+- the title is geometrically centered relative to the viewport;
+- at most one primary shell-level action is placed on the right;
+- left/right rail geometry should match whenever practical;
+- minimum touch target is approximately 44×44 pt;
+- primary title stays concise and one-line on the reference iPhone viewport;
+- an optional secondary line may show model/context/version;
+- no decorative integration/device icon is placed next to the Header title;
+- no duplicated oversized title appears immediately below the Header.
 
-### 4.3 Back behavior
+### 4.3 Main-system menu behavior
 
-Back MUST navigate to the declaratively defined canonical parent route.
+The left Header control belongs to the Home Assistant application shell. It always exposes the main-system navigation rather than performing domain navigation.
 
-Browser history is not the canonical contract because the specialized panel may be entered from the sidebar, notification, launcher card or direct URL.
+A specialized panel MUST NOT replace this control with:
+
+- browser Back;
+- a hard-coded parent route;
+- an integration-specific menu;
+- a device action.
+
+Logical navigation to a parent section, previous domain screen or drill-down level may exist elsewhere in the panel when needed, but it is not the permanent left shell control.
 
 ### 4.4 Scroll behavior
 
-The Header may be `sticky` or shell-fixed, but its behavior must be identical across specialized panels using the same shell version.
-
-It MUST NOT participate in user zoom.
+The Header may be `sticky` or shell-fixed, but its behavior must be identical across specialized panels using the same shell version. It MUST NOT participate in user zoom.
 
 ## 5. Zoom controls
 
@@ -137,12 +137,7 @@ Canonical controls:
 
 Required behavior is defined by `SPECIALIZED_PANEL_ZOOM_STANDARD.md`.
 
-Additional shell invariant:
-
-- zoom controls MUST NOT cover the Header;
-- zoom controls MUST NOT cover the Bottom Tab Bar;
-- their fixed position must be derived from shell navigation clearances and safe areas;
-- domain modules must not reserve their own arbitrary space for these controls.
+Zoom controls MUST NOT cover the Header or Bottom Tab Bar. Their position is derived from shell navigation clearances and safe areas; domain modules do not reserve arbitrary space for them.
 
 ## 6. Zoomable work viewport
 
@@ -152,12 +147,13 @@ The following stay at native scale:
 
 - Home Assistant chrome;
 - specialized Header;
-- Back/Refresh/overflow controls;
+- Home Assistant main-menu button;
+- Refresh/overflow shell controls;
 - zoom controls;
 - Bottom Tab Bar;
 - device safe areas.
 
-The viewport is selected/responsive first and scaled second:
+Responsive composition is selected first and user zoom is applied second:
 
 ```text
 viewport size
@@ -166,13 +162,9 @@ viewport size
 → user zoom
 ```
 
-User zoom must not trigger an artificial switch between mobile and desktop layouts.
-
-When enlarged, content may pan/scroll without moving the shell navigation surfaces.
+User zoom must not trigger an artificial switch between mobile and desktop layouts. When enlarged, content may pan/scroll without moving shell navigation surfaces.
 
 ## 7. Bottom Tab Bar
-
-### 7.1 Position and geometry
 
 Primary in-app navigation for 3–5 sections MUST use one shared full-width Bottom Tab Bar.
 
@@ -184,37 +176,26 @@ Required:
 - no external left/right/bottom card gap;
 - not a floating pill/card;
 - respects `env(safe-area-inset-bottom)`;
-- identical base height and item geometry for all specialized applications;
+- identical base height and item geometry across specialized panels;
 - active section is unambiguous;
 - icon plus short text label;
 - touch targets suitable for one-handed mobile use;
 - no shrink-to-unreadable behavior when there are too many destinations.
 
-More than five primary destinations must be reduced through a secondary `Сервис`, `Диагностика`, `Ещё` or drill-down hierarchy.
+More than five primary destinations must be reduced through `Сервис`, `Диагностика`, `Ещё` or drill-down hierarchy.
 
-### 7.2 Bottom safe area
-
-The bar owns the bottom device clearance:
+Bottom shell reserve is:
 
 ```text
-bottom shell reserve =
-  bottom tab bar content height
+bottom tab bar content height
 + safe-area-inset-bottom
 ```
 
-The final work-content element MUST be able to scroll fully above the Bottom Tab Bar.
-
-Domain content MUST NOT hard-code a second competing bottom safe-area reserve.
-
-### 7.3 Zoom interaction
-
-Bottom Tab Bar is never scaled.
-
-Zoom-controls sit above its occupied region and remain accessible at all zoom levels.
+The final work-content element MUST scroll fully above the Bottom Tab Bar. Domain content MUST NOT hard-code a second competing bottom safe-area reserve. Bottom Tab Bar is never scaled; zoom controls sit above its occupied region.
 
 ## 8. Device Selector placement
 
-When required for multiple peer physical devices, the Device Selector is domain context but its canonical placement is shell-defined:
+When required for multiple peer physical devices, canonical placement is:
 
 ```text
 HEADER
@@ -226,9 +207,7 @@ ZOOMABLE DOMAIN CONTENT
 BOTTOM TAB BAR
 ```
 
-The selector remains directly below the Header and is not moved by Bottom Tab changes.
-
-Whether the selector itself is zoomed is a shell policy. For the v1 shell it SHOULD remain at native scale when implemented as persistent application context; the selected device's detailed content is zoomable.
+The selector remains directly below the Header and is not moved by Bottom Tab changes. For shell v1 it SHOULD remain at native scale when used as persistent application context.
 
 ## 9. Responsive policy
 
@@ -239,12 +218,13 @@ Reference acceptance order:
 3. iPad/tablet;
 4. desktop.
 
-Mobile portrait is the source hierarchy. Tablet/desktop are adaptations of the accepted shell, not separate independently designed applications.
+Mobile portrait is the source hierarchy. Tablet/desktop are adaptations of the accepted shell, not independently designed applications.
 
 Required at every breakpoint:
 
 - safe areas remain correct;
-- Header remains usable and title remains centered;
+- Header remains usable and title centered;
+- Home Assistant main-menu button remains available on the left;
 - Bottom Tab Bar does not cover content;
 - zoom controls remain reachable;
 - no shell-induced horizontal clipping;
@@ -256,32 +236,34 @@ The following are prohibited in new specialized panels:
 
 - Header under Dynamic Island/notch;
 - application-specific `padding-top` hacks for one phone;
+- permanent Back button in the left Header rail instead of the Home Assistant main-system menu;
 - floating bottom navigation card with side/bottom gaps;
 - bottom controls covered by the iOS Home Indicator;
 - zooming the Header or Bottom Tab Bar together with content;
 - browser/page zoom as panel zoom;
 - separate pinch implementations in individual integrations;
-- separate bottom navigation geometry per integration;
-- separate Back-button geometry per integration;
-- hard-coded viewport height calculations that ignore safe-area values.
+- separate bottom-navigation geometry per integration;
+- separate main-menu button geometry per integration;
+- hard-coded viewport-height calculations that ignore safe-area values.
 
 ## 11. Acceptance criteria
 
 A specialized panel shell is accepted only when all are true:
 
 1. Header content stays below the top safe area on a notched/Dynamic-Island iPhone;
-2. Back, centered title and right rail share the standard geometry;
-3. Header does not scale with domain content;
-4. zoom controls remain native-sized and usable;
-5. only the work viewport changes scale;
-6. Bottom Tab Bar remains fixed, full-width and native-sized;
-7. Bottom Tab Bar respects the Home Indicator safe area;
-8. the last domain item scrolls completely above the bar;
-9. zoom controls do not overlap the bottom navigation;
-10. no device-model-specific safe-area constants are required;
-11. switching mobile/tablet/desktop layout is independent of user zoom;
-12. a new specialized panel can use these shell behaviors without implementing its own Header, safe area, zoom or Bottom Tab Bar logic.
+2. the left Header rail is always the Home Assistant main-system menu button;
+3. the centered title and right rail follow standard geometry;
+4. Header does not scale with domain content;
+5. zoom controls remain native-sized and usable;
+6. only the work viewport changes scale;
+7. Bottom Tab Bar remains fixed, full-width and native-sized;
+8. Bottom Tab Bar respects the Home Indicator safe area;
+9. the last domain item scrolls completely above the bar;
+10. zoom controls do not overlap bottom navigation;
+11. no device-model-specific safe-area constants are required;
+12. switching mobile/tablet/desktop layout is independent of user zoom;
+13. a new specialized panel can use these shell behaviors without implementing its own Header, safe area, menu button, zoom or Bottom Tab Bar logic.
 
 ## 12. Project rule
 
-> Specialized panels own domain content, not application chrome. The shared CGUI shell owns safe areas, top Header, Back navigation, zoom controls, zoomable viewport and the full-width fixed Bottom Tab Bar. Only the work area scales; all navigation and device-safe-area surfaces remain at native scale.
+> Specialized panels own domain content, not application chrome. The shared CGUI shell owns safe areas, the top Header with the Home Assistant main-system menu button permanently on the left, zoom controls, zoomable viewport and the full-width fixed Bottom Tab Bar. Only the work area scales; all navigation and device-safe-area surfaces remain at native scale.

@@ -1,4 +1,4 @@
-# Specialized Panel Zoom Standard v1.0
+# Specialized Panel Zoom Standard v1.1
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
@@ -7,8 +7,6 @@
 ## 1. Purpose
 
 Specialized panels must allow the user to enlarge their working content without scaling or disturbing the surrounding Home Assistant interface. The mechanism is a shared shell capability, not an application-specific implementation.
-
-The goal is to support different screen sizes and visual accessibility needs without redesigning every specialized panel separately.
 
 ## 2. Required interaction modes
 
@@ -26,22 +24,22 @@ Only the specialized panel working area is zoomed.
 The following remain at native Home Assistant scale:
 
 - Home Assistant header/chrome;
-- Home Assistant sidebar;
-- global bottom navigation;
-- specialized panel Header / Back control;
+- Home Assistant sidebar/main-system navigation;
+- specialized panel Header;
+- the permanent left Home Assistant main-menu button;
 - zoom controls themselves;
 - specialized panel fixed Bottom Tab Bar.
 
 Conceptual shell:
 
 ```text
-HOME ASSISTANT CHROME             native scale
+HOME ASSISTANT CHROME                  native scale
 └── SPECIALIZED PANEL SHELL
-    ├── Header / Back             native scale
-    ├── Zoom controls             native scale
-    ├── Zoom viewport             scaled
+    ├── Header / HA main-menu button   native scale
+    ├── Zoom controls                  native scale
+    ├── Zoom viewport                  scaled
     │   └── Domain content
-    └── Bottom Tab Bar            native scale
+    └── Bottom Tab Bar                 native scale
 ```
 
 Browser/page zoom and viewport scaling of the whole Home Assistant application are not accepted implementations.
@@ -56,7 +54,7 @@ Browser/page zoom and viewport scaling of the whole Home Assistant application a
 
 ## 5. On-screen controls
 
-The standard control is:
+Canonical control:
 
 ```text
 −   125%   +
@@ -77,19 +75,9 @@ Default policy:
 - button step: **10%**;
 - reset: **100%**.
 
-A panel may use a narrower range only when its domain layout has a documented technical constraint. It must not silently remove pinch support.
-
 ## 6. Persistence
 
-The selected zoom is remembered for the specific panel on the specific client/device.
-
-Persistence key must include a stable panel identifier, for example:
-
-```text
-nikas.panel.zoom.<panel-id>
-```
-
-Changing one specialized panel must not change the zoom of another panel.
+The selected zoom is remembered for the specific panel on the specific client/device. The persistence key must include a stable panel identifier. Changing one specialized panel must not change the zoom of another panel.
 
 The stored value is local UI preference data and is not part of Home Assistant entity state.
 
@@ -101,15 +89,13 @@ Responsive layout and user zoom are separate stages:
 2. render that composition;
 3. apply user zoom to the working content inside the zoom viewport.
 
-Zoom must **not** cause the panel to switch repeatedly between mobile and desktop layouts. The adaptive composition remains valid while the user magnifies its content.
+Zoom must not cause repeated switching between mobile and desktop layouts.
 
 ## 8. Shared-shell ownership
 
-Zoom is owned by the common specialized-panel shell / template.
+Zoom is owned by the common specialized-panel shell/template. Individual domain modules such as ZONT, StarLine, S8 OMNI, HO-SC-8W, Keenetic, Stark SolarPower, UPS or VLESS Gateway must not create independent pinch implementations, zoom controls or persistence schemes.
 
-Individual domain modules such as ZONT, StarLine, S8 OMNI, HO-SC-8W, Keenetic, Stark SolarPower, UPS or VLESS Gateway must not create independent pinch implementations, independent zoom controls or incompatible persistence schemes.
-
-The default contract is conceptually:
+Default contract:
 
 ```yaml
 shell:
@@ -125,36 +111,15 @@ shell:
     persist: per_panel_per_client
 ```
 
-For a normal specialized panel, `zoom.enabled: true` is the default and should not need to be repeated in every manifest.
-
 ## 9. Scope of rollout
 
-Mandatory for new specialized panels and progressively added to existing specialized panels, including:
+Mandatory for new specialized panels and progressively added to existing specialized panels, including ZONT, StarLine, S8 OMNI, HO-SC-8W, Keenetic Hero 4G+, Stark SolarPower / UPS, VLESS Gateway and future specialized subsystems.
 
-- ZONT;
-- StarLine;
-- S8 OMNI;
-- HO-SC-8W;
-- Keenetic Hero 4G+;
-- Stark SolarPower / UPS;
-- VLESS Gateway;
-- future specialized subsystems.
-
-The central primary panels `Дом`, `Действия` and `Инфраструктура` are viewport-designed application surfaces and are not automatically required to use this specialized-panel zoom shell.
+The central panels `Дом`, `Действия` and `Инфраструктура` are not automatically required to use this specialized-panel zoom shell.
 
 ## 10. Safety and state semantics
 
-Zoom is presentation only. It must not change:
-
-- entity selection;
-- semantic inventory;
-- status thresholds;
-- `unknown` / `unavailable` handling;
-- navigation routes;
-- confirmation requirements;
-- domain command behavior.
-
-No state may become hidden or be interpreted differently because of zoom.
+Zoom is presentation only. It must not change entity selection, semantic inventory, thresholds, `unknown` / `unavailable` handling, navigation routes, confirmation requirements or domain command behavior.
 
 ## 11. Acceptance criteria
 
@@ -165,7 +130,7 @@ A specialized panel conforms only when:
 - `− / percentage / +` controls are present and usable;
 - tapping percentage restores 100%;
 - enlarged content can be panned/scrolled to all regions;
-- Header, Back, Home Assistant chrome and Bottom Tab Bar remain at native scale;
+- Header, Home Assistant main-menu button, Home Assistant chrome and Bottom Tab Bar remain at native scale;
 - selected scale survives reopening the panel on the same client;
 - zoom preference is isolated per panel;
 - mobile/desktop responsive composition is preserved;
@@ -174,4 +139,4 @@ A specialized panel conforms only when:
 
 ## Project rule
 
-> One shared zoom mechanism for all specialized panels: pinch-to-zoom plus on-screen controls, scaling only the panel working area, focal-point-preserving gestures, pan/scroll when enlarged, 100% reset, per-panel/per-client persistence, and unchanged responsive Home Assistant navigation chrome.
+> One shared zoom mechanism for all specialized panels: pinch-to-zoom plus on-screen controls, scaling only the working area, focal-point-preserving gestures, pan/scroll when enlarged, 100% reset, per-panel/per-client persistence, while the permanent Home Assistant main-menu button and all shell navigation remain at native scale.
