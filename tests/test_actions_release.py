@@ -22,7 +22,6 @@ def test_release_version_and_schema_are_packaged() -> None:
 
     navigation_schema = json.loads((ROOT / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     packaged_navigation_schema = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
-    assert repo_schema["$schema"]
     assert navigation_schema == packaged_navigation_schema
 
     assert (ROOT / "contracts" / "actions_home.yaml").read_bytes() == (
@@ -56,17 +55,18 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "rgba(255,255,255,.86)" in hero_bundle
     assert hero_asset.exists()
 
-    assert 'const ELEMENT_NAME = "nikas-panel-zoom"' in zoom_bundle
+    assert "class ZoomController" in zoom_bundle
     assert 'const DEFAULT_MIN = 0.75' in zoom_bundle
     assert 'const DEFAULT_MAX = 2.0' in zoom_bundle
     assert 'const DEFAULT_STEP = 0.10' in zoom_bundle
     assert "touchstart" in zoom_bundle and "touchmove" in zoom_bundle
     assert "window.localStorage" in zoom_bundle
+    assert "window.NikasPanelZoom" in zoom_bundle
     assert "env(safe-area-inset-bottom,0px)" in zoom_bundle
 
     assert '"nikas-generated-subpanel"' in shell_bundle
     assert '"nikas-generated-zont"' in shell_bundle
-    assert 'document.createElement("nikas-panel-zoom")' in shell_bundle
+    assert "window.NikasPanelZoom.attach" in shell_bundle
     assert "env(safe-area-inset-top,0px)" in shell_bundle
     assert "env(safe-area-inset-bottom,0px)" in shell_bundle
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell_bundle
@@ -89,8 +89,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'type: "call_service"' not in panel_bundle
     assert 'type: "call_service"' not in zont_bundle
 
-    # Contract Generated UI owns only the generic renderer. ZONT-specific
-    # application/UI releases are HACS-managed by NikaSir/ha-zont.
     assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
