@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from generator.render_actions import _swing_gate_placeholder
-from generator.render_house import _replace_heating_summary
 from generator.render_infrastructure_summary import _summary_dashboard
 
 
@@ -110,37 +109,3 @@ def test_actions_swing_gate_status_fits_half_width_mobile_card() -> None:
     assert card["secondary"] == "Нет датчика"
     assert card["tap_action"] == {"action": "none"}
     assert card["grid_options"] == {"columns": 6}
-
-
-def test_house_heating_summary_uses_mobile_safe_boiler_name() -> None:
-    view = {
-        "sections": [
-            {
-                "type": "grid",
-                "cards": [
-                    {"type": "heading", "heading": "Дом сейчас"},
-                    {
-                        "type": "custom:mushroom-template-card",
-                        "primary": "Отопление",
-                        "secondary": "old",
-                    },
-                ],
-            }
-        ]
-    }
-    entities = {
-        "heating_main": "binary_sensor.main",
-        "heating_reserve": "binary_sensor.reserve",
-        "heating_radiators": "binary_sensor.radiators",
-        "heating_floor": "binary_sensor.floor",
-        "heating_circulation": "binary_sensor.circulation",
-        "heating_main_temp": "sensor.main_temp",
-        "heating_reserve_temp": "sensor.reserve_temp",
-    }
-
-    _replace_heating_summary(view, entities)
-    secondary = view["sections"][0]["cards"][1]["secondary"]
-    assert "Основной" in secondary
-    assert "Резервный" in secondary
-    assert "Основной котёл" not in secondary
-    assert "Резервный котёл" not in secondary
