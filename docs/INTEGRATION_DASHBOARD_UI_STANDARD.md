@@ -1,4 +1,4 @@
-# Integration-owned dashboard UI standard v1.3
+# Integration-owned dashboard UI standard v1.4
 
 **Status:** Required  
 **Applies to:** all integration-owned specialized dashboards in Home Assistant NikaS  
@@ -9,9 +9,9 @@
 
 Integration-owned dashboards behave as mobile applications inside Home Assistant rather than unrelated Lovelace pages.
 
-The integration keeps ownership of domain data, actions and presentation. The shared NikaS standards define application-shell behavior, visual semantics and release constraints without creating a runtime dependency on `ha-contract-generated-ui`.
+The integration keeps ownership of domain data, actions and presentation. Shared NikaS standards define application-shell behavior, visual semantics and release constraints without creating a runtime dependency on `ha-contract-generated-ui`.
 
-Reference field evidence: `STARK_SOLARPOWER_PANEL_LESSONS.md`.
+Stark SolarPower mobile field experience is the reference implementation input.
 
 ## 2. Application hierarchy
 
@@ -22,7 +22,7 @@ SAFE AREA
 ↓
 HEADER: ☰ | centered title | global action
 ↓
-ZOOMABLE DOMAIN WORK VIEWPORT
+EXACTLY ONE ZOOMABLE DOMAIN WORK VIEWPORT
 ↓
 BOTTOM TAB BAR
 ```
@@ -36,88 +36,66 @@ HEADER: ☰ | centered title | global action
 ↓
 PERSISTENT DEVICE SELECTOR
 ↓
-ZOOMABLE SELECTED-DEVICE WORK VIEWPORT
+EXACTLY ONE ZOOMABLE SELECTED-DEVICE WORK VIEWPORT
 ↓
 BOTTOM TAB BAR
 ```
 
-The user should understand the current operating state within a few seconds of opening the application.
+Header, Device Selector and Bottom Tab Bar remain at native scale.
 
 ## 3. Header
 
 Every primary view uses the shared shell Header.
 
-```text
-┌─────────────────────────────────────┐
-│  ☰            Panel title         ⟳ │
-│             optional subtitle       │
-└─────────────────────────────────────┘
-```
-
 ### 3.1 Left side — Home Assistant main-system menu
 
-- icon/presentation corresponds to the normal Home Assistant menu control;
-- always present in the permanent left rail;
-- opens/toggles Home Assistant main navigation/sidebar/drawer;
+The permanent left control:
+
+- is always the Home Assistant system menu `☰`;
+- dispatches the standard `hass-toggle-menu` event;
+- remains below notch/Dynamic Island;
 - is not browser Back;
 - is not a hard-coded parent route;
 - is not an integration-specific drawer;
 - never performs a device/domain action;
-- touch target approximately 44×44 pt or larger.
+- remains native scale.
 
-Logical parent/drill-down navigation may exist elsewhere when the domain needs it, but does not replace this permanent system control.
+Logical parent/drill-down navigation, when needed, belongs inside the work area and never replaces this system control.
 
 ### 3.2 Center — title
 
-The title is **geometrically centered on the mobile viewport**, not merely centered in free space between controls.
-
-Rules:
-
+- geometrically centered on viewport;
 - one concise application title;
-- one primary line on the reference iPhone;
 - optional short subtitle for model/context/version;
-- no second oversized duplicate title immediately below Header;
-- UI/integration version remains secondary information.
+- no duplicated oversized title below Header;
+- no decorative brand/device icon shifting Header title.
 
-Examples:
+### 3.3 Right side — one global action
 
-- `Stark SolarPower` / `UPS · UI v…`;
-- `S8 OMNI`;
-- `Полив` / `HO-SC-8W`;
-- `Keenetic Hero 4G+`.
+At most one primary application-level action appears in right rail, e.g. Refresh/overflow.
 
-### 3.3 Decorative icon policy
+Async action rules:
 
-A decorative brand/device icon is not placed next to the Header title. Brand artwork may appear in content, navigation metadata or contextual hero artwork.
-
-### 3.4 Right side — one global action
-
-At most one primary application-level action appears in the right rail, e.g. Refresh or overflow.
-
-If the action is asynchronous:
-
-- frontend calls an existing Home Assistant integration API/entity, not the vendor API directly;
-- busy state blocks repeated activation;
-- success/error feedback should be visible when practical;
-- right-side feedback must not shift the centered title.
+- call existing Home Assistant integration API/entity, not vendor API directly;
+- block repeated activation while busy;
+- provide success/error feedback when practical;
+- feedback must not shift centered title.
 
 ## 4. Safe-area ownership
 
-Safe area is consumed exactly once at the application boundary.
+Safe area is consumed exactly once at application boundary.
 
 Required:
 
-- Header is below notch/Dynamic Island;
-- Bottom Tab Bar clears Home Indicator;
-- no duplicate blank top band from adding an inset Home Assistant already supplied;
-- no per-view phone-model padding hacks;
-- Home Assistant Companion App field capture is part of acceptance.
+- Header below notch/Dynamic Island;
+- Bottom Tab Bar above Home Indicator;
+- no duplicate blank top band;
+- no phone-model padding hacks;
+- Companion App field capture is part of acceptance.
 
-See `SPECIALIZED_PANEL_SHELL_STANDARD.md` for the normative geometry.
+## 5. Primary navigation — Bottom Tab Bar
 
-## 5. Primary in-app navigation — Bottom Tab Bar
-
-When the application has 3–5 primary sections, they use one **full-width, edge-attached, fixed Bottom Tab Bar**.
+Applications with 3–5 primary sections use one full-width edge-attached fixed Bottom Tab Bar.
 
 Required:
 
@@ -127,185 +105,124 @@ Required:
 - safe-area-aware;
 - icon + short label;
 - active item unambiguous;
-- final domain content scrolls above the bar;
-- comfortable one-hand touch targets;
-- labels stay readable instead of being reduced excessively.
+- final work content scrolls above bar;
+- comfortable one-hand targets;
+- more than five destinations move under secondary hierarchy.
 
-More than five destinations move under secondary hierarchy rather than shrinking the bar.
-
-Current reference tab sets:
-
-- **HO-SC-8W:** `Обзор · Зоны · Программы · Диагн.`
-- **S8 OMNI:** `Обзор · Уборка · Станция · Сервис · Диагн.`
-- **Stark SolarPower:** `Обзор · ИБП · История · События · Диагн.`
-- **Keenetic Hero 4G+:** `Обзор · WAN/LTE · Трафик · Диагн.`; a separate Failover workflow may justify five tabs.
+Bottom Tab Bar remains native scale.
 
 ## 6. Multi-peer-device context — Device Selector
 
-If one integration application serves multiple peer physical devices, Device Selector is a distinct persistent context layer.
+If one application serves multiple peer physical devices, Device Selector is a persistent context layer.
 
-It answers **which device?**. Bottom Tab Bar answers **which section?**. These must not be mixed.
+It answers **which device?**. Bottom Tab Bar answers **which section?**.
 
 Required:
 
-- located immediately below Header on every primary section;
-- remains at native scale;
+- directly below Header on every primary section;
+- native scale and outside zoom viewport;
 - fixed device order;
-- selected peer never moves to the first position because it was selected;
-- selection shown only through active-state presentation;
-- selected peer survives section changes;
-- compact health dot/badge is allowed for non-selected peers;
-- the selector is not a second telemetry panel;
-- detailed primary content belongs only to selected peer;
-- new peers should reuse the same template when device discovery permits it.
+- selected peer never reorders;
+- selection preserved across Bottom Tabs;
+- compact health badge allowed for non-selected peers;
+- detailed content belongs only to selected peer;
+- new peers reuse same template when device discovery permits.
 
-Subordinate channels are not automatically peer devices. Irrigation zones, S8 robot/station parts and Keenetic WAN channels remain subordinate parts of one application context unless there are multiple peer physical systems.
+Subordinate channels are not automatically peer devices.
 
-### 6.1 Stark SolarPower reference model
+## 7. Zoom interaction — Stark field baseline
 
-```text
-HEADER
-↓
-[ UPS Интернет ] [ UPS Котёл ]
-↓
-SELECTED UPS CONTENT
-↓
-Обзор | ИБП | История | События | Диагн.
-```
+The mobile standard is gesture-first.
 
-Reference behavior:
+Required:
 
-- fixed selector order;
-- selected UPS context preserved across all five views;
-- selected-device-only content;
-- no second full UPS block appended below;
-- optional per-peer zoom persistence.
+- exactly one zoomable work viewport;
+- two-finger focal-point pinch;
+- pan/scroll enlarged content;
+- no permanent `− / % / +` toolbar;
+- pinch ending at **97–103%** snaps to exactly **100%**;
+- two-finger double tap resets scale and work-area scroll to **100%**;
+- reset briefly shows `Масштаб 100%`;
+- scale persists locally per panel/client and preferably per peer device where applicable;
+- repeated HA renders never nest/re-wrap zoom viewport.
 
-## 7. First useful viewport
+See `SPECIALIZED_PANEL_ZOOM_STANDARD.md` for normative gesture/lifecycle behavior.
 
-The first mobile viewport prioritizes operating state over chrome or secondary detail.
+## 8. First useful viewport
 
-Preferred hierarchy:
+First mobile viewport prioritizes operating state over chrome or secondary detail:
 
 1. current state / trust state;
-2. primary visual or status summary;
-3. most important live metrics/actions;
-4. explicit essential subsystem state rows;
+2. primary visual/status summary;
+3. important live metrics/actions;
+4. essential subsystem state rows;
 5. detail below.
 
-Field review should verify that critical state is not pushed below fixed navigation simply because decorative content or selector/header geometry is oversized.
+Critical state must not be pushed below fixed navigation by oversized decorative content.
 
-## 8. Visual-state semantics
+## 9. Visual-state semantics
 
-### 8.1 Semantic color, neutral data
+- normal factual measurements use neutral typography;
+- green = confirmed healthy/normal;
+- amber/orange = warning/degraded/attention;
+- red = fault/critical;
+- grey/neutral = unknown/unavailable/not confirmed;
+- stale/source failure overrides last-known normal state;
+- frontend consumes validated backend semantic entities/thresholds instead of duplicating business logic;
+- unsupported runtime/watts/alarms/health are not invented.
 
-Normal factual measurements use neutral typography.
+## 10. Contextual visual assets
 
-Reserve semantic colors for confirmed meaning:
+Rich hero scenes are allowed when they improve state recognition.
 
-- green — healthy/normal confirmed state;
-- amber/orange — warning/degraded/attention;
-- red — fault/critical;
-- grey/neutral — unknown/unavailable/not confirmed.
+Required:
 
-A normal numeric value is not colored green merely because it is present.
-
-### 8.2 Trust before last known operating mode
-
-If the integration exposes source/trust/freshness state, source failure or stale state overrides a last reported normal operating value in the overview status.
-
-`unknown`, `unavailable`, stale or untrusted source never mean healthy.
-
-### 8.3 Backend owns validated thresholds
-
-When the integration exposes a semantic entity such as `data_stale`, the frontend consumes that entity instead of duplicating the backend threshold constant.
-
-Frontend explanatory text may show observed age/value, but must not silently reimplement backend business logic that can drift.
-
-### 8.4 No invented runtime
-
-Do not derive or display unsupported values only to make a panel appear complete.
-
-Examples of prohibited invention without a validated source/algorithm:
-
-- battery runtime minutes;
-- watts from unrelated measurements;
-- alarms not exposed by the integration;
-- inferred health from unavailable source data.
-
-Use `—`, `Неизвестно`, `Недоступно` or equivalent factual presentation.
-
-## 9. Contextual visual assets
-
-Integration-owned panels may use rich visual hero scenes when they improve state recognition.
-
-Required asset model:
-
-```text
-frontend/
-└── assets/
-    ├── device.png        # transparent product/object layer when useful
-    └── context.webp      # decorative/context plate
-```
-
-Rules:
-
-- panel-critical images ship locally with the integration;
+- panel-critical images ship locally with integration;
 - no external CDN dependency;
-- no Base64 image embedding in production JS;
-- decorative/background art contains no live HA measurements/status text;
+- no Base64 images in production JS;
+- background art contains no live HA values/status text;
 - device artwork, SVG paths, labels, values and state overlays remain separate runtime layers;
-- contextual background may change with selected peer/device context;
-- background contrast may use a lightweight overlay/gradient for readability;
-- images are optimized before shipping.
+- context background may change with selected peer;
+- images optimized before shipping;
+- asset URL uses version/cache busting.
 
-Stark SolarPower is the reference pattern: transparent UPS artwork + separate network/boiler WebP plates + dynamic HTML/SVG power-flow layers.
+Stark SolarPower reference: transparent UPS PNG + separate local WebP room backgrounds + dynamic HTML/SVG power-flow/value layers.
 
-## 10. Entity and action behavior
+## 11. Entity/action behavior
 
-The shared UI rules must not weaken domain safety.
-
-- no raw Tuya DP writes from Lovelace;
+- no raw Tuya DP writes from UI;
 - no direct RCI/SNMP/vendor API bypasses;
-- no fabricated entity IDs or unsupported commands;
-- direct controls use stable public Home Assistant APIs/entities of the owning integration;
-- Header, Device Selector and Bottom Tab Bar never execute unrelated domain actions;
-- long press on factual entity-backed elements should open native Home Assistant more-info where useful;
-- native Home Assistant history/more-info is preferred over duplicating a full history subsystem unless custom history adds material domain value.
+- no fabricated entity IDs/unsupported commands;
+- controls use stable public Home Assistant APIs/entities of owning integration;
+- Header/Device Selector/Bottom Tab Bar never execute unrelated domain actions;
+- factual entity-backed elements should reuse native more-info/history where useful.
 
-## 11. Render performance and shell stability
+## 12. Render performance and shell stability
 
-Home Assistant may update hundreds of unrelated entities while a specialized panel is open.
+Avoid complete Shadow DOM rebuilds for unrelated Home Assistant entity churn.
 
-A production panel should avoid complete Shadow DOM rebuilds when neither its relevant entities nor UI context changed.
-
-Permitted mechanisms include relevant-state fingerprints or equivalent selective updates.
-
-Optimization must preserve:
+Relevant-state fingerprints/selective updates are allowed, but must preserve:
 
 - exactly one shell/work viewport;
 - selected peer;
 - active Bottom Tab;
 - current zoom state;
-- entity interaction bindings;
+- interaction bindings;
 - global action feedback.
 
-A renderer optimization that causes nested wrappers or duplicated controls is a release-blocking defect.
+Nested wrappers, duplicated handlers or progressive shrinkage are release-blocking defects.
 
-## 12. Frontend delivery
+## 13. Frontend delivery
 
-Production delivery follows `SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md`.
-
-Key principles:
+Production delivery follows `SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md`:
 
 - one deterministic production entry module;
-- historical/versioned source modules are build-time history, not runtime dependency chain;
+- historical/versioned sources are not runtime dependency chain;
 - UI-version cache busting;
 - local packaged assets;
-- panel metadata describes shell/device/zoom/delivery behavior;
 - CI validates syntax, registration/manifest parity and reproducibility.
 
-## 13. Mobile-first acceptance
+## 14. Mobile-first acceptance
 
 Acceptance order:
 
@@ -316,52 +233,49 @@ Acceptance order:
 
 Required field checks:
 
-- Header below Dynamic Island/notch with no duplicated safe-area band;
-- HA main-system menu works from left rail;
-- centered title remains centered with right action feedback;
-- Device Selector fits and stays stable;
-- first useful state content is visible at intended density;
+- Header below Dynamic Island/notch without duplicate safe-area band;
+- left `☰` triggers `hass-toggle-menu`;
+- centered title remains centered;
+- Device Selector fits/stays stable where applicable;
+- first useful state appears at intended density;
 - Bottom Tab Bar clears content/Home Indicator;
-- pinch/pan behaves correctly;
-- repeated HA updates do not duplicate shell/controls;
-- peer switching preserves expected context;
-- `unknown`/stale/source-loss scenarios are visible;
-- long press/more-info works;
-- global action feedback works.
+- pinch/pan works;
+- 97–103% snap works;
+- two-finger double-tap reset and `Масштаб 100%` feedback work;
+- repeated HA updates do not duplicate shell/viewport;
+- peer switching preserves context;
+- `unknown`/stale/source-loss scenarios remain explicit;
+- long press/more-info and global action feedback work where specified.
 
-A desktop render alone is not sufficient acceptance evidence for a mobile-first panel.
+Desktop render alone is insufficient acceptance evidence.
 
-## 14. Navigation metadata
-
-Conceptual single-device example:
+## 15. Conceptual metadata
 
 ```yaml
 panel:
-  id: irrigation
-  title: Полив
-  path: /dashboard-irrigation
-  owner: ha-ho-sc-8w
-  expose_in_generated_ui: true
-  preferred_view: overview
   shell:
-    version: "1.2"
+    version: "1.3"
     safe_area_owner: application_once
   header:
     left_control: home_assistant_menu
+    left_event: hass-toggle-menu
     title_alignment: viewport_center
-    show_brand_icon: false
-    right_action: refresh
   navigation:
     primary: full_width_fixed_bottom_tab_bar
     floating: false
   zoom:
+    viewport_count: 1
     pinch: true
-    controls: optional
+    persistent_controls: false
+    snap_to_100_range: [0.97, 1.03]
+    reset_gesture: two_finger_double_tap
+    reset_scroll: true
+    reset_feedback: "Масштаб 100%"
     min: 0.75
     max: 2.0
 ```
 
-Conceptual multi-peer-device addition:
+For multi-peer-device panels:
 
 ```yaml
   device_context:
@@ -372,63 +286,6 @@ Conceptual multi-peer-device addition:
     zoom_persistence_scope: panel_and_device
 ```
 
-## 15. Application-specific guidance
+## 16. Project rule
 
-### Stark SolarPower
-
-- HA system menu remains permanent left Header control;
-- centered `Stark SolarPower`, optional short UI subtitle;
-- one right global Refresh action with feedback;
-- persistent fixed-order `UPS Интернет / UPS Котёл` selector;
-- selected-UPS-only content across five views;
-- contextual local network/boiler hero art with separate dynamic UPS/power-flow/value layers;
-- semantic colors for state, neutral measurements;
-- backend `data_stale` owns freshness threshold;
-- gesture-only zoom is allowed if declared; exactly one work viewport;
-- native more-info/history for factual entity detail.
-
-### S8 OMNI
-
-- HA system menu on left;
-- composite robot + station state may be hero information;
-- no Device Selector while the application represents one peer system;
-- keep five primary sections in fixed Bottom Tab Bar.
-
-### HO-SC-8W irrigation
-
-- HA system menu on left;
-- zones are subordinate channels, not peer-device selector entries;
-- keep `Обзор · Зоны · Программы · Диагн.` in Bottom Tab Bar;
-- domain write safety remains owned by integration APIs.
-
-### Keenetic Hero 4G+
-
-- HA system menu on left;
-- first viewport prioritizes Internet / active WAN / Ethernet / LTE / failover state;
-- Ethernet/LTE are channels of one router, not peer devices;
-- detailed diagnostics stay below operational status.
-
-## 16. Acceptance criteria
-
-An integration-owned specialized dashboard is UI-complete only when:
-
-- permanent HA system menu is present on the left;
-- title is geometrically centered;
-- safe area is consumed once;
-- no decorative Header icon shifts title;
-- async right action, if present, provides safe feedback;
-- Bottom Tab Bar is fixed, full-width, edge-attached and safe-area-aware;
-- persistent peer selector, if applicable, is native-scale, fixed-order and selected-device-only;
-- exactly one zoom work viewport exists;
-- repeated HA updates do not nest shell topology;
-- factual data is neutral while semantic state uses semantic color;
-- stale/source failure/unknown never become healthy;
-- no unsupported derived values are invented;
-- local visual assets remain separate from live state layers;
-- long press/native more-info remains available where specified;
-- production frontend passes deterministic delivery checks;
-- actual target-device field acceptance passes.
-
-## Project rule
-
-> Integration-owned specialized dashboards are mobile applications inside Home Assistant: permanent Home Assistant system menu at top-left, centered title, optional persistent peer-device context, exactly one zoomable work viewport, fixed full-width Bottom Tab Bar, factual state-first content, local layered assets, strict trust semantics and deterministic frontend delivery.
+> Integration-owned specialized dashboards are mobile applications inside Home Assistant: permanent `hass-toggle-menu` system menu at top-left, centered title, optional native-scale peer-device selector, exactly one idempotent gesture-zoom work viewport, fixed full-width Bottom Tab Bar, factual state-first content, local layered assets, strict trust semantics and deterministic frontend delivery.
