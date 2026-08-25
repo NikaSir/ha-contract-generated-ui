@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.29.3"
+    assert manifest["version"] == "0.30.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -38,12 +38,18 @@ def test_release_version_and_schema_are_packaged() -> None:
 def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
+    hero_bundle = (frontend_root / "nikas-house-hero.js").read_text(encoding="utf-8")
+    hero_asset = frontend_root / "assets" / "house-hero-dusk-v1.svg"
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     zont_bundle = (frontend_root / "nikas-generated-zont.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
     assert "position:fixed" in bundle
+    assert 'const ELEMENT_NAME = "nikas-house-hero"' in hero_bundle
+    assert "base64" not in hero_bundle.lower()
+    assert "https://" not in hero_bundle
+    assert hero_asset.exists()
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
     assert 'const ELEMENT_NAME = "nikas-generated-zont"' in zont_bundle
     assert "_boilerCard" in zont_bundle
@@ -68,12 +74,17 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
+    assert 'HOUSE_HERO_BUILD = "b001"' in const_source
+    assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-dusk-v1.svg"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
     assert 'GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"' in const_source
     assert 'GENERATED_ZONT_BUILD = "b005"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
+    assert "HOUSE_HERO_STATIC_PATH" in init_source
+    assert "HOUSE_HERO_ASSET_STATIC_PATH" in init_source
+    assert "add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)" in init_source
     assert "GENERATED_ZONT_STATIC_PATH" in init_source
     assert "GENERATED_ZONT_FILENAME" in init_source
     assert "async_register_generated_subpanels" in init_source
