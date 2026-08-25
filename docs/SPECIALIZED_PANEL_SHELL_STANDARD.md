@@ -1,62 +1,43 @@
-# Specialized Panel Shell Standard v1.3
+# Specialized Panel Shell Standard v1.4
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
 **Primary acceptance viewport:** iPhone Pro Max, portrait  
-**Reference field implementation:** Stark SolarPower UI 0.5.6
+**Reference field implementation:** Stark SolarPower 1.8.10
 
-## 1. Purpose
+## 1. Purpose and hierarchy
 
 All specialized panels use one application-shell contract while keeping domain UI in the owning integration/project.
 
-Canonical hierarchy:
-
 ```text
-HOME ASSISTANT / DEVICE SAFE AREA
+HOME ASSISTANT / EFFECTIVE TOP SAFE AREA
 ↓
-SPECIALIZED PANEL HEADER                     native scale
+SPECIALIZED HEADER                         native scale
   └── ☰ HA menu | centered title | action
 ↓
-DEVICE SELECTOR (peer devices only)          native scale
+PEER DEVICE SELECTOR (when applicable)    native scale
 ↓
-EXACTLY ONE ZOOMABLE WORK VIEWPORT           user scale
-  └── domain / selected-device content
+ONE FIXED CANVAS VIEWPORT                 native clipping window
+  └── domain canvas                       translate3d(x,y,0) scale(s)
 ↓
-BOTTOM TAB BAR                               native scale
+BOTTOM TAB BAR                            native scale
 ↓
-DEVICE BOTTOM SAFE AREA / HOME INDICATOR
+EFFECTIVE BOTTOM SAFE AREA
 ```
 
-There is no permanent zoom toolbar in the standard shell.
+There is no permanent zoom toolbar and no browser-scroll-owned scalable canvas.
 
-## 2. Ownership invariant
+## 2. Ownership boundary
 
-The shared shell owns:
+The shared shell owns safe areas, Header/menu behavior, peer-selector placement, one canvas topology, transform/gesture lifecycle, reset feedback, Bottom Tab geometry and shell clearances.
 
-- effective safe-area handling;
-- Header geometry and menu behavior;
-- persistent peer-device selector placement;
-- exactly one zoom viewport;
-- zoom gesture lifecycle and reset feedback;
-- fixed Bottom Tab Bar geometry;
-- shell clearances.
+The integration owns entities, telemetry, commands, cards, visualizations, peer-device labels/data, contextual artwork and any parent/drill-down navigation inside the work area.
 
-The domain/integration owns:
+Do not combine a shell migration with an unrelated domain redesign.
 
-- entities, telemetry and status semantics;
-- commands exposed through Home Assistant APIs/entities;
-- content cards and visualizations;
-- peer-device labels/data;
-- contextual artwork;
-- secondary parent/drill-down navigation inside the work area.
+## 3. Safe area — consume exactly once
 
-**Migration rule:** do not combine shell migration with unrelated domain redesign.
-
-## 3. Safe-area contract — consume exactly once
-
-The effective safe-area inset must have one owner.
-
-Use Home Assistant/browser safe-area values:
+Use effective Home Assistant/browser insets and never phone-model constants.
 
 ```css
 env(safe-area-inset-top, 0px)
@@ -65,257 +46,147 @@ env(safe-area-inset-bottom, 0px)
 env(safe-area-inset-left, 0px)
 ```
 
-If Home Assistant or custom-panel registration already supplies/consumes the effective inset, the panel must not add the same inset again.
-
-Required:
-
-- Header below Dynamic Island/notch;
-- Bottom Tab Bar above Home Indicator;
-- no duplicate blank top band;
-- no device-model constants such as `top: 47px`;
-- no independent safe-area padding inside views/cards.
+If registration or Home Assistant already consumes an inset, the panel must not add it again. Header stays below Dynamic Island/notch; Bottom Tab stays above Home Indicator; views/cards do not add independent safe-area padding.
 
 ## 4. Header
 
-Canonical mobile Header:
-
-```text
-┌─────────────────────────────────────┐
-│  ☰           PANEL TITLE          ⟳ │
-│              subtitle               │
-└─────────────────────────────────────┘
-```
-
-### 4.1 Permanent left control
-
-The left control is always the **Home Assistant main-system menu**.
-
-The canonical frontend action is dispatching:
+The permanent left control is the Home Assistant main-system menu only:
 
 ```js
-new CustomEvent("hass-toggle-menu", {
-  bubbles: true,
-  composed: true,
-})
+new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true })
 ```
 
-The control MUST NOT be:
+It is never browser Back, a parent-route arrow, an integration drawer or a device action. Parent navigation, when needed, belongs inside the work area.
 
-- browser Back;
-- a hard-coded parent-route Back;
-- an integration-specific drawer/menu;
-- a device/domain action.
+The title is geometrically centered relative to the viewport. The right rail contains at most one application-global action. Both rails use comparable geometry and approximately 44×44 pt touch targets. Header, menu and right action remain native scale.
 
-If a panel needs navigation to its logical parent, place that navigation **inside the work area** as domain/application content.
+## 5. Peer Device Selector
 
-### 4.2 Title and right rail
+Use it only for multiple peer physical devices.
 
-Required:
+- directly below Header;
+- native scale and outside canvas;
+- fixed order;
+- selection survives Bottom Tab changes;
+- primary detail is selected-peer-only;
+- compact health state for non-selected peers is allowed;
+- zones/channels/components are not peers merely because they are selectable.
 
-- title geometrically centered relative to viewport;
-- at most one primary global/shell action on right;
-- symmetric rail geometry when practical;
-- touch targets approximately 44×44 pt or larger;
-- concise one-line primary title on reference iPhone;
-- optional subtitle for model/context/version;
-- no decorative device/brand icon beside Header title;
-- no oversized duplicate title immediately below Header.
+## 6. One transform-owned canvas
 
-Header, menu button and right action remain at native scale.
+The working area is one shell-sized fixed canvas viewport. It captures gestures and clips content but does not use browser `scrollLeft`, `scrollTop` or native `overflow` scrolling to own position.
 
-### 4.3 Async global action
-
-For an action such as Refresh:
-
-- call only stable Home Assistant integration APIs/entities;
-- do not call vendor API directly from frontend;
-- suppress repeat activation while busy;
-- expose progress/result feedback when practical;
-- feedback must not shift title centering.
-
-## 5. Persistent peer-device selector
-
-When one application owns multiple peer physical devices, Device Selector sits directly below Header and remains at native scale.
-
-Required:
-
-- fixed peer order;
-- selection never reorders peers;
-- selected peer persists across Bottom Tab changes;
-- compact health indication for non-selected peers is allowed;
-- detailed primary content belongs only to selected peer;
-- do not append full duplicate content for all peers;
-- newly discovered peers should reuse the same application template where possible.
-
-Subordinate zones/channels/components are not peer devices merely because they are selectable.
-
-## 6. Exactly one zoomable work viewport
-
-There is exactly one work viewport per specialized-panel instance.
-
-Native-scale layers outside it:
-
-- Home Assistant chrome;
-- Header / HA menu / right action;
-- persistent peer-device selector;
-- Bottom Tab Bar;
-- safe-area surfaces;
-- transient `Масштаб 100%` reset confirmation.
-
-Responsive layout is selected before zoom:
+The only transform target uses:
 
 ```text
-actual viewport
-→ mobile/tablet/desktop composition
-→ selected peer/domain context
-→ user zoom
+translate3d(x, y, 0) scale(s)
 ```
 
-### 6.1 Idempotent shell lifecycle
+At 100%, one-finger movement still updates `x/y`; no separate scroll model appears.
 
-Shell installation/reconciliation MUST be idempotent across full renders, optimized renders and unrelated Home Assistant state updates.
+The canvas viewport, transform target, gesture handlers and reset status element each exist once. Installation/reconciliation is idempotent across all Home Assistant rerenders.
 
-It must never create:
+## 7. Transform and gesture lifecycle
 
-- nested zoom viewports;
-- duplicate gesture handlers;
-- duplicate reset confirmation elements;
-- abandoned wrappers/blank space;
-- progressive content shrinking;
-- duplicate Header/selector/navigation layers.
+Normative behavior is defined by `SPECIALIZED_PANEL_ZOOM_STANDARD.md` v1.4.
 
-Preferred architecture keeps shell topology stable and updates domain content inside the existing viewport.
+The shell must:
 
-## 7. Zoom interaction
+- keep Header, selector and Bottom Tab outside the transform;
+- support one-finger pan and two-finger focal-point pinch;
+- clamp `x/y` to measured scaled-content bounds;
+- preserve the final transform after release;
+- persist `{scale,x,y}` per panel/client and peer device where applicable;
+- restore the saved transform on replacement DOM before the visible frame;
+- never re-wrap an existing canvas;
+- avoid CSS `zoom`, page zoom and native overflow scroll as the canvas engine.
 
-Zoom behavior is defined by `SPECIALIZED_PANEL_ZOOM_STANDARD.md` v1.3.
+## 8. Interaction guard
 
-Shell requirements:
+The shell coordinates custom gestures with Home Assistant interactions.
 
-- normal method is two-finger focal-point pinch;
-- permanent `− / % / +` controls are not rendered;
-- two-finger double tap resets zoom and scroll to 100%/origin;
-- pinch ending in 97–103% snaps to exactly 100%;
-- reset/snap briefly shows `Масштаб 100%`;
-- stored scale is isolated per panel and peer device when applicable.
+- second finger immediately cancels/blocks pending `more-info`;
+- crossing the pan threshold cancels pending long press through `pointercancel` semantics;
+- synthetic clicks after a gesture are briefly suppressed;
+- pinch/pan/reset never execute device commands;
+- stationary intentional long press still opens native `more-info`.
 
-## 8. Bottom Tab Bar
+## 9. Reset UX
 
-Primary in-app navigation with 3–5 destinations uses one full-width fixed Bottom Tab Bar.
+- no permanent `− / % / +` controls;
+- two-finger double tap resets `{scale:1,x:0,y:0}`;
+- pinch ending at 97–103% uses the same exact reset;
+- reset/snap briefly shows `Масштаб 100%` at native scale.
 
-Required:
+## 10. Bottom Tab Bar
 
-- edge-attached to viewport bottom;
-- full-width on mobile;
-- fixed while work content scrolls;
+Primary navigation with 3–5 destinations uses one full-width fixed edge-attached Bottom Tab Bar.
+
+- safe-area-aware and native scale;
 - not a floating card/pill;
-- respects effective bottom safe area;
-- common geometry across specialized applications;
-- icon + short readable label;
 - active tab unambiguous;
+- icon + short readable label;
 - comfortable touch targets;
-- final content scrolls fully above the bar.
+- canvas bounds/bottom reserve allow the final content to be moved completely above the bar.
 
-If more than five destinations are needed, use secondary hierarchy rather than shrinking labels/touch targets.
+## 11. Render stability
 
-Bottom reserve belongs to shell:
+Unrelated Home Assistant state churn should not rebuild the complete shell when practical.
 
-```text
-Bottom Tab Bar content height
-+ effective bottom safe area
-```
+Any render path preserves one shell/canvas, selected peer, active Bottom Tab, `{scale,x,y}`, gesture bindings, `more-info` bindings and global-action feedback.
 
-Bottom Tab Bar remains at native scale.
+When work DOM must be replaced, transform restoration happens before reveal/paint so users never see an origin flash.
 
-## 9. Visual/state semantics inside work area
+## 12. State and visual semantics
 
-Cross-panel rules proven in Stark field review:
+- first useful view prioritizes current operating state;
+- normal factual values use neutral typography;
+- semantic colors express confirmed health/warning/fault;
+- `unknown`, `unavailable`, stale or untrusted data never appear healthy;
+- backend semantic states/thresholds remain authoritative;
+- decorative artwork contains no live state;
+- unsupported values are not invented;
+- native `more-info`/history is reused where useful.
 
-- first useful viewport prioritizes current operating state;
-- normal factual measurements use neutral typography;
-- green/amber/red are reserved for confirmed semantic state;
-- `unknown`, `unavailable`, stale or untrusted source never appear healthy;
-- decorative/context artwork remains separate from live values/state layers;
-- do not invent unsupported runtime, watts, alarms or reserve estimates;
-- native Home Assistant more-info/history is reused when it provides required factual detail.
-
-## 10. Render performance
-
-Integration-owned panels should avoid rebuilding the complete Shadow DOM for unrelated Home Assistant entity churn when practical.
-
-Any optimization must preserve:
-
-- exactly one shell/work viewport;
-- selected peer;
-- active Bottom Tab;
-- current zoom state;
-- entity/more-info bindings;
-- global action feedback.
-
-## 11. Field acceptance
-
-Acceptance order:
-
-1. iPhone Pro Max portrait in Home Assistant Companion App;
-2. smaller iPhone portrait;
-3. tablet;
-4. desktop.
-
-Verify at minimum:
-
-- safe area not missing or doubled;
-- `☰` triggers the standard HA menu;
-- title/right action geometry;
-- selector fit where applicable;
-- first useful domain state density;
-- Bottom Tab clearance;
-- focal-point pinch/pan;
-- double two-finger reset;
-- 97–103% snap;
-- `Масштаб 100%` feedback;
-- no shell duplication after repeated HA updates;
-- peer switching preserves context/scale;
-- explicit unreliable states;
-- native more-info/global-action behavior.
-
-## 12. Non-conforming patterns
+## 13. Non-conforming patterns
 
 Prohibited:
 
-- Header under notch/Dynamic Island;
-- double safe-area consumption;
-- Back or integration drawer in permanent left Header rail;
-- menu icon that does not trigger `hass-toggle-menu`;
+- Header under Dynamic Island/notch or double safe-area consumption;
+- Back/integration drawer/device action in permanent left Header rail;
+- menu icon that does not dispatch `hass-toggle-menu`;
+- CSS `zoom` or whole-page/browser zoom as panel zoom;
+- native overflow scrolling as scalable-canvas position state;
+- reading/writing `scrollLeft` / `scrollTop` as transform state;
+- nested canvas/zoom wrappers or repeated handler installation;
+- scaling Header, peer selector or Bottom Tab with content;
 - permanent on-screen zoom controls;
-- nested zoom wrappers or repeated gesture installation;
-- zooming Header/selector/Bottom Bar with content;
-- whole-page/browser zoom;
+- origin flash or position reset during telemetry rerender;
+- accidental `more-info`, graphs, clicks or commands during gestures;
 - floating primary Bottom Tab Bar;
-- hard-coded device safe-area constants;
-- live state baked into decorative images;
-- unrelated domain refactor during shell migration.
+- hard-coded device safe-area constants.
 
-## 13. Acceptance criteria
+## 14. Field acceptance
 
-A specialized panel shell is accepted only when:
+Verify on iPhone Companion App first:
 
-1. safe area is consumed exactly once;
-2. Header stays below cutout;
-3. left rail is HA menu and dispatches `hass-toggle-menu`;
-4. title remains geometrically centered;
-5. persistent peer selector, when present, is native-scale/fixed-order/selected-device-only;
-6. exactly one zoom viewport exists;
-7. repeated HA updates do not duplicate shell topology;
-8. pinch affects only work content;
-9. no permanent zoom buttons are shown;
-10. double two-finger tap resets scale/scroll;
-11. 97–103% pinch snaps to 100%;
-12. reset confirmation is shown briefly;
-13. Bottom Tab Bar is fixed/full-width/safe-area-aware/native-sized;
-14. final content clears Bottom Tab Bar;
-15. responsive layout is selected before zoom;
-16. target-device field acceptance passes.
+1. safe area is consumed once;
+2. `☰` opens native HA menu;
+3. title/right action geometry is stable;
+4. peer selector remains native and fixed;
+5. exactly one canvas exists after repeated HA updates;
+6. one-finger movement at 100% persists after release;
+7. focal-point pinch persists after release;
+8. real bounds expose all reachable content without snap-back;
+9. no permanent zoom buttons appear;
+10. two-finger reset, 97–103% snap and `Масштаб 100%` work;
+11. telemetry updates restore transform before paint;
+12. gestures do not open `more-info`/graphs or execute actions;
+13. stationary long press still opens `more-info`;
+14. Bottom Tab remains fixed/native and final content is reachable;
+15. no nested wrappers, blank areas or progressive shrink occur.
 
 ## Project rule
 
-> Specialized panels own domain content, not application chrome. The shell owns safe areas, permanent Home Assistant `☰` menu, peer context placement, exactly one gesture-driven zoom viewport and the fixed Bottom Tab Bar. No permanent zoom toolbar is used.
+> The shell owns native application chrome and one transform-owned canvas. Only the canvas content moves/scales through `translate3d(x,y,0) scale(s)`; browser scroll is not canvas state, and every rerender restores transform plus gesture safety before paint.
+
