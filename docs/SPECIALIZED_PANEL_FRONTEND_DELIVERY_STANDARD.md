@@ -1,115 +1,35 @@
-# Specialized Panel Frontend Delivery Standard v1.1
+# Specialized Panel Frontend Delivery Standard v1.2
 
 **Status:** Required for integration-owned specialized panels with custom frontend  
 **Canonical owner:** `NikaSir/ha-contract-generated-ui`  
-**Reference implementation:** Stark SolarPower UI 0.5.6
+**Reference implementation:** Stark SolarPower 1.8.10
 
 ## 1. Purpose
 
-A specialized panel can be visually correct and still fail in the field because of stale modules, broken runtime imports, missing assets, duplicated shell installation or non-deterministic packaging.
+A specialized panel can be visually correct yet fail because of stale modules, broken runtime imports, missing assets, duplicated shell installation or render timing that exposes an untransformed frame. This standard defines packaging, registration, cache identity, manifest parity and release gating.
 
-This standard defines packaging, registration, cache identity, panel metadata and release gating. It does not own domain UI.
+## 2. One stable production entry
 
-## 2. Ownership boundary
+Each integration exposes exactly one self-contained production frontend module. Historical/versioned modules may remain build-time history but are not a runtime import chain.
 
-The integration owns:
+## 3. Deterministic build and cache identity
 
-- production frontend entry module;
-- build-time source modules;
-- local assets;
-- panel registration;
-- machine-readable panel manifest;
-- frontend release CI.
+- source-to-bundle rebuild is deterministic where applicable;
+- UI/build version participates in production module URL cache busting;
+- changed local assets receive predictable cache invalidation;
+- release notes identify frontend behavior changes.
 
-CGUI owns the canonical shell/UI/delivery contracts. Conformance does not require a runtime dependency on CGUI.
+## 4. Home Assistant registration
 
-## 3. One stable production entry
+Registration and manifest agree on stable route, web-component name, module URL, UI version, asset paths, safe-area owner, `hass-toggle-menu` and canvas policy.
 
-Each integration-owned specialized panel exposes exactly one production frontend entry to Home Assistant.
+Custom-panel registration must not cause safe-area insets to be consumed twice.
 
-Examples:
+## 5. Local assets
 
-```text
-frontend/panel.js
-frontend/panel-bundle.js
-```
+Panel-critical art ships with the integration, is reachable through local static routes, is included in HACS packaging and has validated dimensions/existence. No critical CDN dependency and no Base64 image payload where a normal asset is suitable.
 
-Historical/versioned source files may remain build-time history, but the browser must not depend on a runtime chain such as:
-
-```text
-v020.js → v021.js → v030.js → ...
-```
-
-## 4. Deterministic build
-
-If the production entry is generated from multiple source files:
-
-- build is reproducible from clean checkout;
-- rebuilding without source changes produces no diff;
-- source order is explicit;
-- generated artifact is clearly marked;
-- production self-contained bundle contains no runtime historical `import`/`export` chain;
-- generated artifact is not manually edited.
-
-## 5. Home Assistant registration
-
-The integration registers one stable panel route and one production module URL.
-
-Required:
-
-- stable route;
-- stable web-component name;
-- module URL points to production entry;
-- UI/build version participates in cache busting;
-- static-path registration is deterministic across restart/reload;
-- safe-area ownership agrees with Shell Standard v1.3;
-- custom panel registration must not cause the frontend to consume the same safe-area inset twice.
-
-## 6. Cache busting
-
-Frontend UI release changes production module URL identity, preferably:
-
-```text
-/local-panel/panel-bundle.js?v=<ui-version>
-```
-
-Changed local assets should also use deterministic version/build query cache busting.
-
-## 7. Local static assets
-
-Panel-critical assets ship inside the integration package.
-
-Recommended layout:
-
-```text
-custom_components/<domain>/
-└── frontend/
-    ├── panel-bundle.js
-    └── assets/
-        ├── device.png
-        └── context.webp
-```
-
-Required:
-
-- no external CDN dependency for critical art;
-- no Base64 image payload when normal local asset is suitable;
-- assets reachable through local integration static route;
-- HACS packaging includes them;
-- dimensions/quality optimized;
-- cache invalidation is predictable.
-
-## 8. Layered visual assets
-
-Decorative/context art is not state storage.
-
-Background images must not bake in current HA measurements, alarms, labels, power-flow state or availability.
-
-Dynamic device art, SVG paths, badges, labels and values remain runtime layers whenever they encode current state.
-
-## 9. Panel manifest
-
-Integration-owned specialized panels should ship machine-readable metadata.
+## 6. Machine-readable manifest
 
 Reference fields:
 
@@ -120,26 +40,32 @@ path: /dashboard-subsystem
 owner: integration_domain
 ui_version: 1.2.3
 shell:
-  standard_version: "1.3"
+  standard_version: "1.4"
   safe_area_owner: application_once
 header:
   left_control:
     type: home_assistant_system_menu
     event: hass-toggle-menu
   title_alignment: viewport_center
-device_context:
-  selector: optional
-navigation:
-  primary_navigation: full_width_fixed_bottom_tab_bar
 zoom:
-  scope: work_viewport
+  standard_version: "1.4"
+  engine: transform_owned_canvas
+  viewport_count: 1
+  transform_target_count: 1
+  transform: translate3d_xy_scale
+  state: [scale, x, y]
+  css_zoom: false
+  native_overflow_pan: false
+  one_finger_pan: true
+  pan_at_100_percent: true
   pinch: true
   controls: []
-  minimum_percent: 75
-  maximum_percent: 200
   reset_gesture: two_finger_double_tap
   snap_to_100_percent_range: [97, 103]
   persistence: local_per_panel_and_device
+  restore_before_paint: true
+  cancel_hold_on_pan: pointercancel
+  suppress_post_gesture_click: true
 frontend_delivery:
   mode: self_contained_bundle
   module: panel-bundle.js
@@ -150,123 +76,61 @@ targets:
   primary: iPhone Pro Max portrait
 ```
 
-Fields that do not apply may be omitted, but manifest and runtime registration/behavior must not contradict each other.
+## 7. Manifest / runtime parity
 
-## 10. Manifest / registration parity
+CI or release validation checks:
 
-CI verifies agreement across:
+- registration route/component/module;
+- UI version and cache-busting value;
+- declared asset existence;
+- permanent HA menu event;
+- exactly one transform-owned canvas policy;
+- no CSS zoom/native overflow pan policy;
+- reset/snap/persistence/pre-paint restore policy;
+- gesture interaction guard policy.
 
-- panel registration code;
-- panel manifest;
-- production entry filename;
-- UI version/cache-busting value;
-- declared static assets;
-- permanent HA-menu event contract where encoded;
-- declared zoom policy (`controls: []`, reset gesture, snap range) where encoded.
+## 8. JavaScript validation
 
-Mismatch is release-blocking.
-
-## 11. Asset existence guard
-
-Every declared asset must exist in shipped integration tree.
-
-CI should fail for missing/unshipped/renamed assets or stale local URLs.
-
-## 12. JavaScript validation
-
-At minimum:
-
-- production entry passes `node --check` or equivalent;
-- source JS is syntax-checked when practical;
+- production and source JS pass syntax check;
 - self-contained bundle rejects prohibited runtime historical imports;
-- deterministic rebuild parity passes when applicable.
+- deterministic rebuild parity passes where applicable;
+- HACS/Hassfest/repository checks remain required.
 
-HACS/Hassfest/repository validation remains required in addition to frontend checks.
+## 9. Runtime shell regression guard
 
-## 13. Runtime shell stability guard
+Static syntax is insufficient. Test where practical:
 
-Production frontend release should include a smoke/regression check for shell topology when practical.
-
-Critical invariants:
-
-- exactly one zoom viewport;
+- one viewport and transform target after repeated renders;
+- no nested wrappers/duplicate handlers/reset messages;
 - no permanent zoom toolbar;
-- no duplicate gesture/reset listeners caused by rerender;
-- permanent left Header control dispatches `hass-toggle-menu`;
-- repeated relevant/unrelated state updates do not progressively shrink or duplicate content.
+- `hass-toggle-menu` works;
+- one-finger pan at 100% and pinch persist after release;
+- CSS `zoom`, `scrollLeft` and `scrollTop` are not transform state;
+- real bounds clamp the canvas;
+- replacement DOM restores `{scale,x,y}` before visible frame;
+- second finger/pan threshold/post-gesture guard suppress accidental detail/actions;
+- stationary long press still opens `more-info`.
 
-A static syntax check alone cannot prove these lifecycle properties.
+## 10. Cold-start and target-client gate
 
-## 14. Runtime dependency policy
+Verify empty-cache start, full HA restart, repeated panel opens, local and Nabu Casa access, correct asset version, no stale prior UI and correct Companion App behavior.
 
-Prefer standard Web Components/HTML/CSS/SVG and resources shipped by integration. Extra frontend dependencies require concrete benefit and compatibility/release plan.
+## 11. Acceptance
 
-## 15. Safe-area registration interaction
+Delivery is complete only when:
 
-Panel registration options may alter effective viewport/safe area. Therefore registration and shell CSS must document one effective owner and field-check Companion App result.
-
-Double top inset is a delivery defect as well as CSS defect.
-
-## 16. Versioning
-
-Integration version and Panel UI version may differ, but frontend release has unambiguous UI/build identity.
-
-When UI behavior/assets change:
-
-- bump UI/build cache identity;
-- rebuild deterministic bundle;
-- update panel manifest/registration parity;
-- record user-visible changes in changelog/release notes.
-
-## 17. Field release gate
-
-Green CI is necessary but not sufficient.
-
-Verify on target HA client:
-
-- new production module loaded;
-- expected asset version loaded;
-- no stale prior UI;
-- HA menu event works;
-- safe areas correct;
-- Bottom Tab correct;
-- selector context correct;
-- pinch/reset/snap behavior survives repeated state updates;
-- exactly one viewport remains;
-- no missing assets/CORS/network dependency.
-
-## 18. Stark SolarPower reference
-
-Stark demonstrates:
-
-- local static route;
-- stable `/dashboard-ups` route;
-- one self-contained production bundle;
-- UI-version query cache busting;
-- historical UI modules as build-time inputs only;
-- deterministic build script and CI guards;
-- local PNG/WebP assets;
-- machine-readable manifest including `hass-toggle-menu`, gesture-only zoom, double-tap reset and 97–103% snap.
-
-## 19. Acceptance criteria
-
-Delivery-complete means:
-
-1. exactly one stable production entry;
-2. version cache busting changes with release;
-3. historical modules are not runtime chain;
-4. deterministic rebuild passes when applicable;
-5. JS syntax passes;
-6. registration/manifest agree;
-7. declared assets exist;
-8. critical art is local;
-9. live state remains outside decorative pixels;
-10. safe-area ownership is not doubled;
-11. manifest reflects gesture-only zoom/reset/snap and HA menu event;
-12. shell lifecycle regression checks exist where practical;
-13. HACS/Hassfest/repository checks pass;
-14. target-device field check confirms intended frontend behavior.
+1. one stable production entry exists;
+2. cache identity changes with frontend release;
+3. build and syntax validation pass;
+4. manifest/registration/runtime agree;
+5. critical local assets exist;
+6. safe area is consumed once;
+7. HA menu contract works;
+8. manifest encodes transform-owned canvas and gesture guards;
+9. lifecycle regression passes;
+10. target iPhone field check confirms movement/pinch persistence, pre-paint restore and no accidental details/actions.
 
 ## Project rule
 
-> One integration-owned specialized panel = one stable production frontend entry, deterministic release identity, local packaged assets, manifest/registration parity and CI-enforced reproducibility/lifecycle invariants. Historical UI evolution is source history, not runtime architecture.
+> A specialized panel release includes deterministic frontend identity plus machine-verifiable transform-canvas, menu, safe-area, rerender and interaction-safety invariants.
+
