@@ -1,34 +1,19 @@
-# Specialized Panel Zoom Standard v1.2
+# Specialized Panel Zoom Standard v1.3
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
-**Architecture:** shared specialized-panel shell
+**Architecture:** shared specialized-panel shell  
+**Reference field implementation:** Stark SolarPower UI 0.5.6
 
 ## 1. Purpose
 
-Specialized panels must allow the user to enlarge their working content without scaling or disturbing Home Assistant chrome, application context or navigation.
+Specialized panels must allow the user to enlarge their working content without scaling or disturbing Home Assistant chrome, persistent device context or fixed navigation.
 
-Stark SolarPower UI 0.5.4–0.5.5 proved two additional requirements that are now normative:
+The field-tested baseline is now **gesture-only zoom**. Permanent on-screen zoom buttons are not used in the standard shell.
 
-- zoom-shell installation must be idempotent and produce exactly one work viewport;
-- on-screen controls are a shell presentation option, while focal-point pinch is the mandatory touch interaction.
+## 2. Zoom scope
 
-## 2. Required interaction
-
-On phone/tablet touch clients every specialized panel MUST support:
-
-- **two-finger pinch-to-zoom**;
-- focal-point preservation around the midpoint between the fingers;
-- pan/scroll to every enlarged region;
-- persistent scale.
-
-On-screen `− / percentage / +` controls are optional shell presentation. A panel declares whether they are shown.
-
-This policy allows compact gesture-only mobile compositions while keeping one canonical control behavior when visible controls are useful.
-
-## 3. Zoom scope
-
-Only the work viewport scales.
+Only the panel work area scales.
 
 The following remain at native scale:
 
@@ -37,30 +22,42 @@ The following remain at native scale:
 - permanent Home Assistant main-menu button;
 - right Header action;
 - persistent peer-device selector;
-- zoom controls when enabled;
 - fixed Bottom Tab Bar;
-- safe-area surfaces.
+- safe-area surfaces;
+- transient zoom-reset confirmation.
 
 Canonical hierarchy:
 
 ```text
 HEADER / HA MENU                 native
 DEVICE SELECTOR (optional)      native
-ZOOM CONTROLS (optional)        native
-ONE WORK VIEWPORT               scaled
+ONE ZOOMABLE WORK VIEWPORT      scaled content
 BOTTOM TAB BAR                  native
 ```
 
-Browser/page zoom is not a conforming panel implementation.
+Browser/page zoom is not a conforming implementation.
 
-## 4. Exactly one work viewport
+## 3. Required touch interaction
 
-A specialized panel instance must contain exactly one active zoom viewport.
+Every touch-capable specialized panel MUST support:
 
-The shell must be idempotent across:
+- two-finger pinch-to-zoom;
+- focal-point preservation around the midpoint between the fingers;
+- one-finger pan/scroll of enlarged content;
+- two-finger double tap to reset zoom and scroll position;
+- automatic snap to exactly 100% when a pinch ends between 97% and 103%;
+- local persistence of the selected scale.
+
+Permanent `− / percentage / +` controls are **not part of the standard shell**.
+
+## 4. Exactly one zoom viewport
+
+A specialized-panel instance must contain exactly one active zoom viewport.
+
+Shell installation/reconciliation MUST be idempotent across:
 
 - full renders;
-- optimized renders;
+- optimized/partial renders;
 - unrelated Home Assistant state changes;
 - selected-device changes;
 - Bottom Tab changes;
@@ -69,19 +66,20 @@ The shell must be idempotent across:
 It must never create:
 
 - nested zoom wrappers;
-- duplicate controls;
+- duplicate gesture handlers;
+- duplicate reset notifications;
 - abandoned wrappers with blank space;
-- progressive shrink/growth caused by scaling an already scaled wrapper.
+- progressive content shrink/growth caused by repeatedly scaling an already scaled wrapper.
 
-When migrating a legacy implementation, old wrappers may be normalized/unwrapped before the canonical viewport is installed. That is a migration technique, not the desired steady-state architecture.
+When migrating a legacy implementation, old wrappers may be normalized/unwrapped before one clean canonical viewport is installed. In steady state the shell topology remains stable.
 
 ## 5. Pinch behavior
 
-When a two-finger gesture begins, capture:
+At the start of a two-finger pinch capture:
 
 - initial touch distance;
 - initial effective scale;
-- content coordinate under the gesture midpoint.
+- content coordinate under the touch midpoint.
 
 While the gesture changes:
 
@@ -89,52 +87,69 @@ While the gesture changes:
 new scale = initial scale × current distance / initial distance
 ```
 
-After applying scale, scroll offsets are adjusted so the same content coordinate remains under the current gesture midpoint as closely as the browser permits.
+After scale changes, adjust scroll offsets so the same content coordinate remains under the current midpoint as closely as the browser permits.
 
 Required:
 
-- pinch affects only the work viewport;
+- pinch affects only work content;
 - normal one-finger scroll remains available;
-- enlarged content can pan horizontally and vertically;
+- enlarged content pans horizontally and vertically when necessary;
 - pinch must not accidentally execute domain actions;
-- taps/long press/more-info continue to work after scaling.
+- tap/long-press/more-info behavior remains valid after scaling.
 
-## 6. Scale limits
+## 6. Scale limits and snap-to-100
 
-Default policy:
+Default limits:
 
 - minimum: **75%**;
 - maximum: **200%**;
-- default: **100%**;
-- visible-control step, when controls exist: **10%**.
+- default: **100%**.
 
-A narrower range is allowed only for a documented technical reason. The panel may not remove pinch support silently.
-
-## 7. Optional on-screen controls
-
-When enabled, use exactly one native-scale control group:
+When pinch finishes and the resulting scale is within:
 
 ```text
-−   125%   +
+97% ≤ scale ≤ 103%
 ```
 
-Behavior:
+the shell fixes the scale to **exactly 100%**.
 
-- `−` decreases by configured step;
-- `+` increases by configured step;
-- percentage always shows effective scale;
-- tapping percentage resets to **100%**;
-- controls are outside the zoom viewport;
-- controls do not cover Header, selector or Bottom Tab Bar;
-- controls are shell-owned, not recreated independently by each domain view.
+The snap uses the normal reset path so the viewport returns to the canonical 100% origin rather than preserving an almost-zero residual offset.
 
-A gesture-only panel is conforming when metadata explicitly declares controls hidden/disabled and all mandatory pinch/pan/persistence behavior passes field acceptance.
+A different snap band is non-conforming unless a future standard revision changes it.
 
-## 8. Persistence scope
+## 7. Two-finger double-tap reset
 
-Scale is local UI preference, never Home Assistant entity state.
+Two quick two-finger taps on the work viewport reset:
 
-Required stable scope:
+```text
+scale = 100%
+scrollLeft = 0
+scrollTop = 0
+```
+
+The gesture recognizer must distinguish a tap from pinch/pan by using a short duration and movement tolerance so normal pinch gestures are not misclassified.
+
+The reset gesture is presentation-only and must not execute any domain command.
+
+## 8. Reset confirmation
+
+After an explicit two-finger double-tap reset or automatic 97–103% snap, show a short non-interactive confirmation:
+
+```text
+Масштаб 100%
+```
+
+Requirements:
+
+- transient, approximately one second;
+- does not reserve permanent layout space;
+- does not block pointer/touch interaction;
+- remains native-sized rather than scaling with domain content;
+- exposed as polite status feedback where practical (`role=status`, `aria-live=polite`).
+
+## 9. Persistence scope
+
+Zoom is local UI preference, never Home Assistant entity state.
 
 ### Single-device panel
 
@@ -144,97 +159,82 @@ panel-id + client
 
 ### Multi-peer-device panel
 
-The panel MAY and generally SHOULD include the selected peer-device identity:
+Use separate preference for each peer when the panel supports multiple peer devices:
 
 ```text
 panel-id + peer-device-id + client
 ```
 
-This follows the proven Stark SolarPower behavior: switching peer UPS can restore that UPS's own preferred scale.
+Switching peer device restores that peer's stored scale. Changing Bottom Tab within the same peer preserves scale.
 
-Changing one panel must not change another panel's scale. Changing subordinate sections/tabs of the same selected device should normally preserve scale.
+If local storage is unavailable, zoom continues to work for the current session.
 
-If browser/local storage is unavailable, zoom must continue to work for the current session rather than making the panel unusable.
+## 10. Responsive layout interaction
 
-## 9. Responsive layout interaction
+Order is fixed:
 
-Responsive layout and user zoom are independent stages:
+```text
+actual viewport
+→ mobile/tablet/desktop composition
+→ selected peer/domain content
+→ user zoom
+```
 
-1. actual viewport selects mobile/tablet/desktop composition;
-2. application context selects device/domain content;
-3. user scale is applied to the work viewport.
+Zoom must not change responsive breakpoint selection or trigger repeated mobile/desktop switching.
 
-Zoom does not change breakpoint selection and must not cause repeated mobile/desktop layout switching.
+## 11. Rerender behavior
 
-## 10. Rerender behavior
+Home Assistant may deliver frequent unrelated state updates. A conforming implementation preserves one viewport and the current scale across those updates.
 
-Home Assistant can update many unrelated entities while a specialized panel is open.
+Preferred implementation:
 
-A conforming zoom implementation must preserve scale and viewport topology when:
+- shell DOM remains stable;
+- domain content is updated/replaced inside the existing viewport;
+- or one known viewport is reconciled by a stable identity.
 
-- unrelated HA state changes arrive;
-- the domain renderer skips a full render because relevant state did not change;
-- only part of the UI changes;
-- selected peer changes;
-- a Bottom Tab changes.
+Repeated blind wrapping after every render is prohibited.
 
-Recommended:
+## 12. Interaction with Device Selector
 
-- keep shell DOM stable and replace/update domain content inside it;
-- or explicitly reconcile one known viewport by stable selector/identity.
-
-Repeated blind post-render wrapping is prohibited.
-
-## 11. Interaction with Device Selector
-
-Persistent peer-device selector remains native scale and outside the work viewport.
+Persistent peer-device selector remains outside the zoom viewport and at native scale.
 
 When peer selection changes:
 
-- selector geometry does not change;
+- selector geometry/order remains unchanged;
 - current Bottom Tab remains selected;
 - work content switches in place;
-- device-scoped scale is restored when that persistence mode is used.
+- peer-scoped scale is restored.
 
-## 12. Safety and state semantics
+## 13. Safety and semantics
 
-Zoom is presentation only. It must not change:
+Zoom must not change:
 
 - entity selection;
 - semantic inventory;
 - health/stale thresholds;
-- `unknown` / `unavailable` behavior;
-- navigation routes;
+- `unknown` / `unavailable` handling;
+- routes;
 - confirmations;
 - domain commands;
 - source-trust semantics.
-
-A state cannot become hidden or be reinterpreted because of zoom.
-
-## 13. Accessibility and motion
-
-- touch targets outside the zoom viewport retain their native accessible size;
-- zoom controls, when shown, expose meaningful `aria-label` text;
-- current percentage is announced accurately;
-- pinch should not depend on animation;
-- reduced-motion preference must not disable core zoom functionality.
 
 ## 14. Acceptance criteria
 
 A specialized panel conforms when:
 
-- two-finger pinch works on phone/tablet;
-- focal point remains visually anchored;
-- enlarged content pans/scrolls to all regions;
-- only one work viewport exists after repeated state updates;
-- no nested wrappers or progressive shrinkage occurs;
-- Header, HA menu, Device Selector and Bottom Tab Bar remain native scale;
-- scale survives reopening on the same client when storage is available;
-- persistence is isolated per panel and optionally per peer device;
-- responsive composition is preserved;
-- normal tap/long-press/more-info behavior remains valid;
-- optional controls, when enabled, exist once and perform `− / % / +` behavior correctly;
-- gesture-only presentation, when declared, has no hidden dependence on removed controls.
+1. two-finger pinch works on phone/tablet;
+2. pinch preserves the gesture midpoint;
+3. enlarged content pans/scrolls to all regions;
+4. no permanent on-screen zoom controls are rendered;
+5. two-finger double tap resets scale and scroll to 100%/origin;
+6. pinch ending at 97–103% snaps to exactly 100%;
+7. reset/snap briefly shows `Масштаб 100%`;
+8. exactly one work viewport exists after repeated HA state updates;
+9. no nested wrappers, duplicate handlers or progressive shrinking occurs;
+10. Header, HA menu, Device Selector and Bottom Tab Bar remain native scale;
+11. scale persists per panel/client and per peer device where applicable;
+12. responsive composition is selected before zoom;
+13. tap/long-press/more-info behavior remains valid.
 
 ## 15. Default contract
 
@@ -248,15 +248,17 @@ shell:
     pinch: true
     focal_point: gesture_center
     pan_when_zoomed: true
-    controls: optional
-    control_step: 0.10
-    reset_on_percentage_tap: true
+    controls: none
+    reset_gesture: two_finger_double_tap
+    reset_scroll: origin
+    snap_to_100_percent_range: [97, 103]
+    reset_feedback: "Масштаб 100%"
     persist: per_panel_per_client
-    peer_device_scope: allowed
+    peer_device_scope: per_device_when_present
     viewport_count: 1
     install: idempotent
 ```
 
 ## Project rule
 
-> Every specialized panel has exactly one zoomable work viewport. Two-finger focal-point pinch, pan/scroll and persistence are mandatory on touch clients. On-screen `− / % / +` controls are an optional shell presentation and, when enabled, exist exactly once outside the scaled content.
+> Exactly one zoomable work viewport. Two-finger focal-point pinch is the normal zoom interaction. Permanent zoom buttons are not used. Two-finger double tap resets zoom and scroll to 100%, 97–103% snaps to 100%, reset is briefly confirmed, and scale persists locally per panel/device.
