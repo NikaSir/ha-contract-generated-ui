@@ -71,6 +71,7 @@ jobs:
                 setProperty(name, value) { properties.set(name, value); },
               };
             }
+            toggleAttribute() {}
             attachShadow() {
               this.shadowRoot = {
                 innerHTML: "",
