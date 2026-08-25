@@ -40,6 +40,7 @@ def test_specialized_shell_contract_is_documented() -> None:
     shell_lower = shell_doc.lower()
     zoom_lower = zoom_doc.lower()
     ui_lower = ui_doc.lower()
+    lessons_lower = lessons_doc.lower()
 
     assert "Specialized Panel Shell Standard v1.3" in shell_doc
     assert "consume once" in shell_lower
@@ -75,5 +76,8 @@ def test_specialized_shell_contract_is_documented() -> None:
     assert "local static assets" in delivery_doc.lower()
 
     assert "Stark SolarPower panel lessons" in lessons_doc
-    assert "nested zoom wrappers" in lessons_doc
-    assert "gesture-only" in lessons_doc
+    assert "nested zoom" in lessons_lower
+    assert "gesture-only" in lessons_lower
+    assert "hass-toggle-menu" in lessons_doc
+    assert "97–103%" in lessons_doc
+    assert "Масштаб 100%" in lessons_doc
