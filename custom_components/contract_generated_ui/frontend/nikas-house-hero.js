@@ -306,12 +306,20 @@ class NikasHouseHero extends HTMLElement {
         .utility-copy { min-width:0; display:flex; flex-direction:column; } .utility-copy small { font-size:11px; font-weight:700; opacity:.9; } .utility-copy strong { margin-top:5px; font-size:15px; font-weight:800; } .utility-copy em { margin-top:5px; font-size:11px; font-style:normal; opacity:.76; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         [data-route]:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
         @media (max-width:600px) {
-          ha-card { border-radius:22px; } .hero { height:760px; min-height:680px; max-height:none; }
-          .top-grid { gap:5px; left:8px; right:8px; top:8px; } .status-card { height:68px; padding:7px 5px; gap:4px; border-radius:13px; } .status-card ha-icon { width:20px; flex-basis:20px; } .status-copy small { font-size:9px; } .status-copy strong { font-size:12px; } .status-copy em { display:none; }
-          .float-card { top:88px; padding:9px 10px; } .float-main { font-size:21px; } .float-sub { font-size:10px; } .camera-pill { top:164px; font-size:10px; }
-          .window-callout { left:5%; top:31%; } .gate-callout { left:3%; top:53%; } .door-callout { right:3%; top:48%; } .callout { min-width:92px; padding:7px 8px; } .callout b { font-size:11px; } .callout span { font-size:10px; }
-          .utilities { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; left:8px; right:8px; bottom:9px; } .utility-card { min-height:72px; padding:9px 8px; grid-template-columns:24px 1fr; } .utility-copy small { font-size:10px; } .utility-copy strong { font-size:13px; } .utility-copy em { font-size:10px; }
-          .window-zone { left:22%; top:38.5%; width:18%; height:14.5%; } .gate-zone { left:17%; top:56.5%; width:27%; height:15%; } .door-zone { right:20%; top:57%; width:9%; height:15%; }
+          ha-card { border-radius:22px; }
+          .hero { height:clamp(620px,calc(100svh - 184px),680px); min-height:0; max-height:none; background-size:125% auto; background-position:center 48%; background-color:#071622; }
+          .top-grid { gap:5px; left:8px; right:8px; top:8px; }
+          .status-card { height:64px; padding:5px 3px; gap:2px; border-radius:13px; flex-direction:column; justify-content:center; text-align:center; }
+          .status-card ha-icon { width:19px; flex:0 0 19px; }
+          .status-copy { width:100%; align-items:center; }
+          .status-copy small { font-size:8px; }
+          .status-copy strong { margin-top:2px; font-size:12px; }
+          .status-copy em { display:none; }
+          .float-card { top:80px; padding:9px 10px; } .float-main { font-size:21px; } .float-sub { font-size:10px; } .camera-pill { top:150px; font-size:10px; }
+          .window-callout { left:5%; top:34%; } .gate-callout { left:3%; top:51%; } .door-callout { right:3%; top:49%; } .callout { min-width:92px; padding:7px 8px; } .callout b { font-size:11px; } .callout span { font-size:10px; }
+          .utilities { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; left:8px; right:8px; bottom:8px; }
+          .utility-card { min-height:64px; padding:8px; grid-template-columns:24px 1fr; } .utility-copy small { font-size:10px; } .utility-copy strong { font-size:13px; } .utility-copy em { font-size:10px; }
+          .window-zone { left:16%; top:45.5%; width:18%; height:8.2%; } .gate-zone { left:10%; top:54%; width:29%; height:12%; } .door-zone { right:13.5%; top:55.5%; width:11.5%; height:10.8%; }
         }
       </style>
       <ha-card>
