@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.34.0"
+    assert manifest["version"] == "0.34.1"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -47,6 +47,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
+    assert 'import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b007"' in bundle
     assert "position:fixed" in bundle
     assert 'const ELEMENT_NAME = "nikas-house-hero"' in hero_bundle
     assert "/contract_generated_ui/frontend/assets/house-hero-photo-day-v3.webp?build=0340b001" in hero_bundle
@@ -92,13 +93,13 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b004"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b005"' in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b001"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
     assert 'SPECIALIZED_SHELL_BUILD = "b001"' in const_source
     assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
-    assert 'HOUSE_HERO_BUILD = "b006"' in const_source
+    assert 'HOUSE_HERO_BUILD = "b007"' in const_source
     assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-photo-day-v3.webp"' in const_source
     assert 'HOUSE_HERO_ASSET_BUILD = "0340b001"' in const_source
