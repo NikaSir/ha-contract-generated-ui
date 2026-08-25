@@ -1,21 +1,29 @@
 # Integration dashboard header standard — superseded
 
 **Status:** Superseded  
-**Superseded by:** `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` v1.2
+**Superseded by:** `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` v1.3 and `docs/SPECIALIZED_PANEL_SHELL_STANDARD.md` v1.2
 
 The former header-only standard is no longer normative by itself.
 
-The current required integration-owned dashboard UI standard now covers the complete mobile application shell:
+The current specialized-panel standards cover the complete application shell and incorporate field lessons from Stark SolarPower:
 
-- explicit Back control in the top Header;
-- application title geometrically centered on the iPhone viewport;
-- no decorative integration/device icon beside the Header title;
-- optional short centered subtitle for model/context/version;
-- optional global Refresh/overflow action on the right;
-- full-width, edge-attached, fixed bottom Tab Bar for 3–5 primary in-app sections;
-- no floating/pill primary navigation;
-- iOS safe-area handling and content bottom clearance;
-- explicit stable parent routes rather than browser-history Back behavior;
-- preserved `unknown` / `unavailable` reliability semantics and domain-action safety.
+- the permanent **Home Assistant main-system menu** control is always on the left; it is not panel Back and not an integration-specific drawer;
+- the application title is geometrically centered on the mobile viewport;
+- no decorative integration/device icon shifts the Header title;
+- optional short subtitle carries model/context/version;
+- at most one global action such as Refresh occupies the right rail and should expose async feedback;
+- top safe area is consumed **exactly once**, avoiding both Dynamic-Island overlap and duplicate blank bands;
+- a persistent peer-device selector, when present, sits below Header and stays at native scale;
+- exactly one zoomable work viewport contains domain content;
+- focal-point pinch is mandatory on touch clients; on-screen zoom controls are optional shell presentation;
+- primary navigation is a full-width fixed Bottom Tab Bar with bottom-safe-area clearance;
+- `unknown`, `unavailable`, stale/source-loss states are never treated as healthy;
+- integration-owned frontend delivery uses a stable versioned production entry and local packaged assets.
 
-See `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` for the normative requirements, application-specific corrections and acceptance criteria.
+See:
+
+- `docs/SPECIALIZED_PANEL_SHELL_STANDARD.md`;
+- `docs/SPECIALIZED_PANEL_ZOOM_STANDARD.md`;
+- `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md`;
+- `docs/SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md`;
+- `docs/STARK_SOLARPOWER_PANEL_LESSONS.md`.

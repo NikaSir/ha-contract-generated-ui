@@ -33,11 +33,37 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
 def test_specialized_shell_contract_is_documented() -> None:
     shell_doc = (DOCS / "SPECIALIZED_PANEL_SHELL_STANDARD.md").read_text(encoding="utf-8")
     zoom_doc = (DOCS / "SPECIALIZED_PANEL_ZOOM_STANDARD.md").read_text(encoding="utf-8")
+    ui_doc = (DOCS / "INTEGRATION_DASHBOARD_UI_STANDARD.md").read_text(encoding="utf-8")
+    delivery_doc = (DOCS / "SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md").read_text(encoding="utf-8")
+    lessons_doc = (DOCS / "STARK_SOLARPOWER_PANEL_LESSONS.md").read_text(encoding="utf-8")
 
-    assert "Dynamic Island" in shell_doc
+    assert "Specialized Panel Shell Standard v1.2" in shell_doc
+    assert "consume once" in shell_doc.lower()
+    assert "exactly one" in shell_doc.lower()
+    assert "Home Assistant main-system menu" in shell_doc
+    assert "Device Selector" in shell_doc
     assert "Bottom Tab Bar" in shell_doc
+    assert "Dynamic Island" in shell_doc
     assert "safe-area-inset-top" in shell_doc
     assert "safe-area-inset-bottom" in shell_doc
-    assert "Only the work viewport is scaled" in shell_doc
-    assert "pinch-to-zoom" in zoom_doc
-    assert "per-panel/per-client" in zoom_doc
+
+    assert "Specialized Panel Zoom Standard v1.2" in zoom_doc
+    assert "two-finger pinch-to-zoom" in zoom_doc
+    assert "controls are optional" in zoom_doc.lower()
+    assert "exactly one active zoom viewport" in zoom_doc
+    assert "panel-id + peer-device-id + client" in zoom_doc
+
+    assert "Integration-owned dashboard UI standard v1.3" in ui_doc
+    assert "normal factual measurements use neutral typography" in ui_doc.lower()
+    assert "backend owns validated thresholds" in ui_doc.lower()
+    assert "Stark SolarPower" in ui_doc
+
+    assert "Specialized Panel Frontend Delivery Standard v1.0" in delivery_doc
+    assert "one stable production entry" in delivery_doc.lower()
+    assert "deterministic" in delivery_doc.lower()
+    assert "cache busting" in delivery_doc.lower()
+    assert "local static assets" in delivery_doc.lower()
+
+    assert "Stark SolarPower panel lessons" in lessons_doc
+    assert "nested zoom wrappers" in lessons_doc
+    assert "gesture-only" in lessons_doc
