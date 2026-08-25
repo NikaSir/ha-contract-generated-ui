@@ -1,245 +1,141 @@
 # Stark SolarPower panel lessons for the NikaS UI standards
 
-**Status:** architecture evidence / normative input  
-**Reference implementation:** `NikaSir/ha-stark-solarpower`  
-**Observed panel line:** UI `0.3.x` → `0.5.6`  
-**Primary field target:** Home Assistant Companion App on iPhone Pro Max, portrait
-
-This document records lessons proven by Stark SolarPower and promoted into shared specialized-panel standards. Stark remains a reference implementation, not a runtime dependency of other panels.
+**Field line:** Stark SolarPower mobile UI through 1.8.10  
+**Client:** Home Assistant Companion App / iOS WebView  
+**Purpose:** evidence record for Shell v1.4, Zoom v1.4, Integration UI v1.5 and Frontend Delivery v1.2
 
 ## 1. Integration-owned application boundary works
 
-Stark owns one stable custom panel route, Home Assistant entity/device discovery, domain presentation, frontend assets and one production frontend artifact. JavaScript consumes Home Assistant state/registries and does not call the vendor API directly.
+Domain entities/actions stay in the owning integration while a shared shell contract governs safe areas, Header, peer context, canvas behavior and Bottom Tab navigation.
 
-Adopted rule: integration owns domain UI/package; shared standards own shell/release invariants.
+## 2. Safe area has one owner
 
-## 2. Safe area must have exactly one owner
+The field pass exposed doubled top padding. Effective notch/Dynamic Island and Home Indicator insets must be consumed exactly once; cards/views do not add independent copies.
 
-Field review exposed duplicate top-safe-area padding. Correct behavior consumes the effective inset exactly once.
+## 3. The permanent left Header rail is native HA menu
 
-Adopted rule:
-
-- Dynamic Island/notch and Home Indicator insets are consumed once;
-- panel registration and CSS must agree on ownership;
-- no view/card adds a second independent safe-area offset;
-- blank duplicate top bands are shell defects.
-
-## 3. The left Header rail is native Home Assistant menu
-
-Stark UI 0.5.6 verified the final project rule: the permanent left Header control dispatches the Home Assistant menu event:
+The accepted control dispatches:
 
 ```js
-new CustomEvent("hass-toggle-menu", {
-  bubbles: true,
-  composed: true,
-})
+new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true })
 ```
 
-Adopted rule:
+Back, parent-route arrows, integration drawers and device commands do not occupy this rail. Parent navigation belongs inside work content.
 
-- permanent left rail is HA main-system menu only;
-- no browser Back, hard-coded parent Back, integration drawer or device action in that rail;
-- parent navigation, if needed, appears inside work content;
-- title stays geometrically centered between native-scale rails.
+## 4. Peer-device context is a shell layer
 
-## 4. Persistent peer-device context is a first-class shell layer
+`UPS Интернет` / `UPS Котёл` remain in fixed order directly below Header. Selection persists between tabs; detailed content belongs only to the selected UPS; selector remains native scale.
 
-Stark uses a persistent fixed-order selector:
+## 5. Repeated wrapping is a lifecycle defect
 
-`UPS Интернет | UPS Котёл`
+Early rerenders produced nested zoom wrappers, duplicate controls/handlers, blank areas and progressive shrink. Shell reconciliation must find or build exactly one known canvas topology.
 
-Proven rules:
+## 6. CSS zoom plus native overflow failed on iOS
 
-- selection never reorders peers;
-- selected UPS survives primary-tab changes;
-- non-selected peer may expose compact health;
-- primary content belongs only to selected UPS;
-- second full UPS block is not duplicated;
-- selector stays native scale and outside zoom viewport;
-- another discovered peer can reuse the same template.
+The original scalable work area combined CSS `zoom` with native `overflow` scrolling. On iOS WebView it was unstable:
 
-## 5. Exactly one zoom viewport
+- layout could be recomputed instead of remaining one composition;
+- after release, enlarged content returned to an edge or the upper-left corner;
+- ordinary vertical movement at 100% also snapped back;
+- `scrollLeft` / `scrollTop` did not reflect temporary rubber-band displacement;
+- saving/restoring those offsets therefore could not preserve the visible position.
 
-UI 0.5.4 exposed a lifecycle defect: repeated post-render wrapping could create nested zoom wrappers, duplicate controls, blank space and progressive shrinkage. UI 0.5.5 fixed this by normalizing old wrappers and rebuilding exactly one viewport.
+Adopted rule: CSS `zoom` and browser scroll coordinates are not the canvas state model.
 
-Adopted rule:
+## 7. One combined transform is stable
 
-- exactly one work viewport per panel instance;
-- shell reconciliation is idempotent;
-- repeated HA state updates must not add wrappers/handlers/feedback elements;
-- steady-state architecture keeps shell topology stable.
-
-## 6. Permanent zoom buttons are not part of the standard
-
-UI 0.5.5 removed `− / % / +` after the field defect and recovered useful mobile space.
-
-UI 0.5.6 confirmed the replacement interaction model:
-
-- two-finger focal-point pinch;
-- pan/scroll when enlarged;
-- no permanent screen zoom controls;
-- local per-UPS persistence.
-
-Adopted rule: gesture-only is the standard mobile shell, not merely an allowed variant.
-
-## 7. Two-finger double tap is the reset gesture
-
-Stark UI 0.5.6 implements two quick two-finger taps as the canonical reset.
-
-Reset result:
+Stark 1.8.10 uses one state and one transform:
 
 ```text
-scale = 100%
-scrollLeft = 0
-scrollTop = 0
+state = { scale, x, y }
+transform = translate3d(x, y, 0) scale(scale)
 ```
 
-The recognizer distinguishes tap from pinch using duration/movement tolerance so normal zoom does not trigger reset.
+Translation and scale belong to the same transform target. One finger updates `x/y`; two fingers update scale around their midpoint. Final transform remains after release.
 
-Adopted rule: two-finger double tap resets scale and viewport origin without executing domain actions.
+## 8. Transform-owned pan is required even at 100%
 
-## 8. Near-100% pinch snaps to exact 100%
+Using a separate native vertical scroller at 100% recreated the same iOS snap-back. The accepted engine uses the canvas transform for vertical movement at all scales.
 
-UI 0.5.6 snaps completed pinch values in the range:
+## 9. Bounds come from real scaled geometry
+
+Coordinates are clamped from viewport size, unscaled content size and effective scale. This prevents unreachable content, unbounded blank space and browser-dependent edge behavior.
+
+## 10. Rerenders restore before paint
+
+Telemetry updates may replace content DOM. The current panel/UPS `{scale,x,y}` is remembered, attached to new DOM before reveal and then clamped against new geometry. No origin flash or position jump is acceptable.
+
+## 11. Gesture ownership must protect more-info
+
+During early pinch/pan, long-press handlers could open Home Assistant cards and graphs.
+
+Accepted guard:
+
+- second finger immediately blocks pending detail activation;
+- pan threshold cancels pending hold using `pointercancel` semantics;
+- post-gesture synthetic clicks are briefly suppressed;
+- stationary deliberate long press still opens native `more-info`.
+
+## 12. Gesture-only reset remains the standard
+
+Permanent `− / % / +` controls consumed space and participated in rerender defects. They remain prohibited.
+
+- two-finger double tap resets `{scale:1,x:0,y:0}`;
+- 97–103% pinch completion uses the same exact reset;
+- reset/snap briefly shows `Масштаб 100%`.
+
+## 13. Canvas preference includes peer context
+
+Stark persists canvas state per panel/client and selected UPS. Switching peer restores that peer's state; Bottom Tab changes preserve it.
+
+## 14. Responsive layout precedes transform
+
+Order is:
 
 ```text
-97% .. 103%
+actual viewport → responsive composition → selected peer content → restored transform
 ```
 
-to exactly 100%.
+User scale never selects breakpoints.
 
-This removes annoying near-default states such as 99%/101% and gives the user a stable canonical layout.
+## 15. Visual assets remain separate from data
 
-Adopted rule: 97–103% is the standard snap band.
+Local transparent device art and context backgrounds work well when live SVG paths, labels, measurements and semantic overlays remain runtime layers. No live state is baked into decorative pixels.
 
-## 9. Reset needs lightweight confirmation
+## 16. Normal data is visually neutral
 
-After explicit reset or snap, Stark briefly shows:
+Green/amber/red belong to confirmed semantics, not ordinary numeric decoration. `unknown`, `unavailable`, stale and untrusted data remain explicit.
 
-```text
-Масштаб 100%
-```
+## 17. Backend owns factual thresholds
 
-The feedback is transient, non-interactive, does not reserve permanent layout space and uses polite accessibility status semantics.
+Frontend consumes validated semantic entities such as `data_stale` rather than silently duplicating backend thresholds or inventing unsupported runtime/watts/alarm values.
 
-Adopted rule: gesture reset must be discoverable through short confirmation without restoring a permanent toolbar.
+## 18. Native HA surfaces reduce duplication
 
-## 10. Zoom preference includes peer-device context
+Custom UI provides domain overview/context; native `more-info` and history remain preferable for generic factual detail when useful.
 
-Stark stores scale separately per selected UPS/client.
+## 19. Global actions need ownership and feedback
 
-Adopted scope:
+Refresh uses the integration's stable Home Assistant entity/API, suppresses duplicate activation while busy and reports progress/result where practical.
 
-- single-device: panel + client;
-- multi-peer-device: panel + peer-device + client;
-- switching peer restores peer-specific scale;
-- Bottom Tab changes preserve scale for same peer;
-- zoom preference is local UI data, never HA entity state.
+## 20. Unrelated HA churn should not rebuild shell topology
 
-## 11. Responsive layout is resolved before zoom
+Performance optimization and shell idempotency are tested together. Any render path preserves peer, tab, one canvas, `{scale,x,y}`, gesture guards and detail bindings.
 
-Adopted order:
+## 21. Production delivery must be deterministic
 
-`actual viewport → responsive composition → selected peer/domain content → user zoom`.
+One stable production entry, version cache identity, local asset validation, manifest/registration parity and no runtime historical-module chain are release requirements.
 
-Zoom never chooses mobile/desktop breakpoints.
+## 22. Real iPhone acceptance is part of design
 
-## 12. Local visual assets are effective when data remains separate
+Desktop render did not expose rubber-band scroll state, snap-back, notch padding, accidental `more-info` or rerender timing. Target-device acceptance must include movement at 100%, pinch release, clamped bounds, pre-paint restore and interaction guards.
 
-Stark uses transparent UPS PNG plus optimized local WebP network/boiler context plates, delivered through integration static routes with version cache busting.
+## 23. Standards promoted from this field result
 
-The background contains no live values. UPS artwork, SVG power paths, labels, status nodes and measurements remain separate runtime layers.
+- `SPECIALIZED_PANEL_SHELL_STANDARD.md` v1.4;
+- `SPECIALIZED_PANEL_ZOOM_STANDARD.md` v1.4;
+- `INTEGRATION_DASHBOARD_UI_STANDARD.md` v1.5;
+- `SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md` v1.2.
 
-Adopted rule:
+Stark SolarPower 1.8.10 is the field reference for the transform-owned canvas revision.
 
-- no critical CDN dependency;
-- no Base64 image payload when normal local file is suitable;
-- live state is not baked into pixels;
-- contextual art may change with selected peer;
-- assets ship/validate with integration release.
-
-## 13. Normal measurements are visually neutral
-
-Stark field review reserved green/amber/red for semantic state instead of coloring ordinary numeric values.
-
-Adopted rule: factual telemetry is neutral; semantic colors express confirmed health/warning/fault/unreliable meaning.
-
-## 14. Backend owns trust thresholds and factual meaning
-
-Stark frontend consumes backend `data_stale` rather than duplicating the stale threshold.
-
-Adopted rule:
-
-- frontend consumes validated semantic entities when available;
-- backend threshold logic is not silently reimplemented;
-- unsupported runtime/watts/alarms/reserve estimates are not invented;
-- missing data is shown as missing data.
-
-## 15. Native Home Assistant surfaces reduce duplication
-
-Long press/history links open native Home Assistant more-info/history where that provides required factual detail.
-
-Adopted rule: custom frontend focuses on domain overview/context instead of rebuilding generic HA detail/history without material benefit.
-
-## 16. Global actions need feedback and domain ownership
-
-Stark Refresh uses the integration's existing `refresh_now` entity and later added busy/success/error feedback with duplicate-tap suppression.
-
-Adopted rule: shell-level actions use stable HA integration APIs/entities, not direct vendor calls, and expose safe async feedback.
-
-## 17. Unrelated Home Assistant updates should not rebuild shell topology
-
-Stark uses a relevant-state fingerprint to skip unnecessary full Shadow DOM rebuilds.
-
-Adopted rule:
-
-- unrelated entity churn should not rebuild complete panel when practical;
-- any optimization preserves exactly one viewport and gesture/reset handlers;
-- performance optimization and shell idempotency are tested together.
-
-## 18. Production frontend needs deterministic delivery
-
-Stark replaced runtime historical-module chaining with one self-contained production bundle. CI rebuilds deterministically, syntax-checks, rejects runtime imports and verifies registration/manifest parity.
-
-Adopted rule:
-
-- one stable production entry;
-- historical modules are build-time history;
-- version cache busting;
-- local asset existence guard;
-- manifest/registration parity;
-- lifecycle smoke/regression checks where practical.
-
-## 19. Field acceptance is part of design
-
-Stark needed real iPhone passes to correct typography, selector height, hero proportions, double safe-area, first-viewport density, nested zoom lifecycle, menu semantics and reset UX.
-
-A mobile-first panel is not UI-complete from desktop render alone.
-
-Field acceptance includes:
-
-- safe areas;
-- native HA menu event;
-- Header geometry;
-- selector fit;
-- first useful viewport;
-- Bottom Tab clearance;
-- focal-point pinch/pan;
-- two-finger double-tap reset;
-- 97–103% snap;
-- `Масштаб 100%` confirmation;
-- repeated HA update lifecycle;
-- unreliable states;
-- peer switching;
-- more-info/global-action behavior.
-
-## 20. Standards changed from these lessons
-
-Stark UI 0.5.6 is promoted into:
-
-- `SPECIALIZED_PANEL_SHELL_STANDARD.md` v1.3;
-- `SPECIALIZED_PANEL_ZOOM_STANDARD.md` v1.3;
-- `INTEGRATION_DASHBOARD_UI_STANDARD.md` v1.4;
-- `SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md` v1.1.
-
-The standards are canonical. Stark is the proven reference implementation for this revision.
