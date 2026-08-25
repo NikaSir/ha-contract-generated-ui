@@ -50,8 +50,103 @@ jobs:
                   print(f'YAML OK {path}')
           PY
 
-      - name: Validate integration panel reference JavaScript
-        run: node --check templates/integration-panel-v1/panel-shell-reference.js
+      - name: Validate frontend JavaScript syntax
+        run: |
+          node --check templates/integration-panel-v1/panel-shell-reference.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-house-hero.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-ui.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-generated-subpanel.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-generated-zont.js
+
+      - name: Smoke-test House hero runtime
+        run: |
+          node - <<'JS'
+          global.HTMLElement = class {
+            attachShadow() {
+              this.shadowRoot = {
+                innerHTML: "",
+                querySelectorAll() { return []; },
+              };
+              return this.shadowRoot;
+            }
+          };
+          const registry = new Map();
+          global.customElements = {
+            define(name, ctor) { registry.set(name, ctor); },
+            get(name) { return registry.get(name); },
+          };
+          global.Event = class Event { constructor(type) { this.type = type; } };
+          global.window = {
+            customCards: [],
+            setInterval() { return 1; },
+            clearInterval() {},
+            history: { pushState() {} },
+            dispatchEvent() {},
+          };
+
+          require('./custom_components/contract_generated_ui/frontend/nikas-house-hero.js');
+          const Hero = customElements.get('nikas-house-hero');
+          if (!Hero) throw new Error('nikas-house-hero was not registered');
+          const card = new Hero();
+          card.setConfig({
+            title: 'Дом сейчас',
+            entities: {
+              safety: ['binary_sensor.safety'],
+              openings: ['binary_sensor.window'],
+              windows: ['binary_sensor.window'],
+              motion: ['binary_sensor.motion'],
+              lights: ['light.room'],
+              climate: ['climate.room'],
+              cameras: ['camera.front'],
+              weather: 'weather.home',
+              power: ['sensor.va', 'sensor.vb', 'sensor.vc'],
+              water: 'sensor.water',
+              internet: 'binary_sensor.internet',
+              heating: {
+                main: 'binary_sensor.main', reserve: 'binary_sensor.reserve',
+                radiators: 'binary_sensor.rad', floor: 'binary_sensor.floor',
+                circulation: 'binary_sensor.circ', main_temp: 'sensor.main_temp',
+                reserve_temp: 'sensor.reserve_temp'
+              },
+              access: { sectional: 'binary_sensor.gate', entrance: 'binary_sensor.door' },
+            },
+            routes: {
+              safety: '/safety', open: '/open', activity: '/activity', lights: '/lights',
+              climate: '/climate', cameras: '/cameras', weather: '/weather',
+              electricity: '/electricity', water: '/water', network: '/network', heating: '/heating'
+            }
+          });
+          card.hass = {
+            states: {
+              'binary_sensor.safety': { state: 'off', attributes: {} },
+              'binary_sensor.window': { state: 'off', attributes: {} },
+              'binary_sensor.motion': { state: 'off', attributes: {} },
+              'light.room': { state: 'off', attributes: {} },
+              'climate.room': { state: 'heat', attributes: { hvac_action: 'idle' } },
+              'camera.front': { state: 'idle', attributes: {} },
+              'weather.home': { state: 'sunny', attributes: { temperature: 20.5 } },
+              'sensor.va': { state: '220', attributes: {} },
+              'sensor.vb': { state: '221', attributes: {} },
+              'sensor.vc': { state: '222', attributes: {} },
+              'sensor.water': { state: '2.8', attributes: {} },
+              'binary_sensor.internet': { state: 'on', attributes: {} },
+              'binary_sensor.main': { state: 'off', attributes: {} },
+              'binary_sensor.reserve': { state: 'off', attributes: {} },
+              'binary_sensor.rad': { state: 'on', attributes: {} },
+              'binary_sensor.floor': { state: 'off', attributes: {} },
+              'binary_sensor.circ': { state: 'off', attributes: {} },
+              'sensor.main_temp': { state: '57', attributes: {} },
+              'sensor.reserve_temp': { state: '40', attributes: {} },
+              'binary_sensor.gate': { state: 'off', attributes: {} },
+              'binary_sensor.door': { state: 'off', attributes: {} },
+            }
+          };
+          if (!card.shadowRoot.innerHTML.includes('Электросеть')) {
+            throw new Error('House hero did not render expected markup');
+          }
+          console.log('House hero runtime smoke test OK');
+          JS
 
       - name: Enforce Integration Panel Template v1.0 invariants
         shell: bash

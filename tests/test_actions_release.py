@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.31.0"
+    assert manifest["version"] == "0.31.1"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -76,7 +76,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
-    assert 'HOUSE_HERO_BUILD = "b003"' in const_source
+    assert 'HOUSE_HERO_BUILD = "b004"' in const_source
+    assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-day-v1.svg"' in const_source
     assert 'HOUSE_HERO_ASSET_BUILD = "0310b001"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
@@ -86,7 +87,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
     assert "HOUSE_HERO_STATIC_PATH" in init_source
-    assert "HOUSE_HERO_ASSET_STATIC_PATH" in init_source
+    assert "HOUSE_HERO_ASSETS_STATIC_PATH" in init_source
+    assert 'StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False)' in init_source
     assert "add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)" in init_source
     assert "GENERATED_ZONT_STATIC_PATH" in init_source
     assert "GENERATED_ZONT_FILENAME" in init_source
