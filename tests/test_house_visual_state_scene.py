@@ -8,10 +8,10 @@ FRONTEND = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
 
 def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
-    asset = (FRONTEND / "assets" / "house-hero-day-v1.svg").read_text(encoding="utf-8")
+    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v1.webp"
+    asset = asset_path.read_bytes()
 
     assert 'const ELEMENT_NAME = "nikas-house-hero"' in bundle
-    assert "/contract_generated_ui/frontend/assets/house-hero-day-v1.svg" in bundle
     assert "base64" not in bundle.lower()
     assert "https://" not in bundle
     assert '"unknown"' in bundle
@@ -24,12 +24,11 @@ def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     assert "Отклонение" in bundle
     assert "Внимание" in bundle
 
-    # The decorative asset must not contain baked Home Assistant facts or UI text.
-    assert "<text" not in asset.lower()
-    assert "sensor." not in asset
-    assert "binary_sensor." not in asset
-    assert "229.7" not in asset
-    assert "50.0" not in asset
+    # The decorative asset is a local binary image, not Base64 or an external URL.
+    assert asset_path.suffix == ".webp"
+    assert len(asset) > 10_000
+    assert asset[:4] == b"RIFF"
+    assert b"WEBP" in asset[:16]
 
 
 def test_house_visual_scene_keeps_data_and_art_separate() -> None:
@@ -40,19 +39,19 @@ def test_house_visual_scene_keeps_data_and_art_separate() -> None:
     assert '"internet": entities["internet"]' in renderer
     assert '"access": {' in renderer
     assert "HOUSE_HERO_ASSET_URL" in renderer
-    assert "house-hero-day-v1.svg?build=0310b001" in renderer
+    assert "house-hero-photo-day-v1.webp?build=0320b001" in renderer
 
 
 def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
-    asset = (FRONTEND / "assets" / "house-hero-day-v1.svg").read_text(encoding="utf-8")
+    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v1.webp"
 
     # The first screen still ends above the fixed global tab bar.
     assert "height:clamp(620px,calc(100svh - 184px),680px)" in bundle
     assert "min-height:0" in bundle
 
-    # The new portrait asset is intentionally designed for mobile and can use cover.
-    assert 'viewBox="0 0 900 1180"' in asset
+    # The photoreal daytime art is local and mobile-oriented; the live card keeps cover positioning.
+    assert asset_path.exists()
     assert "background-size:cover" in bundle
     assert "background-position:center 51%" in bundle
 
@@ -65,7 +64,7 @@ def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     assert "flex-direction:column" in bundle
     assert "justify-content:center" in bundle
 
-    # Zones are recalibrated for the portrait day facade.
+    # Zones remain calibrated to the accepted portrait composition.
     assert ".window-zone{left:17%;top:46%;width:25%;height:12%}" in bundle
     assert ".gate-zone{left:10%;top:61%;width:34%;height:17%}" in bundle
     assert ".door-zone{right:14%;top:62%;width:14%;height:17%}" in bundle
