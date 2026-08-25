@@ -1,3 +1,5 @@
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b007";
+
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
 const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = true;

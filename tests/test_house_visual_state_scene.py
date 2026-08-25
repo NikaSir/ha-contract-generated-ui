@@ -49,8 +49,11 @@ def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     asset_path = FRONTEND / "assets" / "house-hero-photo-day-v3.webp"
 
     # The first screen still ends above the fixed global tab bar.
-    assert "height:max(620px,calc(100dvh - 184px))" in bundle
+    assert "height:var(--house-hero-available-height,calc(100dvh - 224px))" in bundle
     assert "min-height:0" in bundle
+    assert 'const GLOBAL_TABBAR_ID = "nikas-global-tabbar"' in bundle
+    assert "tabBar.getBoundingClientRect().top" in bundle
+    assert "bottom - top" in bundle
 
     # The photoreal daytime art is local and mobile-oriented; the live card keeps cover positioning.
     assert asset_path.exists()

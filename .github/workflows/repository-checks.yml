@@ -63,10 +63,21 @@ jobs:
         run: |
           node - <<'JS'
           global.HTMLElement = class {
+            constructor() {
+              const properties = new Map();
+              this.style = {
+                getPropertyValue(name) { return properties.get(name) || ""; },
+                setProperty(name, value) { properties.set(name, value); },
+              };
+            }
             attachShadow() {
               this.shadowRoot = {
                 innerHTML: "",
                 querySelectorAll() { return []; },
+                querySelector(selector) {
+                  if (selector !== ".hero") return null;
+                  return { getBoundingClientRect() { return { top: 112 }; } };
+                },
               };
               return this.shadowRoot;
             }
@@ -83,6 +94,12 @@ jobs:
             clearInterval() {},
             history: { pushState() {} },
             dispatchEvent() {},
+          };
+          global.document = {
+            getElementById(id) {
+              if (id !== 'nikas-global-tabbar') return null;
+              return { getBoundingClientRect() { return { top: 820 }; } };
+            },
           };
 
           require('./custom_components/contract_generated_ui/frontend/nikas-house-hero.js');
@@ -144,6 +161,10 @@ jobs:
           };
           if (!card.shadowRoot.innerHTML.includes('Электросеть')) {
             throw new Error('House hero did not render expected markup');
+          }
+          card._fitViewport();
+          if (card.style.getPropertyValue('--house-hero-available-height') !== '708px') {
+            throw new Error('House hero did not fit itself to the fixed global Tab Bar');
           }
           console.log('House hero runtime smoke test OK');
           JS

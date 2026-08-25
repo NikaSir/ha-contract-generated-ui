@@ -1,5 +1,6 @@
 const ELEMENT_NAME = "nikas-house-hero";
 const DEFAULT_ASSET = "/contract_generated_ui/frontend/assets/house-hero-photo-day-v3.webp?build=0340b001";
+const GLOBAL_TABBAR_ID = "nikas-global-tabbar";
 const BAD_STATES = new Set(["unknown", "unavailable", "none", "null", ""]);
 
 const WEATHER_LABELS = {
@@ -51,6 +52,8 @@ class NikasHouseHero extends HTMLElement {
     this._config = null;
     this._hass = null;
     this._timer = null;
+    this._fitFrame = null;
+    this._boundViewportFit = () => this._scheduleViewportFit();
   }
 
   setConfig(config) {
@@ -68,11 +71,48 @@ class NikasHouseHero extends HTMLElement {
 
   connectedCallback() {
     if (!this._timer) this._timer = window.setInterval(() => this._render(), 60_000);
+    window.addEventListener?.("resize", this._boundViewportFit, { passive: true });
+    window.visualViewport?.addEventListener?.("resize", this._boundViewportFit, { passive: true });
+    this._scheduleViewportFit();
   }
 
   disconnectedCallback() {
     if (this._timer) window.clearInterval(this._timer);
     this._timer = null;
+    window.removeEventListener?.("resize", this._boundViewportFit);
+    window.visualViewport?.removeEventListener?.("resize", this._boundViewportFit);
+    if (this._fitFrame !== null) {
+      (window.cancelAnimationFrame || window.clearTimeout)(this._fitFrame);
+      this._fitFrame = null;
+    }
+  }
+
+  _scheduleViewportFit() {
+    if (!this.isConnected || typeof document === "undefined") return;
+    if (this._fitFrame !== null) {
+      (window.cancelAnimationFrame || window.clearTimeout)(this._fitFrame);
+    }
+    const schedule = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+    this._fitFrame = schedule(() => {
+      this._fitFrame = null;
+      this._fitViewport();
+    });
+  }
+
+  _fitViewport() {
+    const hero = this.shadowRoot?.querySelector(".hero");
+    const tabBar = document.getElementById(GLOBAL_TABBAR_ID);
+    if (!hero || !tabBar || typeof hero.getBoundingClientRect !== "function" || typeof tabBar.getBoundingClientRect !== "function") {
+      return;
+    }
+    const top = hero.getBoundingClientRect().top;
+    const bottom = tabBar.getBoundingClientRect().top;
+    const available = Math.floor(bottom - top);
+    if (!Number.isFinite(available) || available <= 0) return;
+    const value = `${available}px`;
+    if (this.style.getPropertyValue("--house-hero-available-height") !== value) {
+      this.style.setProperty("--house-hero-available-height", value);
+    }
   }
 
   _entity(id) { return id && this._hass?.states?.[id] ? this._hass.states[id] : null; }
@@ -248,7 +288,7 @@ class NikasHouseHero extends HTMLElement {
       .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.utility-card{border-radius:19px;padding:12px 11px;min-height:88px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:start}.utility-card ha-icon{margin-top:2px}.utility-copy{min-width:0;display:flex;flex-direction:column}.utility-copy small{font-size:11px;font-weight:750;color:var(--ink)}.utility-copy strong{margin-top:5px;font-size:15px;font-weight:850}.utility-copy em{margin-top:5px;font-size:11px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       [data-route]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
       @media(max-width:600px){
-        ha-card{border-radius:22px}.hero{height:max(620px,calc(100dvh - 184px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
+        ha-card{border-radius:22px}.hero{height:var(--house-hero-available-height,calc(100dvh - 224px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
         .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:64px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:8px}.status-copy strong{margin-top:2px;font-size:12px}.status-copy em{display:none}
         .float-card{top:80px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:10px}.camera-pill{top:150px;font-size:10px}
         .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:11px}.callout span{font-size:10px}
@@ -279,6 +319,7 @@ class NikasHouseHero extends HTMLElement {
       </div>
     </div></ha-card>`;
     this._bindRoutes();
+    this._scheduleViewportFit();
   }
 }
 
