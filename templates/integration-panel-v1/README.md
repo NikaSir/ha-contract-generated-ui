@@ -1,133 +1,76 @@
-# NikaS Integration Panel Template v1.0 — reference implementation
+# NikaS Integration Panel Template v1.2
 
-This directory is the **canonical copy/adapt reference** for integration-owned specialized panels in Home Assistant NikaS.
+**Status:** Required development-time template  
+**Canonical standards:** Shell v1.4 · Zoom v1.4 · Integration UI v1.5 · Frontend Delivery v1.2  
+**Primary target:** iPhone Pro Max portrait
 
-It is **not** a shared runtime dependency. Every integration copies/adapts the source into its own repository and ships one autonomous production frontend bundle.
-
-Applies to Stark SolarPower, HO-SC-8W, S8 OMNI, Keenetic Hero 4G+, VLESS Gateway and future specialized panels.
-
-## Canonical shell
-
-Every panel keeps this order:
+## 1. Fixed hierarchy
 
 ```text
-Header
-Optional Device Context Selector
-Hero Status
-Current View Content
-Bottom Tab Bar
+AppHeader (native)
+  └── HA MenuButton | centered title | global action
+DeviceContextSelector (optional, native)
+CanvasViewport (one, fixed)
+  └── CanvasContent: translate3d(x,y,0) scale(s)
+BottomTabBar (native)
 ```
 
-Developers change domain content, tabs and optional device context. Header geometry, card rhythm, state tones, safe-area behavior, loading shell and Bottom Tab Bar mechanics are common infrastructure.
+## 2. Header
 
-## Header contract
+The left button is Home Assistant `☰` and dispatches `hass-toggle-menu`. It is never Back, browser history, integration menu or device action. Parent/drill-down navigation belongs inside CanvasContent.
 
-Mobile header grid:
+Title is viewport-centered; right rail contains at most one global action; Header consumes effective top safe area once and remains native scale.
 
-```text
-52 px | minmax(0,1fr) | 52 px
-```
+## 3. Device context
 
-Narrow mobile may use:
+Use only for peer physical devices. Keep fixed order, persistent selection, selected-peer-only detail and native scale outside CanvasViewport.
 
-```text
-48 px | minmax(0,1fr) | 48 px
-```
+## 4. Transform-owned canvas
 
-Rules:
+The reference implementation must provide exactly one CanvasViewport/CanvasContent pair.
 
-- left control is icon-only `mdi:arrow-left`;
-- no `Назад` text in Header;
-- Back uses explicit `navigate` to the declared parent route, never browser history;
-- center contains human title plus `<type/model> · UI vX.Y.Z`;
-- right side contains at most one global action, preferably Refresh;
-- left/right touch targets are >=44 × 44 px;
-- equal side rails keep the title geometrically centered.
+- `overflow: hidden` clips the viewport but is not a native scrolling engine;
+- canvas position never comes from `scrollLeft` / `scrollTop`;
+- transform is `translate3d(x,y,0) scale(s)`;
+- one finger pans, including vertical movement at 100%;
+- two fingers pinch around their midpoint;
+- bounds use actual scaled canvas geometry;
+- `{scale,x,y}` persists per panel/client and peer device;
+- rerender applies saved transform before revealing the new frame;
+- lifecycle is idempotent.
 
-## Bottom Tab Bar contract
+## 5. Gesture/detail arbitration
 
-- 3–5 primary tabs only;
-- full-width, edge-attached, safe-area aware;
-- outside the vertical scroll region;
-- never a floating pill;
-- dynamic equal-width columns from actual tab count;
-- active cell uses primary icon/text plus light primary surface;
-- short labels; `Диагн.` is allowed only when `Диагностика` does not physically fit.
+- second finger cancels pending detail activation;
+- pan threshold emits `pointercancel` semantics;
+- post-gesture click is temporarily suppressed;
+- stationary intentional long press still dispatches `hass-more-info`.
 
-## Mobile / desktop contract
+## 6. Reset
 
-Primary target: **iPhone Pro Max portrait**.
+No permanent zoom buttons. Two-finger double tap resets `{scale:1,x:0,y:0}`; 97–103% snaps to the same state; briefly show `Масштаб 100%`.
 
-- mobile primary content is one column;
-- no horizontal scrolling;
-- primary content uses 100% available width with system side padding;
-- card radius 20–24 px, target 22 px;
-- card padding 16–20 px, target 18 px in the reference;
-- vertical gap 12–16 px, target 14 px;
-- desktop is an adaptation of the same hierarchy, capped at 1280 px;
-- desktop is not a separate design.
+## 7. Shared content primitives
 
-## Shared primitives
+Use HeroStatus, StatusCard, MetricCard, StateRow, ActionCard, AlertCard and Diagram only when the diagram improves understanding. Normal facts are neutral; semantic colors express confirmed state; unreliable data remains explicit.
 
-`panel-shell-reference.js` includes reference implementations for:
+## 8. Bottom Tab Bar
 
-- `PanelShell`;
-- `AppHeader`;
-- optional Device Context Selector;
-- Hero Status;
-- Metric Card;
-- State Row;
-- Action Card;
-- Alert;
-- Diagram placeholder;
-- Loading skeleton;
-- dynamic 3–5 item Bottom Tab Bar;
-- long-press -> native Home Assistant more-info for entity-backed elements.
+Use 3–5 fixed full-width safe-area-aware destinations. It remains native scale. Canvas bounds/bottom reserve make final content reachable above it.
 
-## Adoption sequence
+## 9. Loading and rerender
 
-1. Copy `panel-shell-reference.js` into the integration frontend source tree.
-2. Rename the custom element and constants for the integration.
-3. Set title, subtitle, UI version and canonical `parentPath`.
-4. Define 3–5 primary tabs.
-5. Enable Device Selector only for multiple peer physical devices.
-6. Replace `_renderHeroStatus()` and `_renderViewContent()` with domain content.
-7. Preserve Header, safe-area geometry, common primitives and Bottom Tab Bar semantics.
-8. Bind factual entity-backed blocks to native HA more-info on hold where practical.
-9. Add only verified integration actions; never bypass the integration API from the frontend.
-10. Build one autonomous production JS bundle and register it through `module_url` with query-string UI-version cache busting.
-11. CI must reject runtime imports of previous frontend versions and validate JavaScript syntax.
-12. Validate iPhone Pro Max portrait, cold cache, full HA restart and Home Assistant Cloud/Nabu Casa before acceptance.
+Loading preserves the same Header/selector/canvas/Bottom Tab topology. Telemetry updates patch content where practical; replacement DOM is transformed before reveal.
 
-## Multi-device rule
+## 10. Production rule
 
-Use Device Context Selector only for peer physical devices owned by one panel, for example two UPS units.
+Copy/adapt the development-time reference into the integration and build one self-contained production entry. Never import the template or another repository at runtime. Validate manifest/registration/assets/cache identity and target iPhone behavior.
 
-```text
-Header
-Device Selector
-Hero / selected-device content
-Bottom Tab Bar
-```
+## 11. Developer variability
 
-Device order is fixed. Selection persists across views. The selected device never moves to the first slot.
+Developers choose title/subtitle, peer-device data, tabs, domain content/actions/diagrams and optional work-area parent navigation. They do not redesign Header/menu, safe areas, canvas engine, gesture guards, Bottom Tab geometry, state semantics or delivery rules.
 
-Ethernet/LTE, modes, zones or workflow steps are domain context, not automatically Device Selector items.
+## 12. Acceptance
 
-## Production frontend rule
+The template is accepted only when it contains no arrow-Back Header, no CSS zoom/native overflow pan, exactly one transform target, persistent release position, pre-paint restoration, reset/snap feedback, interaction guards and native long-press detail behavior.
 
-```text
-Specialized Panel = self-contained production frontend bundle
-```
-
-Do not create runtime chains such as `v033 -> v032 -> v031 -> base`. Historical versions belong in Git, not in the browser loading path.
-
-## Non-goals
-
-The reference does not provide:
-
-- direct device API calls;
-- raw Tuya/RCI/SNMP writes;
-- fake Home Assistant entities;
-- shared CDN/runtime module dependencies;
-- domain-specific business logic.
