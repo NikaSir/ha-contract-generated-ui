@@ -50,8 +50,14 @@ jobs:
                   print(f'YAML OK {path}')
           PY
 
-      - name: Validate integration panel reference JavaScript
-        run: node --check templates/integration-panel-v1/panel-shell-reference.js
+      - name: Validate frontend JavaScript syntax
+        run: |
+          node --check templates/integration-panel-v1/panel-shell-reference.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-house-hero.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-ui.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-generated-subpanel.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-generated-zont.js
 
       - name: Enforce Integration Panel Template v1.0 invariants
         shell: bash
