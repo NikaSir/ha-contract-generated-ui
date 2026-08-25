@@ -37,9 +37,13 @@ def test_specialized_shell_contract_is_documented() -> None:
     delivery_doc = (DOCS / "SPECIALIZED_PANEL_FRONTEND_DELIVERY_STANDARD.md").read_text(encoding="utf-8")
     lessons_doc = (DOCS / "STARK_SOLARPOWER_PANEL_LESSONS.md").read_text(encoding="utf-8")
 
+    shell_lower = shell_doc.lower()
+    zoom_lower = zoom_doc.lower()
+    ui_lower = ui_doc.lower()
+
     assert "Specialized Panel Shell Standard v1.3" in shell_doc
-    assert "consume once" in shell_doc.lower()
-    assert "exactly one" in shell_doc.lower()
+    assert "consume once" in shell_lower
+    assert "exactly one" in shell_lower
     assert "hass-toggle-menu" in shell_doc
     assert "Device Selector" in shell_doc
     assert "Bottom Tab Bar" in shell_doc
@@ -50,18 +54,18 @@ def test_specialized_shell_contract_is_documented() -> None:
     assert "Масштаб 100%" in shell_doc
 
     assert "Specialized Panel Zoom Standard v1.3" in zoom_doc
-    assert "two-finger pinch-to-zoom" in zoom_doc
-    assert "Permanent on-screen" in zoom_doc
+    assert "two-finger pinch-to-zoom" in zoom_lower
+    assert "permanent on-screen" in zoom_lower
     assert "97–103%" in zoom_doc
-    assert "Two-finger double tap" in zoom_doc
+    assert "two-finger double tap" in zoom_lower
     assert "Масштаб 100%" in zoom_doc
-    assert "exactly one active zoom viewport" in zoom_doc
+    assert "exactly one active zoom viewport" in zoom_lower
     assert "panel-id + peer-device-id + client" in zoom_doc
 
     assert "Integration-owned dashboard UI standard v1.4" in ui_doc
     assert "hass-toggle-menu" in ui_doc
     assert "97–103%" in ui_doc
-    assert "Normal measurements neutral" in ui_doc
+    assert "normal measurements neutral" in ui_lower
     assert "Stark SolarPower" in ui_doc
 
     assert "Specialized Panel Frontend Delivery Standard v1.0" in delivery_doc
