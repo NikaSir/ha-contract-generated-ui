@@ -165,6 +165,18 @@ def _hero_card(entities: Mapping[str, str], manifest: Mapping[str, Any]) -> dict
     }
 
 
+def house_overview_config(
+    trace: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build the data-only config consumed by the specialized House panel."""
+    config = _hero_card(_trace_entities(trace), manifest)
+    config.pop("type", None)
+    config.pop("grid_options", None)
+    config["standalone"] = True
+    return config
+
+
 def _replace_house_now_with_hero(
     view: dict[str, Any],
     entities: Mapping[str, str],
@@ -206,5 +218,6 @@ __all__ = [
     "HOUSE_RENDERER",
     "MAX_COLUMNS",
     "_layout_engine_sha256",
+    "house_overview_config",
     "render_house_dashboard",
 ]

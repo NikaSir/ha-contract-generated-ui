@@ -83,6 +83,8 @@ Starting with `0.3.0`, generation also exports:
 
 This is a reviewable snippet using Home Assistant's supported `lovelace: dashboards:` YAML configuration. It must be merged with existing `configuration.yaml`; it is never applied automatically.
 
+Integration-owned specialized panels are intentionally omitted from that snippet. Starting with `0.35.0`, `Дом · v11.0` is registered automatically at `/dashboard-house-v11/home`; it does not require a `lovelace.dashboards` entry.
+
 See `docs/YAML_DASHBOARD_REGISTRATION.md`.
 
 ## Integration-owned specialized panels

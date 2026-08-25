@@ -34,11 +34,11 @@ def test_house_contract_is_public_semantic_only() -> None:
     assert "entity_id:" not in contract_path.read_text(encoding="utf-8")
 
 
-def test_house_v11_preview_is_staged_and_does_not_replace_live_house() -> None:
-    staged = ROOT / "staged" / "main_panels" / "house" / "panel-manifest.yaml"
-    manifest = _load(staged)
+def test_house_v11_overview_is_an_integration_owned_specialized_panel() -> None:
+    manifest = _load(ROOT / "manifests" / "house_v11_preview.yaml")
     assert manifest["metadata"]["id"] == "house_v11_preview"
     assert manifest["spec"]["dashboard_path"] == "/dashboard-house-v11"
+    assert manifest["spec"]["specialized_panel"] == {"template": "house_overview_v1"}
     assert manifest["spec"]["app_shell"]["active"] == "home"
     assert "subpanel" not in manifest["spec"]
     assert manifest["spec"]["views"][0]["renderer"] == "house_home_v1"
@@ -47,9 +47,7 @@ def test_house_v11_preview_is_staged_and_does_not_replace_live_house() -> None:
 
 def test_house_preview_bindings_cover_contract_exactly() -> None:
     contract = _load(ROOT / "contracts" / "house_home.yaml")
-    manifest = _load(
-        ROOT / "staged" / "main_panels" / "house" / "panel-manifest.yaml"
-    )
+    manifest = _load(ROOT / "manifests" / "house_v11_preview.yaml")
     roles = set(contract["spec"]["roles"])
     bindings = manifest["spec"]["views"][0]["modules"][0]["bindings"]
     assert set(bindings) == roles
@@ -57,9 +55,7 @@ def test_house_preview_bindings_cover_contract_exactly() -> None:
 
 
 def test_house_preview_keeps_protected_main_panel_routes() -> None:
-    manifest = _load(
-        ROOT / "staged" / "main_panels" / "house" / "panel-manifest.yaml"
-    )
+    manifest = _load(ROOT / "manifests" / "house_v11_preview.yaml")
     navigation = manifest["spec"]["navigation"]
     assert navigation["heating"] == "/dashboard-zont"
     assert navigation["cars"] == "/dashboard-starline"

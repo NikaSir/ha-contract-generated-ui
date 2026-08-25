@@ -3,10 +3,12 @@ kind: PanelManifest
 metadata:
   id: house_v11_preview
   title: Дом
-  version: 0.1.0
-  description: Staged v11 main House panel. Safe preview route; current /dashboard-house remains untouched.
+  version: 0.2.0
+  description: Integration-owned v11 House overview specialized panel on the accepted preview route.
 spec:
   dashboard_path: /dashboard-house-v11
+  specialized_panel:
+    template: house_overview_v1
   app_shell:
     active: home
     routes:

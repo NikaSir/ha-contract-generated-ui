@@ -80,10 +80,10 @@ def write_lovelace_registration_snippet(
         if not isinstance(metadata, dict) or not isinstance(spec, dict):
             raise RuntimeRegistrationError(f"manifest metadata/spec missing in {manifest_path}")
 
-        # Application subpanels are registered dynamically through the shared
-        # Contract Generated UI custom-panel host. They must never require a
+        # Application subpanels and specialized panels are registered
+        # dynamically by Contract Generated UI. They must never require a
         # manual `lovelace.dashboards` entry in configuration.yaml.
-        if spec.get("subpanel") is not None:
+        if spec.get("subpanel") is not None or spec.get("specialized_panel") is not None:
             continue
 
         manifest_id = metadata.get("id")

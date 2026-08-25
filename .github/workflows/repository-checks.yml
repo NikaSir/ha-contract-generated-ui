@@ -54,6 +54,7 @@ jobs:
         run: |
           node --check templates/integration-panel-v1/panel-shell-reference.js
           node --check custom_components/contract_generated_ui/frontend/nikas-house-hero.js
+          node --check custom_components/contract_generated_ui/frontend/nikas-house-overview.js
           node --check custom_components/contract_generated_ui/frontend/nikas-ui.js
           node --check custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js
           node --check custom_components/contract_generated_ui/frontend/nikas-generated-subpanel.js
@@ -167,6 +168,47 @@ jobs:
             throw new Error('House hero did not fit itself to the fixed global Tab Bar');
           }
           console.log('House hero runtime smoke test OK');
+          JS
+
+      - name: Smoke-test specialized House panel registration
+        run: |
+          node - <<'JS'
+          global.HTMLElement = class {
+            constructor() {}
+            attachShadow() {
+              const nodes = new Map();
+              this.shadowRoot = {
+                innerHTML: '',
+                getElementById() { return { set onclick(_value) {} }; },
+                querySelector() { return null; },
+              };
+              return this.shadowRoot;
+            }
+            dispatchEvent() { return true; }
+          };
+          const registry = new Map([['nikas-house-hero', class {}]]);
+          global.customElements = {
+            define(name, ctor) { registry.set(name, ctor); },
+            get(name) { return registry.get(name); },
+          };
+          global.window = {
+            location: { pathname: '/dashboard-house-v11/home' },
+            history: { pushState() {} },
+            dispatchEvent() {},
+            localStorage: { getItem() { return null; }, setItem() {} },
+            setTimeout,
+            clearTimeout,
+          };
+          global.Event = class Event {};
+          const fs = require('node:fs');
+          const source = fs
+            .readFileSync('./custom_components/contract_generated_ui/frontend/nikas-house-overview.js', 'utf8')
+            .replace(/^import[^\n]+\n/, '');
+          new Function(source)();
+          if (!customElements.get('nikas-house-overview')) {
+            throw new Error('nikas-house-overview was not registered');
+          }
+          console.log('Specialized House panel registration OK');
           JS
 
       - name: Enforce Integration Panel Template v1.0 invariants
