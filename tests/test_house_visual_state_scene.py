@@ -8,7 +8,7 @@ FRONTEND = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
 
 def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
-    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v1.webp"
+    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v3.webp"
     asset = asset_path.read_bytes()
 
     assert 'const ELEMENT_NAME = "nikas-house-hero"' in bundle
@@ -29,6 +29,8 @@ def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     assert len(asset) > 10_000
     assert asset[:4] == b"RIFF"
     assert b"WEBP" in asset[:16]
+    assert int.from_bytes(asset[4:8], "little") + 8 == len(asset)
+    assert asset[12:16] in {b"VP8 ", b"VP8L", b"VP8X"}
 
 
 def test_house_visual_scene_keeps_data_and_art_separate() -> None:
@@ -39,21 +41,21 @@ def test_house_visual_scene_keeps_data_and_art_separate() -> None:
     assert '"internet": entities["internet"]' in renderer
     assert '"access": {' in renderer
     assert "HOUSE_HERO_ASSET_URL" in renderer
-    assert "house-hero-photo-day-v1.webp?build=0320b001" in renderer
+    assert "house-hero-photo-day-v3.webp?build=0340b001" in renderer
 
 
 def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
-    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v1.webp"
+    asset_path = FRONTEND / "assets" / "house-hero-photo-day-v3.webp"
 
     # The first screen still ends above the fixed global tab bar.
-    assert "height:clamp(620px,calc(100svh - 184px),680px)" in bundle
+    assert "height:max(620px,calc(100dvh - 184px))" in bundle
     assert "min-height:0" in bundle
 
     # The photoreal daytime art is local and mobile-oriented; the live card keeps cover positioning.
     assert asset_path.exists()
     assert "background-size:cover" in bundle
-    assert "background-position:center 51%" in bundle
+    assert "background-position:center 50%" in bundle
 
     # The light theme is deliberate; dark mode is a later independent pass.
     assert "background:rgba(255,255,255,.86)" in bundle
