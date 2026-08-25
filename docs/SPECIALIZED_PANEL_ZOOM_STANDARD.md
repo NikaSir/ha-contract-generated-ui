@@ -1,175 +1,191 @@
-# Specialized Panel Zoom Standard v1.3
+# Specialized Panel Zoom Standard v1.4
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
-**Architecture:** shared specialized-panel shell  
-**Reference field implementation:** Stark SolarPower UI 0.5.6
+**Architecture:** transform-owned fixed canvas  
+**Reference field implementation:** Stark SolarPower 1.8.10 on iOS Home Assistant Companion App
 
 ## 1. Purpose
 
-Specialized panels must allow the user to enlarge their working content without scaling or disturbing Home Assistant chrome, persistent device context or fixed navigation.
+Specialized panels must allow the user to enlarge and move their working content without scaling or disturbing Home Assistant chrome, persistent peer-device context or fixed navigation.
 
-The field-tested baseline is now **gesture-only zoom**. Permanent on-screen zoom buttons are not used in the standard shell.
+The required mobile architecture is a single fixed canvas whose complete visual state is owned by the panel:
 
-## 2. Zoom scope
+```text
+transform = translate3d(x, y, 0) scale(s)
+state = { scale: s, x, y }
+```
 
-Only the panel work area scales.
+Browser scroll position is not canvas state.
 
-The following remain at native scale:
+## 2. iOS field finding
+
+The former implementation used CSS `zoom` plus native `overflow` scrolling and tried to preserve `scrollLeft` / `scrollTop`. It is non-conforming.
+
+On iOS WebView that model produced:
+
+- layout recomputation that broke the canvas as one composition;
+- nested zoom containers and duplicated controls after rerender;
+- elastic/rubber-band displacement visible while the finger was down but not represented by durable scroll coordinates;
+- snap-back to a boundary or the upper-left corner after gesture release;
+- the same snap-back during ordinary vertical movement at 100%;
+- accidental Home Assistant `more-info` / history graph activation during pinch or pan.
+
+The project must not use CSS `zoom`, page/browser zoom, `scrollLeft`, `scrollTop` or native overflow scrolling as the position engine for a scalable panel canvas.
+
+## 3. Layer and scale ownership
+
+The following always remain at native scale:
 
 - Home Assistant chrome/sidebar;
-- specialized Header;
-- permanent Home Assistant main-menu button;
+- specialized Header and permanent Home Assistant menu button;
 - right Header action;
 - persistent peer-device selector;
 - fixed Bottom Tab Bar;
 - safe-area surfaces;
-- transient zoom-reset confirmation.
+- transient reset confirmation.
 
-Canonical hierarchy:
-
-```text
-HEADER / HA MENU                 native
-DEVICE SELECTOR (optional)      native
-ONE ZOOMABLE WORK VIEWPORT      scaled content
-BOTTOM TAB BAR                  native
-```
-
-Browser/page zoom is not a conforming implementation.
-
-## 3. Required touch interaction
-
-Every touch-capable specialized panel MUST support:
-
-- two-finger pinch-to-zoom;
-- focal-point preservation around the midpoint between the fingers;
-- one-finger pan/scroll of enlarged content;
-- two-finger double tap to reset zoom and scroll position;
-- automatic snap to exactly 100% when a pinch ends between 97% and 103%;
-- local persistence of the selected scale.
-
-Permanent `− / percentage / +` controls are **not part of the standard shell**.
-
-## 4. Exactly one zoom viewport
-
-A specialized-panel instance must contain exactly one active zoom viewport.
-
-Shell installation/reconciliation MUST be idempotent across:
-
-- full renders;
-- optimized/partial renders;
-- unrelated Home Assistant state changes;
-- selected-device changes;
-- Bottom Tab changes;
-- reconnect/reload cycles.
-
-It must never create:
-
-- nested zoom wrappers;
-- duplicate gesture handlers;
-- duplicate reset notifications;
-- abandoned wrappers with blank space;
-- progressive content shrink/growth caused by repeatedly scaling an already scaled wrapper.
-
-When migrating a legacy implementation, old wrappers may be normalized/unwrapped before one clean canonical viewport is installed. In steady state the shell topology remains stable.
-
-## 5. Pinch behavior
-
-At the start of a two-finger pinch capture:
-
-- initial touch distance;
-- initial effective scale;
-- content coordinate under the touch midpoint.
-
-While the gesture changes:
+Only the working canvas transforms.
 
 ```text
-new scale = initial scale × current distance / initial distance
+HEADER / HA MENU                         native
+DEVICE SELECTOR (optional)              native
+ONE FIXED CANVAS VIEWPORT               native clipping window
+  └── CANVAS CONTENT                    translate3d(x,y,0) scale(s)
+BOTTOM TAB BAR                          native
 ```
 
-After scale changes, adjust scroll offsets so the same content coordinate remains under the current midpoint as closely as the browser permits.
+## 4. Exactly one canvas viewport
+
+A specialized-panel instance contains exactly one active canvas viewport and exactly one transform target.
+
+The viewport owns clipping and gesture capture. It may use `overflow: hidden`, but it does not own a browser scroll position. The canvas content uses `transform-origin: 0 0` and one combined transform.
+
+Shell installation/reconciliation is idempotent across full renders, optimized renders, unrelated Home Assistant state changes, peer-device changes, Bottom Tab changes, reconnects and reloads.
+
+It must never create nested wrappers, duplicate gesture handlers, duplicate reset messages, abandoned blank wrappers or progressive shrinking/growth.
+
+## 5. Canvas state
+
+The complete durable presentation state is:
+
+```text
+scale
+x
+y
+```
+
+No second state source may compete with this tuple. Native scroll offsets are ignored and normally remain zero.
+
+Persistence scope:
+
+- single device: `panel-id + client`;
+- multiple peer devices: `panel-id + peer-device-id + client`.
+
+Changing Bottom Tab for the same peer preserves state. Changing peer restores that peer's state. Zoom/pan state is local UI data, never a Home Assistant entity.
+
+## 6. Transform application
+
+The only canvas transform is:
+
+```css
+transform-origin: 0 0;
+transform: translate3d(var(--x), var(--y), 0) scale(var(--scale));
+will-change: transform;
+```
+
+Translation and scale must not be split between unrelated DOM layers. Splitting them makes focal-point calculations, clamping, persistence and rerender recovery ambiguous.
+
+## 7. One-finger pan
+
+One touch moves `x/y` directly.
+
+- movement begins only after a small threshold so an intentional stationary hold remains possible;
+- the same transform-owned mechanism provides vertical movement at 100%;
+- the canvas does not hand movement to native `overflow` scrolling;
+- after finger release, the final transform remains unchanged;
+- the final state is persisted.
+
+## 8. Two-finger focal-point pinch
+
+At pinch start capture the initial distance, initial scale, initial `x/y` and the content coordinate below the midpoint.
+
+```text
+newScale = startScale * currentDistance / startDistance
+contentX = (midX - x) / scale
+contentY = (midY - y) / scale
+newX = currentMidX - contentX * newScale
+newY = currentMidY - contentY * newScale
+```
+
+This keeps the content point below the fingers as stable as possible without consulting browser scroll state.
+
+Default scale limits are 75–200%, with 100% as the default.
+
+## 9. Coordinate clamping
+
+After every scale or translation change, constrain `x/y` using the real unscaled canvas size, effective scale and viewport size.
+
+```text
+scaledWidth  = contentWidth  * scale
+scaledHeight = contentHeight * scale
+minX = min(0, viewportWidth  - scaledWidth)
+minY = min(0, viewportHeight - scaledHeight)
+maxX = 0
+maxY = 0
+```
+
+Clamp to these limits or to an explicitly documented centering policy when scaled content is smaller than its viewport. Bounds must be recalculated after responsive recomposition, peer change, content-size change and viewport resize.
+
+## 10. Rerender and telemetry updates
+
+Before replacing work-content DOM, remember the current `{scale,x,y}` for its panel/peer key.
+
+When new DOM is produced:
+
+1. create or reconcile one known canvas viewport;
+2. restore the saved state on the new transform target synchronously;
+3. clamp against the new measured geometry;
+4. reveal/commit the visual frame only after the transform is attached.
+
+Users must not see an intermediate untransformed frame, and telemetry updates must not reset or move the canvas.
+
+## 11. Interaction protection
+
+Gesture ownership must not break deliberate Home Assistant detail access.
 
 Required:
 
-- pinch affects only work content;
-- normal one-finger scroll remains available;
-- enlarged content pans horizontally and vertically when necessary;
-- pinch must not accidentally execute domain actions;
-- tap/long-press/more-info behavior remains valid after scaling.
+- the appearance of a second finger immediately blocks pending `more-info` and domain activation;
+- when one-finger movement crosses the pan threshold, dispatch/cause `pointercancel` for the pending hold target;
+- click events synthesized after a completed gesture are suppressed for a short guard interval;
+- pinch/pan/reset never execute device actions;
+- an intentional stationary long press still opens standard Home Assistant `more-info`;
+- ordinary intentional taps remain available when no gesture was recognized.
 
-## 6. Scale limits and snap-to-100
+## 12. Reset and snap-to-100
 
-Default limits:
+Permanent `− / % / +` controls are not used.
 
-- minimum: **75%**;
-- maximum: **200%**;
-- default: **100%**.
-
-When pinch finishes and the resulting scale is within:
+Two quick two-finger taps reset:
 
 ```text
-97% ≤ scale ≤ 103%
+scale = 1
+x = 0
+y = 0
 ```
 
-the shell fixes the scale to **exactly 100%**.
+When pinch ends within 97–103%, the same reset path fixes scale and position to exact 100%/origin.
 
-The snap uses the normal reset path so the viewport returns to the canonical 100% origin rather than preserving an almost-zero residual offset.
-
-A different snap band is non-conforming unless a future standard revision changes it.
-
-## 7. Two-finger double-tap reset
-
-Two quick two-finger taps on the work viewport reset:
-
-```text
-scale = 100%
-scrollLeft = 0
-scrollTop = 0
-```
-
-The gesture recognizer must distinguish a tap from pinch/pan by using a short duration and movement tolerance so normal pinch gestures are not misclassified.
-
-The reset gesture is presentation-only and must not execute any domain command.
-
-## 8. Reset confirmation
-
-After an explicit two-finger double-tap reset or automatic 97–103% snap, show a short non-interactive confirmation:
+After explicit reset or snap, briefly show the non-interactive native-scale confirmation:
 
 ```text
 Масштаб 100%
 ```
 
-Requirements:
+Use polite accessibility status where practical.
 
-- transient, approximately one second;
-- does not reserve permanent layout space;
-- does not block pointer/touch interaction;
-- remains native-sized rather than scaling with domain content;
-- exposed as polite status feedback where practical (`role=status`, `aria-live=polite`).
-
-## 9. Persistence scope
-
-Zoom is local UI preference, never Home Assistant entity state.
-
-### Single-device panel
-
-```text
-panel-id + client
-```
-
-### Multi-peer-device panel
-
-Use separate preference for each peer when the panel supports multiple peer devices:
-
-```text
-panel-id + peer-device-id + client
-```
-
-Switching peer device restores that peer's stored scale. Changing Bottom Tab within the same peer preserves scale.
-
-If local storage is unavailable, zoom continues to work for the current session.
-
-## 10. Responsive layout interaction
+## 13. Responsive layout
 
 Order is fixed:
 
@@ -177,88 +193,68 @@ Order is fixed:
 actual viewport
 → mobile/tablet/desktop composition
 → selected peer/domain content
-→ user zoom
+→ restored transform state
 ```
 
-Zoom must not change responsive breakpoint selection or trigger repeated mobile/desktop switching.
+User scale must not choose breakpoints or trigger repeated responsive switching.
 
-## 11. Rerender behavior
+## 14. Safety and semantics
 
-Home Assistant may deliver frequent unrelated state updates. A conforming implementation preserves one viewport and the current scale across those updates.
+Transform state must not change entity selection, semantic inventory, trust/stale thresholds, `unknown` / `unavailable` behavior, routes, confirmations or domain commands.
 
-Preferred implementation:
+## 15. Acceptance criteria
 
-- shell DOM remains stable;
-- domain content is updated/replaced inside the existing viewport;
-- or one known viewport is reconciled by a stable identity.
+A panel conforms only when:
 
-Repeated blind wrapping after every render is prohibited.
+1. exactly one canvas viewport and transform target exist after repeated HA updates;
+2. CSS `zoom` and native overflow scroll are not the canvas position engine;
+3. one-finger movement persists after release, including vertical movement at 100%;
+4. focal-point pinch uses the combined transform;
+5. all regions are reachable within real clamped bounds;
+6. Header, HA menu, selector and Bottom Tab Bar remain native scale;
+7. no permanent zoom buttons are rendered;
+8. two-finger double tap resets `{scale,x,y}`;
+9. 97–103% snaps to exact 100%;
+10. `Масштаб 100%` appears briefly;
+11. state persists per panel/client and peer device where applicable;
+12. telemetry rerender restores transform before the visible frame;
+13. pinch/pan suppress accidental `more-info`, graphs, clicks and commands;
+14. stationary long press still opens `more-info`;
+15. no nested wrappers, blank space or progressive shrink occurs.
 
-## 12. Interaction with Device Selector
-
-Persistent peer-device selector remains outside the zoom viewport and at native scale.
-
-When peer selection changes:
-
-- selector geometry/order remains unchanged;
-- current Bottom Tab remains selected;
-- work content switches in place;
-- peer-scoped scale is restored.
-
-## 13. Safety and semantics
-
-Zoom must not change:
-
-- entity selection;
-- semantic inventory;
-- health/stale thresholds;
-- `unknown` / `unavailable` handling;
-- routes;
-- confirmations;
-- domain commands;
-- source-trust semantics.
-
-## 14. Acceptance criteria
-
-A specialized panel conforms when:
-
-1. two-finger pinch works on phone/tablet;
-2. pinch preserves the gesture midpoint;
-3. enlarged content pans/scrolls to all regions;
-4. no permanent on-screen zoom controls are rendered;
-5. two-finger double tap resets scale and scroll to 100%/origin;
-6. pinch ending at 97–103% snaps to exactly 100%;
-7. reset/snap briefly shows `Масштаб 100%`;
-8. exactly one work viewport exists after repeated HA state updates;
-9. no nested wrappers, duplicate handlers or progressive shrinking occurs;
-10. Header, HA menu, Device Selector and Bottom Tab Bar remain native scale;
-11. scale persists per panel/client and per peer device where applicable;
-12. responsive composition is selected before zoom;
-13. tap/long-press/more-info behavior remains valid.
-
-## 15. Default contract
+## 16. Default contract
 
 ```yaml
 shell:
   zoom:
-    enabled: true
+    engine: transform_owned_canvas
+    viewport_count: 1
+    transform_target_count: 1
+    transform: translate3d_xy_scale
+    native_overflow_pan: false
+    css_zoom: false
     min: 0.75
     max: 2.00
     default: 1.00
+    one_finger_pan: true
+    pan_at_100_percent: true
     pinch: true
-    focal_point: gesture_center
-    pan_when_zoomed: true
+    focal_point: gesture_midpoint
+    coordinates: clamped_to_scaled_content
     controls: none
     reset_gesture: two_finger_double_tap
-    reset_scroll: origin
+    reset_state: {scale: 1.0, x: 0, y: 0}
     snap_to_100_percent_range: [97, 103]
     reset_feedback: "Масштаб 100%"
     persist: per_panel_per_client
     peer_device_scope: per_device_when_present
-    viewport_count: 1
+    restore_before_paint: true
+    cancel_hold_on_pan: pointercancel
+    suppress_post_gesture_click: true
     install: idempotent
 ```
 
 ## Project rule
 
-> Exactly one zoomable work viewport. Two-finger focal-point pinch is the normal zoom interaction. Permanent zoom buttons are not used. Two-finger double tap resets zoom and scroll to 100%, 97–103% snaps to 100%, reset is briefly confirmed, and scale persists locally per panel/device.
+> A specialized panel uses one fixed transform-owned canvas. `translate3d(x,y,0) scale(s)` is the complete zoom/pan state. Browser scrolling is not canvas state; rerenders restore `{scale,x,y}` before paint, and gesture guards prevent accidental Home Assistant actions.
+
