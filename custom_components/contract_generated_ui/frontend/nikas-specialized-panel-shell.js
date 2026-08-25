@@ -1,14 +1,9 @@
 // Shared application-chrome policy for specialized NikaS panels.
-// Owns safe-area Header/Bottom Tab Bar geometry and inserts the common zoom viewport.
+// Owns safe-area Header/Bottom Tab Bar geometry and binds the common zoom controller to <main>.
 (() => {
   const TARGETS = ["nikas-generated-subpanel", "nikas-generated-zont"];
   const PATCH_FLAG = Symbol.for("nikas.specializedPanelShell.patched");
   const STYLE_ID = "nikas-specialized-panel-shell-policy";
-
-  function panelKey(host) {
-    const config = host?.panel?.config || host?.panel || {};
-    return String(config.id || window.location.pathname || host.localName || "specialized-panel");
-  }
 
   function policyCss() {
     return `
@@ -49,25 +44,16 @@
     root.appendChild(style);
   }
 
-  function ensureZoomViewport(host) {
+  function ensureShell(host) {
     const root = host?.shadowRoot;
-    if (!root || !customElements.get("nikas-panel-zoom")) return;
+    if (!root) return;
     ensurePolicyStyle(root);
 
-    const main = root.querySelector(".app > main");
-    if (!main) return;
-    if (main.parentElement?.localName === "nikas-panel-zoom") {
-      main.parentElement.setAttribute("panel-key", panelKey(host));
-      return;
+    // Zoom controller scales only the work <main>. Header, controls and bottom
+    // navigation remain siblings at native scale.
+    if (window.NikasPanelZoom?.attach) {
+      window.NikasPanelZoom.attach(host, { min: 0.75, max: 2.0, step: 0.10 });
     }
-
-    const zoom = document.createElement("nikas-panel-zoom");
-    zoom.setAttribute("panel-key", panelKey(host));
-    zoom.setAttribute("min", "0.75");
-    zoom.setAttribute("max", "2");
-    zoom.setAttribute("step", "0.10");
-    main.replaceWith(zoom);
-    zoom.appendChild(main);
   }
 
   function patchElement(name) {
@@ -82,7 +68,7 @@
       Object.defineProperty(proto, PATCH_FLAG, { value: true });
       proto._render = function (...args) {
         const result = originalRender.apply(this, args);
-        queueMicrotask(() => ensureZoomViewport(this));
+        queueMicrotask(() => ensureShell(this));
         return result;
       };
 
@@ -91,7 +77,7 @@
         const result = typeof originalConnected === "function"
           ? originalConnected.apply(this, args)
           : undefined;
-        queueMicrotask(() => ensureZoomViewport(this));
+        queueMicrotask(() => ensureShell(this));
         return result;
       };
     });
@@ -101,6 +87,6 @@
 
   window.NikasSpecializedPanelShell = Object.freeze({
     register: patchElement,
-    ensure: ensureZoomViewport,
+    ensure: ensureShell,
   });
 })();
