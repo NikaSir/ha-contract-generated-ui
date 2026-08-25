@@ -43,11 +43,11 @@ GENERATED_SUBPANEL_BUILD = "b006"
 GENERATED_SUBPANEL_MODULE_URL = (
     f"{GENERATED_SUBPANEL_STATIC_PATH}?build={GENERATED_SUBPANEL_BUILD}"
 )
-# Contract Generated UI owns only the generic ZONT renderer. The ZONT-specific
-# application layer is HACS-managed by NikaSir/ha-zont (domain: zont_local).
+# The registered ZONT panel is one autonomous bundle. This avoids a custom-
+# element race with the optional zont_local integration during Home Assistant startup.
 GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"
 GENERATED_ZONT_STATIC_PATH = f"/{DOMAIN}/frontend/{GENERATED_ZONT_FILENAME}"
-GENERATED_ZONT_BUILD = "b005"
+GENERATED_ZONT_BUILD = "b006"
 GENERATED_ZONT_MODULE_URL = f"{GENERATED_ZONT_STATIC_PATH}?build={GENERATED_ZONT_BUILD}"
 GENERATED_SUBPANEL_PATHS = "generated_subpanel_paths"
 NAVIGATION_REGISTRY_FILENAME = "navigation.json"

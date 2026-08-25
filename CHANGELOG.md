@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.34.2` serves the approved autonomous ZONT UI `0.8.17` directly from the panel registration owner, including its local boiler artwork, eliminating the startup-order race that could show UI `0.8.0` or leave the ZONT route blank after a Home Assistant restart.
+
 - Contract Generated UI `0.34.1` fits the House hero to the measured top edge of the fixed global Tab Bar so the second utility row cannot be hidden underneath navigation, and makes the main UI bundle statically import the House custom element to prevent cold-refresh configuration races.
 - Contract Generated UI `0.34.0` replaces the truncated House hero with a complete maximum-photorealistic daytime v3 background, preserves the accepted live status composition and lets the mobile scene occupy the full work area between the native Home Assistant Header and the fixed bottom navigation.
 - Contract Generated UI `0.29.3` closes the final complete-set field-polish discrepancies: Infrastructure now evaluates incoming-grid quality with the same 198/205/210/230/235/242 V thresholds used by House, the Actions swing-gate placeholder is shortened to `Нет датчика`, and the House heating summary uses mobile-safe `Основной` / `Резервный` labels while preserving the existing fail-closed state semantics.
