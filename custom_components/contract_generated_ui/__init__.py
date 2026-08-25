@@ -36,8 +36,6 @@ async def async_setup_entry(
         GENERATED_DIRECTORY,
         GENERATED_SUBPANEL_FILENAME,
         GENERATED_SUBPANEL_STATIC_PATH,
-        GENERATED_ZONT_FILENAME,
-        GENERATED_ZONT_STATIC_PATH,
         HOUSE_HERO_ASSETS_STATIC_PATH,
         HOUSE_HERO_FILENAME,
         HOUSE_HERO_MODULE_URL,
@@ -97,7 +95,6 @@ async def async_setup_entry(
                 StaticPathConfig(HOUSE_PANEL_STATIC_PATH, str(frontend_root / HOUSE_PANEL_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False),
                 StaticPathConfig(GENERATED_SUBPANEL_STATIC_PATH, str(frontend_root / GENERATED_SUBPANEL_FILENAME), False),
-                StaticPathConfig(GENERATED_ZONT_STATIC_PATH, str(frontend_root / GENERATED_ZONT_FILENAME), False),
                 StaticPathConfig(NAVIGATION_REGISTRY_STATIC_PATH, str(navigation_registry_path), False),
             ]
         )

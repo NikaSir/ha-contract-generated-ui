@@ -1,7 +1,7 @@
 // Shared application-chrome policy for specialized NikaS panels.
 // Owns safe-area Header/Bottom Tab Bar geometry and binds the common zoom controller to <main>.
 (() => {
-  const TARGETS = ["nikas-generated-subpanel", "nikas-generated-zont"];
+  const TARGETS = ["nikas-generated-subpanel"];
   const PATCH_FLAG = Symbol.for("nikas.specializedPanelShell.patched");
   const STYLE_ID = "nikas-specialized-panel-shell-policy";
 

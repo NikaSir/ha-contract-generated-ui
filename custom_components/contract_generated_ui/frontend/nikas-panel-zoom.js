@@ -6,7 +6,7 @@
   const DEFAULT_MIN = 0.75;
   const DEFAULT_MAX = 2.0;
   const DEFAULT_STEP = 0.10;
-  const AUTO_TARGETS = new Set(["NIKAS-GENERATED-SUBPANEL", "NIKAS-GENERATED-ZONT"]);
+  const AUTO_TARGETS = new Set(["NIKAS-GENERATED-SUBPANEL"]);
   const controllers = new WeakMap();
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));

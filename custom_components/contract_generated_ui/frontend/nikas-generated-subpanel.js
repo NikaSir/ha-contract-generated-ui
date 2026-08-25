@@ -1,5 +1,5 @@
 // Shared generated application-panel host for Contract Generated UI.
-// One self-contained bundle serves ZONT, StarLine and future manifest-defined panels.
+// One self-contained bundle serves non-specialized manifest-defined panels.
 
 (() => {
   const ELEMENT_NAME = "nikas-generated-subpanel";

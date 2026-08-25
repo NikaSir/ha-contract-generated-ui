@@ -14,9 +14,9 @@ Contract Generated UI automatically loads the global navigation enhancement thro
 
 It renders the common `Дом · Действия · Инфра` Bottom Tab Bar and Lovelace-embedded tab groups described by the formal navigation contract. No manual `lovelace.resources` entry is required.
 
-## Shared generated application panels
+## Generic generated application panels
 
-Generated application subpanels such as ZONT and StarLine are **автоматически** registered as Home Assistant custom panels by Contract Generated UI using one shared web component and one self-contained frontend bundle:
+Non-specialized manifest-defined subpanels are **автоматически** registered as Home Assistant custom panels by Contract Generated UI using one shared web component and one self-contained frontend bundle:
 
 ```text
 /contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b006
@@ -39,19 +39,7 @@ Starting with `0.22.0`, a read-only integration that exposes entities under seve
 - non-service views do not expose raw `entity_id` text;
 - the `Сервис` view may show raw entity IDs only for `unknown` / `unavailable` diagnostics.
 
-This mechanism is generic. StarLine is the first field use: two vehicles can be shown side by side in the overview while `Охрана`, `Двигатель`, `Авто` and `Сервис` operate on the selected vehicle.
-
-## Read-only StarLine profile
-
-StarLine UI `v0.5.0` uses the field-reference hierarchy:
-
-- `Обзор` — up to six priority facts per vehicle, targeting охрана, пробег, топливо, АКБ, двигатель and салон;
-- `Охрана` — binary/lock state set for the selected vehicle;
-- `Двигатель` — engine, ignition, autostart/heater-related state only;
-- `Авто` — sensor and device-tracker telemetry for the selected vehicle;
-- `Сервис` — unavailable/unknown entities only.
-
-Commands remain intentionally absent. History graphs and a map are separate read-only presentation layers and are not inferred until the real StarLine entity/device grouping has been field-verified.
+This mechanism remains generic and is not a host for integration-owned applications.
 
 ## Visual contract
 
@@ -68,25 +56,21 @@ Generated custom panels use the common NikaS application language:
 
 Architectural invariant:
 
-> One CGUI-owned shared custom-panel host; domain content stays declarative and read-only until explicitly promoted.
+> One CGUI-owned generic custom-panel host; integration-owned applications register and serve themselves.
 
 ## Routing and parent navigation
 
-A generated custom panel has one Home Assistant panel route, for example:
+A generated generic custom panel has one Home Assistant panel route, for example:
 
 ```text
-/dashboard-zont
-/dashboard-starline
+/dashboard-example
 ```
 
 Its logical parent remains declarative in `navigation/main.yaml`:
 
-```text
-ZONT     → /dashboard-house/heating
-StarLine → /dashboard-house/vehicles
-```
-
 The permanent Header control remains the Home Assistant system menu. When a parent transition is required, the explicit parent path is presented inside the work area and never depends on browser history.
+
+`/dashboard-zont` is explicitly outside this mechanism. It is registered and served only by the dedicated `ha-zont` integration. A central navigation link to that URL does not transfer panel ownership back to Contract Generated UI.
 
 ## House overview specialized panel
 
@@ -96,4 +80,4 @@ Starting with `0.35.0`, `/dashboard-house-v11/home` is owned by the integration'
 
 Generated application subpanels are not exported under `lovelace.dashboards:` and require no manual edit of `configuration.yaml`.
 
-During field validation generated ZONT and StarLine panels remain visible in the Home Assistant sidebar. After an integration update, fully restart Home Assistant so the custom-panel module cache key is refreshed.
+After an integration update, fully restart Home Assistant so custom-panel module cache keys are refreshed. ZONT lifecycle and cache invalidation are handled entirely by `ha-zont`.

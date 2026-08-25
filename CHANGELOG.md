@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.35.1` completes the ZONT handoff: this repository no longer packages or registers `/dashboard-zont`, its ZONT bundle, assets or manifest; stale runtime `zont.yaml` files are retired automatically and shared shell/zoom discovery no longer targets the ZONT element. The dedicated `ha-zont` integration is the sole panel owner.
 - Contract Generated UI `0.35.0` promotes `Дом · v11.0` to an integration-owned specialized panel on the existing `/dashboard-house-v11/home` route. It uses a permanent Home Assistant `☰` menu action, native Header and Bottom Tab Bar, one persisted `translate3d(x,y,0) scale(s)` canvas, gesture-only pinch/pan/reset, 97–103% snap-to-100 and post-gesture interaction guards; the House runtime no longer depends on Lovelace constructing a late `custom:` card after refresh.
 - Contract Generated UI `0.34.2` serves the approved autonomous ZONT UI `0.8.17` directly from the panel registration owner, including its local boiler artwork, eliminating the startup-order race that could show UI `0.8.0` or leave the ZONT route blank after a Home Assistant restart.
 
