@@ -38,6 +38,11 @@ async def async_setup_entry(
         GENERATED_SUBPANEL_STATIC_PATH,
         GENERATED_ZONT_FILENAME,
         GENERATED_ZONT_STATIC_PATH,
+        HOUSE_HERO_ASSET_FILENAME,
+        HOUSE_HERO_ASSET_STATIC_PATH,
+        HOUSE_HERO_FILENAME,
+        HOUSE_HERO_MODULE_URL,
+        HOUSE_HERO_STATIC_PATH,
         INFRA_SUMMARY_FILENAME,
         INFRA_SUMMARY_STATIC_PATH,
         NAVIGATION_REGISTRY_FILENAME,
@@ -78,6 +83,8 @@ async def async_setup_entry(
                 StaticPathConfig(APP_SHELL_STATIC_PATH, str(frontend_root / APP_SHELL_FILENAME), False),
                 StaticPathConfig(INFRA_SUMMARY_STATIC_PATH, str(frontend_root / INFRA_SUMMARY_FILENAME), False),
                 StaticPathConfig(UI_BUNDLE_STATIC_PATH, str(frontend_root / UI_BUNDLE_FILENAME), False),
+                StaticPathConfig(HOUSE_HERO_STATIC_PATH, str(frontend_root / HOUSE_HERO_FILENAME), False),
+                StaticPathConfig(HOUSE_HERO_ASSET_STATIC_PATH, str(frontend_root / "assets" / HOUSE_HERO_ASSET_FILENAME), False),
                 StaticPathConfig(GENERATED_SUBPANEL_STATIC_PATH, str(frontend_root / GENERATED_SUBPANEL_FILENAME), False),
                 StaticPathConfig(GENERATED_ZONT_STATIC_PATH, str(frontend_root / GENERATED_ZONT_FILENAME), False),
                 StaticPathConfig(NAVIGATION_REGISTRY_STATIC_PATH, str(navigation_registry_path), False),
@@ -86,6 +93,7 @@ async def async_setup_entry(
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
     add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
+    add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)
 
     try:
         await async_register_generated_subpanels(hass, source_root)
@@ -108,14 +116,15 @@ async def async_unload_entry(
     from homeassistant.components.frontend import remove_extra_js_url
     from homeassistant.const import Platform
 
-    from .const import UI_BUNDLE_MODULE_URL
+    from .const import HOUSE_HERO_MODULE_URL, UI_BUNDLE_MODULE_URL
     from .generated_panels import async_unregister_generated_subpanels
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, (Platform.SENSOR, Platform.BUTTON))
     if unloaded:
         async_unregister_generated_subpanels(hass)
-        try:
-            remove_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
-        except KeyError:
-            pass
+        for module_url in (UI_BUNDLE_MODULE_URL, HOUSE_HERO_MODULE_URL):
+            try:
+                remove_extra_js_url(hass, module_url)
+            except KeyError:
+                pass
     return unloaded

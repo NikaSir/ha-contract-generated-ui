@@ -9,10 +9,11 @@ from . import house_base as _base
 HOUSE_RENDERER = _base.HOUSE_RENDERER
 MAX_COLUMNS = _base.MAX_COLUMNS
 RenderError = _base.RenderError
+HOUSE_HERO_ASSET_URL = "/contract_generated_ui/frontend/assets/house-hero-dusk-v1.svg?build=0300b001"
 
 
 def _layout_engine_sha256(base_engine_sha256: str) -> str:
-    """Fingerprint the accepted House renderer plus the mobile-polish layer."""
+    """Fingerprint the accepted House renderer plus the visual-scene layer."""
     base_sha = _base._layout_engine_sha256(base_engine_sha256)
     layer_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     return hashlib.sha256(f"{base_sha}:{layer_sha}".encode("utf-8")).hexdigest()
@@ -21,13 +22,13 @@ def _layout_engine_sha256(base_engine_sha256: str) -> str:
 def _trace_entities(trace: Mapping[str, Any]) -> dict[str, str]:
     views = trace.get("semantics", {}).get("views")
     if not isinstance(views, list) or len(views) != 1:
-        raise RenderError("house_home_v1 polish requires exactly one semantic view")
+        raise RenderError("house_home_v1 visual scene requires exactly one semantic view")
     modules = views[0].get("modules")
     if not isinstance(modules, list) or len(modules) != 1:
-        raise RenderError("house_home_v1 polish requires exactly one semantic module")
+        raise RenderError("house_home_v1 visual scene requires exactly one semantic module")
     roles = modules[0].get("roles")
     if not isinstance(roles, list):
-        raise RenderError("house_home_v1 polish semantic roles missing")
+        raise RenderError("house_home_v1 visual scene semantic roles missing")
 
     result: dict[str, str] = {}
     for role in roles:
@@ -43,7 +44,7 @@ def _trace_entities(trace: Mapping[str, Any]) -> dict[str, str]:
 def _drop_duplicate_title(view: dict[str, Any]) -> None:
     sections = view.get("sections")
     if not isinstance(sections, list) or not sections:
-        raise RenderError("house_home_v1 polish sections missing")
+        raise RenderError("house_home_v1 visual scene sections missing")
     first = sections[0]
     cards = first.get("cards") if isinstance(first, dict) else None
     title = view.get("title")
@@ -58,81 +59,129 @@ def _drop_duplicate_title(view: dict[str, Any]) -> None:
     sections.pop(0)
 
 
-def _temperature_suffix(entity_id: str | None) -> str:
-    if not entity_id:
-        return ""
-    return (
-        "{% if is_number(states('" + entity_id + "')) %} · "
-        "{{ states('" + entity_id + "')|float|round(1) }} °C{% endif %}"
-    )
+def _members(entities: Mapping[str, str], prefix: str) -> list[str]:
+    return [entities[key] for key in sorted(entities) if key.startswith(prefix)]
 
 
-def _replace_heating_summary(view: dict[str, Any], entities: Mapping[str, str]) -> None:
+def _nav(manifest: Mapping[str, Any], key: str) -> str:
+    navigation = manifest.get("spec", {}).get("navigation")
+    if not isinstance(navigation, dict):
+        raise RenderError("house_home_v1 visual scene requires spec.navigation")
+    target = navigation.get(key)
+    if not isinstance(target, str) or not target.startswith("/"):
+        raise RenderError(f"house_home_v1 visual scene navigation target {key!r} missing")
+    return target
+
+
+def _hero_card(entities: Mapping[str, str], manifest: Mapping[str, Any]) -> dict[str, Any]:
     required = (
+        "weather",
+        "power_a",
+        "power_b",
+        "power_c",
+        "water_drinking",
+        "internet",
         "heating_main",
         "heating_reserve",
         "heating_radiators",
         "heating_floor",
         "heating_circulation",
+        "access_entrance",
+        "access_sectional",
     )
     missing = [name for name in required if name not in entities]
     if missing:
-        raise RenderError("house_home_v1 heating summary missing roles: " + ", ".join(missing))
+        raise RenderError("house_home_v1 visual scene missing roles: " + ", ".join(missing))
 
-    main = entities["heating_main"]
-    reserve = entities["heating_reserve"]
-    circuits = [
-        entities["heating_radiators"],
-        entities["heating_floor"],
-        entities["heating_circulation"],
+    safety = _members(entities, "safety_")
+    openings = _members(entities, "opening_")
+    motion = _members(entities, "motion_")
+    lights = _members(entities, "light_")
+    climate = _members(entities, "climate_")
+    cameras = _members(entities, "camera_")
+    for name, members in (
+        ("safety", safety),
+        ("openings", openings),
+        ("motion", motion),
+        ("lights", lights),
+        ("climate", climate),
+        ("cameras", cameras),
+    ):
+        if not members:
+            raise RenderError(f"house_home_v1 visual scene requires at least one {name} entity")
+
+    windows = [
+        entity_id
+        for entity_id in openings
+        if any(token in entity_id.lower() for token in ("sensor_wo_", "window", "okno"))
     ]
-    main_text = "Основной" + _temperature_suffix(entities.get("heating_main_temp"))
-    reserve_text = "Резервный" + _temperature_suffix(entities.get("heating_reserve_temp"))
-    prefix = (
-        "{% set main=states('" + main + "') %}"
-        "{% set reserve=states('" + reserve + "') %}"
-        "{% set circuits=" + repr(circuits) + " %}"
-        "{% set ns=namespace(active=0,bad=0) %}"
-        "{% for e in circuits %}"
-        "{% if is_state(e,'on') %}{% set ns.active=ns.active+1 %}"
-        "{% elif states(e) in ['unknown','unavailable'] %}{% set ns.bad=ns.bad+1 %}{% endif %}"
-        "{% endfor %}"
-    )
-    secondary = (
-        prefix
-        + "{% if main=='on' %}" + main_text
-        + "{% elif reserve=='on' %}" + reserve_text
-        + "{% elif ns.active>0 %}Контуры активны"
-        + "{% elif main in ['unknown','unavailable'] or reserve in ['unknown','unavailable'] or ns.bad>0 %}Нет данных"
-        + "{% else %}Система в ожидании{% endif %}"
-    )
-    icon_color = (
-        prefix
-        + "{% if main=='on' or reserve=='on' or ns.active>0 %}orange"
-        + "{% elif main in ['unknown','unavailable'] or reserve in ['unknown','unavailable'] or ns.bad>0 %}grey"
-        + "{% else %}green{% endif %}"
-    )
+    if not windows:
+        windows = openings
 
+    return {
+        "type": "custom:nikas-house-hero",
+        "title": "Дом сейчас",
+        "asset": HOUSE_HERO_ASSET_URL,
+        "entities": {
+            "safety": safety,
+            "openings": openings,
+            "windows": windows,
+            "motion": motion,
+            "lights": lights,
+            "climate": climate,
+            "cameras": cameras,
+            "weather": entities["weather"],
+            "power": [entities["power_a"], entities["power_b"], entities["power_c"]],
+            "water": entities["water_drinking"],
+            "internet": entities["internet"],
+            "heating": {
+                "main": entities["heating_main"],
+                "reserve": entities["heating_reserve"],
+                "radiators": entities["heating_radiators"],
+                "floor": entities["heating_floor"],
+                "circulation": entities["heating_circulation"],
+                "main_temp": entities.get("heating_main_temp"),
+                "reserve_temp": entities.get("heating_reserve_temp"),
+            },
+            "access": {
+                "entrance": entities["access_entrance"],
+                "sectional": entities["access_sectional"],
+            },
+        },
+        "routes": {
+            "safety": _nav(manifest, "safety"),
+            "open": _nav(manifest, "open"),
+            "activity": _nav(manifest, "activity"),
+            "lights": _nav(manifest, "lights"),
+            "climate": _nav(manifest, "climate"),
+            "cameras": _nav(manifest, "cameras"),
+            "weather": _nav(manifest, "weather"),
+            "electricity": _nav(manifest, "electricity"),
+            "water": _nav(manifest, "water"),
+            "network": _nav(manifest, "network"),
+            "heating": _nav(manifest, "heating"),
+        },
+        "grid_options": {"columns": "full"},
+    }
+
+
+def _replace_house_now_with_hero(
+    view: dict[str, Any],
+    entities: Mapping[str, str],
+    manifest: Mapping[str, Any],
+) -> None:
     sections = view.get("sections")
     if not isinstance(sections, list):
-        raise RenderError("house_home_v1 polish sections missing")
+        raise RenderError("house_home_v1 visual scene sections missing")
     for section in sections:
         cards = section.get("cards") if isinstance(section, dict) else None
         if not isinstance(cards, list) or not cards:
             continue
-        heading = cards[0]
-        if not isinstance(heading, dict) or heading.get("heading") != "Дом сейчас":
-            continue
-        for card in cards[1:]:
-            if (
-                isinstance(card, dict)
-                and card.get("type") == "custom:mushroom-template-card"
-                and card.get("primary") == "Отопление"
-            ):
-                card["secondary"] = secondary
-                card["icon_color"] = icon_color
-                return
-    raise RenderError("house_home_v1 heating summary card not found")
+        first = cards[0]
+        if isinstance(first, dict) and first.get("type") == "heading" and first.get("heading") == "Дом сейчас":
+            section["cards"] = [_hero_card(entities, manifest)]
+            return
+    raise RenderError("house_home_v1 visual scene target section not found")
 
 
 def render_house_dashboard(
@@ -140,15 +189,22 @@ def render_house_dashboard(
     trace: Mapping[str, Any],
     manifest: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Render House and apply the accepted iPhone field-test polish."""
+    """Render House and replace the first screen with a live visual state scene."""
     rendered = _base.render_house_dashboard(dashboard, trace, manifest)
     views = rendered.get("views")
     if not isinstance(views, list) or len(views) != 1 or not isinstance(views[0], dict):
-        raise RenderError("house_home_v1 polish requires exactly one rendered view")
+        raise RenderError("house_home_v1 visual scene requires exactly one rendered view")
     view = views[0]
+    entities = _trace_entities(trace)
     _drop_duplicate_title(view)
-    _replace_heating_summary(view, _trace_entities(trace))
+    _replace_house_now_with_hero(view, entities, manifest)
     return rendered
 
 
-__all__ = ["HOUSE_RENDERER", "MAX_COLUMNS", "_layout_engine_sha256", "render_house_dashboard"]
+__all__ = [
+    "HOUSE_HERO_ASSET_URL",
+    "HOUSE_RENDERER",
+    "MAX_COLUMNS",
+    "_layout_engine_sha256",
+    "render_house_dashboard",
+]

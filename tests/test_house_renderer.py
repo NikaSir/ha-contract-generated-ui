@@ -5,14 +5,14 @@ import json
 import pytest
 
 from generator.render import RenderError
-from generator.render_house import render_house_dashboard
+from generator.render_house import HOUSE_HERO_ASSET_URL, render_house_dashboard
 from generator.render_operational import _manifest_renderer
 
 
 def _roles() -> dict[str, str]:
     return {
         "safety_01": "binary_sensor.test_safety",
-        "opening_01": "binary_sensor.test_opening",
+        "opening_01": "binary_sensor.test_window",
         "motion_01": "binary_sensor.test_motion",
         "light_01": "light.test_light",
         "climate_01": "climate.test_climate",
@@ -134,7 +134,10 @@ def _manifest() -> dict:
 
 
 def _section_heading(section: dict) -> str:
-    return section["cards"][0]["heading"]
+    first = section["cards"][0]
+    if first.get("type") == "custom:nikas-house-hero":
+        return first["title"]
+    return first["heading"]
 
 
 def _walk(value):
@@ -173,30 +176,35 @@ def test_house_preview_preserves_protected_mobile_order_without_duplicate_title(
     )
 
 
-def test_house_summary_heating_reflects_active_circuits_and_data_quality() -> None:
+def test_house_first_screen_is_visual_scene_with_live_semantic_sources() -> None:
     dashboard = render_house_dashboard(_dashboard(), _trace(), _manifest())
-    cards = dashboard["views"][0]["sections"][0]["cards"]
-    heating = next(
-        card
-        for card in cards
-        if isinstance(card, dict)
-        and card.get("type") == "custom:mushroom-template-card"
-        and card.get("primary") == "Отопление"
-    )
+    hero = dashboard["views"][0]["sections"][0]["cards"][0]
 
-    secondary = heating["secondary"]
-    assert "Контуры активны" in secondary
-    assert "Система в ожидании" in secondary
-    assert "Нет данных" in secondary
-    assert "binary_sensor.test_radiators" in secondary
-    assert "binary_sensor.test_floor" in secondary
-    assert "binary_sensor.test_circulation" in secondary
-    assert "Котлы не активны" not in secondary
-
-    icon_color = heating["icon_color"]
-    assert "orange" in icon_color
-    assert "green" in icon_color
-    assert "grey" in icon_color
+    assert hero["type"] == "custom:nikas-house-hero"
+    assert hero["title"] == "Дом сейчас"
+    assert hero["asset"] == HOUSE_HERO_ASSET_URL
+    assert hero["grid_options"] == {"columns": "full"}
+    assert hero["entities"]["power"] == [
+        "sensor.test_power_a",
+        "sensor.test_power_b",
+        "sensor.test_power_c",
+    ]
+    assert hero["entities"]["water"] == "sensor.test_water"
+    assert hero["entities"]["internet"] == "binary_sensor.test_internet"
+    assert hero["entities"]["heating"] == {
+        "main": "binary_sensor.test_main_boiler",
+        "reserve": "binary_sensor.test_reserve_boiler",
+        "radiators": "binary_sensor.test_radiators",
+        "floor": "binary_sensor.test_floor",
+        "circulation": "binary_sensor.test_circulation",
+        "main_temp": "sensor.test_main_temp",
+        "reserve_temp": "sensor.test_reserve_temp",
+    }
+    assert hero["entities"]["access"] == {
+        "entrance": "binary_sensor.test_access_entrance",
+        "sectional": "binary_sensor.test_access_sectional",
+    }
+    assert hero["entities"]["windows"] == ["binary_sensor.test_window"]
 
 
 def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None:
@@ -204,13 +212,11 @@ def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None
     serialized = json.dumps(dashboard, ensure_ascii=False)
     assert "zone.home" not in serialized
 
-    navigation_paths = {
-        node["tap_action"]["navigation_path"]
-        for node in _walk(dashboard)
-        if isinstance(node.get("tap_action"), dict)
-        and "navigation_path" in node["tap_action"]
-    }
-    assert "/dashboard-infrastructure/overview" in navigation_paths
+    hero = dashboard["views"][0]["sections"][0]["cards"][0]
+    assert hero["routes"]["electricity"] == "/dashboard-infrastructure/overview"
+    assert hero["routes"]["water"] == "/dashboard-infrastructure/overview"
+    assert hero["routes"]["network"] == "/dashboard-infrastructure/overview"
+    assert hero["routes"]["heating"] == "/dashboard-boiler/heating-boiler"
 
 
 def test_house_resources_are_household_summary_only() -> None:
