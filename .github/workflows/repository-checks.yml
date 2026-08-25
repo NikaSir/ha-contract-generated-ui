@@ -148,7 +148,7 @@ jobs:
           console.log('House hero runtime smoke test OK');
           JS
 
-      - name: Enforce Integration Panel Template v1.0 invariants
+      - name: Enforce Integration Panel Template v1.2 invariants
         shell: bash
         run: |
           reference="templates/integration-panel-v1/panel-shell-reference.js"
@@ -166,9 +166,19 @@ jobs:
           grep -Fq '.content-grid{display:grid;grid-template-columns:1fr' "$reference"
           grep -Fq '.metrics{grid-template-columns:1fr}' "$reference"
           grep -Fq 'max-width:1280px' "$reference"
-          grep -Fq 'mdi:arrow-left' "$reference"
+          if grep -Fq 'mdi:arrow-left' "$reference"; then
+            echo "Permanent Header-left control must be the Home Assistant menu, never Back."
+            exit 1
+          fi
+          grep -Fq 'mdi:menu' "$reference"
+          grep -Fq 'hass-toggle-menu' "$reference"
+          grep -Fq 'data-engine="transform-owned-canvas"' "$reference"
+          grep -Fq 'data-zoom-viewport' "$reference"
+          grep -Fq 'data-zoom-content' "$reference"
+          grep -Fq 'translate3d(0,0,0) scale(1)' "$reference"
+          grep -Fq 'touch-action:none' "$reference"
           grep -Fq 'mdi:refresh' "$reference"
-          echo "Integration Panel Template v1.0 shell invariants OK"
+          echo "Integration Panel Template v1.2 shell/zoom invariants OK"
 
       - name: Validate contract-generated UI inputs
         run: python -m generator validate .
