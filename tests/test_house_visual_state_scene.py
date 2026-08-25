@@ -40,3 +40,25 @@ def test_house_visual_scene_keeps_data_and_art_separate() -> None:
     assert '"internet": entities["internet"]' in renderer
     assert '"access": {' in renderer
     assert "HOUSE_HERO_ASSET_URL" in renderer
+
+
+def test_house_visual_scene_fits_real_mobile_viewport_without_cover_zoom() -> None:
+    bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
+
+    # First screen must end above the fixed global tab bar on iPhone-class viewports.
+    assert "height:clamp(620px,calc(100svh - 184px),680px)" in bundle
+    assert "min-height:0" in bundle
+
+    # The landscape house art is deliberately scaled to show most of the facade,
+    # rather than using `cover` and cropping the house into a close-up.
+    assert "background-size:125% auto" in bundle
+    assert "background-position:center 48%" in bundle
+
+    # Five top statuses remain legible by stacking icon/text vertically on mobile.
+    assert "flex-direction:column" in bundle
+    assert "justify-content:center" in bundle
+
+    # Zone coordinates are tied to the mobile 125%-wide art transform.
+    assert ".window-zone { left:16%; top:45.5%; width:18%; height:8.2%; }" in bundle
+    assert ".gate-zone { left:10%; top:54%; width:29%; height:12%; }" in bundle
+    assert ".door-zone { right:13.5%; top:55.5%; width:11.5%; height:10.8%; }" in bundle
