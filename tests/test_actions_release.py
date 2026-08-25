@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.32.0"
+    assert manifest["version"] == "0.33.0"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -40,6 +40,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
     hero_bundle = (frontend_root / "nikas-house-hero.js").read_text(encoding="utf-8")
     hero_asset = frontend_root / "assets" / "house-hero-photo-day-v1.webp"
+    zoom_bundle = (frontend_root / "nikas-panel-zoom.js").read_text(encoding="utf-8")
+    shell_bundle = (frontend_root / "nikas-specialized-panel-shell.js").read_text(encoding="utf-8")
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     zont_bundle = (frontend_root / "nikas-generated-zont.js").read_text(encoding="utf-8")
 
@@ -52,6 +54,23 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "https://" not in hero_bundle
     assert "rgba(255,255,255,.86)" in hero_bundle
     assert hero_asset.exists()
+
+    assert "class ZoomController" in zoom_bundle
+    assert 'const DEFAULT_MIN = 0.75' in zoom_bundle
+    assert 'const DEFAULT_MAX = 2.0' in zoom_bundle
+    assert 'const DEFAULT_STEP = 0.10' in zoom_bundle
+    assert "touchstart" in zoom_bundle and "touchmove" in zoom_bundle
+    assert "window.localStorage" in zoom_bundle
+    assert "window.NikasPanelZoom" in zoom_bundle
+    assert "env(safe-area-inset-bottom,0px)" in zoom_bundle
+
+    assert '"nikas-generated-subpanel"' in shell_bundle
+    assert '"nikas-generated-zont"' in shell_bundle
+    assert "window.NikasPanelZoom.attach" in shell_bundle
+    assert "env(safe-area-inset-top,0px)" in shell_bundle
+    assert "env(safe-area-inset-bottom,0px)" in shell_bundle
+    assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell_bundle
+
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
     assert 'const ELEMENT_NAME = "nikas-generated-zont"' in zont_bundle
     assert "_boilerCard" in zont_bundle
@@ -70,12 +89,15 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'type: "call_service"' not in panel_bundle
     assert 'type: "call_service"' not in zont_bundle
 
-    # Contract Generated UI owns only the generic renderer. ZONT-specific
-    # application/UI releases are HACS-managed by NikaSir/ha-zont.
     assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b004"' in const_source
+    assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
+    assert 'PANEL_ZOOM_BUILD = "b001"' in const_source
+    assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
+    assert 'SPECIALIZED_SHELL_BUILD = "b001"' in const_source
+    assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
     assert 'HOUSE_HERO_BUILD = "b005"' in const_source
     assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-photo-day-v1.webp"' in const_source
@@ -86,6 +108,10 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
+    assert "PANEL_ZOOM_STATIC_PATH" in init_source
+    assert "SPECIALIZED_SHELL_STATIC_PATH" in init_source
+    assert "add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)" in init_source
+    assert "add_extra_js_url(hass, SPECIALIZED_SHELL_MODULE_URL)" in init_source
     assert "HOUSE_HERO_STATIC_PATH" in init_source
     assert "HOUSE_HERO_ASSETS_STATIC_PATH" in init_source
     assert 'StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False)' in init_source
