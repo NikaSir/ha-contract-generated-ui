@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.34.1"
+    assert manifest["version"] == "0.34.2"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
 
     repo_schema = json.loads((ROOT / "schemas" / "manifest.schema.json").read_text(encoding="utf-8"))
@@ -105,7 +105,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'HOUSE_HERO_ASSET_BUILD = "0340b001"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
     assert 'GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b005"' in const_source
+    assert 'GENERATED_ZONT_BUILD = "b006"' in const_source
     assert "GENERATED_ZONT_MODULE_URL" in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
