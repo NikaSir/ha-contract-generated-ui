@@ -1,85 +1,77 @@
-# House Visual State Scene v1
+# House Overview Specialized Panel v2
 
-Contract Generated UI `0.30.0` replaces the compact `Дом сейчас` tile cluster with a full-screen visual state scene on the House v11 release-candidate route.
+Contract Generated UI `0.35.0` promotes the accepted `Дом · v11.0` visual state scene from a Lovelace custom card to an integration-owned Home Assistant specialized panel.
 
-## Purpose
+## Route and ownership
 
-The first screen answers one question: **what is happening with the house right now?**
+The public route remains unchanged:
 
-The scene visualizes only high-value household states:
+```text
+/dashboard-house-v11/home
+```
 
-- safety;
-- open contacts;
-- motion;
-- lighting;
-- climate activity;
-- cameras;
-- weather/time context;
-- windows as an aggregate category;
-- physical sectional-gate state;
-- physical entrance-door state;
-- incoming electrical quality;
-- drinking-water pressure;
-- internet availability;
-- heating activity.
+The integration registers `dashboard-house-v11` through Home Assistant `panel_custom` and loads the self-contained `nikas-house-overview` web component. The House panel is no longer exported under `lovelace.dashboards:` and does not depend on a Sections view or `custom:nikas-house-hero` being constructed by Lovelace after a cold refresh.
 
-Detailed telemetry remains below the hero scene or in integration-owned panels.
+The deterministic House YAML and RenderTrace remain available as review evidence, but they are not the runtime host of the overview.
 
-## Layering contract
+## Native shell
 
-The scene follows the same asset discipline accepted for Stark SolarPower:
+The specialized shell owns three native-scale layers:
 
-1. **Decorative asset** — `frontend/assets/house-hero-dusk-v1.svg` contains no Home Assistant entity ids, state text or baked readings.
-2. **Live frontend layer** — `frontend/nikas-house-hero.js` reads the entity ids supplied by the generated House manifest output and renders all values/status text dynamically.
-3. **Semantic source layer** — `house_home_v1` passes only roles already resolved from verified private `SemanticInventory`.
-4. **Navigation layer** — the hero receives manifest-owned routes; no deep subsystem path is invented in the frontend component.
+1. Header below the effective top safe area;
+2. one fixed work viewport;
+3. the global `Дом / Действия / Инфра` Bottom Tab Bar above the effective bottom safe area.
 
-The asset is served locally from:
+The permanent left Header control is only the Home Assistant menu button `☰`. It dispatches the standard composed and bubbling `hass-toggle-menu` event. It is never Back, an integration drawer or a device command.
 
-`/contract_generated_ui/frontend/assets/house-hero-dusk-v1.svg?build=0300b001`
+## Transform-owned canvas
 
-No Base64 or external CDN is used.
+The work viewport contains exactly one transform target. Its complete durable presentation state is:
+
+```text
+{ scale, x, y }
+transform: translate3d(x, y, 0) scale(scale)
+```
+
+The implementation does not use CSS `zoom`, `scrollLeft`, `scrollTop` or native overflow scrolling as the canvas position engine.
+
+Interaction contract:
+
+- one finger pans the canvas after a small movement threshold;
+- two fingers scale around their midpoint;
+- coordinates are clamped to measured scaled-content bounds;
+- the final transform persists locally per panel/client;
+- two-finger double tap resets to `{scale:1,x:0,y:0}`;
+- a completed pinch at 97–103% snaps to exact 100%;
+- reset/snap briefly shows `Масштаб 100%` outside the transform;
+- the second finger cancels pending hold interaction;
+- post-gesture clicks are briefly suppressed;
+- ordinary taps and stationary holds remain available when no gesture is recognized.
+
+The shell DOM is created once. Home Assistant state updates rerender only the live House content inside the existing transform target, so telemetry cannot create nested viewports or reset the transform.
+
+## Visual and semantic layers
+
+1. **Decorative asset** — `frontend/assets/house-hero-photo-day-v3.webp` is local, portrait-oriented and contains no entity ids or live readings.
+2. **Live scene** — `frontend/nikas-house-hero.js` renders current values and semantic state colors.
+3. **Specialized shell** — `frontend/nikas-house-overview.js` owns Header, transform canvas, gestures and Bottom Tab Bar.
+4. **Semantic source** — the backend resolves only verified private `SemanticInventory` roles and sends a data-only panel config.
+5. **Navigation** — all detail routes come from `PanelManifest + NavigationContract`; the frontend invents no subsystem paths.
 
 ## Truthfulness rules
 
 - `unknown` and `unavailable` never become green/normal.
-- Electrical quality uses the same thresholds as the accepted House/Infrastructure field logic:
-  - emergency: `<198 V` or `>242 V`;
-  - deviation: `<205 V` or `>235 V`;
-  - attention: `<210 V` or `>230 V`;
-  - otherwise normal.
+- Electrical quality thresholds remain: emergency `<198 V` or `>242 V`; deviation `<205 V` or `>235 V`; attention `<210 V` or `>230 V`; otherwise normal.
 - Sectional-gate and entrance-door outlines use only their physical access sensors.
-- The window outline is an aggregate visual cue: it means one or more bound window contacts are open; it is not an invented mapping of a specific physical window onto the decorative façade.
-- If the renderer cannot classify dedicated window entity ids, the opening set is used as a conservative aggregate instead of fabricating a location.
+- The window outline remains a conservative aggregate cue, not a fabricated mapping to a pictured physical window.
+- Unsupported runtime, power, alarm or reserve values are never invented.
 
-## Mobile composition
+## Release acceptance
 
-On iPhone portrait the scene occupies approximately the full usable first screen between the Home Assistant header and the global `Дом / Действия / Инфра` tab bar.
-
-The scene contains:
-
-- five compact top status cells;
-- weather and local time overlays;
-- camera health pill;
-- category/access callouts over the house artwork;
-- four utility cards at the bottom, collapsing to a 2×2 grid on narrow screens.
-
-After the visual scene, the existing protected House sequence continues:
-
-1. `Активные события`;
-2. `Ресурсы`;
-3. `Отопление и ГВС`;
-4. `Автомобили`;
-5. `Ключевые точки доступа`.
-
-## Field-test gate
-
-`0.30.0` is a live visual field-test step, not a production `/dashboard-house` cut-over. Acceptance requires:
-
-- the custom element and local asset load without frontend-resource errors;
-- the scene fits one iPhone portrait screen without colliding with the global bottom bar;
-- the status colors match the existing House/Infrastructure semantics;
-- `unknown` / `unavailable` are visible as unreliable states;
-- window/gate/door callouts do not imply unsupported physical-location knowledge;
-- all scene navigation targets open their existing canonical panels/views;
-- lower House sections remain unchanged and scroll correctly below the hero.
+- `/dashboard-house-v11/home` opens after a cold app refresh without a Lovelace configuration error;
+- `☰` opens the native Home Assistant menu;
+- Header and Bottom Tab Bar remain fixed and native-sized;
+- exactly one viewport and one transform target survive repeated telemetry updates;
+- pinch, pan, two-finger reset, 97–103% snap and local persistence work in the iOS Companion App;
+- all four lower utility cards remain visible and reachable;
+- gestures do not activate detail navigation or Home Assistant interactions accidentally.

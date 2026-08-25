@@ -57,7 +57,7 @@ Commands remain intentionally absent. History graphs and a map are separate read
 
 Generated custom panels use the common NikaS application language:
 
-- Back button in the upper-left;
+- Home Assistant menu button `☰` in the upper-left, dispatching `hass-toggle-menu`;
 - geometrically centered title/subtitle;
 - refresh rail in the upper-right;
 - Hero status section;
@@ -70,7 +70,7 @@ Architectural invariant:
 
 > One CGUI-owned shared custom-panel host; domain content stays declarative and read-only until explicitly promoted.
 
-## Routing and Back
+## Routing and parent navigation
 
 A generated custom panel has one Home Assistant panel route, for example:
 
@@ -86,7 +86,11 @@ ZONT     → /dashboard-house/heating
 StarLine → /dashboard-house/vehicles
 ```
 
-The shared Header uses this parent path directly and never depends on browser history.
+The permanent Header control remains the Home Assistant system menu. When a parent transition is required, the explicit parent path is presented inside the work area and never depends on browser history.
+
+## House overview specialized panel
+
+Starting with `0.35.0`, `/dashboard-house-v11/home` is owned by the integration's `nikas-house-overview` custom panel. Its Header and global Bottom Tab Bar remain native-sized around one transform-owned canvas. Lovelace no longer creates the House hero, so a cold refresh cannot race custom-card registration and report a configuration error.
 
 ## Lovelace registration
 

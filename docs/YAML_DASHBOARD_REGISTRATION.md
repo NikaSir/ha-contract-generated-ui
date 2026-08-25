@@ -23,6 +23,8 @@ It also writes:
 
 The snippet uses Home Assistant's supported YAML dashboard configuration shape.
 
+Integration-owned specialized panels are not included in the snippet. In particular, Contract Generated UI `0.35.0+` registers `Дом · v11.0` automatically at `/dashboard-house-v11/home`; keeping a second manual `dashboard-house-v11` Lovelace registration is unnecessary.
+
 ## Important safety rule
 
 The generated snippet is **merge input**, not an instruction to overwrite `configuration.yaml`.

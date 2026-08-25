@@ -59,6 +59,7 @@ class NikasHouseHero extends HTMLElement {
   setConfig(config) {
     if (!config || typeof config !== "object") throw new Error("nikas-house-hero requires a config object");
     this._config = config;
+    this.toggleAttribute("standalone", config.standalone === true);
     this._render();
   }
 
@@ -100,6 +101,7 @@ class NikasHouseHero extends HTMLElement {
   }
 
   _fitViewport() {
+    if (this._config?.standalone === true) return;
     const hero = this.shadowRoot?.querySelector(".hero");
     const tabBar = document.getElementById(GLOBAL_TABBAR_ID);
     if (!hero || !tabBar || typeof hero.getBoundingClientRect !== "function" || typeof tabBar.getBoundingClientRect !== "function") {
@@ -295,6 +297,8 @@ class NikasHouseHero extends HTMLElement {
         .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;left:8px;right:8px;bottom:8px}.utility-card{min-height:64px;padding:8px;grid-template-columns:24px 1fr}.utility-copy small{font-size:10px}.utility-copy strong{font-size:13px}.utility-copy em{font-size:10px}
         .window-zone{left:17%;top:46%;width:25%;height:12%}.gate-zone{left:10%;top:61%;width:34%;height:17%}.door-zone{right:14%;top:62%;width:14%;height:17%}
       }
+      :host([standalone]){height:100%;min-height:0}
+      :host([standalone]) ha-card,:host([standalone]) .hero{height:100%;min-height:0;max-height:none}
     </style>
     <ha-card><div class="hero" aria-label="${escapeHtml(this._config.title || "Дом сейчас")}">
       <div class="top-grid">

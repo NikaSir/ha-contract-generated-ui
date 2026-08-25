@@ -124,6 +124,18 @@
             }
           }
         },
+        "specialized_panel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "template"
+          ],
+          "properties": {
+            "template": {
+              "const": "house_overview_v1"
+            }
+          }
+        },
         "views": {
           "type": "array",
           "minItems": 1,

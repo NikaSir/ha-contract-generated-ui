@@ -1,6 +1,9 @@
 {
   "domain": "contract_generated_ui",
   "name": "Contract Generated UI",
+  "after_dependencies": [
+    "lovelace"
+  ],
   "codeowners": [
     "@NikaSir"
   ],
@@ -18,5 +21,5 @@
     "PyYAML==6.0.3"
   ],
   "single_config_entry": true,
-  "version": "0.34.2"
+  "version": "0.35.0"
 }

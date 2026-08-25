@@ -70,3 +70,27 @@ def test_generated_application_subpanels_are_not_lovelace_registered(tmp_path: P
     assert result.dashboard_count == 1
     assert "dashboard-main" in dashboards
     assert "dashboard-child" not in dashboards
+
+
+def test_specialized_panels_are_not_lovelace_registered(tmp_path: Path) -> None:
+    source = tmp_path / "contract_generated_ui"
+    manifests = source / "manifests"
+    generated = source / "generated"
+    manifests.mkdir(parents=True)
+
+    main = _manifest("main", "/dashboard-main", subpanel=False)
+    specialized = _manifest("house", "/dashboard-house-v11", subpanel=False)
+    specialized["spec"]["specialized_panel"] = {"template": "house_overview_v1"}
+    (manifests / "main.yaml").write_text(
+        yaml.safe_dump(main, sort_keys=False), encoding="utf-8"
+    )
+    (manifests / "house.yaml").write_text(
+        yaml.safe_dump(specialized, sort_keys=False), encoding="utf-8"
+    )
+
+    result = write_lovelace_registration_snippet(source, generated)
+    document = yaml.safe_load(result.path.read_text(encoding="utf-8"))
+    dashboards = document["lovelace"]["dashboards"]
+    assert result.dashboard_count == 1
+    assert "dashboard-main" in dashboards
+    assert "dashboard-house-v11" not in dashboards
