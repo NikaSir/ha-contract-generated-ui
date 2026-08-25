@@ -13,6 +13,7 @@ PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests", "navigation")
 # sources, not private inventory or user data, so removing them during sync is safe.
 RETIRED_PUBLIC_SOURCE_FILES = (
     Path("manifests") / "starline.yaml",
+    Path("manifests") / "zont.yaml",
 )
 
 

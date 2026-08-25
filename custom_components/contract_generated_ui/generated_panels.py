@@ -13,7 +13,6 @@ from .const import (
     DOMAIN,
     GENERATED_SUBPANEL_MODULE_URL,
     GENERATED_SUBPANEL_PATHS,
-    GENERATED_ZONT_MODULE_URL,
 )
 from .runtime_subpanel_shell import resolved_navigation_groups
 
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
 
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 WEB_COMPONENT_NAME = "nikas-generated-subpanel"
-ZONT_WEB_COMPONENT_NAME = "nikas-generated-zont"
 
 
 def _load_object(path: Path) -> dict[str, Any]:
@@ -52,6 +50,11 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
 
     for manifest in _manifests(source_root):
+        metadata = manifest.get("metadata", {})
+        # ZONT is integration-owned by ha-zont. Ignore a stale local manifest
+        # even before source synchronization has had a chance to remove it.
+        if isinstance(metadata, dict) and metadata.get("id") == "zont":
+            continue
         spec = manifest.get("spec", {})
         subpanel = spec.get("subpanel")
         if subpanel is None:
@@ -108,8 +111,8 @@ def build_generated_panel_specs(source_root: Path) -> list[dict[str, Any]]:
                 "source": subpanel.get("source"),
                 "tabs": tabs,
                 "sidebar_icon": tabs[0]["icon"],
-                "webcomponent_name": ZONT_WEB_COMPONENT_NAME if panel_id == "zont" else WEB_COMPONENT_NAME,
-                "module_url": GENERATED_ZONT_MODULE_URL if panel_id == "zont" else GENERATED_SUBPANEL_MODULE_URL,
+                "webcomponent_name": WEB_COMPONENT_NAME,
+                "module_url": GENERATED_SUBPANEL_MODULE_URL,
             }
         )
 
@@ -186,7 +189,6 @@ def async_unregister_generated_subpanels(hass: HomeAssistant) -> None:
 
 __all__ = [
     "WEB_COMPONENT_NAME",
-    "ZONT_WEB_COMPONENT_NAME",
     "async_register_generated_subpanels",
     "async_unregister_generated_subpanels",
     "build_generated_panel_specs",

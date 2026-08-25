@@ -99,6 +99,8 @@ Normative documents:
 
 The runnable reference is under `templates/integration-panel-v1/`. It is copied/adapted into an integration repository and must **not** become a runtime dependency on `ha-contract-generated-ui`.
 
+ZONT is a completed handoff: `ha-zont` alone registers and serves `/dashboard-zont`. This repository contains no ZONT panel manifest, frontend bundle or equipment assets. The House heating route may still link to `/dashboard-zont`; that URL is navigation to an external integration-owned panel, not shared ownership.
+
 ## Deterministic Lovelace renderer
 
 Renderer v1 resolves explicit manifest role bindings through verified semantic inventory and produces Home Assistant core Heading, Grid and Tile cards.

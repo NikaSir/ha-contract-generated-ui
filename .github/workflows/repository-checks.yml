@@ -58,7 +58,6 @@ jobs:
           node --check custom_components/contract_generated_ui/frontend/nikas-ui.js
           node --check custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js
           node --check custom_components/contract_generated_ui/frontend/nikas-generated-subpanel.js
-          node --check custom_components/contract_generated_ui/frontend/nikas-generated-zont.js
 
       - name: Smoke-test House hero runtime
         run: |

@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.35.0"
+    assert manifest["version"] == "0.35.1"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -45,7 +45,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     shell_bundle = (frontend_root / "nikas-specialized-panel-shell.js").read_text(encoding="utf-8")
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     house_panel_bundle = (frontend_root / "nikas-house-overview.js").read_text(encoding="utf-8")
-    zont_bundle = (frontend_root / "nikas-generated-zont.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
@@ -72,38 +71,28 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "env(safe-area-inset-bottom,0px)" in zoom_bundle
 
     assert '"nikas-generated-subpanel"' in shell_bundle
-    assert '"nikas-generated-zont"' in shell_bundle
+    assert '"nikas-generated-zont"' not in shell_bundle
+    assert '"NIKAS-GENERATED-ZONT"' not in zoom_bundle
     assert "window.NikasPanelZoom.attach" in shell_bundle
     assert "env(safe-area-inset-top,0px)" in shell_bundle
     assert "env(safe-area-inset-bottom,0px)" in shell_bundle
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell_bundle
 
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
-    assert 'const ELEMENT_NAME = "nikas-generated-zont"' in zont_bundle
-    assert "_boilerCard" in zont_bundle
-    assert "_circuitCard" in zont_bundle
-    assert "_roomCard" in zont_bundle
-    assert "_meterCard" in zont_bundle
-    assert "_states" in zont_bundle
-    assert "_modeButtons" in zont_bundle
-    assert "_mixerState" in zont_bundle
-    assert 'type: "config/entity_registry/list"' in zont_bundle
-    assert 'type: "config/device_registry/list"' in zont_bundle
     assert ".callService(" not in panel_bundle
-    assert 'callService("button", "press"' in zont_bundle
-    assert 'callService("switch"' not in zont_bundle
-    assert 'callService("climate"' not in zont_bundle
     assert 'type: "call_service"' not in panel_bundle
-    assert 'type: "call_service"' not in zont_bundle
 
+    assert not (frontend_root / "nikas-generated-zont.js").exists()
     assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
+    assert not (frontend_root / "assets" / "zont-boiler-casing-v0812.webp").exists()
+    assert not (frontend_root / "assets" / "zont-dhw-shell-v0812.webp").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b006"' in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
-    assert 'PANEL_ZOOM_BUILD = "b001"' in const_source
+    assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
-    assert 'SPECIALIZED_SHELL_BUILD = "b001"' in const_source
+    assert 'SPECIALIZED_SHELL_BUILD = "b002"' in const_source
     assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
     assert 'HOUSE_HERO_BUILD = "b008"' in const_source
     assert 'HOUSE_PANEL_FILENAME = "nikas-house-overview.js"' in const_source
@@ -112,9 +101,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-photo-day-v3.webp"' in const_source
     assert 'HOUSE_HERO_ASSET_BUILD = "0340b001"' in const_source
     assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
-    assert 'GENERATED_ZONT_FILENAME = "nikas-generated-zont.js"' in const_source
-    assert 'GENERATED_ZONT_BUILD = "b006"' in const_source
-    assert "GENERATED_ZONT_MODULE_URL" in const_source
+    assert "GENERATED_ZONT" not in const_source
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
     assert "PANEL_ZOOM_STATIC_PATH" in init_source
@@ -126,8 +113,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "HOUSE_HERO_ASSETS_STATIC_PATH" in init_source
     assert 'StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False)' in init_source
     assert "add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)" in init_source
-    assert "GENERATED_ZONT_STATIC_PATH" in init_source
-    assert "GENERATED_ZONT_FILENAME" in init_source
+    assert "GENERATED_ZONT" not in init_source
     assert "async_register_generated_subpanels" in init_source
     assert "async_register_house_panel" in init_source
     assert "add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
