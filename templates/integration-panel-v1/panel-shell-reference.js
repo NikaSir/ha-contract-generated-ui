@@ -1,7 +1,9 @@
-// NikaS Integration Panel Template v1.0
-// Canonical copy/adapt reference implementation.
+// NikaS Integration Panel Template v1.2
+// Development-time structural reference for Shell/Zoom v1.4.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
+// Production adoption must attach the transform-owned canvas controller and
+// interaction guards required by SPECIALIZED_PANEL_ZOOM_STANDARD.md v1.4.
 
 const APP = {
   title: "Example Panel",
@@ -77,8 +79,8 @@ class NikaSIntegrationPanelReference extends HTMLElement {
   _renderHeader() {
     const config = this._config();
     return `<header class="app-header">
-      <button type="button" class="header-action" id="back" aria-label="Назад">
-        <ha-icon icon="mdi:arrow-left"></ha-icon>
+      <button type="button" class="header-action" id="ha-menu" aria-label="Открыть меню Home Assistant">
+        <ha-icon icon="mdi:menu"></ha-icon>
       </button>
       <div class="header-title">
         <strong>${esc(config.title)}</strong>
@@ -208,8 +210,11 @@ class NikaSIntegrationPanelReference extends HTMLElement {
   }
 
   _attachInteractions() {
-    this.shadowRoot.getElementById("back")?.addEventListener("click", () => {
-      navigateExplicit(this._config().parentPath);
+    this.shadowRoot.getElementById("ha-menu")?.addEventListener("click", () => {
+      this.dispatchEvent(new CustomEvent("hass-toggle-menu", {
+        bubbles: true,
+        composed: true,
+      }));
     });
 
     this.shadowRoot.getElementById("refresh")?.addEventListener("click", () => {
@@ -259,9 +264,9 @@ class NikaSIntegrationPanelReference extends HTMLElement {
 
   _render() {
     const shell = `${this._renderHeader()}
-      <main class="scroll-region">
-        <div class="content-width">
-          ${this._renderDeviceSelector()}
+      <div class="device-selector-band">${this._renderDeviceSelector()}</div>
+      <main class="canvas-viewport" data-zoom-viewport data-engine="transform-owned-canvas">
+        <div class="canvas-content content-width" data-zoom-content>
           ${this._loading ? this._renderLoading() : `${this._renderHeroStatus()}${this._renderViewContent()}`}
         </div>
       </main>
@@ -292,7 +297,7 @@ const NIKAS_PANEL_CSS = `
 button{font:inherit}
 .app-shell{
   width:100%;height:100dvh;min-height:0;
-  display:grid;grid-template-rows:auto minmax(0,1fr) auto;
+  display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;
   overflow:hidden;background:var(--primary-background-color);
 }
 .app-header{
@@ -310,7 +315,9 @@ button{font:inherit}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-title strong{font-size:18px;font-weight:760}
 .header-title span{margin-top:2px;color:var(--nika-muted);font-size:12px;font-weight:600}
-.scroll-region{min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+.device-selector-band{min-width:0;background:var(--primary-background-color)}
+.canvas-viewport{position:relative;min-width:0;min-height:0;overflow:hidden;touch-action:none;overscroll-behavior:none}
+.canvas-content{transform-origin:0 0;transform:translate3d(0,0,0) scale(1);will-change:transform}
 .content-width{width:100%;max-width:1280px;margin:0 auto;padding:14px max(12px,env(safe-area-inset-right)) 22px max(12px,env(safe-area-inset-left))}
 .device-selector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .device-selector button{min-width:0;min-height:52px;border:1px solid var(--nika-border);border-radius:20px;background:var(--nika-surface);color:var(--primary-text-color);display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 10px;font-size:15px;font-weight:650}
