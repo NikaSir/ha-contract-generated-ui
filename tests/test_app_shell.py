@@ -129,7 +129,7 @@ def test_infrastructure_v012_uses_central_power_subviews() -> None:
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
 
-    assert manifest["metadata"]["version"] == "0.12.0"
+    assert manifest["metadata"]["version"] == "0.13.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
     assert [view["id"] for view in manifest["spec"]["views"]] == [
         "overview",

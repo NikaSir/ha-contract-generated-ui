@@ -3,15 +3,17 @@ kind: PanelManifest
 metadata:
   id: infrastructure
   title: Инфраструктура
-  version: 0.12.0
-  description: 'Production infrastructure panel v0.12: native electrical subpanel with three control points and UPS Boiler-backed non-interruptible line.'
+  version: 0.13.0
+  description: 'Integration-owned Infrastructure overview with verified power, UPS and WAN telemetry.'
 spec:
   dashboard_path: /dashboard-infrastructure
+  specialized_panel:
+    template: infrastructure_overview_v1
   app_shell:
     active: infrastructure
   views:
   - id: overview
-    title: Инфраструктура · v0.12
+    title: Инфраструктура · v11.0
     path: overview
     order: 0
     renderer: infrastructure_summary_v1

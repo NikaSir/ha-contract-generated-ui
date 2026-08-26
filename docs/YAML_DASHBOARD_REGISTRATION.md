@@ -23,7 +23,7 @@ It also writes:
 
 The snippet uses Home Assistant's supported YAML dashboard configuration shape.
 
-Integration-owned specialized panels are not included in the snippet. In particular, Contract Generated UI `0.35.0+` registers `Дом · v11.0` automatically at `/dashboard-house-v11/home`; keeping a second manual `dashboard-house-v11` Lovelace registration is unnecessary.
+Integration-owned specialized panels are not included in the snippet. Contract Generated UI registers `Дом · v11.0` automatically at `/dashboard-house-v11/home` and, starting with `0.36.0`, `Инфраструктура · v11.0` at `/dashboard-infrastructure/overview`. Keeping second manual Lovelace registrations for either route is unnecessary.
 
 ## Important safety rule
 
@@ -31,15 +31,15 @@ The generated snippet is **merge input**, not an instruction to overwrite `confi
 
 If `configuration.yaml` already contains a top-level `lovelace:` section, merge the generated `dashboards:` entries into it. Preserve existing resources, resource mode, and other dashboards.
 
-Example generated shape:
+Example generated shape for a non-specialized dashboard:
 
 ```yaml
 lovelace:
   dashboards:
-    dashboard-infrastructure:
+    dashboard-example:
       mode: yaml
-      filename: contract_generated_ui/generated/infrastructure.yaml
-      title: Infrastructure
+      filename: contract_generated_ui/generated/example.yaml
+      title: Example
       show_in_sidebar: true
       require_admin: false
 ```

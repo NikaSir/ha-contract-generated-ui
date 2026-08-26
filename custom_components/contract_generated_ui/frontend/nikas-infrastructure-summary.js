@@ -56,6 +56,41 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
     return this._state(role).state === "on";
   }
 
+  _number(role) {
+    if (this._unreliable(role)) return null;
+    const value = Number.parseFloat(String(this._state(role)?.state ?? "").replace(",", "."));
+    return Number.isFinite(value) ? value : null;
+  }
+
+  _inputVoltageTone(role) {
+    const value = this._number(role);
+    if (value === null) return "unreliable";
+    if (value < 125 || value > 275) return "event";
+    if (value < 150 || value > 265) return "warning";
+    return "ok";
+  }
+
+  _gostVoltageTone(role) {
+    const value = this._number(role);
+    if (value === null) return "unreliable";
+    return value < 198 || value > 242 ? "event" : "ok";
+  }
+
+  _lineTone() {
+    const stale = this._binary("non_interruptible_data_stale");
+    if (stale === null) return "unreliable";
+    if (stale) return "warning";
+    return this._gostVoltageTone("non_interruptible_voltage");
+  }
+
+  _lineCaption() {
+    const tone = this._lineTone();
+    if (tone === "unreliable") return "Нет данных";
+    if (tone === "warning") return "Данные устарели";
+    if (tone === "event") return "Вне ГОСТ";
+    return "UPS Котёл";
+  }
+
   _format(role) {
     const state = this._state(role);
     if (!state) return "Нет данных";
@@ -137,15 +172,20 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         this._binary("phase_a_present") === false ||
         this._binary("phase_b_present") === false ||
         this._binary("phase_c_present") === false);
+    const phaseTones = ["voltage_a", "voltage_b", "voltage_c"].map((role) => this._inputVoltageTone(role));
+    const outsidePassport = phaseTones.includes("event");
+    const workingLimit = phaseTones.includes("warning");
     const status = unreliable
       ? this._status("Данные неполные", "unreliable")
-      : event
-        ? this._status("Отклонение", "event")
+      : event || outsidePassport
+        ? this._status("Авария", "event")
+        : workingLimit
+          ? this._status("Рабочий предел", "warning")
         : this._status("Нормально", "ok");
 
     const phase = (name, voltageRole, presentRole) => {
       const present = this._binary(presentRole);
-      const tone = present === null ? "unreliable" : present ? "ok" : "event";
+      const tone = present === null ? "unreliable" : present ? this._inputVoltageTone(voltageRole) : "event";
       return `
         <div class="phase ${tone}">
           <span class="phase-name">${name}</span>
@@ -155,7 +195,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
 
     return `
       <div class="card-header">
-        <div><h2>${this._escape(this._config.title)}</h2><p>Трёхфазная сеть</p></div>
+        <div><h2>${this._escape(this._config.title)}</h2><p>До стабилизаторов · LIDER PS7500W-30</p></div>
         ${status}
       </div>
       <div class="phase-grid">
@@ -166,7 +206,13 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
       <div class="metric-grid two">
         ${this._metric("Перекос", this._format("voltage_imbalance"), "mdi:sine-wave")}
         ${this._metric("Мощность", this._format("total_power"), "mdi:flash")}
-      </div>`;
+      </div>
+      <div class="policy">Паспорт: номинальный диапазон 150–265 В · рабочий 125–275 В</div>
+      <div class="control-grid">
+        <div class="control-point unreliable"><span>После стабилизаторов</span><strong>Ожидает датчиков</strong><small>ГОСТ · 198–242 В</small></div>
+        <div class="control-point ${this._lineTone()}"><span>Неотключаемая линия</span><strong>${this._escape(this._format("non_interruptible_voltage"))}</strong><small>${this._escape(this._lineCaption())}</small></div>
+      </div>
+      ${this._config.details_path ? '<button class="details power-details" type="button">Подробнее <ha-icon icon="mdi:chevron-right"></ha-icon></button>' : ""}`;
   }
 
   _upsMarkup() {
@@ -294,6 +340,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
           border: 1px solid transparent;
         }
         .phase.ok { border-color: color-mix(in srgb, var(--success-color, #43a047) 30%, transparent); }
+        .phase.warning { border-color: color-mix(in srgb, var(--warning-color, #ff9800) 50%, transparent); }
         .phase.event { border-color: color-mix(in srgb, var(--error-color, #db4437) 40%, transparent); }
         .phase.unreliable { opacity: .68; }
         .phase-name { display: block; color: var(--secondary-text-color); font-size: 12px; margin-bottom: 1px; }
@@ -349,6 +396,16 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .reason { margin: 0 2px 7px; color: var(--secondary-text-color); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason span { font-weight: 600; color: var(--primary-text-color); }
         .keenetic-metrics .metric { padding: 7px 8px; }
+        .policy { margin: 7px 2px 0; color: var(--secondary-text-color); font-size: 11px; line-height: 1.25; }
+        .control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin-top: 7px; }
+        .control-point { min-width: 0; padding: 8px 10px; border-radius: 14px; background: var(--secondary-background-color,#f4f4f4); border: 1px solid transparent; }
+        .control-point span,.control-point small { display:block; color:var(--secondary-text-color); font-size:10.5px; line-height:1.15; }
+        .control-point strong { display:block; margin:3px 0; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .control-point.ok { border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,transparent); }
+        .control-point.warning { border-color:color-mix(in srgb,var(--warning-color,#ff9800) 50%,transparent); }
+        .control-point.event { border-color:color-mix(in srgb,var(--error-color,#db4437) 45%,transparent); }
+        .control-point.unreliable { opacity:.76; }
+        .power-details { width:100%; justify-content:flex-end; min-height:36px; margin-top:2px; }
         @media (max-width: 420px) {
           ha-card { padding: 13px 14px; }
           ha-card.ups { padding: 11px 14px 6px; }

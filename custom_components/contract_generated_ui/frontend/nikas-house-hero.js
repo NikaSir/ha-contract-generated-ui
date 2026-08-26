@@ -138,11 +138,13 @@ class NikasHouseHero extends HTMLElement {
     }
     const min = Math.min(...values);
     const max = Math.max(...values);
+    // These three phases are measured before the LIDER PS7500W-30
+    // stabilizers. Evaluate them against the stabilizer passport, not the
+    // downstream ГОСТ voltage-quality policy.
     let label = "В норме";
     let tone = "green";
-    if (min < 198 || max > 242) { label = "Авария"; tone = "red"; }
-    else if (min < 205 || max > 235) { label = "Отклонение"; tone = "orange"; }
-    else if (min < 210 || max > 230) { label = "Внимание"; tone = "yellow"; }
+    if (min < 125 || max > 275) { label = "Авария"; tone = "red"; }
+    else if (min < 150 || max > 265) { label = "Рабочий предел"; tone = "orange"; }
     return { label, tone, detail: `${min.toFixed(0)}–${max.toFixed(0)} В`, icon: "mdi:home-lightning-bolt" };
   }
 
@@ -278,24 +280,23 @@ class NikasHouseHero extends HTMLElement {
       .hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.07),transparent 22%,transparent 78%,rgba(255,255,255,.07))}
       button{font:inherit;color:inherit}
       .top-grid{position:absolute;z-index:4;left:12px;right:12px;top:12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-      .status-card,.float-card,.utility-card,.callout,.camera-pill{border:1px solid rgba(255,255,255,.88);background:rgba(255,255,255,.86);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);box-shadow:0 8px 24px rgba(64,91,108,.15)}
+      .status-card,.float-card,.utility-card,.callout{border:1px solid rgba(255,255,255,.88);background:rgba(255,255,255,.86);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);box-shadow:0 8px 24px rgba(64,91,108,.15)}
       .status-card{min-width:0;height:74px;padding:9px 8px;border-radius:18px;display:flex;gap:7px;align-items:center;cursor:pointer;text-align:left;appearance:none}
       .status-card ha-icon{width:24px;flex:0 0 24px}.status-copy{min-width:0;display:flex;flex-direction:column;line-height:1.1}.status-copy small{font-size:11px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy strong{margin-top:5px;font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy em{margin-top:4px;font-size:10px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .green ha-icon,.green strong{color:var(--green)}.yellow ha-icon,.yellow strong{color:var(--yellow)}.orange ha-icon,.orange strong{color:var(--orange)}.red ha-icon,.red strong{color:var(--red)}.blue ha-icon,.blue strong{color:var(--blue)}.grey ha-icon,.grey strong{color:var(--grey)}
-      .float-card{position:absolute;z-index:4;top:102px;border-radius:20px;padding:12px 14px;cursor:pointer;appearance:none}.weather{left:14px;min-width:118px}.clock{right:14px;text-align:right;min-width:132px}.float-main{display:flex;align-items:center;gap:9px;font-size:25px;font-weight:850}.float-main ha-icon{color:var(--blue)}.float-sub{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
-      .camera-pill{position:absolute;z-index:4;right:14px;top:190px;padding:8px 12px;border-radius:999px;display:flex;gap:7px;align-items:center;cursor:pointer;font-size:12px;font-weight:800;appearance:none}
-      .zone{position:absolute;z-index:2;border:3px solid var(--green);border-radius:10px;box-shadow:0 0 18px rgba(46,189,89,.34);pointer-events:none}.zone.yellow{border-color:var(--yellow);box-shadow:0 0 20px rgba(255,191,0,.42)}.zone.orange{border-color:var(--orange);box-shadow:0 0 20px rgba(242,139,0,.42)}.zone.red{border-color:var(--red);box-shadow:0 0 20px rgba(229,57,53,.4)}.zone.grey{border-color:rgba(122,137,148,.6);box-shadow:none}
-      .window-zone{left:20%;top:48%;width:22%;height:13%}.gate-zone{left:12%;top:64%;width:31%;height:16%}.door-zone{right:15%;top:64%;width:13%;height:16%}
+      .float-card{position:absolute;z-index:4;top:102px;border-radius:20px;padding:12px 14px;cursor:pointer;appearance:none}.weather{left:14px;min-width:118px}.clock{right:14px;text-align:right;min-width:148px}.float-main{display:flex;align-items:center;gap:9px;font-size:25px;font-weight:850}.float-main ha-icon{color:var(--blue)}.float-sub{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
+      .clock-camera{margin:6px -4px -4px auto;padding:4px;border:0;background:transparent;color:var(--orange);display:flex;align-items:center;justify-content:flex-end;gap:5px;font:inherit;font-size:11px;font-weight:800;cursor:pointer;appearance:none}.clock-camera ha-icon{--mdc-icon-size:17px;width:17px;height:17px}
+      .clock-camera.green{color:var(--green)}.clock-camera.red{color:var(--red)}.clock-camera.grey{color:var(--grey)}
+      .zones{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.zone{fill:none;stroke:var(--green);stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(46,189,89,.34))}.zone.yellow{stroke:var(--yellow);filter:drop-shadow(0 0 7px rgba(255,191,0,.42))}.zone.orange{stroke:var(--orange);filter:drop-shadow(0 0 7px rgba(242,139,0,.42))}.zone.red{stroke:var(--red);filter:drop-shadow(0 0 7px rgba(229,57,53,.4))}.zone.grey{stroke:rgba(122,137,148,.6);filter:none}
       .callout{position:absolute;z-index:4;border-radius:17px;padding:9px 12px;cursor:pointer;min-width:108px;appearance:none}.callout b{display:block;font-size:13px;color:var(--ink)}.callout span{display:block;margin-top:3px;font-size:11px;font-weight:800}.window-callout{left:7%;top:39%}.gate-callout{left:4%;top:59%}.door-callout{right:5%;top:56%}
       .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.utility-card{border-radius:19px;padding:12px 11px;min-height:88px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:start}.utility-card ha-icon{margin-top:2px}.utility-copy{min-width:0;display:flex;flex-direction:column}.utility-copy small{font-size:11px;font-weight:750;color:var(--ink)}.utility-copy strong{margin-top:5px;font-size:15px;font-weight:850}.utility-copy em{margin-top:5px;font-size:11px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       [data-route]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
       @media(max-width:600px){
         ha-card{border-radius:22px}.hero{height:var(--house-hero-available-height,calc(100dvh - 224px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
         .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:64px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:8px}.status-copy strong{margin-top:2px;font-size:12px}.status-copy em{display:none}
-        .float-card{top:80px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:10px}.camera-pill{top:150px;font-size:10px}
+        .float-card{top:80px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:10px}.clock-camera{font-size:9.5px;margin-top:4px}.clock-camera ha-icon{--mdc-icon-size:15px;width:15px;height:15px}
         .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:11px}.callout span{font-size:10px}
         .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;left:8px;right:8px;bottom:8px}.utility-card{min-height:64px;padding:8px;grid-template-columns:24px 1fr}.utility-copy small{font-size:10px}.utility-copy strong{font-size:13px}.utility-copy em{font-size:10px}
-        .window-zone{left:17%;top:46%;width:25%;height:12%}.gate-zone{left:10%;top:61%;width:34%;height:17%}.door-zone{right:14%;top:62%;width:14%;height:17%}
       }
       :host([standalone]){height:100%;min-height:0}
       :host([standalone]) ha-card,:host([standalone]) .hero{height:100%;min-height:0;max-height:none}
@@ -309,9 +310,12 @@ class NikasHouseHero extends HTMLElement {
         ${this._card("mdi:thermostat","Климат",String(climateActive),climateTone,routes.climate)}
       </div>
       <button class="float-card weather ${weather.tone}" data-route="${escapeHtml(routes.weather)}" type="button"><span class="float-main"><ha-icon icon="${escapeHtml(weather.icon)}"></ha-icon>${escapeHtml(weather.label)}</span><span class="float-sub">${escapeHtml(weather.detail)}</span></button>
-      <div class="float-card clock"><span class="float-main">${escapeHtml(time)}</span><span class="float-sub">${escapeHtml(date)}</span></div>
-      <button class="camera-pill ${cameras.tone}" data-route="${escapeHtml(routes.cameras)}" type="button"><ha-icon icon="${escapeHtml(cameras.icon)}"></ha-icon>${escapeHtml(cameras.label)}</button>
-      <div class="zone window-zone ${windowTone}"></div><div class="zone gate-zone ${gate.tone}"></div><div class="zone door-zone ${entrance.tone}"></div>
+      <div class="float-card clock"><span class="float-main">${escapeHtml(time)}</span><span class="float-sub">${escapeHtml(date)}</span><button class="clock-camera ${cameras.tone}" data-route="${escapeHtml(routes.cameras)}" type="button"><ha-icon icon="${escapeHtml(cameras.icon)}"></ha-icon>${escapeHtml(cameras.label)}</button></div>
+      <svg class="zones" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect class="zone ${windowTone}" x="182" y="738" width="170" height="158" rx="14"></rect>
+        <rect class="zone ${gate.tone}" x="112" y="986" width="260" height="188" rx="14"></rect>
+        <rect class="zone ${entrance.tone}" x="724" y="974" width="128" height="200" rx="14"></rect>
+      </svg>
       <button class="callout window-callout ${windowTone}" data-route="${escapeHtml(routes.open)}" type="button"><b>Окна</b><span>${escapeHtml(windows)} открыто</span></button>
       <button class="callout gate-callout ${gate.tone}" data-route="${escapeHtml(routes.open)}" type="button"><b>${escapeHtml(gate.label)}</b><span>${escapeHtml(gate.detail)}</span></button>
       <button class="callout door-callout ${entrance.tone}" data-route="${escapeHtml(routes.open)}" type="button"><b>${escapeHtml(entrance.label)}</b><span>${escapeHtml(entrance.detail)}</span></button>

@@ -12,7 +12,8 @@ from .runtime_infrastructure_summary import (
     required_summary_roles,
 )
 
-RuntimeRenderError = base.RuntimeRenderError
+RenderError = base.RuntimeRenderError
+
 MAX_SECTION_COLUMNS = 2
 
 
@@ -29,7 +30,7 @@ def _layout_engine_sha256(base_engine_sha256: str) -> str:
 def _role_entities(semantic_module: Mapping[str, Any]) -> dict[str, str]:
     roles = semantic_module.get("roles")
     if not isinstance(roles, list):
-        raise RuntimeRenderError("infrastructure summary roles missing")
+        raise RenderError("infrastructure summary roles missing")
     return {
         role["role"]: role["entity_id"]
         for role in roles
@@ -53,7 +54,7 @@ def _power_quality_prefix(entities: Mapping[str, str]) -> str:
     )
     missing = [name for name in required if name not in entities]
     if missing:
-        raise RuntimeRenderError("infrastructure power quality missing roles: " + ", ".join(missing))
+        raise RenderError("infrastructure power quality missing roles: " + ", ".join(missing))
 
     grid = entities["grid_ok"]
     meter = entities["meter_online"]
@@ -75,9 +76,8 @@ def _power_quality_short(entities: Mapping[str, str]) -> str:
     return (
         _power_quality_prefix(entities)
         + "{% if not reliable %}⚪ Нет данных"
-        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария"
-        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение"
-        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание"
+        + "{% elif event or (volts|min)<125 or (volts|max)>275 %}🔴 Авария"
+        + "{% elif (volts|min)<150 or (volts|max)>265 %}🟠 Рабочий предел"
         + "{% else %}🟢 Нормально{% endif %}"
     )
 
@@ -86,9 +86,8 @@ def _power_quality_heading(entities: Mapping[str, str]) -> str:
     return (
         _power_quality_prefix(entities)
         + "## {% if not reliable %}⚪ Данные входящей сети неполные"
-        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария входящей сети"
-        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение входящей сети"
-        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание · входящая сеть"
+        + "{% elif event or (volts|min)<125 or (volts|max)>275 %}🔴 Авария входящей сети"
+        + "{% elif (volts|min)<150 or (volts|max)>265 %}🟠 Рабочий предел входящей сети"
         + "{% else %}🟢 Входящая сеть в норме{% endif %}"
     )
 
@@ -108,12 +107,12 @@ def _polish_power_summary(
         entities.get("voltage_c"),
     ]
     if not all(isinstance(entity, str) for entity in voltage_entities):
-        raise RuntimeRenderError("infrastructure power voltage roles missing")
+        raise RenderError("infrastructure power voltage roles missing")
 
     if view_id == "overview":
         content = card.get("content")
         if not isinstance(content, str):
-            raise RuntimeRenderError("infrastructure power overview content missing")
+            raise RenderError("infrastructure power overview content missing")
         grid = entities["grid_ok"]
         meter = entities["meter_online"]
         phase_loss = entities["phase_loss"]
@@ -129,11 +128,11 @@ def _polish_power_summary(
         )
         old_status = (
             "{% if not before_reliable %}⚪ Нет данных"
-            "{% elif before_event %}🔴 Отклонение"
-            "{% else %}🟢 Нормально{% endif %}"
+            "{% elif before_event %}🔴 Авария"
+            "{% else %}🟢 Контроль{% endif %}"
         )
         if old_prefix not in content or old_status not in content:
-            raise RuntimeRenderError("infrastructure power overview template shape changed")
+            raise RenderError("infrastructure power overview template shape changed")
         card["content"] = content.replace(old_prefix, _power_quality_prefix(entities)).replace(
             old_status, _power_quality_short(entities)
         )
@@ -143,11 +142,11 @@ def _polish_power_summary(
         return
     cards = card.get("cards")
     if not isinstance(cards, list) or not cards or not isinstance(cards[0], dict):
-        raise RuntimeRenderError("infrastructure power detail status card missing")
+        raise RenderError("infrastructure power detail status card missing")
     status_card = cards[0]
     entity_ids = status_card.get("entity_id")
     if not isinstance(entity_ids, list):
-        raise RuntimeRenderError("infrastructure power detail entity tracking missing")
+        raise RenderError("infrastructure power detail entity tracking missing")
     for entity in voltage_entities:
         if entity not in entity_ids:
             entity_ids.append(entity)
@@ -155,17 +154,18 @@ def _polish_power_summary(
     if view_id == "power-before":
         status_card["content"] = (
             _power_quality_heading(entities)
-            + "\nКонтроль входящей трёхфазной сети **до стабилизаторов**."
+            + "\nКонтроль **до стабилизаторов** по паспорту LIDER PS7500W-30: номинальный диапазон **150–265 В**, рабочий диапазон **125–275 В**."
         )
         return
 
     line_mode = entities.get("non_interruptible_mode")
     line_stale = entities.get("non_interruptible_data_stale")
     if not isinstance(line_mode, str) or not isinstance(line_stale, str):
-        raise RuntimeRenderError("infrastructure boiler-line status roles missing")
+        raise RenderError("infrastructure boiler-line status roles missing")
     status_card["content"] = (
         _power_quality_heading(entities)
         + "\nТри физические точки контроля: **до стабилизаторов**, **после стабилизаторов**, **неотключаемая линия**."
+        + "\n\nДо стабилизаторов применяются паспортные диапазоны LIDER PS7500W-30; после стабилизаторов — диапазон ГОСТ **198–242 В**."
         + "\n\nЛиния котла: **{{ state_translated('" + line_mode + "') if has_value('" + line_mode + "') else 'Недоступно' }}** · "
         + "{% if not has_value('" + line_stale + "') %}свежесть неизвестна"
         + "{% elif is_state('" + line_stale + "', 'on') %}данные устарели"
@@ -178,7 +178,7 @@ def _polish_ups_summary(card: dict[str, Any], semantic_module: Mapping[str, Any]
         return
     roles = semantic_module.get("roles")
     if not isinstance(roles, list):
-        raise RuntimeRenderError("infrastructure UPS summary roles missing")
+        raise RenderError("infrastructure UPS summary roles missing")
     role_entities = {
         role.get("role"): role.get("entity_id")
         for role in roles
@@ -189,7 +189,7 @@ def _polish_ups_summary(card: dict[str, Any], semantic_module: Mapping[str, Any]
     stale = role_entities.get("data_stale")
     content = card.get("content")
     if not isinstance(stale, str) or not isinstance(content, str):
-        raise RuntimeRenderError("infrastructure UPS summary freshness source missing")
+        raise RenderError("infrastructure UPS summary freshness source missing")
     old = (
         "{% if not has_value('" + stale + "') %}Свежесть неизвестна"
         "{% elif is_state('" + stale + "', 'on') %}Данные устарели"
@@ -202,7 +202,7 @@ def _polish_ups_summary(card: dict[str, Any], semantic_module: Mapping[str, Any]
         "{% else %}Данные актуальны{% endif %}"
     )
     if old not in content:
-        raise RuntimeRenderError("infrastructure UPS freshness template shape changed")
+        raise RenderError("infrastructure UPS freshness template shape changed")
     card["content"] = content.replace(old, new)
 
 
@@ -214,39 +214,37 @@ def _summary_dashboard(
     views = transformed.get("views")
     semantic_views = trace.get("semantics", {}).get("views")
     if not isinstance(views, list) or not isinstance(semantic_views, list):
-        raise RuntimeRenderError("infrastructure summary requires dashboard and semantic views")
+        raise RenderError("infrastructure summary requires dashboard and semantic views")
     if len(views) != len(semantic_views):
-        raise RuntimeRenderError("infrastructure summary view/trace count mismatch")
+        raise RenderError("infrastructure summary view/trace count mismatch")
 
     for view, semantic_view in zip(views, semantic_views, strict=True):
         if not isinstance(view, dict) or view.get("type") != "masonry":
-            raise RuntimeRenderError("infrastructure summary expects validated masonry input")
+            raise RenderError("infrastructure summary expects validated masonry input")
         view_id = semantic_view.get("id")
         if not isinstance(view_id, str):
-            raise RuntimeRenderError("infrastructure summary view id missing")
+            raise RenderError("infrastructure summary view id missing")
         cards = view.pop("cards", None)
         modules = semantic_view.get("modules")
         if not isinstance(cards, list) or not isinstance(modules, list):
-            raise RuntimeRenderError("infrastructure summary module input missing")
+            raise RenderError("infrastructure summary module input missing")
         if len(cards) != len(modules) * 2:
-            raise RuntimeRenderError(
-                "infrastructure summary heading/grid pairs do not match modules"
-            )
+            raise RenderError("infrastructure summary heading/grid pairs do not match modules")
 
         sections: list[dict[str, Any]] = []
         for semantic_module in modules:
             if not isinstance(semantic_module, Mapping):
-                raise RuntimeRenderError("infrastructure summary module must be an object")
+                raise RenderError("infrastructure summary module must be an object")
             try:
                 card = build_summary_card(semantic_module, view_id=view_id)
             except ValueError as err:
-                raise RuntimeRenderError(str(err)) from err
+                raise RenderError(str(err)) from err
             _polish_power_summary(card, semantic_module, view_id=view_id)
             _polish_ups_summary(card, semantic_module)
             sections.append({"type": "grid", "cards": [card]})
 
         if not sections:
-            raise RuntimeRenderError("infrastructure summary rendered no sections")
+            raise RenderError("infrastructure summary rendered no sections")
         view["type"] = "sections"
         view["max_columns"] = min(MAX_SECTION_COLUMNS, max(1, len(sections)))
         view["dense_section_placement"] = True
@@ -262,14 +260,14 @@ def _filter_trace(trace: Mapping[str, Any]) -> dict[str, Any]:
     filtered = copy.deepcopy(trace)
     semantic_views = filtered.get("semantics", {}).get("views")
     if not isinstance(semantic_views, list):
-        raise RuntimeRenderError("infrastructure summary trace has no semantic views")
+        raise RenderError("infrastructure summary trace has no semantic views")
 
     keep_binding_keys: set[str] = set()
     for view in semantic_views:
         view_id = view.get("id")
         modules = view.get("modules")
         if not isinstance(view_id, str) or not isinstance(modules, list):
-            raise RuntimeRenderError("infrastructure summary trace view is incomplete")
+            raise RenderError("infrastructure summary trace view is incomplete")
         for module in modules:
             contract_id = module.get("contract")
             instance = module.get("instance")
@@ -279,11 +277,11 @@ def _filter_trace(trace: Mapping[str, Any]) -> dict[str, Any]:
                 or not isinstance(instance, str)
                 or not isinstance(roles, list)
             ):
-                raise RuntimeRenderError("infrastructure summary trace module is incomplete")
+                raise RenderError("infrastructure summary trace module is incomplete")
             try:
                 required = required_summary_roles(contract_id, view_id)
             except ValueError as err:
-                raise RuntimeRenderError(str(err)) from err
+                raise RenderError(str(err)) from err
             role_by_name = {
                 role.get("role"): role
                 for role in roles
@@ -291,7 +289,7 @@ def _filter_trace(trace: Mapping[str, Any]) -> dict[str, Any]:
             }
             missing = [role_name for role_name in required if role_name not in role_by_name]
             if missing:
-                raise RuntimeRenderError(
+                raise RenderError(
                     f"infrastructure summary trace {contract_id!r} missing roles: {', '.join(missing)}"
                 )
             module["roles"] = [role_by_name[role_name] for role_name in required]
@@ -300,7 +298,7 @@ def _filter_trace(trace: Mapping[str, Any]) -> dict[str, Any]:
 
     bindings = filtered.get("bindings")
     if not isinstance(bindings, dict):
-        raise RuntimeRenderError("infrastructure summary trace bindings missing")
+        raise RenderError("infrastructure summary trace bindings missing")
     filtered["bindings"] = {
         key: value for key, value in bindings.items() if key in keep_binding_keys
     }

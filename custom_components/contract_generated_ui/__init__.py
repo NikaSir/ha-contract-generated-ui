@@ -42,6 +42,8 @@ async def async_setup_entry(
         HOUSE_HERO_STATIC_PATH,
         HOUSE_PANEL_FILENAME,
         HOUSE_PANEL_STATIC_PATH,
+        INFRASTRUCTURE_PANEL_FILENAME,
+        INFRASTRUCTURE_PANEL_STATIC_PATH,
         INFRA_SUMMARY_FILENAME,
         INFRA_SUMMARY_STATIC_PATH,
         NAVIGATION_REGISTRY_FILENAME,
@@ -63,6 +65,7 @@ async def async_setup_entry(
         strip_standalone_navigation_groups,
     )
     from .house_panel import async_register_house_panel
+    from .infrastructure_panel import async_register_infrastructure_panel
     from .runtime_source_sync import sync_bundled_public_sources
     from .runtime_subpanel_shell import (
         write_empty_navigation_registry,
@@ -93,6 +96,7 @@ async def async_setup_entry(
                 StaticPathConfig(SPECIALIZED_SHELL_STATIC_PATH, str(frontend_root / SPECIALIZED_SHELL_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_STATIC_PATH, str(frontend_root / HOUSE_HERO_FILENAME), False),
                 StaticPathConfig(HOUSE_PANEL_STATIC_PATH, str(frontend_root / HOUSE_PANEL_FILENAME), False),
+                StaticPathConfig(INFRASTRUCTURE_PANEL_STATIC_PATH, str(frontend_root / INFRASTRUCTURE_PANEL_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_ASSETS_STATIC_PATH, str(frontend_root / "assets"), False),
                 StaticPathConfig(GENERATED_SUBPANEL_STATIC_PATH, str(frontend_root / GENERATED_SUBPANEL_FILENAME), False),
                 StaticPathConfig(NAVIGATION_REGISTRY_STATIC_PATH, str(navigation_registry_path), False),
@@ -109,6 +113,11 @@ async def async_setup_entry(
         await async_register_house_panel(hass, source_root)
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
         _LOGGER.warning("Cannot register specialized NikaS House panel: %s", err)
+
+    try:
+        await async_register_infrastructure_panel(hass, source_root)
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
+        _LOGGER.warning("Cannot register specialized NikaS Infrastructure panel: %s", err)
 
     try:
         await async_register_generated_subpanels(hass, source_root)
@@ -139,10 +148,12 @@ async def async_unload_entry(
     )
     from .generated_panels import async_unregister_generated_subpanels
     from .house_panel import async_unregister_house_panel
+    from .infrastructure_panel import async_unregister_infrastructure_panel
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, (Platform.SENSOR, Platform.BUTTON))
     if unloaded:
         async_unregister_house_panel(hass)
+        async_unregister_infrastructure_panel(hass)
         async_unregister_generated_subpanels(hass)
         for module_url in (
             UI_BUNDLE_MODULE_URL,

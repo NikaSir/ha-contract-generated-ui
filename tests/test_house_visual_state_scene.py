@@ -16,9 +16,8 @@ def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     assert "https://" not in bundle
     assert '"unknown"' in bundle
     assert '"unavailable"' in bundle
-    assert "min < 198 || max > 242" in bundle
-    assert "min < 205 || max > 235" in bundle
-    assert "min < 210 || max > 230" in bundle
+    assert "min < 125 || max > 275" in bundle
+    assert "min < 150 || max > 265" in bundle
     assert "Нет данных" in bundle
     assert "Авария" in bundle
     assert "Отклонение" in bundle
@@ -42,6 +41,26 @@ def test_house_visual_scene_keeps_data_and_art_separate() -> None:
     assert '"access": {' in renderer
     assert "HOUSE_HERO_ASSET_URL" in renderer
     assert "house-hero-photo-day-v3.webp?build=0340b001" in renderer
+
+
+def test_house_frontend_anchors_zones_in_source_image_space() -> None:
+    frontend = (ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "nikas-house-hero.js").read_text(encoding="utf-8")
+    assert 'viewBox="0 0 1024 1536"' in frontend
+    assert 'preserveAspectRatio="xMidYMid slice"' in frontend
+    assert "vector-effect:non-scaling-stroke" in frontend
+    assert "camera-pill" not in frontend
+    assert "clock-camera" in frontend
+    assert "min < 125 || max > 275" in frontend
+    assert "min < 150 || max > 265" in frontend
+
+
+def test_house_generated_fallback_uses_upstream_stabilizer_policy() -> None:
+    renderer = (ROOT / "generator" / "house_base.py").read_text(encoding="utf-8")
+    assert "(pe.v|min)<125" in renderer
+    assert "(pe.v|max)>275" in renderer
+    assert "(pe.v|min)<150" in renderer
+    assert "(pe.v|max)>265" in renderer
+    assert "(pe.v|min)<198" not in renderer
 
 
 def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
@@ -69,7 +88,9 @@ def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     assert "flex-direction:column" in bundle
     assert "justify-content:center" in bundle
 
-    # Zones remain calibrated to the accepted portrait composition.
-    assert ".window-zone{left:17%;top:46%;width:25%;height:12%}" in bundle
-    assert ".gate-zone{left:10%;top:61%;width:34%;height:17%}" in bundle
-    assert ".door-zone{right:14%;top:62%;width:14%;height:17%}" in bundle
+    # Zones are calibrated in source-image coordinates and share its cover crop.
+    assert 'viewBox="0 0 1024 1536"' in bundle
+    assert 'preserveAspectRatio="xMidYMid slice"' in bundle
+    assert 'x="182" y="738" width="170" height="158"' in bundle
+    assert 'x="112" y="986" width="260" height="188"' in bundle
+    assert 'x="724" y="974" width="128" height="200"' in bundle
