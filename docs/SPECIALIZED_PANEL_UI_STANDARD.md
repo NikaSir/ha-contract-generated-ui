@@ -1,6 +1,6 @@
 # Home Assistant NikaS — единый стандарт интерфейса специализированных панелей интеграций
 
-> **ИСТОРИЧЕСКИЙ ДОКУМЕНТ:** заменён `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5. Правила Back, панорамирования при 100%, Header, Bottom Tab Bar и brand ниже ненормативны при расхождении с v1.5.
+> **ИСТОРИЧЕСКИЙ ДОКУМЕНТ:** заменён `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Правила Back, панорамирования при 100%, Header, Bottom Tab Bar и brand ниже ненормативны при расхождении с v1.5.
 
 **UI Standard v1.2**  
 **Статус:** обязательный  
