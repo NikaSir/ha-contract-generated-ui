@@ -1,5 +1,7 @@
 # NikaS Integration Panel Template v1.0
 
+> **SUPERSEDED FOR SHELL GEOMETRY AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5. Domain composition guidance remains valid only when compatible with v1.5.
+
 **Status:** Required reference implementation  
 **Primary target:** iPhone Pro Max, portrait  
 **Applies to:** all integration-owned specialized panels in Home Assistant NikaS

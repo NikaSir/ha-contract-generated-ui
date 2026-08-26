@@ -1,5 +1,7 @@
 # Specialized Panel Shell Standard v1.3
 
+> **SUPERSEDED:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5 for Header plaques, safe-area ownership, viewport behavior, Bottom Tab Bar geometry and brand requirements.
+
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
 **Primary acceptance viewport:** iPhone Pro Max, portrait  
