@@ -10,24 +10,26 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
     shell = (FRONTEND / "nikas-specialized-panel-shell.js").read_text(encoding="utf-8")
 
     assert "window.NikasPanelZoom.attach" in shell
-    assert "Header, controls and bottom" in shell
+    assert "Header, selector and bottom" in shell
     assert "env(safe-area-inset-top,0px)" in shell
     assert "env(safe-area-inset-right,0px)" in shell
     assert "env(safe-area-inset-bottom,0px)" in shell
     assert "env(safe-area-inset-left,0px)" in shell
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell
     assert "grid-template-columns:48px minmax(0,1fr) 48px" in shell
-    assert "padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))" in shell
+    assert "min-height:62px" in shell
 
     assert "class ZoomController" in zoom
     assert 'const DEFAULT_MIN = 0.75' in zoom
     assert 'const DEFAULT_MAX = 2.0' in zoom
-    assert 'const DEFAULT_STEP = 0.10' in zoom
-    assert "this.root.querySelector?.(\"main\")" in zoom
+    assert 'const AUTO_TARGETS = new Set(["NIKAS-GENERATED-SUBPANEL"])' in zoom
+    assert 'this.root.querySelector?.(".canvas-viewport")' in zoom
     assert "touchstart" in zoom
     assert "touchmove" in zoom
     assert "window.localStorage" in zoom
-    assert "window.scrollTo" in zoom
+    assert "this.viewport.scrollTop = 0" in zoom
+    assert "this.state.scale <= 1" in zoom
+    assert "pointercancel" in zoom
 
 
 def test_specialized_shell_contract_is_documented() -> None:

@@ -1,31 +1,35 @@
-// Shared zoom controller for specialized NikaS Home Assistant panels.
-// It scales only the work area (<main>); panel header, zoom controls, HA chrome and bottom navigation stay native.
+// Gesture-only hybrid zoom controller for specialized NikaS panels.
+// At 100% the viewport owns native vertical scrolling. Transform panning starts only above 100%.
 (() => {
-  if (window.NikasPanelZoom?.version === 1) return;
+  if (window.NikasPanelZoom?.version === 2) return;
 
   const DEFAULT_MIN = 0.75;
   const DEFAULT_MAX = 2.0;
-  const DEFAULT_STEP = 0.10;
+  const PAN_THRESHOLD = 6;
+  const TAP_DURATION = 300;
+  const DOUBLE_TAP_GAP = 420;
+  const CLICK_GUARD = 460;
   const AUTO_TARGETS = new Set(["NIKAS-GENERATED-SUBPANEL"]);
   const controllers = new WeakMap();
-
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-  const finite = (value, fallback) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  };
+  const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 
   class ZoomController {
     constructor(host, options = {}) {
       this.host = host;
       this.options = options;
       this.root = host.shadowRoot || host;
-      this.main = null;
-      this.scale = this._loadScale();
-      this.pinch = null;
-      this._boundStart = (event) => this._touchStart(event);
-      this._boundMove = (event) => this._touchMove(event);
-      this._boundEnd = (event) => this._touchEnd(event);
+      this.viewport = null;
+      this.canvas = null;
+      this.state = { scale: 1, x: 0, y: 0 };
+      this.session = null;
+      this.lastTwoFingerTap = 0;
+      this.suppressClicksUntil = 0;
+      this.resizeObserver = null;
+      this.boundStart = (event) => this._touchStart(event);
+      this.boundMove = (event) => this._touchMove(event);
+      this.boundEnd = (event) => this._touchEnd(event);
+      this.boundGuard = (event) => this._guardActivation(event);
       this.observer = new MutationObserver(() => queueMicrotask(() => this.bind()));
       this.observer.observe(this.root, { childList: true, subtree: true });
       this.bind();
@@ -33,190 +37,245 @@
 
     _min() { return clamp(finite(this.options.min, DEFAULT_MIN), 0.25, 1); }
     _max() { return clamp(finite(this.options.max, DEFAULT_MAX), 1, 4); }
-    _step() { return clamp(finite(this.options.step, DEFAULT_STEP), 0.01, 0.5); }
 
     _panelKey() {
       const config = this.host?.panel?.config || this.host?.panel || {};
-      return this.options.key || config.id || this.host.getAttribute?.("data-nikas-panel-id") || this.host.localName || "specialized-panel";
+      const panel = this.options.key || config.id || this.host.localName || "specialized-panel";
+      const device = this.host?._selectedDeviceId || "panel";
+      return `${window.location.pathname}:${panel}:${device}`;
     }
 
-    _storageKey() {
-      return `nikas:panel-zoom:v1:${window.location.pathname}:${this._panelKey()}`;
-    }
+    _storageKey() { return `nikas:panel-transform:v2:${this._panelKey()}`; }
 
-    _loadScale() {
+    _loadState() {
+      this.state = { scale: 1, x: 0, y: 0 };
       try {
-        return clamp(finite(window.localStorage.getItem(this._storageKey()), 1), this._min(), this._max());
+        const stored = JSON.parse(window.localStorage.getItem(this._storageKey()) || "null");
+        if (!stored) return;
+        this.state = {
+          scale: clamp(finite(stored.scale, 1), this._min(), this._max()),
+          x: finite(stored.x, 0),
+          y: finite(stored.y, 0),
+        };
+        if (this.state.scale <= 1) this.state = { scale: this.state.scale, x: 0, y: 0 };
       } catch (_error) {
-        return 1;
+        // Local persistence is optional.
       }
     }
 
-    _saveScale() {
-      try {
-        window.localStorage.setItem(this._storageKey(), this.scale.toFixed(3));
-      } catch (_error) {
-        // Private/hardened WebViews may reject storage. Session zoom still works.
-      }
+    _saveState() {
+      try { window.localStorage.setItem(this._storageKey(), JSON.stringify(this.state)); }
+      catch (_error) { /* Keep the current session operational. */ }
     }
 
     bind() {
-      const main = this.root.querySelector?.("main");
-      if (!main) return;
-      if (main !== this.main) {
-        this._detachMain();
-        this.main = main;
-        this.main.style.transformOrigin = "0 0";
-        this.main.style.touchAction = "pan-x pan-y";
-        this.main.addEventListener("touchstart", this._boundStart, { passive: false });
-        this.main.addEventListener("touchmove", this._boundMove, { passive: false });
-        this.main.addEventListener("touchend", this._boundEnd, { passive: false });
-        this.main.addEventListener("touchcancel", this._boundEnd, { passive: false });
+      const viewport = this.root.querySelector?.(".canvas-viewport");
+      const canvas = viewport?.querySelector?.(":scope > .work-canvas");
+      if (!viewport || !canvas) return;
+      if (viewport === this.viewport && canvas === this.canvas) return;
+      this._detach();
+      this.viewport = viewport;
+      this.canvas = canvas;
+      this._loadState();
+      viewport.addEventListener("touchstart", this.boundStart, { passive: false });
+      viewport.addEventListener("touchmove", this.boundMove, { passive: false });
+      viewport.addEventListener("touchend", this.boundEnd, { passive: false });
+      viewport.addEventListener("touchcancel", this.boundEnd, { passive: false });
+      viewport.addEventListener("click", this.boundGuard, true);
+      viewport.addEventListener("contextmenu", this.boundGuard, true);
+      if (typeof ResizeObserver === "function") {
+        this.resizeObserver = new ResizeObserver(() => this._clampAndApply());
+        this.resizeObserver.observe(viewport);
+        this.resizeObserver.observe(canvas);
       }
-      this.host.style.overflowX = "auto";
-      this.host.style.overscrollBehaviorX = "contain";
-      this._ensureControls();
-      this._applyScale();
+      this._clampAndApply();
     }
 
-    _detachMain() {
-      if (!this.main) return;
-      this.main.removeEventListener("touchstart", this._boundStart);
-      this.main.removeEventListener("touchmove", this._boundMove);
-      this.main.removeEventListener("touchend", this._boundEnd);
-      this.main.removeEventListener("touchcancel", this._boundEnd);
-      this.main = null;
-    }
-
-    _ensureControls() {
-      if (this.root.querySelector?.("[data-nikas-zoom-controls]")) return;
-      const style = document.createElement("style");
-      style.dataset.nikasZoomStyle = "1";
-      style.textContent = `
-        [data-nikas-zoom-controls]{position:fixed;z-index:35;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:40px 58px 40px;align-items:center;min-height:40px;padding:3px;border:1px solid var(--divider-color,rgba(127,127,127,.22));border-radius:16px;background:color-mix(in srgb,var(--card-background-color,var(--ha-card-background,#fff)) 94%,transparent);box-shadow:0 4px 18px rgba(0,0,0,.13);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-        [data-nikas-zoom-controls] button{appearance:none;border:0;background:transparent;color:var(--primary-text-color,#111827);min-width:40px;height:38px;border-radius:12px;font:inherit;font-size:22px;font-weight:650;line-height:1;display:grid;place-items:center;-webkit-tap-highlight-color:transparent;cursor:pointer}
-        [data-nikas-zoom-controls] button:active{background:var(--secondary-background-color,rgba(127,127,127,.12))}
-        [data-nikas-zoom-controls] button:disabled{opacity:.32;cursor:default}
-        [data-nikas-zoom-percent]{font-size:12px!important;font-weight:760!important;letter-spacing:-.01em}
-        @media(min-width:900px){[data-nikas-zoom-controls]{right:20px;bottom:94px}}
-      `;
-      const controls = document.createElement("div");
-      controls.dataset.nikasZoomControls = "1";
-      controls.setAttribute("aria-label", "Масштаб панели");
-      controls.innerHTML = `
-        <button type="button" data-nikas-zoom-minus aria-label="Уменьшить масштаб">−</button>
-        <button type="button" data-nikas-zoom-percent aria-label="Сбросить масштаб до 100 процентов">100%</button>
-        <button type="button" data-nikas-zoom-plus aria-label="Увеличить масштаб">+</button>`;
-      controls.querySelector("[data-nikas-zoom-minus]").onclick = () => this.stepBy(-1);
-      controls.querySelector("[data-nikas-zoom-plus]").onclick = () => this.stepBy(1);
-      controls.querySelector("[data-nikas-zoom-percent]").onclick = () => this.setScale(1, this._visibleCenter());
-      this.root.append(style, controls);
+    _detach() {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = null;
+      if (!this.viewport) return;
+      this.viewport.removeEventListener("touchstart", this.boundStart);
+      this.viewport.removeEventListener("touchmove", this.boundMove);
+      this.viewport.removeEventListener("touchend", this.boundEnd);
+      this.viewport.removeEventListener("touchcancel", this.boundEnd);
+      this.viewport.removeEventListener("click", this.boundGuard, true);
+      this.viewport.removeEventListener("contextmenu", this.boundGuard, true);
+      this.viewport = null;
+      this.canvas = null;
     }
 
     _distance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.hypot(dx, dy);
+      return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
     }
 
-    _focal(touches) {
+    _midpoint(touches) {
       return { x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 };
     }
 
-    _visibleCenter() {
-      if (!this.main) return null;
-      const rect = this.main.getBoundingClientRect();
-      const top = Math.max(rect.top, 0);
-      const bottom = Math.min(rect.bottom, window.innerHeight);
-      return { x: Math.max(rect.left, 0) + Math.min(rect.width, window.innerWidth) / 2, y: top + Math.max(0, bottom - top) / 2 };
+    _bounds(scale = this.state.scale) {
+      if (!this.viewport || !this.canvas || scale <= 1) return { minX: 0, minY: 0 };
+      const width = Math.max(this.canvas.offsetWidth, this.canvas.scrollWidth);
+      const height = Math.max(this.canvas.offsetHeight, this.canvas.scrollHeight);
+      const availableWidth = Math.max(0, this.viewport.clientWidth - this.canvas.offsetLeft);
+      const availableHeight = Math.max(0, this.viewport.clientHeight - this.canvas.offsetTop);
+      return {
+        minX: Math.min(0, availableWidth - width * scale),
+        minY: Math.min(0, availableHeight - height * scale),
+      };
+    }
+
+    _clampState(scale, x, y) {
+      const safeScale = clamp(finite(scale, 1), this._min(), this._max());
+      if (safeScale <= 1) return { scale: safeScale, x: 0, y: 0 };
+      const bounds = this._bounds(safeScale);
+      return {
+        scale: safeScale,
+        x: clamp(finite(x, 0), bounds.minX, 0),
+        y: clamp(finite(y, 0), bounds.minY, 0),
+      };
+    }
+
+    _apply() {
+      if (!this.viewport || !this.canvas) return;
+      const zoomed = this.state.scale > 1.0001;
+      if (!zoomed) this.state = { scale: this.state.scale, x: 0, y: 0 };
+      this.viewport.classList.toggle("zoomed", zoomed);
+      this.canvas.style.transform = `translate3d(${this.state.x}px, ${this.state.y}px, 0) scale(${this.state.scale})`;
+      this.canvas.classList.add("ready");
+    }
+
+    _clampAndApply() {
+      this.state = this._clampState(this.state.scale, this.state.x, this.state.y);
+      this._apply();
+      this._saveState();
+    }
+
+    _cancelPendingHold(target) {
+      if (!target?.dispatchEvent) return;
+      const init = { bubbles: true, composed: true, cancelable: false, pointerType: "touch" };
+      const event = typeof PointerEvent === "function" ? new PointerEvent("pointercancel", init) : new Event("pointercancel", init);
+      target.dispatchEvent(event);
     }
 
     _touchStart(event) {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        this.session = {
+          startedAt: performance.now(), maxTouches: 1, moved: false, multi: false,
+          startX: touch.clientX, startY: touch.clientY, startState: { ...this.state }, target: event.composedPath?.()[0] || event.target,
+        };
+        return;
+      }
       if (event.touches.length !== 2) return;
-      const distance = this._distance(event.touches);
-      if (!distance) return;
-      this.pinch = { distance, scale: this.scale };
+      const mid = this._midpoint(event.touches);
+      const rect = this.viewport.getBoundingClientRect();
+      const localX = mid.x - rect.left - this.canvas.offsetLeft;
+      const localY = mid.y - rect.top - this.canvas.offsetTop;
+      const nativeScrollY = this.state.scale <= 1 ? this.viewport.scrollTop : 0;
+      this.session = {
+        ...(this.session || {}), startedAt: this.session?.startedAt || performance.now(), maxTouches: 2, moved: false, multi: true,
+        distance: Math.max(1, this._distance(event.touches)), scale: this.state.scale,
+        contentX: (localX - this.state.x) / this.state.scale,
+        contentY: (localY + nativeScrollY - this.state.y) / this.state.scale,
+        midX: mid.x, midY: mid.y, target: this.session?.target || event.target,
+      };
+      this._cancelPendingHold(this.session.target);
+      this.suppressClicksUntil = Date.now() + CLICK_GUARD;
       event.preventDefault();
     }
 
     _touchMove(event) {
-      if (!this.pinch || event.touches.length !== 2) return;
-      const distance = this._distance(event.touches);
-      if (!distance) return;
-      this.setScale(this.pinch.scale * (distance / this.pinch.distance), this._focal(event.touches), false);
+      if (!this.session) return;
+      if (this.session.multi && event.touches.length === 2) {
+        const mid = this._midpoint(event.touches);
+        const currentDistance = Math.max(1, this._distance(event.touches));
+        const delta = Math.hypot(mid.x - this.session.midX, mid.y - this.session.midY);
+        if (!this.session.moved && Math.abs(currentDistance - this.session.distance) < PAN_THRESHOLD && delta < PAN_THRESHOLD) return;
+        this.session.moved = true;
+        const rect = this.viewport.getBoundingClientRect();
+        const localX = mid.x - rect.left - this.canvas.offsetLeft;
+        const localY = mid.y - rect.top - this.canvas.offsetTop;
+        const scale = clamp(this.session.scale * currentDistance / this.session.distance, this._min(), this._max());
+        if (scale > 1) this.viewport.scrollTop = 0;
+        this.state = this._clampState(scale, localX - this.session.contentX * scale, localY - this.session.contentY * scale);
+        this._apply();
+        this.suppressClicksUntil = Date.now() + CLICK_GUARD;
+        event.preventDefault();
+        return;
+      }
+      if (this.state.scale <= 1 || event.touches.length !== 1 || this.session.multi) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - this.session.startX;
+      const dy = touch.clientY - this.session.startY;
+      if (!this.session.moved && Math.hypot(dx, dy) < PAN_THRESHOLD) return;
+      if (!this.session.moved) this._cancelPendingHold(this.session.target);
+      this.session.moved = true;
+      this.state = this._clampState(this.session.startState.scale, this.session.startState.x + dx, this.session.startState.y + dy);
+      this._apply();
+      this.suppressClicksUntil = Date.now() + CLICK_GUARD;
       event.preventDefault();
     }
 
     _touchEnd(event) {
-      if (!this.pinch || event.touches.length >= 2) return;
-      this.pinch = null;
-      this._saveScale();
-    }
-
-    stepBy(direction) {
-      const next = Math.round((this.scale + direction * this._step()) * 100) / 100;
-      this.setScale(next, this._visibleCenter());
-    }
-
-    setScale(value, focal = null, persist = true) {
-      const next = clamp(finite(value, 1), this._min(), this._max());
-      if (Math.abs(next - this.scale) < 0.001) {
-        if (persist) this._saveScale();
-        return;
-      }
-
-      const old = this.scale;
-      const rect = this.main?.getBoundingClientRect();
-      const hostScrollLeft = this.host.scrollLeft || 0;
-      let contentX = null;
-      let contentY = null;
-      let localX = null;
-      let topDocument = null;
-
-      if (rect && focal) {
-        localX = focal.x - rect.left;
-        contentX = (hostScrollLeft + localX) / old;
-        topDocument = rect.top + window.scrollY;
-        contentY = (window.scrollY + focal.y - topDocument) / old;
-      }
-
-      this.scale = next;
-      this._applyScale();
-
-      if (focal && contentX !== null) {
-        this.host.scrollLeft = Math.max(0, contentX * next - localX);
-        if (contentY !== null && topDocument !== null) {
-          window.scrollTo(window.scrollX, Math.max(0, topDocument + contentY * next - focal.y));
+      if (!this.session || event.touches.length) return;
+      const session = this.session;
+      const twoFingerTap = session.multi && !session.moved && performance.now() - session.startedAt <= TAP_DURATION;
+      if (session.moved && this.state.scale >= 0.97 && this.state.scale <= 1.03) {
+        this.reset(true);
+      } else if (twoFingerTap) {
+        const now = performance.now();
+        if (now - this.lastTwoFingerTap <= DOUBLE_TAP_GAP) {
+          this.lastTwoFingerTap = 0;
+          this.reset(true);
+        } else {
+          this.lastTwoFingerTap = now;
         }
+      } else {
+        this._clampAndApply();
       }
-      if (persist) this._saveScale();
+      if (session.moved || session.multi) this.suppressClicksUntil = Date.now() + CLICK_GUARD;
+      this.session = null;
     }
 
-    _applyScale() {
-      this.scale = clamp(this.scale, this._min(), this._max());
-      if (this.main) this.main.style.zoom = String(this.scale);
-      const percent = this.root.querySelector?.("[data-nikas-zoom-percent]");
-      const minus = this.root.querySelector?.("[data-nikas-zoom-minus]");
-      const plus = this.root.querySelector?.("[data-nikas-zoom-plus]");
-      if (percent) percent.textContent = `${Math.round(this.scale * 100)}%`;
-      if (minus) minus.disabled = this.scale <= this._min() + 0.001;
-      if (plus) plus.disabled = this.scale >= this._max() - 0.001;
+    _guardActivation(event) {
+      if (Date.now() >= this.suppressClicksUntil) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
     }
 
-    destroy() {
-      this.observer.disconnect();
-      this._detachMain();
+    reset(showStatus = false) {
+      this.state = { scale: 1, x: 0, y: 0 };
+      if (this.viewport) this.viewport.scrollTop = 0;
+      this._apply();
+      this._saveState();
+      if (showStatus) {
+        const status = this.root.querySelector?.(".scale-status");
+        status?.classList.add("visible");
+        window.setTimeout(() => status?.classList.remove("visible"), 1100);
+      }
     }
-  }
 
-  function isTarget(element) {
-    return AUTO_TARGETS.has(element.tagName) || element.getAttribute?.("data-nikas-panel-zoom") === "true";
+    resetPosition() {
+      if (this.viewport) this.viewport.scrollTop = 0;
+      this.state = this._clampState(this.state.scale, 0, 0);
+      this._apply();
+      this._saveState();
+    }
+
+    contextChanged() {
+      this._loadState();
+      this.resetPosition();
+    }
+
+    destroy() { this.observer.disconnect(); this._detach(); }
   }
 
   function attach(host, options = {}) {
-    if (!host || !host.shadowRoot) return null;
+    if (!host?.shadowRoot) return null;
     const existing = controllers.get(host);
-    if (existing) return existing;
+    if (existing) { existing.bind(); return existing; }
     const controller = new ZoomController(host, options);
     controllers.set(host, controller);
     return controller;
@@ -226,21 +285,18 @@
     const visit = (node) => {
       if (!node) return;
       if (node.nodeType === Node.ELEMENT_NODE) {
-        if (isTarget(node)) attach(node);
+        if (AUTO_TARGETS.has(node.tagName) || node.getAttribute?.("data-nikas-panel-zoom") === "true") attach(node);
         if (node.shadowRoot) visit(node.shadowRoot);
       }
-      const children = node.children || node.childNodes || [];
-      for (const child of children) visit(child);
+      for (const child of node.children || node.childNodes || []) visit(child);
     };
     visit(root);
   }
 
-  window.NikasPanelZoom = { version: 1, attach, discover, defaults: { min: DEFAULT_MIN, max: DEFAULT_MAX, step: DEFAULT_STEP } };
-
+  window.NikasPanelZoom = { version: 2, attach, discover, defaults: { min: DEFAULT_MIN, max: DEFAULT_MAX } };
   const observer = new MutationObserver((records) => {
     for (const record of records) for (const node of record.addedNodes) discover(node);
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
   discover(document);
-  window.setInterval(() => discover(document), 1500);
 })();

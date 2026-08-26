@@ -7,18 +7,16 @@
 
   function policyCss() {
     return `
-      .app{padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
       .header{
-        top:0!important;
         grid-template-columns:52px minmax(0,1fr) 52px!important;
-        min-height:70px!important;
+        min-height:62px!important;
         padding:
-          max(6px,env(safe-area-inset-top,0px))
-          max(10px,env(safe-area-inset-right,0px))
-          6px
-          max(10px,env(safe-area-inset-left,0px))!important;
+          max(5px,env(safe-area-inset-top,0px))
+          max(8px,env(safe-area-inset-right,0px))
+          5px
+          max(8px,env(safe-area-inset-left,0px))!important;
       }
-      .header .rail{min-width:44px;min-height:44px}
+      .header .rail{width:44px!important;height:44px!important;border-radius:16px!important}
       .header .heading{text-align:center;min-width:0}
       .bottom{
         left:0!important;
@@ -31,7 +29,7 @@
           max(8px,env(safe-area-inset-left,0px))!important;
       }
       @media(max-width:390px){
-        .header{grid-template-columns:48px minmax(0,1fr) 48px!important}
+        .header{grid-template-columns:48px minmax(0,1fr) 48px!important;min-height:60px!important}
       }
     `;
   }
@@ -49,7 +47,7 @@
     if (!root) return;
     ensurePolicyStyle(root);
 
-    // Zoom controller scales only the work <main>. Header, controls and bottom
+    // Zoom controller transforms only the work canvas. Header, selector and bottom
     // navigation remain siblings at native scale.
     if (window.NikasPanelZoom?.attach) {
       window.NikasPanelZoom.attach(host, { min: 0.75, max: 2.0, step: 0.10 });

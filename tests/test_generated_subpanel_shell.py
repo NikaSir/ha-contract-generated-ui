@@ -156,7 +156,7 @@ def test_generic_standalone_subpanel_remains_supported(tmp_path: Path) -> None:
     assert specs[0]["id"] == "example"
     assert specs[0]["webcomponent_name"] == "nikas-generated-subpanel"
     assert specs[0]["module_url"].startswith(
-        "/contract_generated_ui/frontend/nikas-generated-subpanel.js"
+        "/contract_generated_ui/frontend/dist/nikas-generated-subpanel.js"
     )
 
 

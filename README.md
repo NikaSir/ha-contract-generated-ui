@@ -1,5 +1,7 @@
 # Contract Generated UI for Home Assistant
 
+<img src="custom_components/contract_generated_ui/brand/icon.png" alt="Contract Generated UI icon" width="112" height="112">
+
 Architecture-as-Code toolchain for generating and validating Home Assistant Lovelace dashboards from formal UI contracts and verified Home Assistant inventory.
 
 ## Pipeline

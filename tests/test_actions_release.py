@@ -68,11 +68,12 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "class ZoomController" in zoom_bundle
     assert 'const DEFAULT_MIN = 0.75' in zoom_bundle
     assert 'const DEFAULT_MAX = 2.0' in zoom_bundle
-    assert 'const DEFAULT_STEP = 0.10' in zoom_bundle
     assert "touchstart" in zoom_bundle and "touchmove" in zoom_bundle
     assert "window.localStorage" in zoom_bundle
     assert "window.NikasPanelZoom" in zoom_bundle
-    assert "env(safe-area-inset-bottom,0px)" in zoom_bundle
+    assert "this.state.scale <= 1" in zoom_bundle
+    assert "this.viewport.scrollTop = 0" in zoom_bundle
+    assert "pointercancel" in zoom_bundle
 
     assert '"nikas-generated-subpanel"' in shell_bundle
     assert '"nikas-generated-zont"' not in shell_bundle
@@ -83,6 +84,11 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell_bundle
 
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
+    assert 'icon="mdi:menu"' in panel_bundle
+    assert 'new CustomEvent("hass-toggle-menu"' in panel_bundle
+    assert "mdi:arrow-left" not in panel_bundle
+    assert 'class="canvas-viewport"' in panel_bundle
+    assert 'class="work-canvas"' in panel_bundle
     assert ".callService(" not in panel_bundle
     assert 'type: "call_service"' not in panel_bundle
 
@@ -99,15 +105,25 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'SPECIALIZED_SHELL_BUILD = "b002"' in const_source
     assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
     assert 'HOUSE_HERO_BUILD = "b009"' in const_source
-    assert 'HOUSE_PANEL_FILENAME = "nikas-house-overview.js"' in const_source
-    assert 'HOUSE_PANEL_BUILD = "b003"' in const_source
-    assert 'INFRASTRUCTURE_PANEL_FILENAME = "nikas-infrastructure-overview.js"' in const_source
-    assert 'INFRASTRUCTURE_PANEL_BUILD = "b001"' in const_source
+    assert 'HOUSE_PANEL_FILENAME = "dist/nikas-house-overview.js"' in const_source
+    assert 'HOUSE_PANEL_BUILD = "b004"' in const_source
+    assert 'INFRASTRUCTURE_PANEL_FILENAME = "dist/nikas-infrastructure-overview.js"' in const_source
+    assert 'INFRASTRUCTURE_PANEL_BUILD = "b002"' in const_source
     assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-photo-day-v3.webp"' in const_source
     assert 'HOUSE_HERO_ASSET_BUILD = "0340b001"' in const_source
-    assert 'GENERATED_SUBPANEL_BUILD = "b006"' in const_source
+    assert 'GENERATED_SUBPANEL_FILENAME = "dist/nikas-generated-subpanel.js"' in const_source
+    assert 'GENERATED_SUBPANEL_BUILD = "b007"' in const_source
     assert "GENERATED_ZONT" not in const_source
+
+    dist = frontend_root / "dist"
+    for name in (
+        "nikas-house-overview.js",
+        "nikas-infrastructure-overview.js",
+        "nikas-generated-subpanel.js",
+    ):
+        packaged = (dist / name).read_text(encoding="utf-8")
+        assert not any(line.lstrip().startswith("import ") for line in packaged.splitlines())
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
     assert "PANEL_ZOOM_STATIC_PATH" in init_source
