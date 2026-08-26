@@ -36,6 +36,52 @@
     return values.some((value) => text.includes(String(value).toLocaleLowerCase()));
   }
 
+  function sameTreeShape(current, desired) {
+    if (!current || !desired || current.nodeType !== desired.nodeType) return false;
+    if (current.nodeType === Node.ELEMENT_NODE && current.tagName !== desired.tagName) return false;
+    if (current.childNodes.length !== desired.childNodes.length) return false;
+    for (let index = 0; index < current.childNodes.length; index += 1) {
+      if (!sameTreeShape(current.childNodes[index], desired.childNodes[index])) return false;
+    }
+    return true;
+  }
+
+  function syncTree(current, desired) {
+    if (current.nodeType === Node.TEXT_NODE || current.nodeType === Node.COMMENT_NODE) {
+      if (current.nodeValue !== desired.nodeValue) current.nodeValue = desired.nodeValue;
+      return;
+    }
+    if (current.nodeType === Node.ELEMENT_NODE) {
+      for (const attribute of [...current.attributes]) {
+        if (!desired.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+      }
+      for (const attribute of [...desired.attributes]) {
+        if (current.getAttribute(attribute.name) !== attribute.value) current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+    for (let index = 0; index < current.childNodes.length; index += 1) {
+      syncTree(current.childNodes[index], desired.childNodes[index]);
+    }
+  }
+
+  function commitStableMarkup(root, markup) {
+    if (typeof document === "undefined" || typeof document.createElement !== "function" || typeof Node === "undefined") {
+      root.innerHTML = markup;
+      return true;
+    }
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+    const current = [...root.childNodes];
+    const desired = [...template.content.childNodes];
+    const compatible = current.length === desired.length && current.every((node, index) => sameTreeShape(node, desired[index]));
+    if (!compatible) {
+      root.replaceChildren(template.content.cloneNode(true));
+      return true;
+    }
+    current.forEach((node, index) => syncTree(node, desired[index]));
+    return false;
+  }
+
   class NikasGeneratedSubpanel extends HTMLElement {
     constructor() {
       super();
@@ -50,8 +96,11 @@
       this._registryPromise = null;
       this._registryPlatformsKey = "";
       this._selectedDeviceId = null;
+      this._viewCache = new Map();
+      this._shellMounted = false;
       this._onHashChange = () => {
         this._active = this._tabFromLocation();
+        window.NikasPanelZoom?.attach?.(this)?.resetPosition?.();
         this._queueRender();
       };
     }
@@ -70,6 +119,7 @@
       this._panel = value;
       this._active = this._tabFromLocation();
       this._selectedDeviceId = null;
+      this._viewCache.clear();
       this._ensureRegistry(true);
       this._queueRender();
     }
@@ -502,77 +552,104 @@
         </div>`;
     }
 
+    _mountShell() {
+      if (this._shellMounted) return;
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host{display:block;width:100%;height:100dvh;overflow:hidden;background:var(--primary-background-color,#f6f7f9);color:var(--primary-text-color,#111827);font-family:var(--paper-font-body1_-_font-family,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
+          *{box-sizing:border-box}.app{position:relative;width:100%;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}
+          button{font:inherit}.header{z-index:20;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;min-height:62px;padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(127,127,127,.18));box-shadow:0 2px 12px rgba(0,0,0,.06)}
+          .rail{width:44px;height:44px;border:1px solid var(--divider-color,rgba(127,127,127,.18));border-radius:16px;display:grid;place-items:center;padding:0;background:var(--card-background-color,var(--ha-card-background,#fff));color:var(--primary-text-color,#111827);box-shadow:0 7px 20px rgba(23,45,76,.08);cursor:pointer;-webkit-tap-highlight-color:transparent}.rail ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.rail#refresh{color:var(--primary-color,#03a9f4)}
+          .rail:focus-visible,.tab:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}.heading{min-width:0;text-align:center;line-height:1.12}.heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:23px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:14px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
+          .peer-selector:empty{display:none}.peer-selector{z-index:15;padding:8px 16px 0;background:var(--primary-background-color,#f6f7f9)}.peer-selector .device-selector{width:min(100%,1120px);margin:0 auto}
+          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:none;touch-action:pan-y}.canvas-viewport.zoomed{overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+          .work-canvas{position:relative;width:min(calc(100% - 32px),1120px);min-height:100%;margin:0 auto;padding:18px 0 82px;transform-origin:0 0;visibility:hidden}.work-canvas.ready{visibility:visible}.canvas-viewport.zoomed .work-canvas{position:absolute;left:16px;right:16px;width:auto;margin:0}.view{display:block;min-width:0}
+          .hero,.card{border:1px solid var(--divider-color,rgba(127,127,127,.22));background:var(--card-background-color,var(--ha-card-background,#fff));border-radius:24px}.hero{padding:22px;position:relative;overflow:hidden}.hero::after{content:"";position:absolute;right:-46px;top:-54px;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb,var(--primary-color,#03a9f4) 12%,transparent)}
+          .eyebrow{font-size:12px;letter-spacing:.13em;font-weight:800;color:var(--secondary-text-color,#6b7280)}.hero-line{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:7px}.hero h1{margin:0;font-size:25px;line-height:1.08;letter-spacing:-.025em;font-weight:820}.hero p{margin:8px 0 0;color:var(--secondary-text-color,#6b7280);font-size:15px;line-height:1.4}.badge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;background:color-mix(in srgb,var(--success-color,#43a047) 12%,var(--card-background-color,#fff));color:var(--success-color,#43a047);font-size:14px;font-weight:750;white-space:nowrap}.badge.neutral{background:var(--secondary-background-color,rgba(127,127,127,.08));color:var(--secondary-text-color,#6b7280)}.badge.warn{background:color-mix(in srgb,var(--warning-color,#ff9800) 14%,var(--card-background-color,#fff));color:var(--warning-color,#ff9800)}.badge ha-icon{--mdc-icon-size:19px}
+          .card{margin-top:14px;padding:20px}.card-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:780}.card-title ha-icon{color:var(--primary-color,#03a9f4);--mdc-icon-size:25px}.placeholder{margin-top:14px;padding:16px;border-radius:18px;background:var(--secondary-background-color,rgba(127,127,127,.08));font-size:15px;line-height:1.5;color:var(--primary-text-color,#111827)}.unreliable-box{border:1px solid color-mix(in srgb,var(--warning-color,#ff9800) 35%,transparent)}.meta{margin-top:12px;color:var(--secondary-text-color,#6b7280);font-size:12px;line-height:1.45}
+          .device-block{margin-top:18px}.device-block:first-of-type{margin-top:14px}.device-heading{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:780}.device-heading ha-icon{--mdc-icon-size:23px;color:var(--secondary-text-color,#6b7280)}
+          .device-selector{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none}.device-selector::-webkit-scrollbar{display:none}.device-button{appearance:none;border:1px solid var(--divider-color,rgba(127,127,127,.22));background:var(--secondary-background-color,rgba(127,127,127,.05));color:var(--secondary-text-color,#6b7280);min-height:44px;padding:8px 13px;border-radius:15px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;white-space:nowrap}.device-button.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);border-color:color-mix(in srgb,var(--primary-color,#03a9f4) 28%,var(--divider-color,transparent))}.device-button ha-icon{--mdc-icon-size:20px}
+          .stats{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.chip{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border-radius:999px;background:var(--secondary-background-color,rgba(127,127,127,.08));color:var(--secondary-text-color,#6b7280);font-size:12px;font-weight:650}.chip.strong{color:var(--primary-text-color,#111827);font-weight:760}
+          .entity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.entity{min-width:0;display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid var(--divider-color,rgba(127,127,127,.18));border-radius:18px;background:var(--secondary-background-color,rgba(127,127,127,.045))}.entity.unreliable{border-color:color-mix(in srgb,var(--warning-color,#ff9800) 38%,var(--divider-color,transparent))}.entity-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--primary-color,#03a9f4) 10%,transparent);color:var(--primary-color,#03a9f4)}.entity-icon ha-icon{--mdc-icon-size:21px}.entity-copy{min-width:0}.entity-name,.entity-secondary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.entity-name{font-size:14px;font-weight:720}.entity-secondary{margin-top:2px;font-size:12px;color:var(--secondary-text-color,#6b7280)}.entity-state{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-size:13px;font-weight:760}
+          .bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(127,127,127,.18));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
+          nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(var(--tab-count,1),minmax(0,1fr));gap:4px}.tab{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#6b7280);min-width:0;min-height:52px;padding:4px 2px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;-webkit-tap-highlight-color:transparent}.tab ha-icon{--mdc-icon-size:28px;width:28px;height:28px}.tab span{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:12px;line-height:15px;font-weight:700}.tab.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);cursor:default}
+          .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;transition:opacity .14s ease,transform .14s ease}.scale-status.visible{opacity:1;transform:translate(-50%,0)}
+          @media(max-width:680px){:host{position:fixed;inset:0;width:auto;height:auto}.app{position:absolute;inset:0;width:auto;height:auto}.entity-grid{grid-template-columns:1fr}}
+          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.heading strong{font-size:21px}.heading span{font-size:13px}.hero h1{font-size:23px}.hero{padding:19px}.card{padding:18px}.badge{font-size:13px;padding:8px 10px}.entity-state{max-width:115px}}
+          @media(min-width:900px){.work-canvas{padding-top:22px}}
+          @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
+        </style>
+        <div class="app">
+          <header class="header">
+            <button class="rail" id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
+            <div class="heading"><strong></strong><span></span></div>
+            <button class="rail" id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
+          </header>
+          <div class="peer-selector"></div>
+          <main class="canvas-viewport" aria-label="Рабочая область специализированной панели"><div class="work-canvas"></div></main>
+          <div class="bottom"><nav aria-label="Навигация панели"></nav></div>
+          <div class="scale-status" role="status" aria-live="polite">Масштаб 100%</div>
+        </div>`;
+      this.shadowRoot.addEventListener("click", (event) => {
+        const button = event.target?.closest?.("button");
+        if (!button) return;
+        if (button.id === "menu") this._toggleMenu();
+        else if (button.id === "refresh") this._refresh();
+        else if (button.dataset.tab) this._selectTab(button.dataset.tab);
+        else if (button.dataset.device) this._selectDevice(button.dataset.device);
+      });
+      this._shellMounted = true;
+    }
+
+    _viewKey(active) {
+      return `${active.id}:${this._selectedDeviceId || "panel"}`;
+    }
+
     _render() {
       const config = this._config();
       const tabs = this._tabs();
       const active = this._activeTab();
       if (!config.title || !tabs.length || !active) {
-        this.shadowRoot.innerHTML = `<div style="padding:24px;font:16px sans-serif">Панель ещё не настроена.</div>`;
+        if (!this._shellMounted && !this.shadowRoot.firstChild) {
+          this.shadowRoot.innerHTML = `<div style="padding:24px;font:16px sans-serif">Панель ещё не настроена.</div>`;
+        }
         return;
       }
 
-      const navButtons = tabs
-        .map((tab) => {
-          const selected = tab.id === active.id;
-          return `
-            <button class="tab ${selected ? "active" : ""}" data-tab="${escapeHtml(tab.id)}" ${selected ? "disabled" : ""} aria-current="${selected ? "page" : "false"}">
-              <ha-icon icon="${escapeHtml(tab.icon || "mdi:view-dashboard-outline")}"></ha-icon>
-              <span>${escapeHtml(tab.label || tab.id)}</span>
-            </button>`;
-        })
-        .join("");
+      this._mountShell();
+      this.shadowRoot.querySelector(".heading strong").textContent = config.title;
+      this.shadowRoot.querySelector(".heading span").textContent = config.subtitle || config.parent?.title || "";
 
-      this.shadowRoot.innerHTML = `
-        <style>
-          :host{display:block;width:100%;height:100dvh;overflow:hidden;background:var(--primary-background-color,#f6f7f9);color:var(--primary-text-color,#111827);font-family:var(--paper-font-body1_-_font-family,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
-          *{box-sizing:border-box}.app{height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}
-          .header{z-index:20;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;min-height:62px;padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(127,127,127,.18))}
-          .rail{width:44px;height:44px;border:1px solid var(--divider-color,rgba(127,127,127,.18));border-radius:16px;display:grid;place-items:center;background:var(--card-background-color,var(--ha-card-background,#fff));color:var(--primary-text-color,#111827);box-shadow:0 7px 20px rgba(23,45,76,.08);cursor:pointer;-webkit-tap-highlight-color:transparent}.rail ha-icon{--mdc-icon-size:25px}.rail#refresh{color:var(--primary-color,#03a9f4)}
-          .heading{min-width:0;text-align:center;line-height:1.12}.heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:21px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:12px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
-          .peer-selector:empty{display:none}.peer-selector{z-index:15;padding:8px 16px 0;background:var(--primary-background-color,#f6f7f9)}.peer-selector .device-selector{width:min(100%,1120px);margin:0 auto}
-          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:contain;touch-action:pan-y}.canvas-viewport.zoomed{overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
-          .work-canvas{position:relative;width:min(calc(100% - 32px),1120px);min-height:100%;margin:0 auto;padding:18px 0 82px;transform-origin:0 0;visibility:hidden}.work-canvas.ready{visibility:visible}.canvas-viewport.zoomed .work-canvas{position:absolute;left:16px;right:16px;width:auto;margin:0}
-          .hero,.card{border:1px solid var(--divider-color,rgba(127,127,127,.22));background:var(--card-background-color,var(--ha-card-background,#fff));border-radius:24px}.hero{padding:22px;position:relative;overflow:hidden}.hero::after{content:"";position:absolute;right:-46px;top:-54px;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb,var(--primary-color,#03a9f4) 12%,transparent)}
-          .eyebrow{font-size:11px;letter-spacing:.13em;font-weight:800;color:var(--secondary-text-color,#6b7280)}.hero-line{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:7px}.hero h1{margin:0;font-size:34px;line-height:1.04;letter-spacing:-.035em;font-weight:820}.hero p{margin:8px 0 0;color:var(--secondary-text-color,#6b7280);font-size:15px;line-height:1.4}.badge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border-radius:999px;background:color-mix(in srgb,var(--success-color,#43a047) 12%,var(--card-background-color,#fff));color:var(--success-color,#43a047);font-weight:750;white-space:nowrap}.badge.neutral{background:var(--secondary-background-color,rgba(127,127,127,.08));color:var(--secondary-text-color,#6b7280)}.badge.warn{background:color-mix(in srgb,var(--warning-color,#ff9800) 14%,var(--card-background-color,#fff));color:var(--warning-color,#ff9800)}.badge ha-icon{--mdc-icon-size:19px}
-          .card{margin-top:14px;padding:20px}.card-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:780}.card-title ha-icon{color:var(--primary-color,#03a9f4);--mdc-icon-size:25px}.placeholder{margin-top:14px;padding:16px;border-radius:18px;background:var(--secondary-background-color,rgba(127,127,127,.08));font-size:15px;line-height:1.5;color:var(--primary-text-color,#111827)}.unreliable-box{border:1px solid color-mix(in srgb,var(--warning-color,#ff9800) 35%,transparent)}.meta{margin-top:12px;color:var(--secondary-text-color,#6b7280);font-size:12px;line-height:1.45}
-          .device-block{margin-top:18px}.device-block:first-of-type{margin-top:14px}.device-heading{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:780}.device-heading ha-icon{--mdc-icon-size:23px;color:var(--secondary-text-color,#6b7280)}
-          .device-selector{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none}.device-selector::-webkit-scrollbar{display:none}.device-button{appearance:none;border:1px solid var(--divider-color,rgba(127,127,127,.22));background:var(--secondary-background-color,rgba(127,127,127,.05));color:var(--secondary-text-color,#6b7280);min-height:44px;padding:8px 13px;border-radius:15px;display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:13px;font-weight:700;white-space:nowrap}.device-button.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);border-color:color-mix(in srgb,var(--primary-color,#03a9f4) 28%,var(--divider-color,transparent))}.device-button ha-icon{--mdc-icon-size:20px}
-          .stats{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}.chip{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border-radius:999px;background:var(--secondary-background-color,rgba(127,127,127,.08));color:var(--secondary-text-color,#6b7280);font-size:11px;font-weight:650}.chip.strong{color:var(--primary-text-color,#111827);font-weight:760}
-          .entity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.entity{min-width:0;display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 13px;border:1px solid var(--divider-color,rgba(127,127,127,.18));border-radius:18px;background:var(--secondary-background-color,rgba(127,127,127,.045))}.entity.unreliable{border-color:color-mix(in srgb,var(--warning-color,#ff9800) 38%,var(--divider-color,transparent))}.entity-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--primary-color,#03a9f4) 10%,transparent);color:var(--primary-color,#03a9f4)}.entity-icon ha-icon{--mdc-icon-size:21px}.entity-copy{min-width:0}.entity-name,.entity-secondary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.entity-name{font-size:14px;font-weight:720}.entity-secondary{margin-top:2px;font-size:10.5px;color:var(--secondary-text-color,#6b7280)}.entity-state{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-size:13px;font-weight:760}
-          .bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(127,127,127,.18));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
-          nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(${tabs.length},minmax(0,1fr));gap:4px}.tab{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#6b7280);min-width:0;min-height:52px;padding:4px 2px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}.tab ha-icon{--mdc-icon-size:28px;width:28px;height:28px}.tab span{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:12px;line-height:15px;font-weight:700}.tab.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);cursor:default}
-          .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;transition:opacity .14s ease,transform .14s ease}.scale-status.visible{opacity:1;transform:translate(-50%,0)}
-          @media(max-width:680px){.entity-grid{grid-template-columns:1fr}}@media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.hero h1{font-size:30px}.hero{padding:19px}.card{padding:18px}.badge{font-size:13px;padding:8px 10px}.entity-state{max-width:115px}}
-          @media(min-width:900px){.work-canvas{padding-top:22px}.hero h1{font-size:38px}}
-        </style>
-        <div class="app">
-          <header class="header">
-            <button class="rail" id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
-            <div class="heading"><strong>${escapeHtml(config.title)}</strong><span>${escapeHtml(config.subtitle || config.parent?.title || "")}</span></div>
-            <button class="rail" id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
-          </header>
-          <div class="peer-selector">${this._peerSelectorHtml(active)}</div>
-          <main class="canvas-viewport">
-            <div class="work-canvas">
-              <section class="hero">${this._heroHtml(config)}</section>
-              <section class="card">
-                <div class="card-title"><ha-icon icon="${escapeHtml(active.icon || "mdi:view-dashboard-outline")}"></ha-icon><span>${escapeHtml(active.label || active.id)}</span></div>
-                ${this._contentHtml(config, active)}
-              </section>
-            </div>
-          </main>
-          <div class="bottom"><nav>${navButtons}</nav></div>
-          <div class="scale-status" role="status" aria-live="polite">Масштаб 100%</div>
-        </div>`;
+      const peerSelector = this.shadowRoot.querySelector(".peer-selector");
+      commitStableMarkup(peerSelector, this._peerSelectorHtml(active));
 
-      this.shadowRoot.getElementById("menu").onclick = () => this._toggleMenu();
-      this.shadowRoot.getElementById("refresh").onclick = () => this._refresh();
-      for (const button of this.shadowRoot.querySelectorAll("button[data-tab]")) {
-        button.onclick = () => this._selectTab(button.dataset.tab);
+      const navButtons = tabs.map((tab) => {
+        const selected = tab.id === active.id;
+        return `<button class="tab${selected ? " active" : ""}" data-tab="${escapeHtml(tab.id)}" type="button"${selected ? " disabled" : ""} aria-current="${selected ? "page" : "false"}"><ha-icon icon="${escapeHtml(tab.icon || "mdi:view-dashboard-outline")}"></ha-icon><span>${escapeHtml(tab.label || tab.id)}</span></button>`;
+      }).join("");
+      const nav = this.shadowRoot.querySelector("nav");
+      nav.style.setProperty("--tab-count", String(Math.max(1, tabs.length)));
+      commitStableMarkup(nav, navButtons);
+
+      const viewKey = this._viewKey(active);
+      let view = this._viewCache.get(viewKey);
+      if (!view) {
+        view = document.createElement("div");
+        view.className = "view";
+        view.dataset.viewKey = viewKey;
+        this._viewCache.set(viewKey, view);
       }
-      for (const button of this.shadowRoot.querySelectorAll("button[data-device]")) {
-        button.onclick = () => this._selectDevice(button.dataset.device);
-      }
+      const viewMarkup = `
+        <section class="hero">${this._heroHtml(config)}</section>
+        <section class="card">
+          <div class="card-title"><ha-icon icon="${escapeHtml(active.icon || "mdi:view-dashboard-outline")}"></ha-icon><span>${escapeHtml(active.label || active.id)}</span></div>
+          ${this._contentHtml(config, active)}
+        </section>`;
+      commitStableMarkup(view, viewMarkup);
+
+      const canvas = this.shadowRoot.querySelector(".work-canvas");
+      if (canvas.firstElementChild !== view || canvas.childElementCount !== 1) canvas.replaceChildren(view);
+      window.NikasPanelZoom?.attach?.(this)?.bind?.();
     }
   }
 

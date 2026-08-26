@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -18,6 +19,11 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell
     assert "grid-template-columns:48px minmax(0,1fr) 48px" in shell
     assert "min-height:62px" in shell
+    assert "font-size:23px" in shell
+    assert "font-size:14px" in shell
+    assert "font-size:21px" in shell
+    assert "font-size:13px" in shell
+    assert "--mdc-icon-size:28px" in shell
 
     assert "class ZoomController" in zoom
     assert 'const DEFAULT_MIN = 0.75' in zoom
@@ -30,6 +36,57 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
     assert "this.viewport.scrollTop = 0" in zoom
     assert "this.state.scale <= 1" in zoom
     assert "pointercancel" in zoom
+
+
+def test_v16_canonical_contract_covers_indicator_flicker_and_typography() -> None:
+    standard = (DOCS / "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md").read_text(encoding="utf-8")
+
+    assert "Standard v1.6" in standard
+    assert "12–25px" in standard
+    assert "Локально" in standard
+    assert "Облако" in standard
+    assert "Резерв" in standard
+    assert "Данные актуальны" in standard
+    assert "Данные устарели" in standard
+    assert "Дом сейчас" in standard
+    assert "StarLine" in standard
+    assert "shadowRoot.innerHTML" in standard
+    assert "lazy DOM caching" in standard
+    assert "23/14px" in standard
+    assert "21/13px" in standard
+
+
+def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
+    reference = (ROOT / "templates" / "integration-panel-v1" / "panel-shell-reference.js").read_text(encoding="utf-8")
+    zoom_reference = (ROOT / "templates" / "integration-panel-v1" / "zoom-controller-reference.js").read_text(encoding="utf-8")
+    runtime_zoom = (FRONTEND / "nikas-panel-zoom.js").read_text(encoding="utf-8")
+    contract = json.loads(
+        (ROOT / "templates" / "integration-panel-v1" / "panel-contract.example.json").read_text(encoding="utf-8")
+    )
+
+    assert "Template v1.6" in reference
+    assert 'icon="mdi:menu"' in reference
+    assert "hass-toggle-menu" in reference
+    assert "mdi:arrow-left" not in reference
+    assert reference.count('class="canvas-viewport"') == 1
+    assert reference.count('class="work-canvas"') == 1
+    assert "commitStableMarkup" in reference
+    assert "this._renderQueued" in reference
+    assert "window.NikasPanelZoom?.attach" in reference
+    assert zoom_reference == runtime_zoom
+    assert "this.host?._selectedDeviceId || this.host?._selectedDevice" in zoom_reference
+    assert "font-size:23px" in reference
+    assert "font-size:14px" in reference
+    assert "--mdc-icon-size:28px" in reference
+    assert contract["header"]["left_event"] == "hass-toggle-menu"
+    assert contract["zoom"]["range_percent"] == [75, 200]
+    assert contract["rendering"]["routine_shadow_root_replacement"] is False
+    assert contract["connection_indicator"]["enabled"] is False
+    assert contract["typography"] == {
+        "meaningful_min_px": 12,
+        "meaningful_max_px": 25,
+        "schematic_redundant_annotation_px": [9, 10],
+    }
 
 
 def test_specialized_shell_contract_is_documented() -> None:

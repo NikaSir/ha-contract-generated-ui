@@ -1,3 +1,51 @@
+function sameTreeShape(current, desired) {
+  if (!current || !desired || current.nodeType !== desired.nodeType) return false;
+  if (current.nodeType === Node.ELEMENT_NODE && current.tagName !== desired.tagName) return false;
+  if (current.childNodes.length !== desired.childNodes.length) return false;
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    if (!sameTreeShape(current.childNodes[index], desired.childNodes[index])) return false;
+  }
+  return true;
+}
+
+function syncTree(current, desired) {
+  if (current.nodeType === Node.TEXT_NODE || current.nodeType === Node.COMMENT_NODE) {
+    if (current.nodeValue !== desired.nodeValue) current.nodeValue = desired.nodeValue;
+    return;
+  }
+  if (current.nodeType === Node.ELEMENT_NODE) {
+    for (const attribute of [...current.attributes]) {
+      if (!desired.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...desired.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+  }
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    syncTree(current.childNodes[index], desired.childNodes[index]);
+  }
+}
+
+function commitStableMarkup(root, markup) {
+  if (typeof document === "undefined" || typeof document.createElement !== "function" || typeof Node === "undefined") {
+    root.innerHTML = markup;
+    return true;
+  }
+  const template = document.createElement("template");
+  template.innerHTML = markup;
+  const current = [...root.childNodes];
+  const desired = [...template.content.childNodes];
+  const compatible = current.length === desired.length && current.every((node, index) => sameTreeShape(node, desired[index]));
+  if (!compatible) {
+    root.replaceChildren(template.content.cloneNode(true));
+    return true;
+  }
+  current.forEach((node, index) => syncTree(node, desired[index]));
+  return false;
+}
+
 class NikaSInfrastructureSummaryV2 extends HTMLElement {
   constructor() {
     super();
@@ -294,7 +342,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
     if (this._config.variant === "ups") content = this._upsMarkup();
     if (this._config.variant === "keenetic") content = this._keeneticMarkup();
 
-    this.shadowRoot.innerHTML = `
+    const markup = `
       <style>
         :host { display: block; width: 100%; }
         ha-card {
@@ -360,7 +408,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .ups-metrics .metric { padding: 7px 10px; }
         .metric ha-icon { color: var(--primary-color); --mdc-icon-size: 20px; flex: 0 0 auto; }
         .metric > div { min-width: 0; }
-        .metric-label { display: block; color: var(--secondary-text-color); font-size: 11.5px; line-height: 1.15; }
+        .metric-label { display: block; color: var(--secondary-text-color); font-size: 12px; line-height: 1.15; }
         .metric strong { display: block; margin-top: 1px; font-size: 15.5px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .summary-line { display: flex; gap: 4px; flex-wrap: wrap; color: var(--secondary-text-color); font-size: 12px; line-height: 1.2; }
         .ups-footer {
@@ -391,15 +439,15 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .details ha-icon { --mdc-icon-size: 19px; }
         .keenetic-primary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
         .keenetic-primary > div { padding: 9px 10px; border-radius: 14px; background: var(--secondary-background-color, #f4f4f4); min-width: 0; }
-        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 11.5px; }
+        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 12px; }
         .keenetic-primary strong { display: block; margin-top: 2px; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason { margin: 0 2px 7px; color: var(--secondary-text-color); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason span { font-weight: 600; color: var(--primary-text-color); }
         .keenetic-metrics .metric { padding: 7px 8px; }
-        .policy { margin: 7px 2px 0; color: var(--secondary-text-color); font-size: 11px; line-height: 1.25; }
+        .policy { margin: 7px 2px 0; color: var(--secondary-text-color); font-size: 12px; line-height: 1.25; }
         .control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin-top: 7px; }
         .control-point { min-width: 0; padding: 8px 10px; border-radius: 14px; background: var(--secondary-background-color,#f4f4f4); border: 1px solid transparent; }
-        .control-point span,.control-point small { display:block; color:var(--secondary-text-color); font-size:10.5px; line-height:1.15; }
+        .control-point span,.control-point small { display:block; color:var(--secondary-text-color); font-size:12px; line-height:1.15; }
         .control-point strong { display:block; margin:3px 0; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .control-point.ok { border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,transparent); }
         .control-point.warning { border-color:color-mix(in srgb,var(--warning-color,#ff9800) 50%,transparent); }
@@ -411,19 +459,22 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
           ha-card.ups { padding: 11px 14px 6px; }
           ha-card.keenetic { padding: 13px 14px 11px; }
           h2 { font-size: 19px; }
-          .status { font-size: 11.5px; padding: 6px 8px; }
+          .status { font-size: 12px; padding: 6px 8px; }
           .phase { padding: 7px 4px; }
           .metric-grid.three .metric { display: block; padding: 7px 5px; text-align: center; }
           .metric-grid.three .metric ha-icon { --mdc-icon-size: 18px; margin-bottom: 2px; }
           .metric-grid.three .metric strong { font-size: 13.5px; }
           .ups-footer { gap: 6px; }
-          .ups-summary { font-size: 11.5px; }
+          .ups-summary { font-size: 12px; }
         }
       </style>
       <ha-card class="${this._config.variant}">${content}</ha-card>`;
 
+    const replaced = commitStableMarkup(this.shadowRoot, markup);
+
     const details = this.shadowRoot.querySelector("button.details");
-    if (details && this._config.details_path) {
+    if (details && this._config.details_path && (replaced || !details._nikasDetailsBound)) {
+      details._nikasDetailsBound = true;
       details.addEventListener("click", () => this._navigate(this._config.details_path));
     }
   }
@@ -445,7 +496,7 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
 
 (() => {
   const ELEMENT_NAME = "nikas-infrastructure-overview";
-  const UI_VERSION = "0.37.0";
+  const UI_VERSION = "0.37.1";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
@@ -560,8 +611,8 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
           .rail:focus-visible,.tab:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}
           .rail ha-icon{--mdc-icon-size:25px;width:25px;height:25px}
           .heading{min-width:0;align-self:center;text-align:center;line-height:1.12}
-          .heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:21px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:12px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
-          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:contain;touch-action:pan-y;background:var(--primary-background-color,#f4f6f8)}
+          .heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:23px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:14px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
+          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:none;touch-action:pan-y;background:var(--primary-background-color,#f4f6f8)}
           .canvas-viewport.zoomed{overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
           .work-canvas{position:relative;margin:8px 12px 10px;min-width:0;min-height:calc(100% - 18px);height:max-content;padding-bottom:10px;transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
           .canvas-viewport.zoomed .work-canvas{position:absolute;left:12px;right:12px;top:8px;margin:0}
@@ -577,7 +628,8 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
           .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(82px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;white-space:nowrap;transition:opacity .14s ease,transform .14s ease}
           .scale-status.visible{opacity:1;transform:translate(-50%,0)}
           @media(max-width:700px){.overview{grid-template-columns:1fr}.overview nikas-infrastructure-summary-v2:first-child{grid-column:auto}}
-          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.tab{padding-left:2px;padding-right:2px}.work-canvas{margin:7px 9px 8px;padding-bottom:8px}.canvas-viewport.zoomed .work-canvas{left:9px;right:9px;top:7px;margin:0}}
+          @media(max-width:600px){:host{position:fixed;inset:0;width:auto;height:auto;min-height:0}.app{position:absolute;inset:0;width:auto;height:auto;min-height:0}}
+          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.heading strong{font-size:21px}.heading span{font-size:13px}.tab{padding-left:2px;padding-right:2px}.work-canvas{margin:7px 9px 8px;padding-bottom:8px}.canvas-viewport.zoomed .work-canvas{left:9px;right:9px;top:7px;margin:0}}
           @media(min-width:900px){.work-canvas{margin:14px 18px 16px;padding-bottom:16px}.canvas-viewport.zoomed .work-canvas{left:18px;right:18px;top:14px;margin:0}}
           @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
         </style>

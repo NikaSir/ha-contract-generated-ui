@@ -1,7 +1,7 @@
 # Integration dashboard header standard — superseded
 
 **Status:** Superseded  
-**Superseded by:** `docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6
+**Superseded by:** `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` v1.4 and `docs/SPECIALIZED_PANEL_SHELL_STANDARD.md` v1.3
 
 The former header-only standard is no longer normative by itself.
 

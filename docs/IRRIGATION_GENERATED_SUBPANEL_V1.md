@@ -1,13 +1,13 @@
 # HO-SC-8W generated subpanel v1
 
 **Status:** dormant staged migration candidate  
-**Shell authority:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5; Header Back references below are historical.
+**Shell authority:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6.
 **Owner of UI shell:** `ha-contract-generated-ui`  
 **Owner of data/actions:** `ha-ho-sc-8w`
 
 ## Architecture boundary
 
-The HO-SC-8W integration remains responsible for controller transport, entities, factual states and future verified actions. Contract Generated UI owns the application route, Header/Back behavior, Bottom Tab Bar and Lovelace composition.
+The HO-SC-8W integration remains responsible for controller transport, entities, factual states and future verified actions. Contract Generated UI owns the application route, Home Assistant menu Header, Bottom Tab Bar and Lovelace composition.
 
 The generated panel is intentionally read-only for controller changes in this stage. It contains no raw Tuya DP write path.
 
@@ -126,7 +126,7 @@ The existing integration-owned `ha-ho-sc-8w` custom panel remains the fallback u
 3. generation completes without unresolved bindings;
 4. `/dashboard-irrigation-generated/overview` opens locally after a full Home Assistant restart;
 5. the same staged route opens through Home Assistant Cloud / Nabu Casa;
-6. Header Back returns deterministically to `/dashboard-actions`;
+6. the Header menu opens native Home Assistant navigation and the in-work parent link returns deterministically to `/dashboard-actions`;
 7. the four Bottom Tab Bar tabs switch correctly;
 8. `unknown` / `unavailable` remain visibly unreliable;
 9. zones 1–6 match the factual DP38/runtime data from `ha-ho-sc-8w`;

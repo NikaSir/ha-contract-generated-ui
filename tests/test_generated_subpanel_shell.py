@@ -124,6 +124,24 @@ def test_zont_is_fully_handed_off_to_its_dedicated_integration() -> None:
     assert '"NIKAS-GENERATED-ZONT"' not in zoom
 
 
+def test_generic_panel_mounts_one_shell_and_caches_work_views() -> None:
+    panel = (INTEGRATION / "frontend" / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
+
+    assert "_mountShell()" in panel
+    assert "this._viewCache = new Map()" in panel
+    assert "this._viewCache.get(viewKey)" in panel
+    assert "commitStableMarkup(view, viewMarkup)" in panel
+    assert "canvas.replaceChildren(view)" in panel
+    assert panel.count('class="canvas-viewport"') == 1
+    assert panel.count('class="work-canvas"') == 1
+    assert "font-size:23px" in panel
+    assert "font-size:14px" in panel
+    assert "font-size:21px" in panel
+    assert "font-size:13px" in panel
+    assert "font-size:10.5px" not in panel
+    assert "font-size:11px" not in panel
+
+
 def test_stale_zont_manifest_cannot_register_a_panel(tmp_path: Path) -> None:
     manifest = _standalone_manifest("zont")
     source = _source_tree(tmp_path, manifest)

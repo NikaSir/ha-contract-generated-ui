@@ -7,7 +7,7 @@
 
 ## Purpose
 
-`Дом`, `Действия` and `Инфраструктура` are the three house-wide surfaces of Home Assistant NikaS. They are not integration-owned applications and therefore do not use the specialized-dashboard Back header as their primary navigation.
+`Дом`, `Действия` and `Инфраструктура` are the three house-wide surfaces of Home Assistant NikaS. They share the same fixed Home Assistant-menu Header and do not use Header Back as primary navigation.
 
 Instead they share one central application shell with a persistent bottom Tab Bar:
 

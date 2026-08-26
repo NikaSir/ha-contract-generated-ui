@@ -1,4 +1,4 @@
-# NikaS Integration Panel Template v1.0 — reference implementation
+# NikaS Integration Panel Template v1.6 — reference implementation
 
 This directory is the **canonical copy/adapt reference** for integration-owned specialized panels in Home Assistant NikaS.
 
@@ -12,9 +12,8 @@ Every panel keeps this order:
 
 ```text
 Header
-Optional Device Context Selector
-Hero Status
-Current View Content
+Optional Device Context Selector (native scale)
+One Work Viewport / Canvas
 Bottom Tab Bar
 ```
 
@@ -36,12 +35,12 @@ Narrow mobile may use:
 
 Rules:
 
-- left control is icon-only `mdi:arrow-left`;
-- no `Назад` text in Header;
-- Back uses explicit `navigate` to the declared parent route, never browser history;
+- left control is only `mdi:menu` and dispatches bubbling/composed `hass-toggle-menu`;
+- Back, browser history, an integration menu and device actions are prohibited in this rail;
 - center contains human title plus `<type/model> · UI vX.Y.Z`;
-- right side contains at most one global action, preferably Refresh;
-- left/right touch targets are >=44 × 44 px;
+- title is `23px/800`, subtitle `14px/560`; narrow fallback is `21/13px`;
+- right side contains at most one global action, normally Refresh;
+- both actions use matching `44 × 44px`, radius `16px` plaques with `25px` `ha-icon` glyphs;
 - equal side rails keep the title geometrically centered.
 
 ## Bottom Tab Bar contract
@@ -52,6 +51,7 @@ Rules:
 - never a floating pill;
 - dynamic equal-width columns from actual tab count;
 - active cell uses primary icon/text plus light primary surface;
+- MDI glyphs use `ha-icon` at `28px`; labels use `12px/700`; target height is at least `52px`;
 - short labels; `Диагн.` is allowed only when `Диагностика` does not physically fit.
 
 ## Mobile / desktop contract
@@ -66,6 +66,20 @@ Primary target: **iPhone Pro Max portrait**.
 - vertical gap 12–16 px, target 14 px;
 - desktop is an adaptation of the same hierarchy, capped at 1280 px;
 - desktop is not a separate design.
+
+Meaningful text stays within `12–25px`. Only redundant non-interactive schematic annotations may use `9–10px`.
+
+## Zoom, scroll and stable rendering
+
+- concatenate/copy the v1.6 zoom controller into the production bundle; never import it from another repository at runtime;
+- exactly one `.canvas-viewport` owns native vertical scrolling at 100%; `x = y = 0` and horizontal movement are fixed;
+- pinch range is 75–200%; one-finger transform pan starts only above 100% and is axis-clamped;
+- stationary two-finger double tap resets scale/position and shows `Масштаб 100%`; 97–103% snaps to 100%;
+- Header, selector and Bottom Tab Bar stay outside the work canvas and at fixed phone coordinates;
+- mount the application shell once; telemetry point-patches existing nodes, while visited tab/device views are lazily cached;
+- routine `hass` updates must not recreate the background, viewport, Header or navigation.
+
+The two-level connection/freshness indicator is opt-in only. When requested, use `Локально / Облако / Резерв / Нет связи / Нет данных` and `Данные актуальны / Данные устарели / Нет данных`, with `16/13px` typography and a plaque tinted by the main status color. Do not use `Онлайн` as the transport label.
 
 ## Shared primitives
 
@@ -86,18 +100,18 @@ Primary target: **iPhone Pro Max portrait**.
 
 ## Adoption sequence
 
-1. Copy `panel-shell-reference.js` into the integration frontend source tree.
+1. Copy `zoom-controller-reference.js` and `panel-shell-reference.js` into the integration frontend source tree.
 2. Rename the custom element and constants for the integration.
-3. Set title, subtitle, UI version and canonical `parentPath`.
+3. Set title, subtitle and UI version. Put any parent-section navigation inside the work area.
 4. Define 3–5 primary tabs.
 5. Enable Device Selector only for multiple peer physical devices.
 6. Replace `_renderHeroStatus()` and `_renderViewContent()` with domain content.
-7. Preserve Header, safe-area geometry, common primitives and Bottom Tab Bar semantics.
+7. Preserve Header, one viewport/canvas, stable-DOM rendering, safe-area geometry, common primitives and Bottom Tab Bar semantics.
 8. Bind factual entity-backed blocks to native HA more-info on hold where practical.
 9. Add only verified integration actions; never bypass the integration API from the frontend.
-10. Build one autonomous production JS bundle and register it through `module_url` with query-string UI-version cache busting.
+10. Build the panel plus copied v1.6 zoom controller into one autonomous production JS bundle and register it through `module_url` with query-string UI-version cache busting.
 11. CI must reject runtime imports of previous frontend versions and validate JavaScript syntax.
-12. Validate iPhone Pro Max portrait, cold cache, full HA restart and Home Assistant Cloud/Nabu Casa before acceptance.
+12. Validate iPhone Pro Max portrait, fixed Header/Bottom during long native scroll, bounded pinch/pan/reset, no telemetry/tab flash, cold cache, full HA restart and Home Assistant Cloud/Nabu Casa before acceptance.
 
 ## Multi-device rule
 

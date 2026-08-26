@@ -1,8 +1,8 @@
-import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b003";
+import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b004";
 
 (() => {
   const ELEMENT_NAME = "nikas-infrastructure-overview";
-  const UI_VERSION = "0.37.0";
+  const UI_VERSION = "0.37.1";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
@@ -117,8 +117,8 @@ import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b0
           .rail:focus-visible,.tab:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}
           .rail ha-icon{--mdc-icon-size:25px;width:25px;height:25px}
           .heading{min-width:0;align-self:center;text-align:center;line-height:1.12}
-          .heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:21px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:12px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
-          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:contain;touch-action:pan-y;background:var(--primary-background-color,#f4f6f8)}
+          .heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.heading strong{font-size:23px;font-weight:800;letter-spacing:-.02em}.heading span{margin-top:3px;font-size:14px;font-weight:560;color:var(--secondary-text-color,#6b7280)}
+          .canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:none;touch-action:pan-y;background:var(--primary-background-color,#f4f6f8)}
           .canvas-viewport.zoomed{overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
           .work-canvas{position:relative;margin:8px 12px 10px;min-width:0;min-height:calc(100% - 18px);height:max-content;padding-bottom:10px;transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
           .canvas-viewport.zoomed .work-canvas{position:absolute;left:12px;right:12px;top:8px;margin:0}
@@ -134,7 +134,8 @@ import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b0
           .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(82px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;white-space:nowrap;transition:opacity .14s ease,transform .14s ease}
           .scale-status.visible{opacity:1;transform:translate(-50%,0)}
           @media(max-width:700px){.overview{grid-template-columns:1fr}.overview nikas-infrastructure-summary-v2:first-child{grid-column:auto}}
-          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.tab{padding-left:2px;padding-right:2px}.work-canvas{margin:7px 9px 8px;padding-bottom:8px}.canvas-viewport.zoomed .work-canvas{left:9px;right:9px;top:7px;margin:0}}
+          @media(max-width:600px){:host{position:fixed;inset:0;width:auto;height:auto;min-height:0}.app{position:absolute;inset:0;width:auto;height:auto;min-height:0}}
+          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px;min-height:60px}.heading strong{font-size:21px}.heading span{font-size:13px}.tab{padding-left:2px;padding-right:2px}.work-canvas{margin:7px 9px 8px;padding-bottom:8px}.canvas-viewport.zoomed .work-canvas{left:9px;right:9px;top:7px;margin:0}}
           @media(min-width:900px){.work-canvas{margin:14px 18px 16px;padding-bottom:16px}.canvas-viewport.zoomed .work-canvas{left:18px;right:18px;top:14px;margin:0}}
           @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
         </style>

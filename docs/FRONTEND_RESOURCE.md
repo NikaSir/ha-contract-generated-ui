@@ -1,6 +1,6 @@
 # NikaS frontend resources
 
-> Shell, Header, zoom/scroll and Bottom Tab Bar requirements are governed by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5. Older explicit-Back configuration notes are historical.
+> Shell, Header, zoom/scroll, stable rendering, optional indicators, typography and Bottom Tab Bar requirements are governed by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Older explicit-Back configuration notes are historical.
 
 Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central dashboards therefore keep their primary content native Lovelace. Frontend JavaScript is used only where an application shell materially improves navigation.
 
@@ -24,7 +24,7 @@ Non-specialized manifest-defined subpanels are **автоматически** re
 /contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b006
 ```
 
-The shared host receives panel title/subtitle, explicit Back parent, 2–5 tab descriptors and optional read-only runtime source metadata from `PanelManifest + NavigationContract`.
+The shared host receives panel title/subtitle, an optional parent route for an in-work link, 2–5 tab descriptors and optional read-only runtime source metadata from `PanelManifest + NavigationContract`.
 
 For runtime read-only panels the host reads both Home Assistant **Entity Registry** and **Device Registry**. Current values are resolved only from `hass.states`. It does not call Home Assistant services, does not invoke `call_service`, and does not expose toggle/control handlers.
 

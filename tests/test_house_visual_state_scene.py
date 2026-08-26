@@ -94,3 +94,26 @@ def test_house_visual_scene_is_daytime_light_and_mobile_first() -> None:
     assert 'x="182" y="738" width="170" height="158"' in bundle
     assert 'x="112" y="986" width="260" height="188"' in bundle
     assert 'x="724" y="974" width="128" height="200"' in bundle
+
+
+def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
+    bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
+
+    # The only direct innerHTML write is the pre-live loading placeholder.
+    assert bundle.count("this.shadowRoot.innerHTML") == 1
+    assert "commitStableMarkup(this.shadowRoot, markup)" in bundle
+    assert "sameTreeShape" in bundle
+    assert "syncTree" in bundle
+    assert "_nikasRouteBound" in bundle
+    assert "connection-primary" not in bundle
+    assert "connection-secondary" not in bundle
+
+    # Meaningful mobile text never falls below the v1.6 12px floor.
+    for forbidden in (
+        "font-size:8px",
+        "font-size:9px",
+        "font-size:9.5px",
+        "font-size:10px",
+        "font-size:11px",
+    ):
+        assert forbidden not in bundle

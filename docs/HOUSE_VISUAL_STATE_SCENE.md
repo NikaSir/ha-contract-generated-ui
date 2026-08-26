@@ -1,6 +1,6 @@
 # House Overview Specialized Panel v2
 
-> This file describes the current implementation snapshot. Compliance requirements are in `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5; current 100%-pan and transparent-rail differences are tracked as GAPs.
+> This file describes the current implementation snapshot. Compliance requirements are in `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6.
 
 Contract Generated UI `0.35.0` promotes the accepted House visual state scene, now titled `Дом сейчас`, from a Lovelace custom card to an integration-owned Home Assistant specialized panel.
 
@@ -26,7 +26,7 @@ The specialized shell owns three native-scale layers:
 
 The permanent left Header control is only the Home Assistant menu button `☰`. It dispatches the standard composed and bubbling `hass-toggle-menu` event. It is never Back, an integration drawer or a device command.
 
-## Transform-owned canvas
+## Hybrid native-scroll / transform canvas
 
 The work viewport contains exactly one transform target. Its complete durable presentation state is:
 
@@ -35,11 +35,12 @@ The work viewport contains exactly one transform target. Its complete durable pr
 transform: translate3d(x, y, 0) scale(scale)
 ```
 
-The implementation does not use CSS `zoom`, `scrollLeft`, `scrollTop` or native overflow scrolling as the canvas position engine.
+The implementation never uses CSS `zoom`, `scrollLeft` or horizontal native scrolling as a canvas position engine. At 100% the work viewport deliberately owns ordinary native vertical scrolling; transform panning is enabled only above 100%.
 
 Interaction contract:
 
-- one finger pans the canvas after a small movement threshold;
+- at 100%, one finger performs ordinary vertical scrolling and `x = y = 0` remain fixed;
+- above 100%, one finger pans only along axes where scaled content exceeds the viewport;
 - two fingers scale around their midpoint;
 - coordinates are clamped to measured scaled-content bounds;
 - the final transform persists locally per panel/client;
@@ -50,7 +51,7 @@ Interaction contract:
 - post-gesture clicks are briefly suppressed;
 - ordinary taps and stationary holds remain available when no gesture is recognized.
 
-The shell DOM is created once. Home Assistant state updates rerender only the live House content inside the existing transform target, so telemetry cannot create nested viewports or reset the transform.
+The shell and live scene DOM are created once. Home Assistant state updates patch only existing text, attributes and classes inside the live House content, so telemetry cannot recreate the background, fixed chrome, viewport or transform target. The optional two-level connection/freshness indicator is intentionally absent from `Дом сейчас`.
 
 ## Visual and semantic layers
 
@@ -72,8 +73,9 @@ The shell DOM is created once. Home Assistant state updates rerender only the li
 
 - `/dashboard-house-v11/home` opens after a cold app refresh without a Lovelace configuration error;
 - `☰` opens the native Home Assistant menu;
-- Header and Bottom Tab Bar remain fixed and native-sized;
+- Header and Bottom Tab Bar remain at fixed screen coordinates and native-sized while only the work viewport scrolls;
 - exactly one viewport and one transform target survive repeated telemetry updates;
-- pinch, pan, two-finger reset, 97–103% snap and local persistence work in the iOS Companion App;
+- native vertical scroll at 100%, bounded enlarged pan, pinch, two-finger reset, 97–103% snap and local persistence work in the iOS Companion App;
 - all four lower utility cards remain visible and reachable;
 - gestures do not activate detail navigation or Home Assistant interactions accidentally.
+- telemetry, clock updates and upward/downward scrolling do not flash or recreate the scene.

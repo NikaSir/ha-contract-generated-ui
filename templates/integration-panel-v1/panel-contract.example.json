@@ -1,12 +1,11 @@
 {
   "api_version": "nikas.home-assistant/integration-panel/v1",
-  "template": "NikaS Integration Panel Template v1.0",
+  "template": "NikaS Integration Panel Template v1.6",
   "panel": {
     "id": "example",
     "title": "Example Panel",
     "path": "/dashboard-example",
     "owner": "example_integration",
-    "parent_route": "/dashboard-actions",
     "preferred_view": "overview",
     "ui_version": "1.0.0"
   },
@@ -21,9 +20,16 @@
   "header": {
     "grid": "52px minmax(0,1fr) 52px",
     "narrow_grid": "48px minmax(0,1fr) 48px",
-    "back_icon": "mdi:arrow-left",
-    "back_text": false,
-    "explicit_parent_navigation": true,
+    "left_action": "home_assistant_system_menu",
+    "left_icon": "mdi:menu",
+    "left_event": "hass-toggle-menu",
+    "action_plaque_px": 44,
+    "action_radius_px": 16,
+    "action_icon_px": 25,
+    "title_px": 23,
+    "subtitle_px": 14,
+    "narrow_title_px": 21,
+    "narrow_subtitle_px": 13,
     "min_touch_target_px": 44,
     "title_alignment": "viewport_center",
     "show_brand_icon": false,
@@ -70,6 +76,10 @@
     "min_primary_items": 3,
     "max_primary_items": 5,
     "equal_dynamic_columns": true,
+    "icon_px": 28,
+    "label_px": 12,
+    "label_weight": 700,
+    "touch_target_px": 52,
     "views": ["overview", "control", "diagnostics"]
   },
   "semantics": {
@@ -93,10 +103,44 @@
     "header_actions": "none",
     "bottom_navigation": "none"
   },
+  "zoom": {
+    "viewport_count": 1,
+    "work_area_only": true,
+    "range_percent": [75, 200],
+    "native_vertical_scroll_at_100": true,
+    "one_finger_pan_above_100_only": true,
+    "axis_aware_bounds": true,
+    "snap_to_100_percent_range": [97, 103],
+    "reset_gesture": "two_finger_double_tap",
+    "reset_message": "Масштаб 100%",
+    "permanent_controls": false
+  },
+  "rendering": {
+    "mount_shell_once": true,
+    "point_patch_telemetry": true,
+    "lazy_cache_tabs_and_devices": true,
+    "routine_shadow_root_replacement": false,
+    "persistent_background_and_viewport": true
+  },
+  "connection_indicator": {
+    "enabled": false,
+    "enable_only_by_explicit_request": true,
+    "primary_values": ["Локально", "Облако", "Резерв", "Нет связи", "Нет данных"],
+    "freshness_values": ["Данные актуальны", "Данные устарели", "Нет данных"],
+    "primary_font_px": 16,
+    "freshness_font_px": 13,
+    "status_tinted_background": true
+  },
+  "typography": {
+    "meaningful_min_px": 12,
+    "meaningful_max_px": 25,
+    "schematic_redundant_annotation_px": [9, 10]
+  },
   "frontend_delivery": {
     "mode": "self_contained_bundle",
     "runtime_shared_template_dependency": false,
     "runtime_previous_version_imports": false,
-    "cache_busting": "query_ui_version"
+    "cache_busting": "query_ui_version",
+    "github_releases": false
   }
 }

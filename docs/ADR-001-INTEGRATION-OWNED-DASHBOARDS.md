@@ -1,6 +1,6 @@
 # ADR-001: Integration-owned specialized dashboards
 
-**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5
+**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6
 **Date:** 2026-08-22
 
 The domain-ownership decision remains accepted. Explicit Header Back requirements are retired; the permanent left control is the Home Assistant system menu.
@@ -69,7 +69,7 @@ An integration-owned dashboard should expose stable metadata that can be consume
 - owner/integration id;
 - optional sidebar visibility;
 - optional preferred entry view;
-- stable canonical parent route for Header Back;
+- optional canonical parent route for an in-work-area parent link;
 - compatibility/version metadata where required.
 
 Conceptual example:
@@ -84,7 +84,8 @@ panel:
   owner: ha-ho-sc-8w
   expose_in_generated_ui: true
   navigation:
-    header_back: explicit_parent_route
+    header_left: home_assistant_system_menu
+    parent_link: explicit_work_area_route
     primary_navigation: fixed_bottom_bar
 ```
 
@@ -92,13 +93,13 @@ This metadata describes navigation. It does not give `ha-contract-generated-ui` 
 
 ### 4.1. Unified application shell
 
-Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard](SPECIALIZED_PANEL_UI_STANDARD.md).
+Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard v1.6](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md).
 
 The shell contract is:
 
-- Header Back uses `mdi:arrow-left` and an **explicit Home Assistant navigation** to the declared parent route;
-- browser history is not an application-navigation contract;
-- Header is reserved for leaving the panel and global panel actions;
+- the permanent left Header action is only `mdi:menu` and emits `hass-toggle-menu`;
+- Back, browser history and device commands are prohibited in that rail; an explicit parent link, when needed, belongs inside the work area;
+- Header is reserved for the native Home Assistant menu and one optional global panel action;
 - primary internal sections live in an iOS-safe **fixed bottom navigation bar**;
 - top primary tabs are not used;
 - factual Home Assistant entities retain long press → native more-info;
@@ -127,7 +128,7 @@ Specialized dashboard code/configuration is released with its owning integration
 - device-specific UI can closely match the natural workflow of the device or vendor application;
 - release/version compatibility is easier to reason about;
 - failures and `unknown`/`unavailable` semantics remain owned by the integration that understands them;
-- every specialized dashboard has predictable Back semantics and a common one-handed mobile navigation model.
+- every specialized dashboard has predictable Home Assistant menu semantics and a common one-handed mobile navigation model.
 
 ### Costs
 
@@ -146,4 +147,4 @@ Specialized dashboard code/configuration is released with its owning integration
 
 ## Project rule
 
-> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation. Every specialized dashboard uses the NikaS application shell: explicit Header Back + fixed bottom section navigation.
+> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation. Every specialized dashboard uses the NikaS application shell: permanent Home Assistant menu + fixed bottom section navigation.

@@ -1,4 +1,4 @@
-# NikaS Integration Panel Template v1.0
+# NikaS Integration Panel Template v1.6
 
 > **SUPERSEDED FOR SHELL GEOMETRY AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Domain composition guidance remains valid only when compatible with v1.6.
 
@@ -23,16 +23,14 @@ AppHeader
 ↓
 DeviceContextSelector (optional, peer devices only)
 ↓
-HeroStatus
-↓
-Scrollable ViewContent
+One scroll/zoom viewport with HeroStatus + ViewContent
 ↓
 BottomTabBar
 ```
 
 The hierarchy must not change between integrations.
 
-- Header Back answers **where do I exit?**
+- Header menu answers **how do I open Home Assistant navigation?**
 - Device Selector answers **which physical device?**
 - Bottom Tab Bar answers **which section of this application?**
 
@@ -52,16 +50,16 @@ Narrow fallback:
 
 Rules:
 
-- left control is only `mdi:arrow-left`; visible `Назад` text is not part of the common template;
-- touch target is at least 44×44 px;
-- Back uses explicit Home Assistant navigation to declared `parent_path`;
+- left control is only `mdi:menu`; it dispatches bubbling/composed `hass-toggle-menu`;
+- menu and Refresh use matching 44×44 px, radius 16 px plaques with 25 px `ha-icon` glyphs;
 - title is geometrically centered on the viewport;
 - first line is the human application name;
 - second line is `<type/model/context> · UI vX.Y.Z`;
+- first/second lines are `23/14px`; narrow fallback is `21/13px`;
 - decorative brand/device icon is not placed next to the title;
 - right zone contains at most one primary global action, normally Refresh, plus overflow only when genuinely needed.
 
-## 3. Canonical parent routes
+## 3. Parent-section routes inside the work area
 
 | Application | Parent |
 | --- | --- |
@@ -70,7 +68,7 @@ Rules:
 | Keenetic Hero 4G+ | `/dashboard-infrastructure/overview` |
 | Stark SolarPower UPS | `/dashboard-infrastructure/overview` |
 
-Future applications must declare their parent route in machine-readable panel metadata.
+Future applications may declare a parent route in machine-readable metadata, but its navigation control belongs inside the work area. The permanent Header rail never becomes Back.
 
 ## 4. Device Selector
 
@@ -166,18 +164,7 @@ Allowed only when topology/flow materially improves understanding.
 
 Primary mobile screen must remain readable at arm/hand distance.
 
-Recommended minimums:
-
-- Header title: 17–18 px, semibold/bold;
-- Header subtitle: 14–15 px;
-- Device Selector: 16–17 px, semibold;
-- section heading: 17–18 px;
-- ordinary labels: 15–16 px;
-- key values: 17–19 px, semibold;
-- Bottom Tab Bar labels: 14–15 px;
-- secondary/helper text: at least 14 px.
-
-Domain implementations may go larger but should not reduce below these values simply to fit more telemetry.
+Meaningful user-facing typography stays within `12–25px`. Header is the explicit `23/14px` pair (`21/13px` narrow); the optional connection/freshness indicator uses `16/13px`; Bottom Tab Bar labels use `12px/700`. Only redundant non-interactive schematic annotations may use `9–10px`. If meaningful copy does not fit at 12px, recompose the layout instead of shrinking it.
 
 ## 9. Bottom Tab Bar
 
@@ -190,6 +177,7 @@ Primary navigation is always:
 - outside the content scroll region;
 - 3–5 primary destinations;
 - icon + short label;
+- `ha-icon` MDI glyph at 28 px and label at 12 px/700;
 - active state highlighted inside its shared cell.
 
 Floating/pill navigation with side or bottom gaps is non-conforming.
@@ -209,6 +197,8 @@ Bottom Tab Bar
 ```
 
 A blank white application while waiting for bootstrap/telemetry is non-conforming.
+
+The shell is mounted once. Telemetry, clock and freshness updates point-patch existing text/classes/attributes and never replace Header, selector, viewport, canvas, background or Bottom Tab Bar. Tabs and peer-device views use lazy DOM caching so switching them cannot create a full-screen flash.
 
 ## 11. unavailable / unknown
 
@@ -236,7 +226,7 @@ Header, Device Selector and Bottom Tab Bar are navigation chrome and never execu
 
 The copied reference implementation is a development source pattern, not a shared runtime library.
 
-Every integration produces its own autonomous release artifact:
+Every integration produces its own autonomous production artifact:
 
 ```text
 <integration-panel-bundle.js>?v=<ui-version>
@@ -254,7 +244,8 @@ templates/integration-panel-v1/
 
 It provides:
 
-- `panel-shell-reference.js` — autonomous shell/reference component;
+- `panel-shell-reference.js` — stable shell/reference component designed to be concatenated with the copied v1.6 zoom controller into one autonomous bundle;
+- `zoom-controller-reference.js` — the copy/adapt v1.6 gesture controller; concatenate it into the integration-owned production bundle;
 - `panel-contract.example.json` — machine-readable metadata example;
 - `README.md` — adoption checklist.
 
@@ -265,7 +256,7 @@ The reference intentionally contains no integration API calls and no device comm
 Only these application-specific choices belong to the integration:
 
 1. title and subtitle;
-2. canonical parent route;
+2. optional parent route shown only through an in-work navigation control;
 3. optional peer-device selector;
 4. HeroStatus content;
 5. primary tab set (3–5);
@@ -280,16 +271,18 @@ The integration should not redesign Header geometry, navigation mechanics, state
 A specialized panel is template-conforming when, on iPhone Pro Max portrait:
 
 - Header geometry matches the common shell;
-- Back is explicit and deterministic;
+- `mdi:menu` opens the native Home Assistant menu and both Header actions use matching plaques;
 - optional Device Selector remains stable across primary sections;
 - first visible content is current domain status rather than another navigation row;
 - Bottom Tab Bar is fixed, edge-attached and safe-area aware;
 - last content scrolls fully above the Tab Bar;
+- native vertical scroll at 100%, focal 75–200% pinch, bounded enlarged pan, 97–103% snap and stationary two-finger reset work;
 - no horizontal scrolling occurs;
 - no important label is clipped into ambiguity;
 - unknown/unavailable is visibly non-normal;
 - factual entity long press opens native more-info where supported;
 - cold-cache loading shows shell rather than a blank page;
+- telemetry, scroll and tab/device switches produce no whole-panel flash or DOM duplication;
 - production frontend is one self-contained bundle.
 
 The intended result is one NikaS application ecosystem with different domain content, not a collection of unrelated frontend designs.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import struct
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -8,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.36.1"
+    assert manifest["version"] == "0.36.2"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -36,6 +37,17 @@ def test_release_version_and_schema_are_packaged() -> None:
     ).read_bytes()
 
 
+def test_repository_and_integration_ship_the_same_recognizable_icon() -> None:
+    icon_path = ROOT / "custom_components" / "contract_generated_ui" / "brand" / "icon.png"
+    icon = icon_path.read_bytes()
+    assert icon[:8] == b"\x89PNG\r\n\x1a\n"
+    width, height = struct.unpack(">II", icon[16:24])
+    assert (width, height) == (256, 256)
+    assert icon[25] == 6  # RGBA, suitable for repository and integration surfaces.
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "custom_components/contract_generated_ui/brand/icon.png" in readme
+
+
 def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     frontend_root = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
     bundle = (frontend_root / "nikas-ui.js").read_text(encoding="utf-8")
@@ -49,9 +61,16 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
-    assert 'import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009"' in bundle
+    assert 'import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010"' in bundle
     assert 'const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"]' in bundle
     assert "position:fixed" in bundle
+    assert 'id="menu"' in bundle
+    assert 'icon="mdi:menu"' in bundle
+    assert 'new CustomEvent("hass-toggle-menu"' in bundle
+    assert "mdi:arrow-left" not in bundle
+    assert "--mdc-icon-size:28px" in bundle
+    assert "font-size:23px" in bundle
+    assert "font-size:14px" in bundle
     assert 'const ELEMENT_NAME = "nikas-house-hero"' in hero_bundle
     assert "/contract_generated_ui/frontend/assets/house-hero-photo-day-v3.webp?build=0340b001" in hero_bundle
     assert "base64" not in hero_bundle.lower()
@@ -98,22 +117,22 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert not (frontend_root / "assets" / "zont-dhw-shell-v0812.webp").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b007"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b008"' in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
-    assert 'SPECIALIZED_SHELL_BUILD = "b002"' in const_source
+    assert 'SPECIALIZED_SHELL_BUILD = "b003"' in const_source
     assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
-    assert 'HOUSE_HERO_BUILD = "b009"' in const_source
+    assert 'HOUSE_HERO_BUILD = "b010"' in const_source
     assert 'HOUSE_PANEL_FILENAME = "dist/nikas-house-overview.js"' in const_source
-    assert 'HOUSE_PANEL_BUILD = "b004"' in const_source
+    assert 'HOUSE_PANEL_BUILD = "b005"' in const_source
     assert 'INFRASTRUCTURE_PANEL_FILENAME = "dist/nikas-infrastructure-overview.js"' in const_source
-    assert 'INFRASTRUCTURE_PANEL_BUILD = "b002"' in const_source
+    assert 'INFRASTRUCTURE_PANEL_BUILD = "b003"' in const_source
     assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
     assert 'HOUSE_HERO_ASSET_FILENAME = "house-hero-photo-day-v3.webp"' in const_source
     assert 'HOUSE_HERO_ASSET_BUILD = "0340b001"' in const_source
     assert 'GENERATED_SUBPANEL_FILENAME = "dist/nikas-generated-subpanel.js"' in const_source
-    assert 'GENERATED_SUBPANEL_BUILD = "b007"' in const_source
+    assert 'GENERATED_SUBPANEL_BUILD = "b008"' in const_source
     assert "GENERATED_ZONT" not in const_source
 
     dist = frontend_root / "dist"
