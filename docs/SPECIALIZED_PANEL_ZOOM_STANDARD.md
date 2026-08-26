@@ -1,6 +1,6 @@
 # Specialized Panel Zoom Standard v1.3
 
-> **SUPERSEDED:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5 is the only normative zoom/scroll source. Transform panning at 100% is retired; 100% uses native vertical scrolling with `x = y = 0`.
+> **SUPERSEDED:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6 is the only normative zoom/scroll source. Transform panning at 100% is retired; 100% uses native vertical scrolling with `x = y = 0`.
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
