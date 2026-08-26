@@ -1,5 +1,7 @@
 # NikaS App Shell v1
 
+> Specialized-panel Header references are superseded by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5. All specialized panels now use the permanent Home Assistant system menu, not Back.
+
 **Status:** staged for production rollout  
 **Primary target:** iPhone Pro Max, portrait
 
