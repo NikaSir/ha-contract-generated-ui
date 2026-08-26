@@ -2,6 +2,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
+  const UI_VERSION = "0.36.1";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
@@ -109,12 +110,14 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
           :host{display:block;width:100%;height:100dvh;min-height:100%;overflow:hidden;background:var(--primary-background-color,#f4f6f8);color:var(--primary-text-color,#111827);font-family:var(--paper-font-body1_-_font-family,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
           *{box-sizing:border-box}
           .app{position:relative;width:100%;height:100dvh;min-height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;background:var(--primary-background-color,#f4f6f8)}
-          .header{z-index:20;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:end;min-height:64px;padding:max(6px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 6px max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 2px 12px rgba(0,0,0,.06)}
-          .rail{width:48px;height:48px;border:0;border-radius:15px;display:grid;place-items:center;padding:0;background:transparent;color:var(--primary-text-color,#111827);cursor:pointer;-webkit-tap-highlight-color:transparent}
+          .header{z-index:20;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;min-height:62px;padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 2px 12px rgba(0,0,0,.06)}
+          .rail{width:44px;height:44px;border:0;border-radius:14px;display:grid;place-items:center;padding:0;background:transparent;color:var(--primary-text-color,#111827);cursor:pointer;-webkit-tap-highlight-color:transparent}
           .rail:focus-visible,.tab:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}
-          .rail ha-icon{--mdc-icon-size:28px;width:28px;height:28px}
+          .rail ha-icon{--mdc-icon-size:25px;width:25px;height:25px}
           .heading{min-width:0;align-self:center;text-align:center;line-height:1.12}
-          .heading strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:21px;font-weight:780;letter-spacing:-.02em}
+          .heading strong,.heading span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+          .heading strong{font-size:18px;font-weight:760;letter-spacing:0}
+          .heading span{margin-top:3px;font-size:14px;line-height:1.2;color:var(--secondary-text-color,#6b7280)}
           .canvas-viewport{position:relative;min-width:0;min-height:0;overflow:hidden;overscroll-behavior:none;touch-action:none;background:var(--primary-background-color,#f4f6f8);user-select:none;-webkit-user-select:none}
           .work-canvas{position:absolute;inset:8px 12px 10px;min-width:0;min-height:0;transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
           .work-canvas.ready{visibility:visible}
@@ -126,14 +129,14 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
           .tab.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);cursor:default}
           .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(82px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;white-space:nowrap;transition:opacity .14s ease,transform .14s ease}
           .scale-status.visible{opacity:1;transform:translate(-50%,0)}
-          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px}.rail{width:44px;height:44px}.heading strong{font-size:19px}.tab{padding-left:2px;padding-right:2px}.tab span{font-size:11.5px}.work-canvas{inset:7px 9px 8px}}
-          @media(min-width:900px){.work-canvas{inset:14px 18px 16px}.heading strong{font-size:22px}}
+          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px}.heading span{font-size:13px}.tab{padding-left:2px;padding-right:2px}.tab span{font-size:11.5px}.work-canvas{inset:7px 9px 8px}}
+          @media(min-width:900px){.work-canvas{inset:14px 18px 16px}}
           @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
         </style>
         <div class="app">
           <header class="header">
             <button class="rail" id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
-            <div class="heading"><strong>Дом · v11.0</strong></div>
+            <div class="heading"><strong>Дом сейчас</strong><span>Состояние · UI v${UI_VERSION}</span></div>
             <button class="rail" id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
           </header>
           <main class="canvas-viewport" aria-label="Рабочая область панели Дом">
