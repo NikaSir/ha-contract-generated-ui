@@ -1,4 +1,4 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b008";
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
 const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
@@ -7,7 +7,7 @@ if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = true;
 const BAR_ID = "nikas-global-tabbar";
 const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
-const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11"];
+const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
 const FALLBACK_ITEMS = [
   { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house" },

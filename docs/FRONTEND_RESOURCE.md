@@ -76,6 +76,8 @@ The permanent Header control remains the Home Assistant system menu. When a pare
 
 Starting with `0.35.0`, `/dashboard-house-v11/home` is owned by the integration's `nikas-house-overview` custom panel. Its Header and global Bottom Tab Bar remain native-sized around one transform-owned canvas. Lovelace no longer creates the House hero, so a cold refresh cannot race custom-card registration and report a configuration error.
 
+Starting with `0.36.0`, `/dashboard-infrastructure/overview` is likewise owned by `nikas-infrastructure-overview`. It resolves four verified operational modules—grid, two UPS devices and Keenetic—before registration and applies the same single-canvas gesture architecture. The incoming grid is classified by the LIDER PS7500W-30 passport; downstream voltage is a separate ГОСТ policy and is never inferred from the incoming phases.
+
 ## Lovelace registration
 
 Generated application subpanels are not exported under `lovelace.dashboards:` and require no manual edit of `configuration.yaml`.

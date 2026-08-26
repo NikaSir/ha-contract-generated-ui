@@ -74,9 +74,8 @@ def _power_quality_short(entities: Mapping[str, str]) -> str:
     return (
         _power_quality_prefix(entities)
         + "{% if not reliable %}⚪ Нет данных"
-        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария"
-        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение"
-        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание"
+        + "{% elif event or (volts|min)<125 or (volts|max)>275 %}🔴 Авария"
+        + "{% elif (volts|min)<150 or (volts|max)>265 %}🟠 Рабочий предел"
         + "{% else %}🟢 Нормально{% endif %}"
     )
 
@@ -85,9 +84,8 @@ def _power_quality_heading(entities: Mapping[str, str]) -> str:
     return (
         _power_quality_prefix(entities)
         + "## {% if not reliable %}⚪ Данные входящей сети неполные"
-        + "{% elif event or (volts|min)<198 or (volts|max)>242 %}🔴 Авария входящей сети"
-        + "{% elif (volts|min)<205 or (volts|max)>235 %}🟠 Отклонение входящей сети"
-        + "{% elif (volts|min)<210 or (volts|max)>230 %}🟡 Внимание · входящая сеть"
+        + "{% elif event or (volts|min)<125 or (volts|max)>275 %}🔴 Авария входящей сети"
+        + "{% elif (volts|min)<150 or (volts|max)>265 %}🟠 Рабочий предел входящей сети"
         + "{% else %}🟢 Входящая сеть в норме{% endif %}"
     )
 
@@ -128,8 +126,8 @@ def _polish_power_summary(
         )
         old_status = (
             "{% if not before_reliable %}⚪ Нет данных"
-            "{% elif before_event %}🔴 Отклонение"
-            "{% else %}🟢 Нормально{% endif %}"
+            "{% elif before_event %}🔴 Авария"
+            "{% else %}🟢 Контроль{% endif %}"
         )
         if old_prefix not in content or old_status not in content:
             raise RenderError("infrastructure power overview template shape changed")
@@ -154,7 +152,7 @@ def _polish_power_summary(
     if view_id == "power-before":
         status_card["content"] = (
             _power_quality_heading(entities)
-            + "\nКонтроль входящей трёхфазной сети **до стабилизаторов**."
+            + "\nКонтроль **до стабилизаторов** по паспорту LIDER PS7500W-30: номинальный диапазон **150–265 В**, рабочий диапазон **125–275 В**."
         )
         return
 
@@ -165,6 +163,7 @@ def _polish_power_summary(
     status_card["content"] = (
         _power_quality_heading(entities)
         + "\nТри физические точки контроля: **до стабилизаторов**, **после стабилизаторов**, **неотключаемая линия**."
+        + "\n\nДо стабилизаторов применяются паспортные диапазоны LIDER PS7500W-30; после стабилизаторов — диапазон ГОСТ **198–242 В**."
         + "\n\nЛиния котла: **{{ state_translated('" + line_mode + "') if has_value('" + line_mode + "') else 'Недоступно' }}** · "
         + "{% if not has_value('" + line_stale + "') %}свежесть неизвестна"
         + "{% elif is_state('" + line_stale + "', 'on') %}данные устарели"

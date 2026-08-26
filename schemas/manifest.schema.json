@@ -132,7 +132,10 @@
           ],
           "properties": {
             "template": {
-              "const": "house_overview_v1"
+              "enum": [
+                "house_overview_v1",
+                "infrastructure_overview_v1"
+              ]
             }
           }
         },

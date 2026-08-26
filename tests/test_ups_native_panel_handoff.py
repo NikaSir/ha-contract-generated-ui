@@ -61,7 +61,7 @@ def test_infrastructure_keeps_ups_handoff_outside_central_power_subviews() -> No
     )
 
     assert manifest == bundled
-    assert manifest["metadata"]["version"] == "0.12.0"
+    assert manifest["metadata"]["version"] == "0.13.0"
     assert manifest["spec"]["app_shell"] == {"active": "infrastructure"}
 
     views = {view["id"]: view for view in manifest["spec"]["views"]}

@@ -215,4 +215,4 @@ spec:
     - Read-only infrastructure slice; all primary actions are more-info except the grid summary hand-off to the central electrical subpanel.
     - The non-interruptible line is a separate object, not a fourth phase.
     - The non-interruptible line takes voltage, frequency, operating mode and freshness from UPS Котёл input telemetry.
-    - The after-stabilizer control point is reserved in UI v0.12 and must not fabricate values before verified semantic bindings are added.
+    - The after-stabilizer control point is reserved in UI v0.13 and must not fabricate values before verified semantic bindings are added.

@@ -1,7 +1,7 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
+import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b003";
 
 (() => {
-  const ELEMENT_NAME = "nikas-house-overview";
+  const ELEMENT_NAME = "nikas-infrastructure-overview";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
@@ -32,7 +32,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
     return Number.isFinite(Number(value)) ? Number(value) : fallback;
   }
 
-  class NikasHouseOverview extends HTMLElement {
+  class NikasInfrastructureOverview extends HTMLElement {
     constructor() {
       super();
       this.attachShadow({ mode: "open" });
@@ -59,8 +59,9 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
 
     set hass(value) {
       this._hass = value;
-      const hero = this.shadowRoot?.querySelector("nikas-house-hero");
-      if (hero) hero.hass = value;
+      this.shadowRoot?.querySelectorAll("nikas-infrastructure-summary-v2").forEach((card) => {
+        card.hass = value;
+      });
     }
 
     get hass() {
@@ -116,9 +117,11 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
           .heading{min-width:0;align-self:center;text-align:center;line-height:1.12}
           .heading strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:21px;font-weight:780;letter-spacing:-.02em}
           .canvas-viewport{position:relative;min-width:0;min-height:0;overflow:hidden;overscroll-behavior:none;touch-action:none;background:var(--primary-background-color,#f4f6f8);user-select:none;-webkit-user-select:none}
-          .work-canvas{position:absolute;inset:8px 12px 10px;min-width:0;min-height:0;transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
+          .work-canvas{position:absolute;left:12px;right:12px;top:8px;min-width:0;min-height:calc(100% - 18px);height:max-content;padding-bottom:10px;transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
           .work-canvas.ready{visibility:visible}
-          nikas-house-hero{display:block;width:100%;height:100%}
+          .overview{width:min(100%,980px);margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+          nikas-infrastructure-summary-v2{display:block;min-width:0}
+          nikas-infrastructure-summary-v2:first-child{grid-column:1/-1}
           .bottom{z-index:20;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
           nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(var(--house-tab-count,3),minmax(0,1fr));gap:4px}
           .tab{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#5f6368);min-width:0;min-height:60px;padding:7px 4px 5px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -126,18 +129,19 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
           .tab.active{color:var(--primary-color,#03a9f4);background:color-mix(in srgb,var(--primary-color,#03a9f4) 11%,transparent);cursor:default}
           .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(82px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;white-space:nowrap;transition:opacity .14s ease,transform .14s ease}
           .scale-status.visible{opacity:1;transform:translate(-50%,0)}
-          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px}.rail{width:44px;height:44px}.heading strong{font-size:19px}.tab{padding-left:2px;padding-right:2px}.tab span{font-size:11.5px}.work-canvas{inset:7px 9px 8px}}
-          @media(min-width:900px){.work-canvas{inset:14px 18px 16px}.heading strong{font-size:22px}}
+          @media(max-width:700px){.overview{grid-template-columns:1fr}.overview nikas-infrastructure-summary-v2:first-child{grid-column:auto}}
+          @media(max-width:390px){.header{grid-template-columns:48px minmax(0,1fr) 48px}.rail{width:44px;height:44px}.heading strong{font-size:19px}.tab{padding-left:2px;padding-right:2px}.tab span{font-size:11.5px}.work-canvas{left:9px;right:9px;top:7px;padding-bottom:8px}}
+          @media(min-width:900px){.work-canvas{left:18px;right:18px;top:14px;padding-bottom:16px}.heading strong{font-size:22px}}
           @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
         </style>
         <div class="app">
           <header class="header">
             <button class="rail" id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
-            <div class="heading"><strong>Дом · v11.0</strong></div>
+            <div class="heading"><strong>Инфраструктура · v11.0</strong></div>
             <button class="rail" id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
           </header>
-          <main class="canvas-viewport" aria-label="Рабочая область панели Дом">
-            <div class="work-canvas"><nikas-house-hero></nikas-house-hero></div>
+          <main class="canvas-viewport" aria-label="Рабочая область панели Инфраструктура">
+            <div class="work-canvas"><div class="overview"></div></div>
           </main>
           <div class="bottom"><nav aria-label="Основная навигация"></nav></div>
           <div class="scale-status" role="status" aria-live="polite">Масштаб 100%</div>
@@ -157,13 +161,20 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
       const title = this.shadowRoot?.querySelector(".heading strong");
       if (title && config.title) title.textContent = config.title;
 
-      const hero = this.shadowRoot?.querySelector("nikas-house-hero");
-      if (hero && config.hero && hero._nikasConfig !== config.hero) {
-        hero._nikasConfig = config.hero;
-        hero.setConfig({ ...config.hero, standalone: true });
+      const overview = this.shadowRoot?.querySelector(".overview");
+      const cards = Array.isArray(config.cards) ? config.cards : [];
+      if (overview && overview._nikasCards !== cards) {
+        overview._nikasCards = cards;
+        overview.replaceChildren();
+        for (const cardConfig of cards) {
+          const card = document.createElement("nikas-infrastructure-summary-v2");
+          card.setConfig(cardConfig);
+          if (this._hass) card.hass = this._hass;
+          overview.appendChild(card);
+        }
       }
-      if (hero && this._hass) hero.hass = this._hass;
       this._renderTabs();
+      this._scheduleClamp();
     }
 
     _renderTabs() {
@@ -175,7 +186,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
 
       for (const tab of tabs) {
         const button = document.createElement("button");
-        const active = tab.id === "home" || window.location.pathname === tab.path;
+        const active = tab.id === "infrastructure" || window.location.pathname === tab.path;
         button.type = "button";
         button.className = `tab${active ? " active" : ""}`;
         button.disabled = active;
@@ -194,7 +205,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
     }
 
     _storageKey() {
-      const panelId = String(this._config().id || "house-overview").replace(/[^a-z0-9._-]/gi, "_");
+      const panelId = String(this._config().id || "infrastructure-overview").replace(/[^a-z0-9._-]/gi, "_");
       return `nikas:transform-canvas:v1:${panelId}`;
     }
 
@@ -231,9 +242,10 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
 
     _contentBounds(scale = this._state.scale) {
       const canvas = this._canvas();
-      if (!canvas) return { minX: 0, minY: 0 };
+      const viewport = this._viewport();
+      if (!canvas || !viewport) return { minX: 0, minY: 0 };
       const viewportWidth = canvas.offsetWidth || 0;
-      const viewportHeight = canvas.offsetHeight || 0;
+      const viewportHeight = Math.max(0, (viewport.clientHeight || 0) - (canvas.offsetTop || 0));
       const contentWidth = Math.max(canvas.offsetWidth || 0, canvas.scrollWidth || 0);
       const contentHeight = Math.max(canvas.offsetHeight || 0, canvas.scrollHeight || 0);
       return {
@@ -533,5 +545,5 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
     }
   }
 
-  customElements.define(ELEMENT_NAME, NikasHouseOverview);
+  customElements.define(ELEMENT_NAME, NikasInfrastructureOverview);
 })();

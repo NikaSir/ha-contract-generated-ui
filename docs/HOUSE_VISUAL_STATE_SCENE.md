@@ -61,7 +61,7 @@ The shell DOM is created once. Home Assistant state updates rerender only the li
 ## Truthfulness rules
 
 - `unknown` and `unavailable` never become green/normal.
-- Electrical quality thresholds remain: emergency `<198 V` or `>242 V`; deviation `<205 V` or `>235 V`; attention `<210 V` or `>230 V`; otherwise normal.
+- The three House phase sensors are upstream of the LIDER PS7500W-30 stabilizers. Their status follows the stabilizer passport: normal in the nominal `150–265 V` range, warning in the extended working `125–275 V` range, emergency outside it. Downstream sensors, once verified, use the separate ГОСТ `198–242 V` policy and are never inferred from upstream phases.
 - Sectional-gate and entrance-door outlines use only their physical access sensors.
 - The window outline remains a conservative aggregate cue, not a fabricated mapping to a pictured physical window.
 - Unsupported runtime, power, alarm or reserve values are never invented.

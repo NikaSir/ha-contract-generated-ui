@@ -97,7 +97,7 @@ def test_power_overview_is_native_three_point_subpanel() -> None:
     assert "sensor.boiler_input_voltage" in text
     assert "sensor.boiler_input_frequency" in text
     assert "sensor.boiler_mode" in text
-    assert "210–230 В" in text
+    assert "198–242 В" in text
 
 
 def test_power_after_view_fails_closed_without_fake_measurements() -> None:
@@ -105,7 +105,7 @@ def test_power_after_view_fails_closed_without_fake_measurements() -> None:
     assert card["type"] == "markdown"
     assert "не использует входящие фазы как замену" in card["content"]
     assert "проверенные semantic bindings" in card["content"]
-    assert "210–230 В" in card["content"]
+    assert "198–242 В" in card["content"]
     assert "sensor.voltage_a" not in str(card)
     assert "custom:" not in str(card)
 
@@ -224,7 +224,7 @@ def test_summary_renderer_filters_trace_to_visible_semantics() -> None:
     assert "overview.ups_internet.data_age" not in filtered["bindings"]
 
 
-def test_infrastructure_v012_uses_native_power_subviews_and_boiler_line() -> None:
+def test_infrastructure_v013_uses_specialized_overview_and_power_subviews() -> None:
     manifest_path = ROOT / "manifests" / "infrastructure.yaml"
     bundled_path = (
         ROOT
@@ -235,7 +235,10 @@ def test_infrastructure_v012_uses_native_power_subviews_and_boiler_line() -> Non
         / "infrastructure.yaml"
     )
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["metadata"]["version"] == "0.12.0"
+    assert manifest["metadata"]["version"] == "0.13.0"
+    assert manifest["spec"]["specialized_panel"] == {
+        "template": "infrastructure_overview_v1"
+    }
     assert [view["id"] for view in manifest["spec"]["views"]] == [
         "overview",
         "power-overview",

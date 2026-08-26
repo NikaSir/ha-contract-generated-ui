@@ -40,7 +40,7 @@ def _power_module() -> dict:
     }
 
 
-def test_infrastructure_overview_uses_house_voltage_quality_thresholds() -> None:
+def test_infrastructure_input_uses_lider_passport_voltage_thresholds() -> None:
     module = _power_module()
     dashboard = {
         "views": [
@@ -63,15 +63,14 @@ def test_infrastructure_overview_uses_house_voltage_quality_thresholds() -> None
     rendered = _summary_dashboard(dashboard, trace)
     content = rendered["views"][0]["sections"][0]["cards"][0]["content"]
 
-    assert "(volts|min)<198" in content
-    assert "(volts|max)>242" in content
-    assert "(volts|min)<205" in content
-    assert "(volts|max)>235" in content
-    assert "(volts|min)<210" in content
-    assert "(volts|max)>230" in content
+    assert "(volts|min)<125" in content
+    assert "(volts|max)>275" in content
+    assert "(volts|min)<150" in content
+    assert "(volts|max)>265" in content
+    assert "(volts|min)<198" not in content
+    assert "(volts|max)>242" not in content
     assert "🔴 Авария" in content
-    assert "🟠 Отклонение" in content
-    assert "🟡 Внимание" in content
+    assert "🟠 Рабочий предел" in content
     assert "🟢 Нормально" in content
 
 
@@ -100,8 +99,8 @@ def test_power_before_tracks_voltage_entities_for_quality_refresh() -> None:
     assert {"sensor.voltage_a", "sensor.voltage_b", "sensor.voltage_c"}.issubset(
         set(status["entity_id"])
     )
-    assert "Отклонение входящей сети" in status["content"]
-    assert "Внимание · входящая сеть" in status["content"]
+    assert "Рабочий предел входящей сети" in status["content"]
+    assert "LIDER PS7500W-30" in status["content"]
 
 
 def test_actions_swing_gate_status_fits_half_width_mobile_card() -> None:

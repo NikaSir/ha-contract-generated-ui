@@ -16,6 +16,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import GENERATED_DIRECTORY, SNAPSHOT_DIRECTORY, SOURCE_DIRECTORY
 from .coordinator import ContractGeneratedUICoordinator
 from .house_panel import async_register_house_panel
+from .infrastructure_panel import async_register_infrastructure_panel
 from .registry_snapshot import capture_registry_snapshot, write_registry_snapshot
 from .runtime_dispatch import RuntimeRenderError, render_all_manifests
 from .runtime_registration import (
@@ -121,6 +122,7 @@ class ContractGeneratedUIGenerateDashboardsButton(ButtonEntity):
                 generated_root,
             )
             await async_register_house_panel(self.hass, source_root)
+            await async_register_infrastructure_panel(self.hass, source_root)
         except (
             RuntimeRenderError,
             RuntimeRegistrationError,

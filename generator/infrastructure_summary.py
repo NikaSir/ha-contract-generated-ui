@@ -135,9 +135,9 @@ def _power_content(title: str, entities: Mapping[str, str]) -> str:
 </table>
 <table role="presentation" width="100%">
 <tr>
-<td width="33%" align="center"><small>До стаб.</small><br><strong>{{% if not before_reliable %}}⚪ Нет данных{{% elif before_event %}}🔴 Отклонение{{% else %}}🟢 Нормально{{% endif %}}</strong></td>
-<td width="34%" align="center"><small>После стаб.</small><br><strong>⚪ Подготовлено</strong></td>
-<td width="33%" align="center"><small>Линия котла</small><br><strong>{{% if not line_reliable %}}⚪ Нет данных{{% elif is_state('{line_stale}', 'on') %}}🟠 Данные устарели{{% else %}}🟢 {_translated(line_voltage)}{{% endif %}}</strong></td>
+<td width="33%" align="center"><small>До стаб.</small><br><strong>{{% if not before_reliable %}}⚪ Нет данных{{% elif before_event %}}🔴 Авария{{% else %}}🟢 Контроль{{% endif %}}</strong></td>
+<td width="34%" align="center"><small>После стаб.</small><br><strong>⚪ Ожидает датчиков</strong></td>
+<td width="33%" align="center"><small>Линия котла</small><br><strong>{{% if not line_reliable %}}⚪ Нет данных{{% elif is_state('{line_stale}', 'on') %}}🟠 Данные устарели{{% elif states('{line_voltage}')|float(0) < 198 or states('{line_voltage}')|float(0) > 242 %}}🔴 Вне ГОСТ{{% else %}}🟢 {_translated(line_voltage)}{{% endif %}}</strong></td>
 </tr>
 </table>
 <table role="presentation" width="100%">
@@ -213,9 +213,9 @@ def _power_overview_card(entities: Mapping[str, str]) -> dict[str, Any]:
             {
                 "type": "markdown",
                 "content": """### 2. После стабилизаторов
-⚪ **Точка контроля зарезервирована.** В v0.12 структура уже показана в интерфейсе, но значения не подменяются и не вычисляются из входящей сети до появления проверенных semantic bindings.
+⚪ **Точка контроля зарезервирована.** Значения до стабилизаторов не используются вместо выходных измерений.
 
-**Пороги качества после стабилизаторов:** норма 210–230 В; внимание 205–209 / 231–235 В; существенное отклонение 198–204 / 236–242 В; авария ниже 198 В.""",
+После появления проверенных датчиков качество напряжения оценивается по ГОСТ: **198–242 В** при принятом номинале 220 В.""",
             },
             {"type": "heading", "heading": "3. Неотключаемая линия · UPS Котёл"},
             {
@@ -253,8 +253,8 @@ def _power_before_card(entities: Mapping[str, str]) -> dict[str, Any]:
     phase_c = entities["phase_c_present"]
     status = f"""{{% set reliable = has_value('{grid}') and has_value('{meter}') and has_value('{phase_loss}') and has_value('{phase_a}') and has_value('{phase_b}') and has_value('{phase_c}') %}}
 {{% set event = reliable and (is_state('{grid}', 'off') or is_state('{meter}', 'off') or is_state('{phase_loss}', 'on') or is_state('{phase_a}', 'off') or is_state('{phase_b}', 'off') or is_state('{phase_c}', 'off')) %}}
-## {{% if not reliable %}}⚪ Данные неполные{{% elif event %}}🟠 Требует внимания{{% else %}}🟢 Нормально{{% endif %}}
-Контроль входящей трёхфазной сети **до стабилизаторов**."""
+## {{% if not reliable %}}⚪ Данные неполные{{% elif event %}}🔴 Авария{{% else %}}🟢 Контроль{{% endif %}}
+Контроль входящей трёхфазной сети **до стабилизаторов** по паспорту LIDER PS7500W-30: номинальный диапазон **150–265 В**, рабочий диапазон **125–275 В**."""
     return {
         "type": "vertical-stack",
         "grid_options": {"columns": "full"},
@@ -295,14 +295,12 @@ def _power_after_card() -> dict[str, Any]:
 
 Точка контроля предусмотрена отдельным экраном и **не использует входящие фазы как замену выходным измерениям**.
 
-Сейчас проверенные semantic bindings для трёх напряжений после стабилизаторов в Contract Generated UI не заданы. Поэтому v0.12 намеренно показывает структуру без фиктивных значений.
+Сейчас проверенные semantic bindings для трёх напряжений после стабилизаторов в Contract Generated UI не заданы. Панель намеренно показывает структуру без фиктивных значений.
 
-| Уровень | Напряжение |
+| Политика | Напряжение |
 |---|---:|
-| Норма | 210–230 В |
-| Внимание | 205–209 / 231–235 В |
-| Существенное отклонение | 198–204 / 236–242 В |
-| Авария | <198 В |
+| Соответствует ГОСТ | 198–242 В |
+| Вне диапазона ГОСТ | <198 / >242 В |
 
 После привязки трёх фактических источников этот экран заполняется без изменения общей навигации.""",
     }
