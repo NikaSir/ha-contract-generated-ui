@@ -84,7 +84,7 @@ The former rule that one-finger transform panning also provides vertical movemen
 ## 6. Brand and repository identity
 
 - Every integration repository ships a recognizable integration brand asset.
-- A packaged `brand/icon.png` is mandatory; it is the minimum HACS brand asset and must not be an empty placeholder.
+- A packaged `custom_components/<domain>/brand/icon.png` is mandatory; it is the minimum HACS brand asset and must not be an empty placeholder.
 - `brand/logo.png`, `brand/dark_icon.png` and `brand/dark_logo.png` are required when the mark or wordmark is not legible in both themes.
 - Brand files use the integration package layout expected by Home Assistant/HACS and are included in distribution checks.
 - README starts with the same recognizable project/integration identity; repository and installed integration must not present unrelated marks.
@@ -118,4 +118,3 @@ Repository tests or static checks must verify:
 - both Header buttons are visible matching plaques below Dynamic Island;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
-
