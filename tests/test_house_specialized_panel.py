@@ -86,7 +86,9 @@ def test_house_panel_uses_one_transform_owned_canvas_and_native_chrome() -> None
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in frontend
     assert "transform-origin:0 0" in frontend
     assert "scrollLeft" not in frontend
-    assert "scrollTop" not in frontend
+    assert "overflow-x:hidden;overflow-y:auto" in frontend
+    assert "if (this._state.scale <= 1) return;" in frontend
+    assert "viewport.scrollTop = 0" in frontend
     assert "style.zoom" not in frontend
     assert "window.localStorage" in frontend
     assert "pointercancel" in frontend
@@ -100,6 +102,9 @@ def test_house_panel_uses_one_transform_owned_canvas_and_native_chrome() -> None
     assert "mdi:arrow-left" not in frontend
     assert frontend.index('<header class="header">') < frontend.index('class="canvas-viewport"')
     assert frontend.index('class="canvas-viewport"') < frontend.index('<div class="bottom">')
+    assert ".tab ha-icon{--mdc-icon-size:28px" in frontend
+    assert "min-height:52px" in frontend
+    assert "box-shadow:0 7px 20px rgba(23,45,76,.08)" in frontend
 
 
 def test_house_panel_has_no_permanent_scale_controls() -> None:

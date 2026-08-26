@@ -10,6 +10,8 @@ venv/
 # Generated/build output
 build/
 dist/
+!custom_components/contract_generated_ui/frontend/dist/
+!custom_components/contract_generated_ui/frontend/dist/*.js
 .generated/
 
 # Local Home Assistant data and exports

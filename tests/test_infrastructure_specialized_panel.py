@@ -89,13 +89,18 @@ def test_infrastructure_panel_uses_native_chrome_and_one_canvas() -> None:
     assert frontend.count('class="work-canvas"') == 1
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in frontend
     assert "scrollLeft" not in frontend
-    assert "scrollTop" not in frontend
+    assert "overflow-x:hidden;overflow-y:auto" in frontend
+    assert "if (this._state.scale <= 1) return;" in frontend
+    assert "viewport.scrollTop = 0" in frontend
     assert "style.zoom" not in frontend
     assert 'icon="mdi:menu"' in frontend
     assert 'new CustomEvent("hass-toggle-menu"' in frontend
     assert "mdi:arrow-left" not in frontend
     assert "Масштаб 100%" in frontend
     assert "data-zoom" not in frontend
+    assert ".tab ha-icon{--mdc-icon-size:28px" in frontend
+    assert "min-height:52px" in frontend
+    assert "box-shadow:0 7px 20px rgba(23,45,76,.08)" in frontend
 
 
 def test_infrastructure_manifest_declares_specialized_panel() -> None:
