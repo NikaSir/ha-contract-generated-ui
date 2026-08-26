@@ -355,7 +355,7 @@ class NikasHouseHero extends HTMLElement {
     </style>
     <ha-card><div class="hero" aria-label="${escapeHtml(this._config.title || "Дом сейчас")}">
       <div class="top-grid">
-        ${this._card(security.icon,"Безопасность",security.label,security.tone,routes.safety)}
+        ${this._card(security.icon,"Защита",security.label,security.tone,routes.safety)}
         ${this._card("mdi:door-open","Открыто",String(openings),openingsTone,routes.open)}
         ${this._card("mdi:motion-sensor","Движение",String(motion),motionTone,routes.activity)}
         ${this._card("mdi:lightbulb-group","Свет",String(lights),lightsTone,routes.lights)}
@@ -392,7 +392,7 @@ if (!window.customCards.some((card) => card.type === ELEMENT_NAME)) {
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.37.2";
+  const UI_VERSION = "0.37.3";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

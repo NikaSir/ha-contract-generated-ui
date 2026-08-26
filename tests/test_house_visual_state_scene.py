@@ -107,6 +107,8 @@ def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
     assert "_nikasRouteBound" in bundle
     assert "connection-primary" not in bundle
     assert "connection-secondary" not in bundle
+    assert 'this._card(security.icon,"Защита",security.label,security.tone,routes.safety)' in bundle
+    assert 'this._card(security.icon,"Безопасность",security.label,security.tone,routes.safety)' not in bundle
 
     # Meaningful mobile text never falls below the v1.6 12px floor.
     for forbidden in (

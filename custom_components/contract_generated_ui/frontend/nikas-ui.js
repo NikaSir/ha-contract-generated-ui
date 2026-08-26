@@ -1,7 +1,7 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b011";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b009";
+const BOOTSTRAP_VERSION = "b010";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -15,6 +15,12 @@ const FALLBACK_ITEMS = [
   { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions" },
   { id: "infrastructure", label: "Инфра", icon: "mdi:server-network", path: "/dashboard-infrastructure/overview" },
 ];
+
+const ACTIONS_HEADER_MODEL = {
+  id: "global-actions",
+  title: "Действия · v11.0",
+  subtitle: "Быстрые команды · UI v0.37.3",
+};
 
 let navigationRegistry = null;
 let syncFrame = null;
@@ -205,7 +211,7 @@ function syncBar(model) {
 
 function syncHeader(model) {
   let root = document.getElementById(HEADER_ID);
-  const group = model?.group;
+  const group = model?.group || (model?.active === "actions" ? ACTIONS_HEADER_MODEL : null);
   if (!group) {
     if (root) root.remove();
     return;

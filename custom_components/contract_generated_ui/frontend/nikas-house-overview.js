@@ -1,8 +1,8 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b011";
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.37.2";
+  const UI_VERSION = "0.37.3";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
