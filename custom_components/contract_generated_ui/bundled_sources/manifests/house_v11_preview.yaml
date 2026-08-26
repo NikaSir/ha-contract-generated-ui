@@ -37,7 +37,7 @@ spec:
     ups: /dashboard-ups
   views:
   - id: home
-    title: Дом · v11.0
+    title: Дом сейчас
     path: home
     order: 0
     renderer: house_home_v1

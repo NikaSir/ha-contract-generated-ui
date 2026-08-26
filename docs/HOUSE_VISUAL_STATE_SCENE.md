@@ -1,6 +1,6 @@
 # House Overview Specialized Panel v2
 
-Contract Generated UI `0.35.0` promotes the accepted `Дом · v11.0` visual state scene from a Lovelace custom card to an integration-owned Home Assistant specialized panel.
+Contract Generated UI `0.35.0` promotes the accepted House visual state scene, now titled `Дом сейчас`, from a Lovelace custom card to an integration-owned Home Assistant specialized panel.
 
 ## Route and ownership
 
