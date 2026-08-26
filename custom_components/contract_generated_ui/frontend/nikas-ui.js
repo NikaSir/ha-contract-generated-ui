@@ -1,4 +1,4 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b009";
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
 const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
@@ -107,12 +107,12 @@ function createBar(model) {
       :host{position:fixed;z-index:20;left:0;right:0;bottom:0;display:block;pointer-events:none}
       .shell{pointer-events:auto;box-sizing:border-box;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
       nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(var(--nikas-nav-columns,3),minmax(0,1fr));gap:4px}
-      button{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#666);min-width:0;min-height:62px;padding:7px 4px 5px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-      button ha-icon{--mdc-icon-size:25px;width:25px;height:25px}
-      button span{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:12px;line-height:16px;font-weight:500}
+      button{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#666);min-width:0;min-height:52px;padding:4px 2px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+      button ha-icon{--mdc-icon-size:28px;width:28px;height:28px}
+      button span{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:12px;line-height:15px;font-weight:700}
       button.active{color:var(--primary-color,#03a9f4);background:var(--ha-color-primary-95,rgba(3,169,244,.12));cursor:default}
       button:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:1px}
-      @media(max-width:430px){button{min-height:60px;padding-left:2px;padding-right:2px}button span{font-size:11.5px}}
+      @media(max-width:430px){button{padding-left:2px;padding-right:2px}}
       @media(min-width:900px){nav{width:min(70vw,720px)}}
     </style>
     <div class="shell"><nav></nav></div>`;
@@ -156,28 +156,30 @@ function createHeader(group) {
     <style>
       :host{position:fixed;z-index:35;left:0;right:0;top:0;display:block;pointer-events:none}
       .shell{pointer-events:auto;display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;min-height:62px;padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));box-sizing:border-box;background:var(--card-background-color,var(--ha-card-background,#fff));border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 2px 12px rgba(0,0,0,.08);color:var(--primary-text-color,#111)}
-      button,.rail{width:52px;min-width:52px;min-height:44px;border:0;border-radius:14px;background:transparent;color:inherit;display:grid;place-items:center;padding:0}
+      button,.rail{width:44px;height:44px;min-width:44px;border:1px solid var(--divider-color,rgba(0,0,0,.12));border-radius:16px;background:var(--card-background-color,var(--ha-card-background,#fff));color:inherit;display:grid;place-items:center;padding:0;box-shadow:0 7px 20px rgba(23,45,76,.08)}
       button{cursor:pointer;-webkit-tap-highlight-color:transparent}
       button ha-icon{--mdc-icon-size:25px}
       .title{min-width:0;text-align:center;line-height:1.15}
       .title strong,.title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .title strong{font-size:18px;font-weight:760}
-      .title span{margin-top:2px;color:var(--secondary-text-color,#6b7280);font-size:12px;font-weight:600}
-      @media(max-width:390px){.shell{grid-template-columns:48px minmax(0,1fr) 48px}button,.rail{width:48px;min-width:48px}.title strong{font-size:17px}}
+      .title strong{font-size:23px;font-weight:800}
+      .title span{margin-top:3px;color:var(--secondary-text-color,#6b7280);font-size:14px;font-weight:560}
+      #refresh{color:var(--primary-color,#03a9f4)}
+      @media(max-width:390px){.shell{grid-template-columns:48px minmax(0,1fr) 48px}.title strong{font-size:21px}.title span{font-size:13px}}
     </style>
     <div class="shell">
-      <button id="back" type="button" aria-label="Назад"><ha-icon icon="mdi:arrow-left"></ha-icon></button>
+      <button id="menu" type="button" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu"></ha-icon></button>
       <div class="title"><strong></strong><span></span></div>
       <button id="refresh" type="button" aria-label="Обновить"><ha-icon icon="mdi:refresh"></ha-icon></button>
     </div>`;
-  shadow.getElementById("back").onclick = () => navigate(root._parentPath);
+  shadow.getElementById("menu").onclick = () => {
+    root.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }));
+  };
   shadow.getElementById("refresh").onclick = () => window.location.reload();
   renderHeader(root, group);
   return root;
 }
 
 function renderHeader(root, group) {
-  root._parentPath = group.parent?.path || group.dashboard_path;
   const shadow = root.shadowRoot;
   shadow.querySelector(".title strong").textContent = group.title || "";
   shadow.querySelector(".title span").textContent = group.subtitle || group.parent?.title || "";

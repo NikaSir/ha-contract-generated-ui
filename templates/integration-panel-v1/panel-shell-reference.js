@@ -1,4 +1,4 @@
-// NikaS Integration Panel Template v1.0
+// NikaS Integration Panel Template v1.6
 // Canonical copy/adapt reference implementation.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
@@ -6,7 +6,6 @@
 const APP = {
   title: "Example Panel",
   subtitle: "Device model · UI v1.0.0",
-  parentPath: "/dashboard-actions",
   preferredView: "overview",
   tabs: [
     ["overview", "mdi:view-dashboard-outline", "Обзор"],
@@ -26,10 +25,46 @@ function esc(value) {
     .replaceAll("'", "&#039;");
 }
 
-function navigateExplicit(path) {
-  if (!path) return;
-  history.pushState(null, "", path);
-  window.dispatchEvent(new Event("location-changed"));
+function sameTreeShape(current, desired) {
+  if (!current || !desired || current.nodeType !== desired.nodeType) return false;
+  if (current.nodeType === Node.ELEMENT_NODE && current.tagName !== desired.tagName) return false;
+  if (current.childNodes.length !== desired.childNodes.length) return false;
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    if (!sameTreeShape(current.childNodes[index], desired.childNodes[index])) return false;
+  }
+  return true;
+}
+
+function syncTree(current, desired) {
+  if (current.nodeType === Node.TEXT_NODE || current.nodeType === Node.COMMENT_NODE) {
+    if (current.nodeValue !== desired.nodeValue) current.nodeValue = desired.nodeValue;
+    return;
+  }
+  if (current.nodeType === Node.ELEMENT_NODE) {
+    for (const attribute of [...current.attributes]) {
+      if (!desired.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...desired.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) current.setAttribute(attribute.name, attribute.value);
+    }
+  }
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    syncTree(current.childNodes[index], desired.childNodes[index]);
+  }
+}
+
+function commitStableMarkup(root, markup) {
+  const template = document.createElement("template");
+  template.innerHTML = markup;
+  const current = [...root.childNodes];
+  const desired = [...template.content.childNodes];
+  const compatible = current.length === desired.length && current.every((node, index) => sameTreeShape(node, desired[index]));
+  if (!compatible) {
+    root.replaceChildren(template.content.cloneNode(true));
+    return true;
+  }
+  current.forEach((node, index) => syncTree(node, desired[index]));
+  return false;
 }
 
 class NikaSIntegrationPanelReference extends HTMLElement {
@@ -42,22 +77,24 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     this._selectedDevice = null;
     this._devices = [];
     this._loading = true;
+    this._shellMounted = false;
+    this._renderQueued = false;
   }
 
   set hass(value) {
     this._hass = value;
     this._loading = false;
-    this._render();
+    this._queueRender();
   }
 
   set panel(value) {
     this._panel = value;
     this._activeView = value?.config?.preferred_view || APP.preferredView;
-    this._render();
+    this._queueRender();
   }
 
   connectedCallback() {
-    this._render();
+    this._queueRender();
   }
 
   _config() {
@@ -65,7 +102,6 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     return {
       title: this._panel?.config?.title || APP.title,
       subtitle: this._panel?.config?.subtitle || APP.subtitle,
-      parentPath: this._panel?.config?.parent_path || APP.parentPath,
       tabs,
     };
   }
@@ -77,8 +113,8 @@ class NikaSIntegrationPanelReference extends HTMLElement {
   _renderHeader() {
     const config = this._config();
     return `<header class="app-header">
-      <button type="button" class="header-action" id="back" aria-label="Назад">
-        <ha-icon icon="mdi:arrow-left"></ha-icon>
+      <button type="button" class="header-action" id="menu" aria-label="Меню Home Assistant">
+        <ha-icon icon="mdi:menu"></ha-icon>
       </button>
       <div class="header-title">
         <strong>${esc(config.title)}</strong>
@@ -207,30 +243,10 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     </nav>`;
   }
 
-  _attachInteractions() {
-    this.shadowRoot.getElementById("back")?.addEventListener("click", () => {
-      navigateExplicit(this._config().parentPath);
-    });
-
-    this.shadowRoot.getElementById("refresh")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("nikas-panel-refresh", { bubbles: true, composed: true }));
-    });
-
-    this.shadowRoot.querySelectorAll("[data-view]").forEach((button) => {
-      button.addEventListener("click", () => {
-        this._activeView = button.dataset.view || APP.preferredView;
-        this._render();
-      });
-    });
-
-    this.shadowRoot.querySelectorAll("[data-device]").forEach((button) => {
-      button.addEventListener("click", () => {
-        this._selectedDevice = button.dataset.device || this._selectedDevice;
-        this._render();
-      });
-    });
-
+  _attachEntityInteractions() {
     this.shadowRoot.querySelectorAll("[data-entity]").forEach((element) => {
+      if (element._nikasHoldBound) return;
+      element._nikasHoldBound = true;
       let timer = null;
       let fired = false;
       const clear = () => {
@@ -257,18 +273,67 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     });
   }
 
-  _render() {
-    const shell = `${this._renderHeader()}
-      <main class="scroll-region">
-        <div class="content-width">
-          ${this._renderDeviceSelector()}
-          ${this._loading ? this._renderLoading() : `${this._renderHeroStatus()}${this._renderViewContent()}`}
-        </div>
-      </main>
-      ${this._renderTabBar()}`;
+  _queueRender() {
+    if (this._renderQueued) return;
+    this._renderQueued = true;
+    const schedule = window.requestAnimationFrame || ((callback) => queueMicrotask(callback));
+    schedule(() => {
+      this._renderQueued = false;
+      this._render();
+    });
+  }
 
-    this.shadowRoot.innerHTML = `<style>${NIKAS_PANEL_CSS}</style><div class="app-shell">${shell}</div>`;
-    this._attachInteractions();
+  _mountShell() {
+    if (this._shellMounted) return;
+    this.shadowRoot.innerHTML = `<style>${NIKAS_PANEL_CSS}</style>
+      <div class="app-shell">
+        ${this._renderHeader()}
+        <div class="device-selector-slot"></div>
+        <main class="canvas-viewport" aria-label="Рабочая область панели">
+          <div class="work-canvas"></div>
+        </main>
+        <div class="bottom-slot"></div>
+        <div class="scale-status" role="status" aria-live="polite">Масштаб 100%</div>
+      </div>`;
+
+    this.shadowRoot.addEventListener("click", (event) => {
+      const button = event.target?.closest?.("button");
+      if (!button) return;
+      if (button.id === "menu") {
+        this.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }));
+      } else if (button.id === "refresh") {
+        this.dispatchEvent(new CustomEvent("nikas-panel-refresh", { bubbles: true, composed: true }));
+      } else if (button.dataset.view) {
+        this._activeView = button.dataset.view || APP.preferredView;
+        const controller = window.NikasPanelZoom?.attach?.(this);
+        if (controller?.resetPosition) controller.resetPosition();
+        else this.shadowRoot.querySelector(".canvas-viewport").scrollTop = 0;
+        this._queueRender();
+      } else if (button.dataset.device) {
+        this._selectedDevice = button.dataset.device || this._selectedDevice;
+        window.NikasPanelZoom?.attach?.(this)?.contextChanged?.();
+        this._queueRender();
+      }
+    });
+    this._shellMounted = true;
+  }
+
+  _render() {
+    this._mountShell();
+    const config = this._config();
+    this.shadowRoot.querySelector(".header-title strong").textContent = config.title;
+    this.shadowRoot.querySelector(".header-title span").textContent = config.subtitle;
+    commitStableMarkup(this.shadowRoot.querySelector(".device-selector-slot"), this._renderDeviceSelector());
+    commitStableMarkup(
+      this.shadowRoot.querySelector(".work-canvas"),
+      this._loading ? this._renderLoading() : `${this._renderHeroStatus()}${this._renderViewContent()}`,
+    );
+    commitStableMarkup(this.shadowRoot.querySelector(".bottom-slot"), this._renderTabBar());
+    this._attachEntityInteractions();
+
+    // Production bundles concatenate the v1.6 zoom controller before this
+    // component. No repository or network runtime import is allowed.
+    window.NikasPanelZoom?.attach?.(this, { min: 0.75, max: 2.0 })?.bind?.();
   }
 }
 
@@ -276,7 +341,9 @@ const NIKAS_PANEL_CSS = `
 :host {
   display:block;
   width:100%;
-  min-height:100dvh;
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
   color:var(--primary-text-color);
   background:var(--primary-background-color);
   --nika-surface:var(--ha-card-background,var(--card-background-color,#fff));
@@ -292,29 +359,32 @@ const NIKAS_PANEL_CSS = `
 button{font:inherit}
 .app-shell{
   width:100%;height:100dvh;min-height:0;
-  display:grid;grid-template-rows:auto minmax(0,1fr) auto;
+  display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;
   overflow:hidden;background:var(--primary-background-color);
 }
 .app-header{
   display:grid;grid-template-columns:52px minmax(0,1fr) 52px;
   align-items:center;min-height:62px;
-  padding:max(5px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 5px max(8px,env(safe-area-inset-left));
-  background:var(--nika-surface);border-bottom:1px solid var(--nika-border);z-index:3;
+  padding:max(5px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));
+  background:var(--nika-surface);border-bottom:1px solid var(--nika-border);box-shadow:0 2px 12px rgba(0,0,0,.06);z-index:3;
 }
 .header-action{
-  width:52px;min-width:52px;min-height:44px;border:0;border-radius:14px;
-  background:transparent;color:var(--primary-text-color);display:grid;place-items:center;
+  width:44px;height:44px;min-width:44px;border:1px solid var(--nika-border);border-radius:16px;
+  background:var(--nika-surface);color:var(--primary-text-color);display:grid;place-items:center;padding:0;box-shadow:0 7px 20px rgba(23,45,76,.08);
 }
-.header-action ha-icon{--mdc-icon-size:24px}
+.header-action ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.header-action#refresh{color:var(--nika-primary)}
 .header-title{min-width:0;text-align:center;line-height:1.1}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.header-title strong{font-size:18px;font-weight:760}
-.header-title span{margin-top:2px;color:var(--nika-muted);font-size:12px;font-weight:600}
-.scroll-region{min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
-.content-width{width:100%;max-width:1280px;margin:0 auto;padding:14px max(12px,env(safe-area-inset-right)) 22px max(12px,env(safe-area-inset-left))}
-.device-selector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.header-title strong{font-size:23px;font-weight:800}
+.header-title span{margin-top:3px;color:var(--nika-muted);font-size:14px;font-weight:560}
+.device-selector-slot:empty{display:none}.device-selector-slot{z-index:2;padding:8px max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));background:var(--primary-background-color)}
+.device-selector{width:min(100%,1280px);margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .device-selector button{min-width:0;min-height:52px;border:1px solid var(--nika-border);border-radius:20px;background:var(--nika-surface);color:var(--primary-text-color);display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 10px;font-size:15px;font-weight:650}
 .device-selector button.active{border-color:var(--nika-primary);color:var(--nika-primary);background:color-mix(in srgb,var(--nika-primary) 9%,var(--nika-surface))}
+.canvas-viewport{position:relative;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;overscroll-behavior-y:none;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.canvas-viewport.zoomed{overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none}
+.work-canvas{position:relative;width:min(calc(100% - 24px),1280px);min-height:100%;margin:0 auto;padding:14px 0 22px;transform-origin:0 0}
+.canvas-viewport.zoomed .work-canvas{position:absolute;left:12px;right:12px;width:auto;margin:0}
 .status-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:var(--nika-unknown)}
 .status-dot.ok{background:var(--nika-ok)}.status-dot.active{background:var(--nika-primary)}.status-dot.warn{background:var(--nika-warn)}.status-dot.bad{background:var(--nika-bad)}.status-dot.unknown{background:var(--nika-unknown)}
 .card{border:1px solid var(--nika-border);border-radius:22px;background:var(--nika-surface);padding:18px;margin-bottom:14px;box-shadow:0 2px 10px color-mix(in srgb,#000 5%,transparent)}
@@ -323,7 +393,7 @@ button{font:inherit}
 .hero-state{display:flex;align-items:center;gap:9px;font-size:24px;font-weight:800}
 .hero p{margin:7px 0 0;color:var(--nika-muted);font-size:14px;line-height:1.4}
 .hero-state.ok{color:var(--nika-ok)}.hero-state.warn{color:var(--nika-warn)}.hero-state.bad{color:var(--nika-bad)}.hero-state.unknown{color:var(--nika-unknown)}
-.status-badge{flex:0 0 auto;border-radius:999px;padding:5px 8px;background:color-mix(in srgb,var(--nika-unknown) 10%,transparent);color:var(--nika-unknown);font-size:11px;font-weight:700}
+.status-badge{flex:0 0 auto;border-radius:999px;padding:5px 8px;background:color-mix(in srgb,var(--nika-unknown) 10%,transparent);color:var(--nika-unknown);font-size:12px;font-weight:700}
 .status-badge.ok{color:var(--nika-ok);background:color-mix(in srgb,var(--nika-ok) 10%,transparent)}.status-badge.active{color:var(--nika-primary);background:color-mix(in srgb,var(--nika-primary) 10%,transparent)}.status-badge.warn{color:var(--nika-warn);background:color-mix(in srgb,var(--nika-warn) 10%,transparent)}.status-badge.bad{color:var(--nika-bad);background:color-mix(in srgb,var(--nika-bad) 10%,transparent)}
 .content-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .metrics{grid-template-columns:1fr}
@@ -335,10 +405,13 @@ button{font:inherit}
 .alert{display:flex;gap:10px;padding:14px;border:1px solid var(--nika-border);border-radius:18px}.alert ha-icon{--mdc-icon-size:23px}.alert strong,.alert span{display:block}.alert span{margin-top:2px;color:var(--nika-muted);font-size:13px;line-height:1.35}.alert.active ha-icon{color:var(--nika-primary)}.alert.warn ha-icon{color:var(--nika-warn)}.alert.bad ha-icon{color:var(--nika-bad)}
 .diagram{display:grid;gap:5px}.diagram span{color:var(--nika-muted);font-size:13px}
 .loading{display:grid;gap:12px}.loading>span{color:var(--nika-muted);text-align:center;font-size:14px}.skeleton{border-radius:20px;background:color-mix(in srgb,var(--primary-text-color) 7%,transparent)}.hero-skeleton{min-height:140px}.row-skeleton{min-height:72px}
-.tabbar{width:100%;display:grid;grid-template-columns:repeat(var(--nika-tab-count),minmax(0,1fr));gap:2px;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));background:var(--nika-surface);border-top:1px solid var(--nika-border);box-shadow:0 -3px 14px color-mix(in srgb,#000 7%,transparent);z-index:4}
-.tabbar button{min-width:0;min-height:56px;border:0;border-radius:14px;background:transparent;color:var(--nika-muted);display:grid;place-items:center;align-content:center;gap:2px;padding:4px 2px}.tabbar button.active{color:var(--nika-primary);background:color-mix(in srgb,var(--nika-primary) 11%,transparent)}.tabbar ha-icon{--mdc-icon-size:23px}.tabbar span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}
-@media(max-width:390px){.app-header{grid-template-columns:48px minmax(0,1fr) 48px}.header-action{width:48px;min-width:48px}.header-title strong{font-size:16px}.header-title span{font-size:10px}.content-width{padding-left:10px;padding-right:10px}.tabbar span{font-size:11px}}
+.bottom-slot{z-index:4}.tabbar{width:100%;display:grid;grid-template-columns:repeat(var(--nika-tab-count),minmax(0,1fr));gap:4px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--nika-surface);border-top:1px solid var(--nika-border);box-shadow:0 -4px 18px color-mix(in srgb,#000 8%,transparent)}
+.tabbar button{min-width:0;min-height:52px;border:0;border-radius:16px;background:transparent;color:var(--nika-muted);display:grid;place-items:center;align-content:center;gap:3px;padding:4px 2px}.tabbar button.active{color:var(--nika-primary);background:color-mix(in srgb,var(--nika-primary) 11%,transparent)}.tabbar ha-icon{--mdc-icon-size:28px;width:28px;height:28px}.tabbar span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:15px;font-weight:700}
+.scale-status{position:absolute;z-index:40;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;transition:opacity .14s ease,transform .14s ease}.scale-status.visible{opacity:1;transform:translate(-50%,0)}
+@media(max-width:680px){:host{position:fixed;inset:0;width:auto;height:auto}.app-shell{position:absolute;inset:0;width:auto;height:auto}}
+@media(max-width:390px){.app-header{grid-template-columns:48px minmax(0,1fr) 48px}.header-title strong{font-size:21px}.header-title span{font-size:13px}.work-canvas{width:min(calc(100% - 20px),1280px)}.canvas-viewport.zoomed .work-canvas{left:10px;right:10px}}
 @media(min-width:760px){.content-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
 `;
 
 if (!customElements.get("nikas-integration-panel-reference")) {

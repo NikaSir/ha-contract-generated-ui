@@ -45,6 +45,54 @@ function numeric(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function sameTreeShape(current, desired) {
+  if (!current || !desired || current.nodeType !== desired.nodeType) return false;
+  if (current.nodeType === Node.ELEMENT_NODE && current.tagName !== desired.tagName) return false;
+  if (current.childNodes.length !== desired.childNodes.length) return false;
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    if (!sameTreeShape(current.childNodes[index], desired.childNodes[index])) return false;
+  }
+  return true;
+}
+
+function syncTree(current, desired) {
+  if (current.nodeType === Node.TEXT_NODE || current.nodeType === Node.COMMENT_NODE) {
+    if (current.nodeValue !== desired.nodeValue) current.nodeValue = desired.nodeValue;
+    return;
+  }
+  if (current.nodeType === Node.ELEMENT_NODE) {
+    for (const attribute of [...current.attributes]) {
+      if (!desired.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...desired.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+  }
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    syncTree(current.childNodes[index], desired.childNodes[index]);
+  }
+}
+
+function commitStableMarkup(root, markup) {
+  if (typeof document === "undefined" || typeof document.createElement !== "function" || typeof Node === "undefined") {
+    root.innerHTML = markup;
+    return true;
+  }
+  const template = document.createElement("template");
+  template.innerHTML = markup;
+  const current = [...root.childNodes];
+  const desired = [...template.content.childNodes];
+  const compatible = current.length === desired.length && current.every((node, index) => sameTreeShape(node, desired[index]));
+  if (!compatible) {
+    root.replaceChildren(template.content.cloneNode(true));
+    return true;
+  }
+  current.forEach((node, index) => syncTree(node, desired[index]));
+  return false;
+}
+
 class NikasHouseHero extends HTMLElement {
   constructor() {
     super();
@@ -217,6 +265,8 @@ class NikasHouseHero extends HTMLElement {
 
   _bindRoutes() {
     this.shadowRoot?.querySelectorAll("[data-route]").forEach((node) => {
+      if (node._nikasRouteBound) return;
+      node._nikasRouteBound = true;
       node.addEventListener("click", () => this._navigate(node.dataset.route));
       node.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -230,14 +280,16 @@ class NikasHouseHero extends HTMLElement {
   _card(icon, title, value, tone, route, extra = "", utility = false) {
     return `<button class="${utility ? "utility-card" : "status-card"} ${tone}" data-route="${escapeHtml(route)}" type="button">
       <ha-icon icon="${escapeHtml(icon)}"></ha-icon>
-      <span class="${utility ? "utility-copy" : "status-copy"}"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong>${extra ? `<em>${escapeHtml(extra)}</em>` : ""}</span>
+      <span class="${utility ? "utility-copy" : "status-copy"}"><small>${escapeHtml(title)}</small><strong>${escapeHtml(value)}</strong><em${extra ? "" : " hidden"}>${escapeHtml(extra)}</em></span>
     </button>`;
   }
 
   _render() {
     if (!this._config || !this.shadowRoot) return;
     if (!this._hass) {
-      this.shadowRoot.innerHTML = `<ha-card><div style="padding:24px">Дом сейчас · загрузка…</div></ha-card>`;
+      if (!this.shadowRoot.firstChild) {
+        this.shadowRoot.innerHTML = `<ha-card><div style="padding:24px;font-size:16px">Дом сейчас · загрузка…</div></ha-card>`;
+      }
       return;
     }
 
@@ -273,7 +325,7 @@ class NikasHouseHero extends HTMLElement {
     const time = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
     const date = now.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
 
-    this.shadowRoot.innerHTML = `<style>
+    const markup = `<style>
       :host{display:block;--green:#2ebd59;--yellow:#ffbf00;--orange:#f28b00;--red:#e53935;--blue:#209cee;--grey:#85929b;--ink:#15202b;--muted:#4f5d69}
       ha-card{overflow:hidden;border-radius:28px;background:#edf8ff;border:1px solid rgba(255,255,255,.9);box-shadow:0 16px 40px rgba(41,82,110,.14)}
       .hero{position:relative;height:760px;min-height:calc(100svh - 166px);max-height:850px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 30%,rgba(255,255,255,.06) 76%,rgba(235,248,255,.18)),url("${escapeHtml(asset)}") center 50%/cover no-repeat;color:var(--ink);font-family:var(--paper-font-body1_-_font-family,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)}
@@ -282,21 +334,21 @@ class NikasHouseHero extends HTMLElement {
       .top-grid{position:absolute;z-index:4;left:12px;right:12px;top:12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
       .status-card,.float-card,.utility-card,.callout{border:1px solid rgba(255,255,255,.88);background:rgba(255,255,255,.86);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);box-shadow:0 8px 24px rgba(64,91,108,.15)}
       .status-card{min-width:0;height:74px;padding:9px 8px;border-radius:18px;display:flex;gap:7px;align-items:center;cursor:pointer;text-align:left;appearance:none}
-      .status-card ha-icon{width:24px;flex:0 0 24px}.status-copy{min-width:0;display:flex;flex-direction:column;line-height:1.1}.status-copy small{font-size:11px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy strong{margin-top:5px;font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy em{margin-top:4px;font-size:10px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      [hidden]{display:none!important}.status-card ha-icon{width:24px;flex:0 0 24px}.status-copy{min-width:0;display:flex;flex-direction:column;line-height:1.1}.status-copy small{font-size:12px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy strong{margin-top:5px;font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy em{margin-top:4px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .green ha-icon,.green strong{color:var(--green)}.yellow ha-icon,.yellow strong{color:var(--yellow)}.orange ha-icon,.orange strong{color:var(--orange)}.red ha-icon,.red strong{color:var(--red)}.blue ha-icon,.blue strong{color:var(--blue)}.grey ha-icon,.grey strong{color:var(--grey)}
       .float-card{position:absolute;z-index:4;top:102px;border-radius:20px;padding:12px 14px;cursor:pointer;appearance:none}.weather{left:14px;min-width:118px}.clock{right:14px;text-align:right;min-width:148px}.float-main{display:flex;align-items:center;gap:9px;font-size:25px;font-weight:850}.float-main ha-icon{color:var(--blue)}.float-sub{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
-      .clock-camera{margin:6px -4px -4px auto;padding:4px;border:0;background:transparent;color:var(--orange);display:flex;align-items:center;justify-content:flex-end;gap:5px;font:inherit;font-size:11px;font-weight:800;cursor:pointer;appearance:none}.clock-camera ha-icon{--mdc-icon-size:17px;width:17px;height:17px}
+      .clock-camera{margin:6px -4px -4px auto;padding:4px;border:0;background:transparent;color:var(--orange);display:flex;align-items:center;justify-content:flex-end;gap:5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;appearance:none}.clock-camera ha-icon{--mdc-icon-size:17px;width:17px;height:17px}
       .clock-camera.green{color:var(--green)}.clock-camera.red{color:var(--red)}.clock-camera.grey{color:var(--grey)}
       .zones{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.zone{fill:none;stroke:var(--green);stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(46,189,89,.34))}.zone.yellow{stroke:var(--yellow);filter:drop-shadow(0 0 7px rgba(255,191,0,.42))}.zone.orange{stroke:var(--orange);filter:drop-shadow(0 0 7px rgba(242,139,0,.42))}.zone.red{stroke:var(--red);filter:drop-shadow(0 0 7px rgba(229,57,53,.4))}.zone.grey{stroke:rgba(122,137,148,.6);filter:none}
-      .callout{position:absolute;z-index:4;border-radius:17px;padding:9px 12px;cursor:pointer;min-width:108px;appearance:none}.callout b{display:block;font-size:13px;color:var(--ink)}.callout span{display:block;margin-top:3px;font-size:11px;font-weight:800}.window-callout{left:7%;top:39%}.gate-callout{left:4%;top:59%}.door-callout{right:5%;top:56%}
-      .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.utility-card{border-radius:19px;padding:12px 11px;min-height:88px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:start}.utility-card ha-icon{margin-top:2px}.utility-copy{min-width:0;display:flex;flex-direction:column}.utility-copy small{font-size:11px;font-weight:750;color:var(--ink)}.utility-copy strong{margin-top:5px;font-size:15px;font-weight:850}.utility-copy em{margin-top:5px;font-size:11px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .callout{position:absolute;z-index:4;border-radius:17px;padding:9px 12px;cursor:pointer;min-width:108px;appearance:none}.callout b{display:block;font-size:13px;color:var(--ink)}.callout span{display:block;margin-top:3px;font-size:12px;font-weight:800}.window-callout{left:7%;top:39%}.gate-callout{left:4%;top:59%}.door-callout{right:5%;top:56%}
+      .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.utility-card{border-radius:19px;padding:12px 11px;min-height:88px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:start}.utility-card ha-icon{margin-top:2px}.utility-copy{min-width:0;display:flex;flex-direction:column}.utility-copy small{font-size:12px;font-weight:750;color:var(--ink)}.utility-copy strong{margin-top:5px;font-size:15px;font-weight:850}.utility-copy em{margin-top:5px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       [data-route]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
       @media(max-width:600px){
         ha-card{border-radius:22px}.hero{height:var(--house-hero-available-height,calc(100dvh - 224px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
-        .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:64px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:8px}.status-copy strong{margin-top:2px;font-size:12px}.status-copy em{display:none}
-        .float-card{top:80px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:10px}.clock-camera{font-size:9.5px;margin-top:4px}.clock-camera ha-icon{--mdc-icon-size:15px;width:15px;height:15px}
-        .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:11px}.callout span{font-size:10px}
-        .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;left:8px;right:8px;bottom:8px}.utility-card{min-height:64px;padding:8px;grid-template-columns:24px 1fr}.utility-copy small{font-size:10px}.utility-copy strong{font-size:13px}.utility-copy em{font-size:10px}
+        .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:68px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:12px}.status-copy strong{margin-top:2px;font-size:14px}.status-copy em{display:none}
+        .float-card{top:84px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:12px}.clock-camera{font-size:12px;margin-top:4px}.clock-camera ha-icon{--mdc-icon-size:15px;width:15px;height:15px}
+        .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:12px}.callout span{font-size:12px}
+        .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;left:8px;right:8px;bottom:8px}.utility-card{min-height:68px;padding:8px;grid-template-columns:24px 1fr}.utility-copy small{font-size:12px}.utility-copy strong{font-size:14px}.utility-copy em{font-size:12px}
       }
       :host([standalone]){height:100%;min-height:0}
       :host([standalone]) ha-card,:host([standalone]) .hero{height:100%;min-height:0;max-height:none}
@@ -326,7 +378,8 @@ class NikasHouseHero extends HTMLElement {
         ${this._card(heating.icon,"Отопление",heating.label,heating.tone,routes.heating,heating.detail,true)}
       </div>
     </div></ha-card>`;
-    this._bindRoutes();
+    const replaced = commitStableMarkup(this.shadowRoot, markup);
+    if (replaced) this._bindRoutes();
     this._scheduleViewportFit();
   }
 }

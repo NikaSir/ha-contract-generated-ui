@@ -17,7 +17,10 @@
           max(8px,env(safe-area-inset-left,0px))!important;
       }
       .header .rail{width:44px!important;height:44px!important;border-radius:16px!important}
+      .header .rail ha-icon{--mdc-icon-size:25px!important;width:25px!important;height:25px!important}
       .header .heading{text-align:center;min-width:0}
+      .header .heading strong{font-size:23px!important;font-weight:800!important}
+      .header .heading span{font-size:14px!important;font-weight:560!important}
       .bottom{
         left:0!important;
         right:0!important;
@@ -28,8 +31,16 @@
           calc(6px + env(safe-area-inset-bottom,0px))
           max(8px,env(safe-area-inset-left,0px))!important;
       }
+      .bottom nav .tab{min-height:52px!important;border-radius:16px!important}
+      .bottom nav .tab ha-icon{--mdc-icon-size:28px!important;width:28px!important;height:28px!important}
+      .bottom nav .tab span{font-size:12px!important;line-height:15px!important;font-weight:700!important}
+      @media(max-width:680px){
+        :host{position:fixed!important;inset:0!important;width:auto!important;height:auto!important;min-height:0!important}
+      }
       @media(max-width:390px){
         .header{grid-template-columns:48px minmax(0,1fr) 48px!important;min-height:60px!important}
+        .header .heading strong{font-size:21px!important}
+        .header .heading span{font-size:13px!important}
       }
     `;
   }

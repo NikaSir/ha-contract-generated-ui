@@ -1,6 +1,6 @@
 # Stark SolarPower panel lessons for the NikaS UI standards
 
-> **HISTORICAL FIELD NOTES:** the normative result is `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5. Earlier native-overflow/CSS-zoom or transform-pan-at-100% experiments are not requirements.
+> **HISTORICAL FIELD NOTES:** the normative result is `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Earlier native-overflow/CSS-zoom or transform-pan-at-100% experiments are not requirements.
 
 **Status:** architecture evidence / normative input  
 **Reference implementation:** `NikaSir/ha-stark-solarpower`  

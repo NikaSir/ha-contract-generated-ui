@@ -1,224 +1,41 @@
-# Home Assistant NikaS — правило выпуска frontend специализированных панелей
+# NikaS Specialized Panel Frontend Delivery Standard v1.6
 
-**Статус:** обязательное правило проекта  
-**Область действия:** все integration-owned frontend-панели Home Assistant
+**Status:** required for every integration-owned Home Assistant specialized panel
+**UI authority:** [`NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md`](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md) v1.6
 
-Применять к:
+## Production artifact
 
-- Stark SolarPower;
-- Keenetic;
-- HO-SC-8W;
-- S8 OMNI;
-- VLESS Gateway;
-- всем последующим специализированным панелям проекта.
+One registered panel module equals one autonomous, integration-owned JavaScript bundle. The `module_url` target contains all project code needed to register and run the current panel. Runtime imports of previous panel versions or another NikaS repository are prohibited.
 
-## 1. Основное требование
+Modular development is allowed, but the build must produce one deterministic artifact with cache busting tied to the declared UI version. History belongs in reviewed Git commits and merged pull requests, not in browser import chains.
 
-Production frontend специализированной панели должен поставляться как **один автономный JavaScript bundle**.
+## Fixed shell acceptance
 
-Файл, указанный Home Assistant в `module_url`, обязан самостоятельно содержать весь код, необходимый для регистрации и работы панели.
+The production bundle must implement the v1.6 application shell:
 
-Допустимая схема:
+- fixed Home Assistant menu Header, optional fixed peer-device selector, exactly one work viewport/canvas and fixed safe-area-aware Bottom Tab Bar;
+- permanent left `mdi:menu` action dispatching bubbling/composed `hass-toggle-menu`; no permanent Header Back;
+- native vertical scrolling with `x = y = 0` at 100%, focal pinch at 75–200%, bounded one-finger pan only above 100%, 97–103% snap and stationary two-finger reset;
+- shell mounted once, telemetry point-patched, visited views lazily cached and no full-screen flash;
+- meaningful text at 12–25px and Bottom Tab Bar MDI icons/labels at 28px and 12px/700;
+- optional connection/freshness indicator only when explicitly requested, using the canonical v1.6 vocabulary and status-tinted plaque;
+- packaged repository/integration identity including `custom_components/<domain>/brand/icon.png`, minimum 256×256 RGBA.
 
-```text
-Home Assistant
-    ↓
-panel-vXYZ.js
-    ↓
-<integration-panel>
-```
+## Required verification
 
-Недопустимая схема:
+Before merge, verify:
 
-```text
-panel-v032.js
-    ↓ import
-panel-v031.js
-    ↓ import
-panel-v030.js
-    ↓ import
-panel-v021.js
-    ↓ import
-panel-v020.js
-    ↓ import
-panel.js
-```
+1. local-network and Home Assistant Cloud/Nabu Casa cold loads;
+2. full Home Assistant restart followed by repeated panel opens;
+3. no `Unable to load custom panel` or `Configuration error`;
+4. no historical/runtime bundle chain;
+5. Header menu, Refresh plaque, safe areas and fixed bottom navigation;
+6. long native scrolling at 100% without horizontal or transform drift;
+7. focal pinch, axis-bounded pan, snap/reset and native long-press/more-info behavior;
+8. live telemetry, indicator transitions, tab/device changes and scroll without white frames or remount flicker;
+9. JavaScript syntax, deterministic build, version/cache-busting consistency and repository CI;
+10. real iPhone portrait acceptance.
 
-## 2. Запрет runtime-цепочек версий
+## Publication workflow
 
-В production artifact запрещается использовать предыдущие версии frontend как runtime-зависимости.
-
-Недопустимо:
-
-```js
-import "./panel-v031.js";
-```
-
-если текущий production-модуль зарегистрирован как `panel-v032.js`.
-
-Предыдущие версии должны храниться в:
-
-- Git history;
-- Git tags;
-- Releases;
-- исходных модулях разработки;
-
-но не участвовать в runtime-загрузке актуальной панели.
-
-> История версий — задача системы контроля версий, а не браузера пользователя.
-
-## 3. Исходный код и production artifact
-
-Исходный frontend разрешается разрабатывать модульно, например:
-
-```text
-src/
-  shell.js
-  header.js
-  navigation.js
-  diagnostics.js
-  overview.js
-  styles.js
-```
-
-Но перед выпуском должен формироваться единый production bundle:
-
-```text
-dist/
-  integration-panel.js
-```
-
-или эквивалентный автономный файл.
-
-Модульность разработки не должна приводить к каскаду HTTP-загрузок при открытии панели.
-
-## 4. Регистрация панели
-
-`module_url` должен указывать только на финальный автономный bundle.
-
-Предпочтительный вариант:
-
-```text
-/integration_panel/integration-panel.js?v=0.3.3
-```
-
-Допустимый вариант:
-
-```text
-/integration_panel/integration-panel-v033.js
-```
-
-Предпочтение: стабильное имя файла + версия для cache busting.
-
-## 5. Количество runtime-зависимостей
-
-Принцип:
-
-> **ОДИН ЗАРЕГИСТРИРОВАННЫЙ PANEL MODULE = ОДНА ОСНОВНАЯ ТОЧКА FRONTEND-ЗАГРУЗКИ.**
-
-Панель не должна требовать последовательной загрузки собственных historical/patch JS-файлов.
-
-Внешние зависимости допускаются только при технической необходимости и после отдельного архитектурного решения.
-
-## 6. Причина требования
-
-Каждый дополнительный runtime-import увеличивает число точек отказа.
-
-Пример:
-
-```text
-HA → module A → module B → module C → module D
-```
-
-Отказ любого элемента цепочки приводит к невозможности загрузки всей панели.
-
-Особенно критично для:
-
-- Home Assistant Companion App;
-- iOS WebView;
-- Nabu Casa / Home Assistant Cloud;
-- холодного browser cache;
-- запуска после обновления Home Assistant;
-- запуска после перезапуска интеграции;
-- медленного или нестабильного соединения.
-
-Production frontend должен минимизировать зависимость от порядка и скорости загрузки ресурсов.
-
-## 7. Независимость от cache
-
-Корректность панели не должна зависеть от того, находились ли предыдущие frontend-файлы в browser cache.
-
-Обязательный сценарий проверки:
-
-```text
-пустой cache
-→ новый запуск HA frontend
-→ открытие панели
-→ панель загружается корректно
-```
-
-Повторный запуск с прогретым cache не считается достаточной проверкой.
-
-## 8. Критерии приёмки frontend-релиза
-
-Frontend-релиз специализированной панели считается готовым только после успешной проверки:
-
-1. загрузка панели внутри локальной сети;
-2. загрузка через Home Assistant Cloud / Nabu Casa;
-3. холодный запуск клиента;
-4. запуск после полного restart Home Assistant;
-5. повторное открытие панели несколько раз;
-6. переход на панель из родительской панели;
-7. возврат кнопкой «Назад»;
-8. отсутствие сообщения `Unable to load custom panel`;
-9. отсутствие `Configuration error`;
-10. отсутствие runtime-зависимости от файлов предыдущих UI-версий.
-
-## 9. Требование к релизу
-
-Изменение структуры frontend bundle считается изменением архитектуры загрузки и должно:
-
-- иметь отдельную версию UI;
-- быть отражено в CHANGELOG;
-- пройти CI;
-- быть протестировано до публикации production release.
-
-При hardening-релизе допускается сохранить внешний дизайн без изменений.
-
-Пример:
-
-```text
-Integration 1.6.2 / UI 0.3.2
-        ↓
-Integration 1.6.3 / UI 0.3.3
-```
-
-где UI 0.3.3 меняет только механизм упаковки и загрузки frontend.
-
-## 10. Общий архитектурный принцип
-
-Для центральных панелей проекта:
-
-- Дом;
-- Действия;
-- Инфраструктура;
-
-приоритет — нативные компоненты Lovelace с минимальной зависимостью от custom frontend.
-
-Для специализированных панелей интеграций допускается `panel_custom`, но действует правило:
-
-> **SPECIALIZED PANEL = SELF-CONTAINED PRODUCTION FRONTEND BUNDLE.**
-
-Custom panel допустима. Хрупкая цепочка custom frontend-модулей недопустима.
-
-## 11. Нормативная формулировка
-
-Каждая специализированная Home Assistant панель должна поставляться как автономный, детерминированный production frontend bundle.
-
-Файл, зарегистрированный в Home Assistant как `module_url`, не должен зависеть во время выполнения от предыдущих версий frontend этой панели.
-
-История изменений хранится в Git, а не формируется цепочкой JavaScript `import`.
-
-Панель обязана корректно загружаться при холодном старте, через локальный доступ и Home Assistant Cloud, независимо от состояния browser cache.
-
-**Статус правила: ОБЯЗАТЕЛЬНО ДЛЯ ВСЕХ НОВЫХ РЕЛИЗОВ СПЕЦИАЛИЗИРОВАННЫХ ПАНЕЛЕЙ.**
+Changes receive an explicit UI/integration version where applicable, a changelog entry and automated checks. NikaS work is published through commits, branches, pull requests and the accepted `main` state. GitHub Releases and automatic release tags are not created.

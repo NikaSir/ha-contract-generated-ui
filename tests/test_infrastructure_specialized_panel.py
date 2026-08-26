@@ -108,3 +108,19 @@ def test_infrastructure_manifest_declares_specialized_panel() -> None:
     assert manifest["spec"]["specialized_panel"] == {
         "template": INFRASTRUCTURE_PANEL_TEMPLATE
     }
+
+
+def test_infrastructure_cards_patch_stable_dom_and_respect_type_floor() -> None:
+    summary = (FRONTEND / "nikas-infrastructure-summary.js").read_text(encoding="utf-8")
+
+    assert "this.shadowRoot.innerHTML" not in summary
+    assert "commitStableMarkup(this.shadowRoot, markup)" in summary
+    assert "sameTreeShape" in summary
+    assert "syncTree" in summary
+    assert "_nikasDetailsBound" in summary
+    for forbidden in (
+        "font-size:10.5px",
+        "font-size:11px",
+        "font-size:11.5px",
+    ):
+        assert forbidden not in summary

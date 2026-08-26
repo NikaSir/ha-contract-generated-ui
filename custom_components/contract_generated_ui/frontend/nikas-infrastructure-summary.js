@@ -1,3 +1,51 @@
+function sameTreeShape(current, desired) {
+  if (!current || !desired || current.nodeType !== desired.nodeType) return false;
+  if (current.nodeType === Node.ELEMENT_NODE && current.tagName !== desired.tagName) return false;
+  if (current.childNodes.length !== desired.childNodes.length) return false;
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    if (!sameTreeShape(current.childNodes[index], desired.childNodes[index])) return false;
+  }
+  return true;
+}
+
+function syncTree(current, desired) {
+  if (current.nodeType === Node.TEXT_NODE || current.nodeType === Node.COMMENT_NODE) {
+    if (current.nodeValue !== desired.nodeValue) current.nodeValue = desired.nodeValue;
+    return;
+  }
+  if (current.nodeType === Node.ELEMENT_NODE) {
+    for (const attribute of [...current.attributes]) {
+      if (!desired.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    }
+    for (const attribute of [...desired.attributes]) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
+  }
+  for (let index = 0; index < current.childNodes.length; index += 1) {
+    syncTree(current.childNodes[index], desired.childNodes[index]);
+  }
+}
+
+function commitStableMarkup(root, markup) {
+  if (typeof document === "undefined" || typeof document.createElement !== "function" || typeof Node === "undefined") {
+    root.innerHTML = markup;
+    return true;
+  }
+  const template = document.createElement("template");
+  template.innerHTML = markup;
+  const current = [...root.childNodes];
+  const desired = [...template.content.childNodes];
+  const compatible = current.length === desired.length && current.every((node, index) => sameTreeShape(node, desired[index]));
+  if (!compatible) {
+    root.replaceChildren(template.content.cloneNode(true));
+    return true;
+  }
+  current.forEach((node, index) => syncTree(node, desired[index]));
+  return false;
+}
+
 class NikaSInfrastructureSummaryV2 extends HTMLElement {
   constructor() {
     super();
@@ -294,7 +342,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
     if (this._config.variant === "ups") content = this._upsMarkup();
     if (this._config.variant === "keenetic") content = this._keeneticMarkup();
 
-    this.shadowRoot.innerHTML = `
+    const markup = `
       <style>
         :host { display: block; width: 100%; }
         ha-card {
@@ -360,7 +408,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .ups-metrics .metric { padding: 7px 10px; }
         .metric ha-icon { color: var(--primary-color); --mdc-icon-size: 20px; flex: 0 0 auto; }
         .metric > div { min-width: 0; }
-        .metric-label { display: block; color: var(--secondary-text-color); font-size: 11.5px; line-height: 1.15; }
+        .metric-label { display: block; color: var(--secondary-text-color); font-size: 12px; line-height: 1.15; }
         .metric strong { display: block; margin-top: 1px; font-size: 15.5px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .summary-line { display: flex; gap: 4px; flex-wrap: wrap; color: var(--secondary-text-color); font-size: 12px; line-height: 1.2; }
         .ups-footer {
@@ -391,15 +439,15 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
         .details ha-icon { --mdc-icon-size: 19px; }
         .keenetic-primary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
         .keenetic-primary > div { padding: 9px 10px; border-radius: 14px; background: var(--secondary-background-color, #f4f4f4); min-width: 0; }
-        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 11.5px; }
+        .keenetic-primary span { display: block; color: var(--secondary-text-color); font-size: 12px; }
         .keenetic-primary strong { display: block; margin-top: 2px; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason { margin: 0 2px 7px; color: var(--secondary-text-color); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .reason span { font-weight: 600; color: var(--primary-text-color); }
         .keenetic-metrics .metric { padding: 7px 8px; }
-        .policy { margin: 7px 2px 0; color: var(--secondary-text-color); font-size: 11px; line-height: 1.25; }
+        .policy { margin: 7px 2px 0; color: var(--secondary-text-color); font-size: 12px; line-height: 1.25; }
         .control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin-top: 7px; }
         .control-point { min-width: 0; padding: 8px 10px; border-radius: 14px; background: var(--secondary-background-color,#f4f4f4); border: 1px solid transparent; }
-        .control-point span,.control-point small { display:block; color:var(--secondary-text-color); font-size:10.5px; line-height:1.15; }
+        .control-point span,.control-point small { display:block; color:var(--secondary-text-color); font-size:12px; line-height:1.15; }
         .control-point strong { display:block; margin:3px 0; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .control-point.ok { border-color:color-mix(in srgb,var(--success-color,#43a047) 30%,transparent); }
         .control-point.warning { border-color:color-mix(in srgb,var(--warning-color,#ff9800) 50%,transparent); }
@@ -411,19 +459,22 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
           ha-card.ups { padding: 11px 14px 6px; }
           ha-card.keenetic { padding: 13px 14px 11px; }
           h2 { font-size: 19px; }
-          .status { font-size: 11.5px; padding: 6px 8px; }
+          .status { font-size: 12px; padding: 6px 8px; }
           .phase { padding: 7px 4px; }
           .metric-grid.three .metric { display: block; padding: 7px 5px; text-align: center; }
           .metric-grid.three .metric ha-icon { --mdc-icon-size: 18px; margin-bottom: 2px; }
           .metric-grid.three .metric strong { font-size: 13.5px; }
           .ups-footer { gap: 6px; }
-          .ups-summary { font-size: 11.5px; }
+          .ups-summary { font-size: 12px; }
         }
       </style>
       <ha-card class="${this._config.variant}">${content}</ha-card>`;
 
+    const replaced = commitStableMarkup(this.shadowRoot, markup);
+
     const details = this.shadowRoot.querySelector("button.details");
-    if (details && this._config.details_path) {
+    if (details && this._config.details_path && (replaced || !details._nikasDetailsBound)) {
+      details._nikasDetailsBound = true;
       details.addEventListener("click", () => this._navigate(this._config.details_path));
     }
   }
