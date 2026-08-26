@@ -2,7 +2,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.37.1";
+  const UI_VERSION = "0.37.2";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;
@@ -124,7 +124,7 @@ import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
           .work-canvas{position:relative;margin:8px 12px 10px;min-width:0;min-height:calc(100% - 18px);transform-origin:0 0;transform:translate3d(0px,0px,0) scale(1);will-change:transform;contain:layout style;visibility:hidden}
           .canvas-viewport.zoomed .work-canvas{position:absolute;left:12px;right:12px;top:8px;margin:0;min-height:calc(100% - 18px)}
           .work-canvas.ready{visibility:visible}
-          nikas-house-hero{display:block;width:100%;height:100%}
+          nikas-house-hero{position:absolute;inset:0;display:block;width:auto;height:auto;min-height:0}
           .bottom{z-index:20;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:var(--card-background-color,var(--ha-card-background,#fff));border-top:1px solid var(--divider-color,rgba(0,0,0,.12));box-shadow:0 -4px 18px rgba(0,0,0,.08)}
           nav{width:min(100%,720px);margin:0 auto;display:grid;grid-template-columns:repeat(var(--house-tab-count,3),minmax(0,1fr));gap:4px}
           .tab{appearance:none;border:0;background:transparent;color:var(--secondary-text-color,#5f6368);min-width:0;min-height:52px;padding:4px 4px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}

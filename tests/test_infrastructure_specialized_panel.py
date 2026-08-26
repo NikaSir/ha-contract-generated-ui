@@ -85,6 +85,7 @@ def test_infrastructure_panel_uses_native_chrome_and_one_canvas() -> None:
     frontend = (FRONTEND / "nikas-infrastructure-overview.js").read_text(encoding="utf-8")
 
     assert f'const ELEMENT_NAME = "{INFRASTRUCTURE_PANEL_WEB_COMPONENT}"' in frontend
+    assert 'const UI_VERSION = "0.37.2"' in frontend
     assert frontend.count('class="canvas-viewport"') == 1
     assert frontend.count('class="work-canvas"') == 1
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in frontend
@@ -124,3 +125,5 @@ def test_infrastructure_cards_patch_stable_dom_and_respect_type_floor() -> None:
         "font-size:11.5px",
     ):
         assert forbidden not in summary
+    assert 'const staleText = unreliable' in summary
+    assert '? "Нет данных"' in summary
