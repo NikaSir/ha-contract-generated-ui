@@ -1,7 +1,9 @@
 # ADR-001: Integration-owned specialized dashboards
 
-**Status:** Accepted  
+**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5
 **Date:** 2026-08-22
+
+The domain-ownership decision remains accepted. Explicit Header Back requirements are retired; the permanent left control is the Home Assistant system menu.
 
 ## Context
 

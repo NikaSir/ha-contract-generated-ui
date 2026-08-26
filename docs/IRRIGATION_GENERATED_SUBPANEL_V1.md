@@ -1,6 +1,7 @@
 # HO-SC-8W generated subpanel v1
 
 **Status:** dormant staged migration candidate  
+**Shell authority:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.5; Header Back references below are historical.
 **Owner of UI shell:** `ha-contract-generated-ui`  
 **Owner of data/actions:** `ha-ho-sc-8w`
 

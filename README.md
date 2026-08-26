@@ -94,6 +94,8 @@ Specialized applications such as UPS, irrigation, vacuum and network control use
 Normative documents:
 
 - `docs/INTEGRATION_DASHBOARD_UI_STANDARD.md` — required app navigation, Header, Device Selector, Bottom Tab Bar and state semantics;
+- `docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` — canonical v1.5 Header, native-scroll/zoom, Bottom Tab Bar and brand contract;
+- `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` — current implementation audit and explicit follow-up gaps;
 - `docs/NIKAS_INTEGRATION_PANEL_TEMPLATE_V1.md` — shared visual primitives, typography and copy/adapt implementation contract;
 - `docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md` — one self-contained production frontend bundle per integration.
 
