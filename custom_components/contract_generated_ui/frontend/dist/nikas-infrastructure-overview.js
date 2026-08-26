@@ -285,7 +285,13 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
     else status = this._status("Нормально", "ok");
 
     const cloudText = cloud === null ? "Облако: неизвестно" : cloud ? "Облако: подключено" : "Облако: отключено";
-    const staleText = stale === null ? "Свежесть: неизвестно" : stale ? "Данные устарели" : "Данные актуальны";
+    const staleText = unreliable
+      ? "Нет данных"
+      : stale === null
+        ? "Свежесть: неизвестно"
+        : stale
+          ? "Данные устарели"
+          : "Данные актуальны";
     const details = this._config.details_path
       ? `<button class="details" type="button">Подробнее <ha-icon icon="mdi:chevron-right"></ha-icon></button>`
       : "";
@@ -496,7 +502,7 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
 
 (() => {
   const ELEMENT_NAME = "nikas-infrastructure-overview";
-  const UI_VERSION = "0.37.1";
+  const UI_VERSION = "0.37.2";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

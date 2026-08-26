@@ -2,7 +2,7 @@ import "/contract_generated_ui/frontend/nikas-infrastructure-summary.js?build=b0
 
 (() => {
   const ELEMENT_NAME = "nikas-infrastructure-overview";
-  const UI_VERSION = "0.37.1";
+  const UI_VERSION = "0.37.2";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

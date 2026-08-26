@@ -1,8 +1,9 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b010";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const SHOULD_BOOTSTRAP = !window[BOOTSTRAP_KEY];
-if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = true;
+const BOOTSTRAP_VERSION = "b009";
+const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
+if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
 const BAR_ID = "nikas-global-tabbar";
 const HEADER_ID = "nikas-generated-subpanel-header";
@@ -16,6 +17,8 @@ const FALLBACK_ITEMS = [
 ];
 
 let navigationRegistry = null;
+let syncFrame = null;
+let chromeHostObserver = null;
 
 function navigate(path) {
   if (!path || window.location.pathname === path) return;
@@ -223,7 +226,22 @@ function syncChrome() {
 }
 
 function scheduleSync() {
-  window.requestAnimationFrame(syncChrome);
+  if (syncFrame !== null) return;
+  syncFrame = window.requestAnimationFrame(() => {
+    syncFrame = null;
+    syncChrome();
+  });
+}
+
+function observeChromeHost() {
+  if (!document.body || chromeHostObserver || typeof MutationObserver !== "function") return;
+  chromeHostObserver = new MutationObserver((records) => {
+    const chromeRemoved = records.some((record) => [...record.removedNodes].some(
+      (node) => node?.id === BAR_ID || node?.id === HEADER_ID
+    ));
+    if (chromeRemoved) scheduleSync();
+  });
+  chromeHostObserver.observe(document.body, { childList: true });
 }
 
 async function loadNavigationRegistry() {
@@ -258,12 +276,14 @@ if (SHOULD_BOOTSTRAP) {
     document.addEventListener(
       "DOMContentLoaded",
       () => {
+        observeChromeHost();
         scheduleSync();
         loadNavigationRegistry();
       },
       { once: true }
     );
   } else {
+    observeChromeHost();
     scheduleSync();
     loadNavigationRegistry();
   }
