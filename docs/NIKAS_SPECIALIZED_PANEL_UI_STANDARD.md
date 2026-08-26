@@ -5,6 +5,7 @@
 **Applies to:** every integration-owned specialized Home Assistant panel
 **Primary acceptance viewport:** iPhone Pro Max, portrait
 **Reference visual implementation:** Stark SolarPower / UPS
+**Reference typography and status treatment:** LIDER
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents remain useful only where they do not conflict with this standard.
 
@@ -23,6 +24,8 @@ BOTTOM TAB BAR                              native scale
 - Shell reconciliation is idempotent across redraws and Home Assistant state updates.
 - The effective iOS safe area is consumed exactly once.
 - On phones the panel owns a height-locked application shell. The outer Home Assistant page must not become the scrolling surface: only the work viewport scrolls, so Header and Bottom Tab Bar stay at fixed screen coordinates.
+- Prevent scroll chaining from the work viewport into Home Assistant's outer document. A sticky element inside the scrolling/transformed subtree does not satisfy the fixed-chrome requirement.
+- Short views fill the available work row rather than shrinking the application shell and pulling either menu toward their content.
 
 ## 2. Header — UPS reference geometry
 
@@ -38,7 +41,14 @@ BOTTOM TAB BAR                              native scale
 - A transparent refresh rail is non-conforming.
 - Back, an integration drawer, a device command or a decorative brand icon is prohibited in the permanent left rail. Parent navigation belongs inside the work area.
 
-## 3. Work viewport at 100%
+## 3. Peer-device selector
+
+- Use a selector only for peer physical devices of the same integration, for example `UPS Интернет / UPS Котёл`; a zone, channel or functional subsection is not automatically a peer device.
+- It remains directly below Header, outside the work viewport and at native scale.
+- Selected peer persists across tabs and owns its own locally persisted scale/position state.
+- Hiding a selector on an aggregate view is allowed when all peers are already visible, but the same selector subtree is retained for single-peer views.
+
+## 4. Work viewport at 100%
 
 At exactly `scale = 1`:
 
@@ -46,19 +56,19 @@ At exactly `scale = 1`:
 - one-finger transform panning is disabled;
 - normal native vertical scrolling is enabled;
 - horizontal scrolling is disabled;
-- the top cannot be pulled below origin or translated above its real content boundary;
+- the canvas cannot be pulled sideways, below the top origin or beyond its real lower edge;
 - clicks, hold-to-more-info and vertical scrolling start without a gesture delay;
 - stored transforms are normalized to `{scale:1,x:0,y:0}` before display.
 
 The former rule that one-finger transform panning also provides vertical movement at 100% is retired.
 
-## 4. Zoom and enlarged pan
+## 5. Zoom and enlarged pan
 
 - Pinch uses two fingers and preserves the focal midpoint.
 - Range is `75–200%`.
 - Permanent zoom buttons are prohibited.
 - Pinch ending within `97–103%` snaps to exactly 100% and origin.
-- Two-finger double tap resets to 100%/origin and briefly shows `Масштаб 100%`.
+- Two-finger double tap resets scale, transform and native scroll to 100%/origin and briefly shows `Масштаб 100%`.
 - Scale persists locally per panel/client and per selected peer device where applicable.
 - One-finger transform panning is enabled only when `scale > 1`.
 - Each axis is enabled only when scaled content exceeds the viewport on that axis.
@@ -66,8 +76,9 @@ The former rule that one-finger transform panning also provides vertical movemen
 - Resize, orientation change, content reflow, peer switch and tab change re-run bounds clamping.
 - A tab change returns native scroll to the top and removes invalid translation; stored scale may remain.
 - A second finger cancels pending more-info; post-gesture synthetic clicks are briefly suppressed, while intentional stationary hold still opens native more-info.
+- Pinch and two-finger reset must not open history, a graph or more-info.
 
-## 5. Bottom Tab Bar — UPS reference geometry
+## 6. Bottom Tab Bar — UPS reference geometry
 
 - One fixed, edge-attached, full-width bar; never a floating card or pill.
 - It remains outside the work viewport and above the Home Indicator.
@@ -81,8 +92,9 @@ The former rule that one-finger transform panning also provides vertical movemen
 - Inactive content uses `var(--secondary-text-color)`.
 - Active icon/label use `var(--primary-color)` and an approximately 11% primary-color background, without a second shadow.
 - Navigating between tabs restores the work area to the page start before interaction resumes.
+- A short view must not move the bar. A long view must scroll its final control/card fully clear of the bar and Home Indicator.
 
-## 6. Typography envelope
+## 7. Typography envelope
 
 - Meaningful user-facing text stays within `12–25px` inclusive.
 - `12px` is the minimum for captions, state freshness, navigation labels, chips and compact secondary values.
@@ -91,21 +103,26 @@ The former rule that one-finger transform panning also provides vertical movemen
 - `9–10px` is allowed only for redundant, non-interactive schematic annotations whose meaning is already conveyed elsewhere. It is prohibited for statuses, controls, navigation, entity names, measurements and required explanations.
 - A layout that needs meaningful text below `12px` must be recomposed instead of shrinking the type.
 
-## 7. Optional connection and freshness indicator
+## 8. Optional connection and freshness indicator
 
 The two-level indicator is introduced only by an explicit product request. It is not a mandatory shell element. In particular, it is absent from `Дом сейчас` and StarLine until separately requested.
 
 - The first line describes the actual data path: `Локально`, `Облако`, `Резерв`, `Нет связи` or `Нет данных`.
 - `Онлайн` is not used: it duplicates `Локально`/`Облако` and hides the transport path.
 - Tuya Local and Zigbee delivered through local MQTT are `Локально`; Tuya cloud and other remote cloud APIs are `Облако`.
+- Local transport also includes a local LAN/API, local MQTT, Modbus and SNMP path that does not require an external vendor service.
 - `Резерв` means a known fallback path is actively supplying data, not merely that fallback capability exists.
 - The second line describes freshness only: `Данные актуальны`, `Данные устарели` or `Нет данных`.
 - Transport and freshness are independent. For example, `Облако · Данные устарели` is valid; stale data must not be relabelled as a transport outage without evidence.
+- A failed current poll makes preserved telemetry `Данные устарели`. Unless a domain documents another justified threshold, a sample also becomes stale after three normal polling intervals; it becomes current again only after a new successful sample is accepted.
 - Main line: `16px/700`; freshness line: `13px/550–600`.
 - The main status color drives the dot, main label, approximately `8–12%` tinted plaque background and approximately `30%` border. A current freshness line remains neutral; stale/no-data freshness uses the appropriate warning/unreliable color.
+- `Локально`/`Облако` use the success color, `Резерв` warning, `Нет связи` error and `Нет данных` neutral. Color is always accompanied by text.
+- The status lamp stays fully inside the plaque. Size the stable two-line surface for the longest allowed label; do not move a lamp outside its rounded background.
+- Flashing, pulsing, saturated full fills and repeated entrance animations are prohibited.
 - The indicator is a stable DOM subtree. State updates patch its text, classes and ARIA label; they never remount the panel or animate layout geometry.
 
-## 8. Stable rendering and flicker prevention
+## 9. Stable rendering and flicker prevention
 
 - Header, peer selector, one viewport, one work canvas, persistent background and Bottom Tab Bar are mounted once per panel instance.
 - A `hass` setter or telemetry timer must patch existing text, attributes, classes and CSS variables. Reassigning the panel or card `shadowRoot.innerHTML` for routine telemetry is prohibited.
@@ -113,11 +130,14 @@ The two-level indicator is introduced only by an explicit product request. It is
 - A structural configuration change may replace only the affected work-view subtree. It must not create a second viewport or discard the fixed chrome.
 - The stored transform is applied before a newly selected work view becomes visible. Background images and large compositor layers are not recreated during scroll, telemetry refresh or indicator updates.
 - Rendering is coalesced to at most one animation frame, and unchanged values do not write the DOM.
+- Wrapping a full redraw in `requestAnimationFrame`, or delaying it until after scrolling, is still a full redraw and is non-conforming.
 - Keys, element order and child topology remain stable for state-only changes. Conditional status copy uses stable placeholders or targeted insertion rather than whole-tree replacement.
+- Exact changing telemetry age is not a structural key. An unchanged image does not receive the same `src` again.
 - `backdrop-filter`, masks, `will-change` and containment may be used only on persistent layers; toggling or remounting them during scroll is prohibited because it can flash in iOS WebView.
 - No polling loop may rebuild the active tab. Time-only displays patch their own text nodes.
+- A full-screen loading frame is allowed only during initial mount. Later loss, staleness and recovery patch the mounted content in place.
 
-## 9. Brand and repository identity
+## 10. Brand and repository identity
 
 - Every integration repository ships a recognizable integration brand asset.
 - A packaged `custom_components/<domain>/brand/icon.png` is mandatory; it is the minimum HACS brand asset and must not be an empty placeholder.
@@ -127,7 +147,7 @@ The two-level indicator is introduced only by an explicit product request. It is
 - Header does not display the brand icon; it is for repository/HACS/HA identity, sidebar/launcher and suitable domain cards.
 - Changed raster assets use deterministic cache/version handling where served by the panel.
 
-## 10. Required automated guards
+## 11. Required automated guards
 
 Repository tests or static checks must verify:
 
@@ -145,7 +165,9 @@ Repository tests or static checks must verify:
 12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary and status-tinted plaque;
 13. JavaScript syntax, package validation, HACS and Hassfest pass.
 
-## 11. Mandatory phone acceptance
+Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
+
+## 12. Mandatory phone acceptance
 
 - long diagnostics pages scroll vertically at 100%;
 - 100% cannot move horizontally or be pulled away from the top origin;
@@ -159,9 +181,12 @@ Repository tests or static checks must verify:
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
+- short views do not pull either menu inward, and long views expose their last control above the Bottom Tab Bar;
+- at least ten consecutive tab switches produce no blank frame, lost map/image or duplicated viewport;
+- loss/recovery changes telemetry and any enabled indicator in place; preserved samples are visibly stale;
 - `Дом сейчас` and StarLine contain no unrequested two-level connection indicator.
 
-## 12. Publication
+## 13. Publication
 
 - NikaS panel and integration work is published through traceable commits, branches and pull requests.
 - GitHub Releases are not used.
