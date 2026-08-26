@@ -7,7 +7,7 @@
 
 One registered panel module equals one autonomous, integration-owned JavaScript bundle. The `module_url` target contains all project code needed to register and run the current panel. Runtime imports of previous panel versions or another NikaS repository are prohibited.
 
-Modular development is allowed, but the build must produce one deterministic artifact with cache busting tied to the declared UI version. History belongs in Git commits and tags, not in browser import chains.
+Modular development is allowed, but the build must produce one deterministic artifact with cache busting tied to the declared UI version. History belongs in reviewed Git commits and merged pull requests, not in browser import chains.
 
 ## Fixed shell acceptance
 
@@ -38,4 +38,4 @@ Before merge, verify:
 
 ## Publication workflow
 
-Changes receive an explicit UI/integration version where applicable, a changelog entry and automated checks. NikaS work is published through commits, branches and pull requests. GitHub Releases are not created.
+Changes receive an explicit UI/integration version where applicable, a changelog entry and automated checks. NikaS work is published through commits, branches, pull requests and the accepted `main` state. GitHub Releases and automatic release tags are not created.
