@@ -110,3 +110,6 @@ All notable changes to this project will be documented in this file.
 - `PanelManifest.spec.app_shell.active` explicitly selects the active central surface and app-shell composition participates in `renderer_engine_sha256` / deterministic RenderTrace output.
 - Infrastructure panel `0.7.0` becomes a single operational overview with `app_shell.active: infrastructure`; the central top-level `Диагностика` view is removed as detailed diagnostics move to integration-owned panels.
 - Generator/runtime app-shell transformer parity, manifest schema packaging, frontend asset presence and infrastructure single-view ownership boundary are regression-tested.
+# 0.36.5
+
+- Base UI `0.37.4` records the active NikaS base route before a specialized panel opens, using the standard v1.7 one-shot handoff key. Specialized title plaques can therefore return explicitly to «Дом сейчас», «Действия» or «Инфраструктура» without browser-history navigation.

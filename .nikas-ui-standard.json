@@ -1,0 +1,9 @@
+{
+  "version": "1.7",
+  "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+  "standard_sha256": "22c0cec7fa61b8210fc40e3f053242335f8e502984cbb8a4fb93c33a93bd3706",
+  "role": "base",
+  "runtime_files": [
+    "custom_components/contract_generated_ui/frontend/nikas-ui.js"
+  ]
+}

@@ -1,4 +1,4 @@
-// NikaS Integration Panel Template v1.6
+// NikaS Integration Panel Template v1.7
 // Canonical copy/adapt reference implementation.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
@@ -15,6 +15,45 @@ const APP = {
 };
 
 const TONES = new Set(["ok", "active", "warn", "bad", "unknown"]);
+const SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
+const RETURN_ROUTE_KEY = "nikas.example.return_route.v1";
+const SAFE_DEFAULT_ROUTE = "/dashboard-infrastructure/overview";
+const SAFE_ROUTE_PREFIXES = ["/dashboard-house", "/dashboard-actions", "/dashboard-infrastructure"];
+
+function safeReturnRoute(value) {
+  if (!value) return null;
+  try {
+    const url = new URL(decodeURIComponent(String(value).trim()), window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    return SAFE_ROUTE_PREFIXES.some((prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`))
+      ? `${url.pathname}${url.search}${url.hash}`
+      : null;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function resolveReturnRoute(panel) {
+  const current = new URL(window.location.href);
+  const explicit = safeReturnRoute(current.searchParams.get("return_to") || current.searchParams.get("from"));
+  let handedOff = null;
+  let saved = null;
+  try {
+    handedOff = safeReturnRoute(sessionStorage.getItem(SOURCE_ROUTE_KEY));
+    sessionStorage.removeItem(SOURCE_ROUTE_KEY);
+    saved = safeReturnRoute(sessionStorage.getItem(RETURN_ROUTE_KEY));
+  } catch (_err) {}
+  const configured = safeReturnRoute(panel?._panel?.config?.parent_route);
+  const route = explicit || handedOff || saved || safeReturnRoute(document.referrer) || configured || SAFE_DEFAULT_ROUTE;
+  try { sessionStorage.setItem(RETURN_ROUTE_KEY, route); } catch (_err) {}
+  return route;
+}
+
+function navigateToSource(panel) {
+  const route = safeReturnRoute(panel._returnRoute) || SAFE_DEFAULT_ROUTE;
+  window.history.pushState(null, "", route);
+  window.dispatchEvent(new Event("location-changed"));
+}
 
 function esc(value) {
   return String(value ?? "")
@@ -79,6 +118,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     this._loading = true;
     this._shellMounted = false;
     this._renderQueued = false;
+    this._returnRoute = null;
   }
 
   set hass(value) {
@@ -116,10 +156,10 @@ class NikaSIntegrationPanelReference extends HTMLElement {
       <button type="button" class="header-action" id="menu" aria-label="Меню Home Assistant">
         <ha-icon icon="mdi:menu"></ha-icon>
       </button>
-      <div class="header-title">
+      <button type="button" class="header-title" id="return-source" aria-label="Вернуться в базовую панель NikaS">
         <strong>${esc(config.title)}</strong>
         <span>${esc(config.subtitle)}</span>
-      </div>
+      </button>
       <button type="button" class="header-action" id="refresh" aria-label="Обновить">
         <ha-icon icon="mdi:refresh"></ha-icon>
       </button>
@@ -285,6 +325,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
 
   _mountShell() {
     if (this._shellMounted) return;
+    this._returnRoute = resolveReturnRoute(this);
     this.shadowRoot.innerHTML = `<style>${NIKAS_PANEL_CSS}</style>
       <div class="app-shell">
         ${this._renderHeader()}
@@ -301,6 +342,8 @@ class NikaSIntegrationPanelReference extends HTMLElement {
       if (!button) return;
       if (button.id === "menu") {
         this.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }));
+      } else if (button.id === "return-source") {
+        navigateToSource(this);
       } else if (button.id === "refresh") {
         this.dispatchEvent(new CustomEvent("nikas-panel-refresh", { bubbles: true, composed: true }));
       } else if (button.dataset.view) {
@@ -373,7 +416,7 @@ button{font:inherit}
   background:var(--nika-surface);color:var(--primary-text-color);display:grid;place-items:center;padding:0;box-shadow:0 7px 20px rgba(23,45,76,.08);
 }
 .header-action ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.header-action#refresh{color:var(--nika-primary)}
-.header-title{min-width:0;text-align:center;line-height:1.1}
+.header-title{min-width:0;min-height:44px;border:1px solid var(--nika-border);border-radius:16px;background:var(--nika-surface);color:var(--primary-text-color);text-align:center;line-height:1.1;padding:4px 12px;box-shadow:0 4px 14px rgba(23,45,76,.06)}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-title strong{font-size:23px;font-weight:800}
 .header-title span{margin-top:3px;color:var(--nika-muted);font-size:14px;font-weight:560}

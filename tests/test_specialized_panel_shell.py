@@ -38,10 +38,12 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
     assert "pointercancel" in zoom
 
 
-def test_v16_canonical_contract_covers_indicator_flicker_and_typography() -> None:
+def test_v17_canonical_contract_covers_indicator_flicker_typography_and_return() -> None:
     standard = (DOCS / "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md").read_text(encoding="utf-8")
 
-    assert "Standard v1.6" in standard
+    assert "Standard v1.7" in standard
+    assert "nikas.specialized.source_route.v1" in standard
+    assert "history.back()" in standard
     assert "12–25px" in standard
     assert "Локально" in standard
     assert "Облако" in standard
@@ -64,7 +66,7 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
         (ROOT / "templates" / "integration-panel-v1" / "panel-contract.example.json").read_text(encoding="utf-8")
     )
 
-    assert "Template v1.6" in reference
+    assert "Template v1.7" in reference
     assert 'icon="mdi:menu"' in reference
     assert "hass-toggle-menu" in reference
     assert "mdi:arrow-left" not in reference
@@ -79,6 +81,9 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
     assert "font-size:14px" in reference
     assert "--mdc-icon-size:28px" in reference
     assert contract["header"]["left_event"] == "hass-toggle-menu"
+    assert contract["header"]["title_action"] == "return_to_source_base_panel"
+    assert contract["header"]["source_route_handoff_key"] == "nikas.specialized.source_route.v1"
+    assert contract["header"]["browser_history_back_allowed"] is False
     assert contract["zoom"]["range_percent"] == [75, 200]
     assert contract["rendering"]["routine_shadow_root_replacement"] is False
     assert contract["connection_indicator"]["enabled"] is False
