@@ -80,9 +80,38 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
     assert "font-size:23px" in reference
     assert "font-size:14px" in reference
     assert "--mdc-icon-size:28px" in reference
+    assert 'uiVersion: "1.0.0"' in reference
+    assert "versionLine: uiVersionLine" in reference
+    assert "config?.subtitle" not in reference
+    assert "Device model" not in reference
+    assert "min-width:min(290px,100%)" in reference
+    assert "padding:5px 14px" in reference
+    assert "var(--primary-color,#03a9d9) 5%" in reference
+    assert "var(--primary-color,#03a9d9) 24%" in reference
+    assert "box-shadow:0 5px 16px rgba(23,45,76,.06)" in reference
+    assert ".header-title:active" in reference
+    assert "var(--primary-color,#03a9d9) 13%" in reference
+    assert "var(--primary-color,#03a9d9) 42%" in reference
+    assert "box-shadow:0 2px 7px rgba(23,45,76,.05)" in reference
+    assert ".header-title:focus-visible{outline:2px solid" in reference
     assert contract["header"]["left_event"] == "hass-toggle-menu"
     assert contract["header"]["title_action"] == "return_to_source_base_panel"
     assert contract["header"]["source_route_handoff_key"] == "nikas.specialized.source_route.v1"
+    assert contract["header"]["title_plaque"] == {
+        "reference": "LIDER",
+        "min_width": "min(290px,100%)",
+        "min_height_px": 44,
+        "padding": "5px 14px",
+        "radius_px": 16,
+        "background_primary_mix_percent": 5,
+        "border_primary_mix_percent": 24,
+        "shadow": "0 5px 16px rgba(23,45,76,.06)",
+        "pressed_background_primary_mix_percent": 13,
+        "pressed_border_primary_mix_percent": 42,
+        "pressed_shadow": "0 2px 7px rgba(23,45,76,.05)",
+        "focus_outline_px": 2,
+        "focus_outline_offset_px": 2,
+    }
     assert contract["header"]["browser_history_back_allowed"] is False
     assert contract["zoom"]["range_percent"] == [75, 200]
     assert contract["rendering"]["routine_shadow_root_replacement"] is False
@@ -92,6 +121,27 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
         "meaningful_max_px": 25,
         "schematic_redundant_annotation_px": [9, 10],
     }
+
+
+def test_base_navigation_handoff_is_written_only_at_outbound_navigation_time() -> None:
+    navigation = (FRONTEND / "nikas-ui.js").read_text(encoding="utf-8")
+    delegated = [
+        FRONTEND / "nikas-house-hero.js",
+        FRONTEND / "nikas-house-overview.js",
+        FRONTEND / "nikas-infrastructure-summary.js",
+        FRONTEND / "nikas-infrastructure-overview.js",
+        FRONTEND / "nikas-app-shell.js",
+    ]
+
+    assert "const SPECIALIZED_PANEL_PATHS = new Set([" in navigation
+    assert "function navigateWithSourceHandoff(path)" in navigation
+    assert "rememberSpecializedSourceRoute(window.location.pathname, path);" in navigation
+    assert "rememberSpecializedSourceRoute(window.location.pathname);" not in navigation
+    assert navigation.index("rememberSpecializedSourceRoute(window.location.pathname, path);") < navigation.index(
+        'window.history.pushState(null, "", path);'
+    )
+    for path in delegated:
+        assert "window.NikasPanelNavigation?.navigate?.(path)" in path.read_text(encoding="utf-8")
 
 
 def test_specialized_shell_contract_is_documented() -> None:

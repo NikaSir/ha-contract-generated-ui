@@ -1,20 +1,35 @@
 {
   "version": "1.8",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "5cd58b7d6d37f7c8306d339e2ae4cee6279522ab0627e2636316ae3a38242d1f",
+  "standard_sha256": "af41ee58956f0076519157c295f8e9b97f82c1e764fe64456680a1aeae0ba244",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
-  "navigation_contract_sha256": "4f3efe18470f106f2c140cccb17245f3ad4cca4213da760570373f84952cebea",
+  "navigation_contract_sha256": "b434169a733d5c40eb0155ccc1a0377354002caab6d2073801754ac5a367c37b",
   "role": "base",
   "runtime_files": [
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",
+    "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
+    "custom_components/contract_generated_ui/frontend/nikas-house-overview.js",
+    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js",
+    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
+    "custom_components/contract_generated_ui/frontend/nikas-app-shell.js",
     "navigation/main.yaml"
   ],
   "production_entrypoint": "custom_components/contract_generated_ui/frontend/nikas-ui.js",
   "source_handoff": {
     "storage_write_marker": "sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY",
     "route_normalizer_marker": "function sourceBaseRoute",
-    "capture_marker": "rememberSpecializedSourceRoute(window.location.pathname)"
+    "specialized_route_marker": "const SPECIALIZED_PANEL_PATHS",
+    "capture_marker": "rememberSpecializedSourceRoute(window.location.pathname, path)",
+    "navigation_marker": "function navigateWithSourceHandoff",
+    "delegation_marker": "window.NikasPanelNavigation?.navigate?.(path)"
   },
+  "delegated_navigation_files": [
+    "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
+    "custom_components/contract_generated_ui/frontend/nikas-house-overview.js",
+    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js",
+    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
+    "custom_components/contract_generated_ui/frontend/nikas-app-shell.js"
+  ],
   "title_plaque_reference": {
     "implementation": "LIDER",
     "min_width": "min(290px,100%)",

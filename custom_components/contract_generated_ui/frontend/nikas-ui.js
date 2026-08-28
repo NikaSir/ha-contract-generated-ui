@@ -10,6 +10,15 @@ const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 const SPECIALIZED_SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
 const SPECIALIZED_SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
+const SPECIALIZED_PANEL_PATHS = new Set([
+  "/dashboard-zont",
+  "/starline",
+  "/dashboard-s8-omni",
+  "/dashboard-irrigation",
+  "/dashboard-ups",
+  "/dashboard-keenetic",
+  "/dashboard-lider",
+]);
 const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
 const FALLBACK_ITEMS = [
@@ -35,9 +44,23 @@ function sourceBaseRoute(pathname) {
   return null;
 }
 
-function rememberSpecializedSourceRoute(pathname) {
+function isSpecializedPanelRoute(path) {
+  if (!path) return false;
+  try {
+    const target = new URL(String(path), window.location.origin);
+    if (target.origin !== window.location.origin) return false;
+    return [...SPECIALIZED_PANEL_PATHS].some(
+      (root) => target.pathname === root || target.pathname.startsWith(`${root}/`)
+    );
+  } catch (_err) {
+    return false;
+  }
+}
+
+function rememberSpecializedSourceRoute(pathname, destination) {
+  if (!isSpecializedPanelRoute(destination)) return false;
   const route = sourceBaseRoute(pathname);
-  if (!route) return;
+  if (!route) return false;
   try {
     window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
     window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY, String(Date.now()));
@@ -45,13 +68,22 @@ function rememberSpecializedSourceRoute(pathname) {
     // Storage can be unavailable in a hardened WebView; specialized panels
     // still retain their configured safe fallback.
   }
+  return true;
 }
 
-function navigate(path) {
-  if (!path || window.location.pathname === path) return;
+function navigateWithSourceHandoff(path) {
+  if (!path || typeof path !== "string" || !path.startsWith("/")) return false;
+  if (window.location.pathname === path) return false;
+  rememberSpecializedSourceRoute(window.location.pathname, path);
   window.history.pushState(null, "", path);
   window.dispatchEvent(new Event("location-changed"));
+  return true;
 }
+
+window.NikasPanelNavigation = Object.freeze({
+  contractVersion: "1.0",
+  navigate: navigateWithSourceHandoff,
+});
 
 function fallbackSurface(pathname) {
   if (pathname.startsWith("/dashboard-house-v11")) return "home";
@@ -171,7 +203,7 @@ function renderBar(root, model) {
     label.textContent = item.label ?? item.title ?? item.id;
     button.append(icon, label);
     button.onclick = () => {
-      if (!isActive) navigate(item.path);
+      if (!isActive) navigateWithSourceHandoff(item.path);
     };
     nav.appendChild(button);
   }
@@ -247,7 +279,6 @@ function syncHeader(model) {
 
 function syncChrome() {
   if (!document.body) return;
-  rememberSpecializedSourceRoute(window.location.pathname);
   const model = navigationModel(window.location.pathname);
   syncBar(model);
   syncHeader(model);

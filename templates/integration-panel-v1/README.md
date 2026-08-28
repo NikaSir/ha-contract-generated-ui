@@ -1,4 +1,4 @@
-# NikaS Integration Panel Template v1.7 — reference implementation
+# NikaS Integration Panel Template v1.8 — reference implementation
 
 This directory is the **canonical copy/adapt reference** for integration-owned specialized panels in Home Assistant NikaS.
 
@@ -39,6 +39,7 @@ Rules:
 - Back, browser history, an integration menu and device actions are prohibited in this rail;
 - center is one clickable two-line title plaque: the first line is the human panel name and the second line is only `UI vX.Y.Z`;
 - the plaque returns to the validated originating NikaS base panel, has visible focus/pressed states and never uses browser Back;
+- the plaque copies LIDER exactly: `min-width:min(290px,100%)`, `min-height:44px`, `padding:5px 14px`, `16px` radius, primary mixes `5%/24%` and shadow `0 5px 16px rgba(23,45,76,.06)`; pressed mixes are `13%/42%` with `0 2px 7px rgba(23,45,76,.05)`;
 - title is `23px/800`, subtitle `14px/560`; narrow fallback is `21/13px`;
 - right side contains at most one global action, normally Refresh;
 - both actions use matching `44 × 44px`, radius `16px` plaques with `25px` `ha-icon` glyphs;
@@ -72,7 +73,7 @@ Meaningful text stays within `12–25px`. Only redundant non-interactive schemat
 
 ## Zoom, scroll and stable rendering
 
-- concatenate/copy the v1.7 zoom controller into the production bundle; never import it from another repository at runtime;
+- concatenate/copy the v1.8 zoom controller into the production bundle; never import it from another repository at runtime;
 - exactly one `.canvas-viewport` owns native vertical scrolling at 100%; `x = y = 0` and horizontal movement are fixed;
 - pinch range is 75–200%; one-finger transform pan starts only above 100% and is axis-clamped;
 - stationary two-finger double tap resets scale/position and shows `Масштаб 100%`; 97–103% snaps to 100%;
@@ -110,7 +111,7 @@ The two-level connection/freshness indicator is opt-in only. When requested, use
 7. Preserve Header, one viewport/canvas, stable-DOM rendering, safe-area geometry, common primitives and Bottom Tab Bar semantics.
 8. Bind factual entity-backed blocks to native HA more-info on hold where practical.
 9. Add only verified integration actions; never bypass the integration API from the frontend.
-10. Build the panel plus copied v1.7 zoom controller into one autonomous production JS bundle and register it through `module_url` with query-string UI-version cache busting.
+10. Build the panel plus copied v1.8 zoom controller into one autonomous production JS bundle and register it through `module_url` with query-string UI-version cache busting.
 11. CI must reject runtime imports of previous frontend versions and validate JavaScript syntax.
 12. Validate iPhone Pro Max portrait, fixed Header/Bottom during long native scroll, bounded pinch/pan/reset, no telemetry/tab flash, cold cache, full HA restart and Home Assistant Cloud/Nabu Casa before acceptance.
 

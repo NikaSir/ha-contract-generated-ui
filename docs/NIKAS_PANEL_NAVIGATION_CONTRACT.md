@@ -49,10 +49,11 @@ Legacy `/dashboard-house/*` pages may remain declared detail routes during migra
 
 ## 3. Source hand-off
 
-Immediately before navigating from a base panel to a specialized panel, the navigation handler stores the normalized current base route:
+In the same click/keyboard handler, immediately before navigating from a base panel to a specialized panel, the navigation handler stores the normalized current base route and current epoch timestamp:
 
 ```javascript
 sessionStorage.setItem("nikas.specialized.source_route.v1", sourceRoute);
+sessionStorage.setItem("nikas.specialized.source_route_at.v1", String(Date.now()));
 ```
 
 Only these values are valid:
@@ -67,8 +68,8 @@ Only these values are valid:
 - `/dashboard-actions/*` normalizes to `/dashboard-actions/home`.
 - `/dashboard-infrastructure/*` normalizes to `/dashboard-infrastructure/overview`.
 - `/dashboard-house` and `/dashboard-house/*` are never stored as the NikaS base source.
-- The hand-off is one-shot and is removed after the specialized panel reads it.
-- A base shell must not continuously overwrite the hand-off during telemetry or DOM reconciliation. If direct click-time capture is temporarily impossible, a companion timestamp must expire an ambient hand-off after 30 seconds.
+- The hand-off is one-shot and both keys are removed after the specialized panel reads them.
+- A base shell must not continuously overwrite the hand-off during telemetry, shell synchronization or DOM reconciliation. The timestamp is a defensive expiry guard, not a substitute for click-time capture; a hand-off older than 30 seconds is rejected.
 
 ## 4. Return-route capture
 
@@ -128,6 +129,7 @@ CI must fail when any of the following is false:
 10. no runtime source contains `history.back()`;
 11. repeated telemetry and tab changes preserve the captured route and handler;
 12. JavaScript syntax, package validation, HACS and Hassfest pass.
+13. every declared base-panel outbound handler writes the source hand-off immediately before navigation, and no ambient render/sync path refreshes it.
 
 A missing, orphaned or mismatched public route is a blocking defect.
 

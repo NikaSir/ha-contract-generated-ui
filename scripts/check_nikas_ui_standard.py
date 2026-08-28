@@ -46,6 +46,8 @@ def main() -> None:
         "Capture precedence is:",
         "exact form `UI vX.Y.Z`",
         "focus state and pressed response",
+        "same click/keyboard handler",
+        "Ambient shell synchronization",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
     for clause in (
@@ -53,6 +55,8 @@ def main() -> None:
         "/dashboard-actions/home",
         "/dashboard-infrastructure/overview",
         "/starline",
+        "nikas.specialized.source_route_at.v1",
+        "same click/keyboard handler",
         "A missing, orphaned or mismatched public route is a blocking defect.",
     ):
         require(clause in navigation_contract, f"canonical navigation clause missing: {clause}")
@@ -95,10 +99,29 @@ def main() -> None:
         require("sessionStorage" in sources, "base shell must persist the source-route hand-off")
         markers = config.get("source_handoff", {})
         require(isinstance(markers, dict) and markers, "base shell must declare source_handoff markers")
-        for name in ("storage_write_marker", "route_normalizer_marker", "capture_marker"):
+        for name in (
+            "storage_write_marker",
+            "route_normalizer_marker",
+            "specialized_route_marker",
+            "capture_marker",
+            "navigation_marker",
+            "delegation_marker",
+        ):
             marker = markers.get(name)
             require(isinstance(marker, str) and marker, f"source_handoff.{name} must be configured")
             require(marker in sources, f"base source-route hand-off marker missing: {marker}")
+        require(
+            "rememberSpecializedSourceRoute(window.location.pathname);" not in sources,
+            "ambient shell synchronization must not refresh the source hand-off",
+        )
+        delegated_files = config.get("delegated_navigation_files", [])
+        require(delegated_files, "base shell must list every delegated navigation source")
+        delegation_marker = markers["delegation_marker"]
+        for path in delegated_files:
+            require(
+                delegation_marker in read_relative(path),
+                f"base outbound navigation does not delegate to click-time hand-off: {path}",
+            )
         for token in (
             "/dashboard-zont",
             "/starline",

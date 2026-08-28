@@ -55,7 +55,7 @@ BOTTOM TAB BAR                              native scale
 - A transparent title, a plain text label without the LIDER surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
 - When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
-- The base shell records the source route before or while opening the specialized panel. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
+- The base shell records the source route in the same click/keyboard handler, immediately before changing location to the specialized panel. Ambient shell synchronization and telemetry updates must not refresh the hand-off timestamp. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
 - The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at `/dashboard-house-v11`, `/dashboard-actions` and `/dashboard-infrastructure` are accepted.
 - Capture precedence is: explicit `return_to`/`from`, one-shot session hand-off, saved route for that specialized panel, safe same-origin referrer, configured `parent_route`, then the repository-defined safe base-panel fallback.
 - Navigation is explicit Home Assistant navigation: `history.pushState()` followed by a `location-changed` event. Browser history is never the routing contract.
@@ -184,7 +184,7 @@ Repository tests or static checks must verify:
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
 12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary and status-tinted plaque;
 13. the center title is a two-line `44px`+ semantic button, contains no arrow or separate Back label and retains geometric centering;
-14. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, consumes the common session hand-off, performs explicit HA navigation and contains no `history.back()`;
+14. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
 15. JavaScript syntax, package validation, HACS and Hassfest pass.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
