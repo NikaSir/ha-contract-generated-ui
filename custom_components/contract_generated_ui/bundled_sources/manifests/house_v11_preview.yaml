@@ -30,8 +30,8 @@ spec:
     infrastructure: /dashboard-infrastructure/overview
     actions: /dashboard-actions/home
     water: /dashboard-infrastructure/overview
-    electricity: /dashboard-infrastructure/overview
-    network: /dashboard-infrastructure/overview
+    electricity: /dashboard-lider
+    network: /dashboard-keenetic
     equipment: /dashboard-infrastructure/overview
     irrigation: /dashboard-irrigation
     ups: /dashboard-ups

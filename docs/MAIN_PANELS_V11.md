@@ -26,7 +26,9 @@ Canonical deep routes used by the House/Actions manifests and renderers point to
 - vehicles — `/starline`;
 - cleaning — `/dashboard-s8-omni`;
 - irrigation — `/dashboard-irrigation`;
-- UPS — `/dashboard-ups`.
+- UPS — `/dashboard-ups`;
+- electricity — `/dashboard-lider`;
+- internet/router — `/dashboard-keenetic`.
 
 ## Дом
 
@@ -42,6 +44,16 @@ The `house_home_v1` renderer preserves the approved top-level order:
 6. Ключевые точки доступа
 
 Main-panel resources remain intentionally compact. Detailed subsystem telemetry belongs to the owning subsystem panel.
+
+The accepted `Дом сейчас` composition is fixed as three information rows above the visual scene:
+
+1. `Окна / Двери / Свет / Движение / Климат`;
+2. `Погода | Защита`;
+3. `Дата и время | Камеры`.
+
+The lower resource plaques delegate directly to their owners: `Электросеть` opens LIDER at `/dashboard-lider`, `Отопление` opens ZONT at `/dashboard-zont`, and `Интернет` opens Keenetic at `/dashboard-keenetic`.
+
+Approved specialized-panel labels used by the main navigation are `Электросеть`, `Отопление`, `Пылесос`, `StarLine`, `Автополив` and `ИБП Stark`.
 
 ## Действия
 

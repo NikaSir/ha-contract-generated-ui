@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
+import yaml
 
 from generator.render import RenderError
 from generator.render_house import HOUSE_HERO_ASSET_URL, render_house_dashboard
 from generator.render_operational import _manifest_renderer
+
+ROOT = Path(__file__).parents[1]
 
 
 def _roles() -> dict[str, str]:
@@ -205,6 +209,13 @@ def test_house_first_screen_is_visual_scene_with_live_semantic_sources() -> None
         "sectional": "binary_sensor.test_access_sectional",
     }
     assert hero["entities"]["windows"] == ["binary_sensor.test_window"]
+    assert hero["entities"]["doors"] == [
+        "binary_sensor.test_access_entrance",
+        "binary_sensor.test_access_tambour",
+        "binary_sensor.test_access_garage",
+        "binary_sensor.test_access_veranda",
+        "binary_sensor.test_access_garden",
+    ]
 
 
 def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None:
@@ -217,6 +228,14 @@ def test_house_preview_uses_declared_navigation_and_no_stale_zone_home() -> None
     assert hero["routes"]["water"] == "/dashboard-infrastructure/overview"
     assert hero["routes"]["network"] == "/dashboard-infrastructure/overview"
     assert hero["routes"]["heating"] == "/dashboard-boiler/heating-boiler"
+
+
+def test_house_release_manifest_routes_resource_plaques_to_owner_panels() -> None:
+    manifest = yaml.safe_load((ROOT / "manifests" / "house_v11_preview.yaml").read_text(encoding="utf-8"))
+    navigation = manifest["spec"]["navigation"]
+    assert navigation["electricity"] == "/dashboard-lider"
+    assert navigation["heating"] == "/dashboard-zont"
+    assert navigation["network"] == "/dashboard-keenetic"
 
 
 def test_house_resources_are_household_summary_only() -> None:

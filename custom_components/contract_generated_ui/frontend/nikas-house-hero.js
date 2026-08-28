@@ -336,14 +336,15 @@ class NikasHouseHero extends HTMLElement {
     const routes = this._config.routes ?? {};
     const asset = this._config.asset || DEFAULT_ASSET;
     const security = this._security(entities.safety);
-    const openings = this._countOn(entities.openings);
-    const openingBad = this._countUnavailable(entities.openings);
     const motion = this._countOn(entities.motion);
     const motionBad = this._countUnavailable(entities.motion);
     const lights = this._countOn(entities.lights);
     const lightBad = this._countUnavailable(entities.lights);
     const climate = this._climate(entities.climate);
     const windows = this._countOn(entities.windows);
+    const windowBad = this._countUnavailable(entities.windows);
+    const doors = this._countOn(entities.doors);
+    const doorBad = this._countUnavailable(entities.doors);
     const gate = this._access(entities.access?.sectional, "Ворота", "gate");
     const entrance = this._access(entities.access?.entrance, "Входная");
     const weather = this._weather(entities.weather);
@@ -353,10 +354,10 @@ class NikasHouseHero extends HTMLElement {
     const internet = this._internet(entities.internet);
     const heating = this._heating(entities.heating);
 
-    const openingsTone = openings > 0 ? "yellow" : openingBad > 0 ? "orange" : "green";
     const motionTone = motionBad > 0 ? "orange" : motion > 0 ? "yellow" : "green";
     const lightsTone = lightBad > 0 ? "orange" : lights > 0 ? "yellow" : "green";
-    const windowTone = windows > 0 ? "yellow" : openingBad > 0 ? "orange" : "green";
+    const windowTone = windows > 0 ? "yellow" : windowBad > 0 ? "orange" : "green";
+    const doorTone = doors > 0 ? "yellow" : doorBad > 0 ? "orange" : "green";
     const now = new Date();
     const time = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
     const date = now.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
@@ -372,9 +373,8 @@ class NikasHouseHero extends HTMLElement {
       .status-card{min-width:0;height:74px;padding:9px 8px;border-radius:18px;display:flex;gap:7px;align-items:center;cursor:pointer;text-align:left;appearance:none}
       [hidden]{display:none!important}.status-card ha-icon{width:24px;flex:0 0 24px}.status-copy{min-width:0;display:flex;flex-direction:column;line-height:1.1}.status-copy small{font-size:12px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy strong{margin-top:5px;font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-copy em{margin-top:4px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .green ha-icon,.green strong{color:var(--green)}.yellow ha-icon,.yellow strong{color:var(--yellow)}.orange ha-icon,.orange strong{color:var(--orange)}.red ha-icon,.red strong{color:var(--red)}.blue ha-icon,.blue strong{color:var(--blue)}.grey ha-icon,.grey strong{color:var(--grey)}
-      .float-card{position:absolute;z-index:4;top:102px;border-radius:20px;padding:12px 14px;cursor:pointer;appearance:none}.weather{left:14px;min-width:118px}.clock{right:14px;text-align:right;min-width:148px}.float-main{display:flex;align-items:center;gap:9px;font-size:25px;font-weight:850}.float-main ha-icon{color:var(--blue)}.float-sub{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
-      .clock-camera{margin:6px -4px -4px auto;padding:4px;border:0;background:transparent;color:var(--orange);display:flex;align-items:center;justify-content:flex-end;gap:5px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;appearance:none}.clock-camera ha-icon{--mdc-icon-size:17px;width:17px;height:17px}
-      .clock-camera.green{color:var(--green)}.clock-camera.red{color:var(--red)}.clock-camera.grey{color:var(--grey)}
+      .info-grid{position:absolute;z-index:4;left:12px;right:12px;top:102px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .info-card{min-width:0;min-height:66px;border-radius:20px;padding:10px 14px;display:flex;align-items:center;gap:10px;text-align:left;appearance:none}.info-card[data-route]{cursor:pointer}.info-card ha-icon{--mdc-icon-size:25px;width:25px;height:25px;flex:0 0 25px}.info-copy{min-width:0;display:flex;flex-direction:column;line-height:1.12}.info-copy small{font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.info-copy strong{margin-top:4px;font-size:20px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.info-copy em{margin-top:3px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .zones{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.zone{fill:none;stroke:var(--green);stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(46,189,89,.34))}.zone.yellow{stroke:var(--yellow);filter:drop-shadow(0 0 7px rgba(255,191,0,.42))}.zone.orange{stroke:var(--orange);filter:drop-shadow(0 0 7px rgba(242,139,0,.42))}.zone.red{stroke:var(--red);filter:drop-shadow(0 0 7px rgba(229,57,53,.4))}.zone.grey{stroke:rgba(122,137,148,.6);filter:none}
       .callout{position:absolute;z-index:4;border-radius:17px;padding:9px 12px;cursor:pointer;min-width:108px;appearance:none}.callout b{display:block;font-size:13px;color:var(--ink)}.callout span{display:block;margin-top:3px;font-size:12px;font-weight:800}.window-callout{left:7%;top:39%}.gate-callout{left:4%;top:59%}.door-callout{right:5%;top:56%}
       .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.utility-card{border-radius:17px;padding:8px 10px;min-height:50px;cursor:pointer;appearance:none;display:grid;place-items:center;text-align:center}.utility-card strong{min-width:0;max-width:100%;font-size:17px;font-weight:850;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -382,7 +382,7 @@ class NikasHouseHero extends HTMLElement {
       @media(max-width:600px){
         ha-card{border-radius:22px}.hero{height:var(--house-hero-available-height,calc(100dvh - 224px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
         .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:68px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:12px}.status-copy strong{margin-top:2px;font-size:14px}.status-copy em{display:none}
-        .float-card{top:84px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:12px}.clock-camera{font-size:12px;margin-top:4px}.clock-camera ha-icon{--mdc-icon-size:15px;width:15px;height:15px}
+        .info-grid{left:8px;right:8px;top:84px;gap:6px}.info-card{min-height:58px;padding:7px 9px;gap:7px;border-radius:15px}.info-card ha-icon{--mdc-icon-size:21px;width:21px;height:21px;flex-basis:21px}.info-copy small{font-size:12px}.info-copy strong{font-size:17px}.info-copy em{font-size:12px}
         .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:12px}.callout span{font-size:12px}
         .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;left:8px;right:8px;bottom:8px}.utility-card{min-height:48px;padding:7px 8px}.utility-card strong{font-size:16px}
       }
@@ -391,14 +391,18 @@ class NikasHouseHero extends HTMLElement {
     </style>
     <ha-card><div class="hero" aria-label="${escapeHtml(this._config.title || "Дом сейчас")}">
       <div class="top-grid">
-        ${this._card(security.icon,"Защита",security.label,security.tone,routes.safety)}
-        ${this._card("mdi:door-open","Открыто",String(openings),openingsTone,routes.open)}
-        ${this._card("mdi:motion-sensor","Движение",String(motion),motionTone,routes.activity)}
+        ${this._card("mdi:window-open-variant","Окна",String(windows),windowTone,routes.open)}
+        ${this._card("mdi:door-open","Двери",String(doors),doorTone,routes.open)}
         ${this._card("mdi:lightbulb-group","Свет",String(lights),lightsTone,routes.lights)}
+        ${this._card("mdi:motion-sensor","Движение",String(motion),motionTone,routes.activity)}
         ${this._card("mdi:thermostat","Климат",climate.value,climate.tone,routes.climate)}
       </div>
-      <button class="float-card weather ${weather.tone}" data-route="${escapeHtml(routes.weather)}" type="button"><span class="float-main"><ha-icon icon="${escapeHtml(weather.icon)}"></ha-icon>${escapeHtml(weather.label)}</span><span class="float-sub">${escapeHtml(weather.detail)}</span></button>
-      <div class="float-card clock"><span class="float-main">${escapeHtml(time)}</span><span class="float-sub">${escapeHtml(date)}</span><button class="clock-camera ${cameras.tone}" data-route="${escapeHtml(routes.cameras)}" type="button"><ha-icon icon="${escapeHtml(cameras.icon)}"></ha-icon>${escapeHtml(cameras.label)}</button></div>
+      <div class="info-grid">
+        <button class="info-card float-card ${weather.tone}" data-route="${escapeHtml(routes.weather)}" type="button"><ha-icon icon="${escapeHtml(weather.icon)}"></ha-icon><span class="info-copy"><small>Погода</small><strong>${escapeHtml(weather.label)}</strong><em>${escapeHtml(weather.detail)}</em></span></button>
+        <button class="info-card float-card ${security.tone}" data-route="${escapeHtml(routes.safety)}" type="button"><ha-icon icon="${escapeHtml(security.icon)}"></ha-icon><span class="info-copy"><small>Защита</small><strong>${escapeHtml(security.label)}</strong><em>Состояние дома</em></span></button>
+        <div class="info-card float-card blue"><ha-icon icon="mdi:calendar-clock"></ha-icon><span class="info-copy"><small>Дата и время</small><strong>${escapeHtml(time)}</strong><em>${escapeHtml(date)}</em></span></div>
+        <button class="info-card float-card ${cameras.tone}" data-route="${escapeHtml(routes.cameras)}" type="button"><ha-icon icon="${escapeHtml(cameras.icon)}"></ha-icon><span class="info-copy"><small>Камеры</small><strong>${escapeHtml(cameras.label)}</strong><em>${escapeHtml(cameras.detail)}</em></span></button>
+      </div>
       <svg class="zones" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <rect class="zone ${windowTone}" x="182" y="738" width="170" height="158" rx="14"></rect>
         <rect class="zone ${gate.tone}" x="112" y="986" width="260" height="188" rx="14"></rect>
