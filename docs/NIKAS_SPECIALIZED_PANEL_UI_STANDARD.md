@@ -6,6 +6,7 @@
 **Primary acceptance viewport:** iPhone Pro Max, portrait
 **Reference visual implementation:** Stark SolarPower / UPS
 **Reference typography and status treatment:** LIDER
+**Reference Header title plaque:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md`
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents remain useful only where they do not conflict with this standard.
@@ -46,7 +47,11 @@ BOTTOM TAB BAR                              native scale
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
 - The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
-- The whole plaque is one semantic `button` with a minimum `44px` touch height. It has a visible plaque surface, focus state and pressed response, while retaining geometric centering between the side rails.
+- The whole plaque is one semantic `button` and copies the LIDER reference geometry and tone exactly; it retains geometric centering between the side rails.
+- Default geometry: `justify-self:center`, `min-width:min(290px,100%)`, `max-width:100%`, `min-height:44px`, `padding:5px 14px`. On narrow phones it uses `min-width:0; width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
+- Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
+- Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
+- A transparent title, a plain text label without the LIDER surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
 - When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
 - The base shell records the source route before or while opening the specialized panel. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
