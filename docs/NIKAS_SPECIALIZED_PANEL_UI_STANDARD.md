@@ -51,6 +51,7 @@ BOTTOM TAB BAR                              native scale
 - Default geometry: `justify-self:center`, `min-width:min(290px,100%)`, `max-width:100%`, `min-height:44px`, `padding:5px 14px`. On narrow phones it uses `min-width:0; width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
 - Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
 - Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
+- The focus state and pressed response are mandatory and remain visibly distinct from the default state.
 - A transparent title, a plain text label without the LIDER surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
 - When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
