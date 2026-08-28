@@ -16,27 +16,27 @@ spec:
       title: Инфраструктура
       path: /dashboard-infrastructure/overview
     house.heating:
-      title: Отопление и ГВС
+      title: Отопление
       path: /dashboard-zont
       parent: home
     house.vehicles:
-      title: Автомобили
+      title: StarLine
       path: /starline
       parent: home
     house.cleaning:
-      title: Уборка
+      title: Пылесос
       path: /dashboard-s8-omni
       parent: actions
     actions.irrigation:
-      title: Полив
+      title: Автополив
       path: /dashboard-irrigation
       parent: actions
     actions.irrigation_candidate:
-      title: Полив · candidate
+      title: Автополив · candidate
       path: /dashboard-irrigation-generated/overview
       parent: actions
     infrastructure.ups:
-      title: UPS
+      title: ИБП Stark
       path: /dashboard-ups
       parent: infrastructure
     infrastructure.keenetic:
@@ -44,7 +44,7 @@ spec:
       path: /dashboard-keenetic
       parent: infrastructure
     infrastructure.lider:
-      title: LIDER
+      title: Электросеть
       path: /dashboard-lider
       parent: infrastructure
   global_tabs:

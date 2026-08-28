@@ -117,6 +117,11 @@ def _hero_card(entities: Mapping[str, str], manifest: Mapping[str, Any]) -> dict
     ]
     if not windows:
         windows = openings
+    doors = [
+        entities[name]
+        for name in ("access_entrance", "access_tambour", "access_garage", "access_veranda", "access_garden")
+        if name in entities
+    ]
 
     return {
         "type": "custom:nikas-house-hero",
@@ -126,6 +131,7 @@ def _hero_card(entities: Mapping[str, str], manifest: Mapping[str, Any]) -> dict
             "safety": safety,
             "openings": openings,
             "windows": windows,
+            "doors": doors,
             "motion": motion,
             "lights": lights,
             "climate": climate,

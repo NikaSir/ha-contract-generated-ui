@@ -114,7 +114,7 @@ def test_irrigation_candidate_route_is_declared_but_registry_stays_dormant() -> 
     navigation = _load_yaml(ROOT / "navigation" / "main.yaml")
     candidate = navigation["spec"]["routes"]["actions.irrigation_candidate"]
     assert candidate == {
-        "title": "Полив · candidate",
+        "title": "Автополив · candidate",
         "path": f"{CANDIDATE_DASHBOARD}/overview",
         "parent": "actions",
     }

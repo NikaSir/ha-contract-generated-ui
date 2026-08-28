@@ -49,7 +49,8 @@ def test_house_frontend_anchors_zones_in_source_image_space() -> None:
     assert 'preserveAspectRatio="xMidYMid slice"' in frontend
     assert "vector-effect:non-scaling-stroke" in frontend
     assert "camera-pill" not in frontend
-    assert "clock-camera" in frontend
+    assert "info-grid" in frontend
+    assert "Дата и время" in frontend
     assert "min < 125 || max > 275" in frontend
     assert "min < 150 || max > 265" in frontend
 
@@ -107,7 +108,10 @@ def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
     assert "_nikasRouteBound" in bundle
     assert "connection-primary" not in bundle
     assert "connection-secondary" not in bundle
-    assert 'this._card(security.icon,"Защита",security.label,security.tone,routes.safety)' in bundle
+    top = bundle[bundle.index('<div class="top-grid">'):bundle.index('</div>', bundle.index('<div class="top-grid">'))]
+    assert top.index('"Окна"') < top.index('"Двери"') < top.index('"Свет"') < top.index('"Движение"') < top.index('"Климат"')
+    info = bundle[bundle.index('<div class="info-grid">'):bundle.index('<svg class="zones"')]
+    assert info.index("Погода") < info.index("Защита") < info.index("Дата и время") < info.index("Камеры")
     assert 'this._card(security.icon,"Безопасность",security.label,security.tone,routes.safety)' not in bundle
 
     # Meaningful mobile text never falls below the v1.7 12px floor.
