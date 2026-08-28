@@ -60,6 +60,7 @@ def test_v17_canonical_contract_covers_indicator_flicker_typography_and_return()
 
 def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
     reference = (ROOT / "templates" / "integration-panel-v1" / "panel-shell-reference.js").read_text(encoding="utf-8")
+    reference_readme = (ROOT / "templates" / "integration-panel-v1" / "README.md").read_text(encoding="utf-8")
     zoom_reference = (ROOT / "templates" / "integration-panel-v1" / "zoom-controller-reference.js").read_text(encoding="utf-8")
     runtime_zoom = (FRONTEND / "nikas-panel-zoom.js").read_text(encoding="utf-8")
     contract = json.loads(
@@ -80,6 +81,10 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
     assert "font-size:23px" in reference
     assert "font-size:14px" in reference
     assert "--mdc-icon-size:28px" in reference
+    assert "subtitle: `UI v${uiVersion}`" in reference
+    assert r"/^\d+\.\d+\.\d+$/" in reference
+    assert "second line is only `UI vX.Y.Z`" in reference_readme
+    assert "<type/model> · UI" not in reference_readme
     assert contract["header"]["left_event"] == "hass-toggle-menu"
     assert contract["header"]["title_action"] == "return_to_source_base_panel"
     assert contract["header"]["source_route_handoff_key"] == "nikas.specialized.source_route.v1"

@@ -1,6 +1,6 @@
 # ADR-001: Integration-owned specialized dashboards
 
-**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6
+**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7
 **Date:** 2026-08-22
 
 The domain-ownership decision remains accepted. Explicit Header Back requirements are retired; the permanent left control is the Home Assistant system menu.
@@ -93,7 +93,7 @@ This metadata describes navigation. It does not give `ha-contract-generated-ui` 
 
 ### 4.1. Unified application shell
 
-Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard v1.6](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md).
+Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard v1.7](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md).
 
 The shell contract is:
 

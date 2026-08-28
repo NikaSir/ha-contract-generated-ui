@@ -1,9 +1,15 @@
 {
   "version": "1.7",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "22c0cec7fa61b8210fc40e3f053242335f8e502984cbb8a4fb93c33a93bd3706",
+  "standard_sha256": "17afc8ea93b07a4362c45e5e9d5f6504158e70a9c19328a545403a92f1e08a8c",
   "role": "base",
   "runtime_files": [
     "custom_components/contract_generated_ui/frontend/nikas-ui.js"
-  ]
+  ],
+  "production_entrypoint": "custom_components/contract_generated_ui/frontend/nikas-ui.js",
+  "source_handoff": {
+    "storage_write_marker": "sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY",
+    "route_normalizer_marker": "function sourceBaseRoute",
+    "capture_marker": "rememberSpecializedSourceRoute(window.location.pathname)"
+  }
 }

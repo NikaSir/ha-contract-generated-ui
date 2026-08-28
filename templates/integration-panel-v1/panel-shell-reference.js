@@ -5,7 +5,7 @@
 
 const APP = {
   title: "Example Panel",
-  subtitle: "Device model · UI v1.0.0",
+  uiVersion: "1.0.0",
   preferredView: "overview",
   tabs: [
     ["overview", "mdi:view-dashboard-outline", "Обзор"],
@@ -35,7 +35,9 @@ function safeReturnRoute(value) {
 
 function resolveReturnRoute(panel) {
   const current = new URL(window.location.href);
-  const explicit = safeReturnRoute(current.searchParams.get("return_to") || current.searchParams.get("from"));
+  const explicit = ["return_to", "from"]
+    .map((key) => safeReturnRoute(current.searchParams.get(key)))
+    .find(Boolean) || null;
   let handedOff = null;
   let saved = null;
   try {
@@ -139,9 +141,11 @@ class NikaSIntegrationPanelReference extends HTMLElement {
 
   _config() {
     const tabs = (this._panel?.config?.tabs || APP.tabs).slice(0, 5);
+    const requestedUiVersion = String(this._panel?.config?.ui_version || APP.uiVersion).replace(/^v/i, "");
+    const uiVersion = /^\d+\.\d+\.\d+$/.test(requestedUiVersion) ? requestedUiVersion : APP.uiVersion;
     return {
       title: this._panel?.config?.title || APP.title,
-      subtitle: this._panel?.config?.subtitle || APP.subtitle,
+      subtitle: `UI v${uiVersion}`,
       tabs,
     };
   }
@@ -374,7 +378,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     commitStableMarkup(this.shadowRoot.querySelector(".bottom-slot"), this._renderTabBar());
     this._attachEntityInteractions();
 
-    // Production bundles concatenate the v1.6 zoom controller before this
+    // Production bundles concatenate the v1.7 zoom controller before this
     // component. No repository or network runtime import is allowed.
     window.NikasPanelZoom?.attach?.(this, { min: 0.75, max: 2.0 })?.bind?.();
   }
@@ -417,6 +421,8 @@ button{font:inherit}
 }
 .header-action ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.header-action#refresh{color:var(--nika-primary)}
 .header-title{min-width:0;min-height:44px;border:1px solid var(--nika-border);border-radius:16px;background:var(--nika-surface);color:var(--primary-text-color);text-align:center;line-height:1.1;padding:4px 12px;box-shadow:0 4px 14px rgba(23,45,76,.06)}
+.header-title:active{transform:scale(.985);background:color-mix(in srgb,var(--nika-primary) 8%,var(--nika-surface))}
+.header-title:focus-visible{outline:2px solid var(--nika-primary);outline-offset:2px}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-title strong{font-size:23px;font-weight:800}
 .header-title span{margin-top:3px;color:var(--nika-muted);font-size:14px;font-weight:560}

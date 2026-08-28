@@ -110,7 +110,7 @@ def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
     assert 'this._card(security.icon,"Защита",security.label,security.tone,routes.safety)' in bundle
     assert 'this._card(security.icon,"Безопасность",security.label,security.tone,routes.safety)' not in bundle
 
-    # Meaningful mobile text never falls below the v1.6 12px floor.
+    # Meaningful mobile text never falls below the v1.7 12px floor.
     for forbidden in (
         "font-size:8px",
         "font-size:9px",
