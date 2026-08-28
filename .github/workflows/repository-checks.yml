@@ -171,6 +171,10 @@ jobs:
           if (!card.shadowRoot.innerHTML.includes('Электросеть')) {
             throw new Error('House hero did not render expected markup');
           }
+          const utility = card._utility('Электросеть', 'green', '/electricity');
+          if (!utility.includes('utility-card green') || !utility.includes('>Электросеть</strong>') || utility.includes('ha-icon')) {
+            throw new Error(`Text-only utility plaque mismatch: ${utility}`);
+          }
           const healthy = card._climate(['climate.room', 'climate.missing']);
           if (healthy.tone !== 'green' || healthy.active !== 0 || healthy.unavailable !== 0 || healthy.missing !== 1) {
             throw new Error(`Healthy climate summary mismatch: ${JSON.stringify(healthy)}`);
