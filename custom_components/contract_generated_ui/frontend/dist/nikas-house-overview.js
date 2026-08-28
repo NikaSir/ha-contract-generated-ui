@@ -1,6 +1,8 @@
 const ELEMENT_NAME = "nikas-house-hero";
 const DEFAULT_ASSET = "/contract_generated_ui/frontend/assets/house-hero-photo-day-v3.webp?build=0340b001";
 const GLOBAL_TABBAR_ID = "nikas-global-tabbar";
+// Verified by the irrigation panel owner as the incoming mainline pressure source.
+const IRRIGATION_PRESSURE_ENTITY = "sensor.nikas_h2000_pro_voda_na_poliv_2";
 const BAD_STATES = new Set(["unknown", "unavailable", "none", "null", ""]);
 
 const WEATHER_LABELS = {
@@ -171,6 +173,26 @@ class NikasHouseHero extends HTMLElement {
   _countOn(ids) { return (Array.isArray(ids) ? ids : []).filter((id) => this._state(id) === "on").length; }
   _countUnavailable(ids) { return (Array.isArray(ids) ? ids : []).filter((id) => !this._available(id)).length; }
 
+  _climate(ids) {
+    const source = Array.isArray(ids) ? ids : [];
+    let active = 0;
+    let unavailable = 0;
+    let resolved = 0;
+    for (const id of source) {
+      const entity = this._entity(id);
+      if (!entity) continue;
+      resolved += 1;
+      const state = String(entity.state ?? "").toLowerCase();
+      if (state === "unknown" || state === "unavailable") {
+        unavailable += 1;
+        continue;
+      }
+      if (["heating", "cooling"].includes(entity.attributes?.hvac_action)) active += 1;
+    }
+    const tone = unavailable > 0 ? "orange" : active > 0 ? "yellow" : resolved > 0 ? "green" : "grey";
+    return { active, unavailable, missing: source.length - resolved, tone, value: resolved > 0 ? String(active) : "—" };
+  }
+
   _security(ids) {
     const alarm = this._countOn(ids);
     const bad = this._countUnavailable(ids);
@@ -196,17 +218,31 @@ class NikasHouseHero extends HTMLElement {
     return { label, tone, detail: `${min.toFixed(0)}–${max.toFixed(0)} В`, icon: "mdi:home-lightning-bolt" };
   }
 
-  _water(id) {
-    const value = numeric(this._state(id));
+  _irrigationPressureEntity() {
+    const states = this._hass?.states ?? {};
+    if (states[IRRIGATION_PRESSURE_ENTITY]) return states[IRRIGATION_PRESSURE_ENTITY];
+    return Object.entries(states).find(([entityId, entity]) => {
+      if (!entityId.startsWith("sensor.")) return false;
+      const text = `${entityId} ${entity?.attributes?.friendly_name ?? ""}`.toLowerCase();
+      const unit = String(entity?.attributes?.unit_of_measurement ?? "").toLowerCase();
+      const irrigation = text.includes("voda_na_poliv") || text.includes("вода на полив")
+        || ((text.includes("давлен") || text.includes("pressure")) && (text.includes("полив") || text.includes("irrig")));
+      return irrigation && (unit === "bar" || unit === "бар");
+    })?.[1] ?? null;
+  }
+
+  _water() {
+    const entity = this._irrigationPressureEntity();
+    const value = numeric(entity?.state);
     if (value === null) return { label: "Нет данных", tone: "grey", detail: "Давление неизвестно", icon: "mdi:water-alert-outline" };
-    if (value === 0) return { label: "Нет давления", tone: "red", detail: "0 бар", icon: "mdi:water-alert" };
-    if (value < 2.4 || value > 3.6) return { label: "Отклонение", tone: "orange", detail: `${value.toFixed(1)} бар`, icon: "mdi:water-alert-outline" };
-    return { label: "Есть", tone: "green", detail: `${value.toFixed(1)} бар`, icon: "mdi:water" };
+    const detail = `${value.toFixed(2).replace(".", ",")} бар`;
+    if (value <= 0) return { label: "Нет воды", tone: "red", detail, icon: "mdi:water-alert" };
+    return { label: "Есть", tone: "green", detail, icon: "mdi:water" };
   }
 
   _internet(id) {
     const state = this._state(id);
-    if (state === "on") return { label: "Доступен", tone: "green", detail: "Онлайн", icon: "mdi:web" };
+    if (state === "on") return { label: "Доступен", tone: "green", detail: "", icon: "mdi:web" };
     if (state === "off") return { label: "Нет связи", tone: "red", detail: "Проверить WAN", icon: "mdi:web-off" };
     return { label: "Нет данных", tone: "grey", detail: "Статус неизвестен", icon: "mdi:web-off" };
   }
@@ -226,7 +262,7 @@ class NikasHouseHero extends HTMLElement {
     if (BAD_STATES.has(String(main).toLowerCase()) || BAD_STATES.has(String(reserve).toLowerCase()) || bad > 0) {
       return { label: "Нет данных", tone: "grey", detail: "Проверить отопление", icon: "mdi:radiator-disabled" };
     }
-    return { label: "Ожидание", tone: "green", detail: "Система готова", icon: "mdi:radiator" };
+    return { label: "Ожидание", tone: "green", detail: "", icon: "mdi:radiator" };
   }
 
   _weather(id) {
@@ -303,23 +339,20 @@ class NikasHouseHero extends HTMLElement {
     const motionBad = this._countUnavailable(entities.motion);
     const lights = this._countOn(entities.lights);
     const lightBad = this._countUnavailable(entities.lights);
-    const climateIds = Array.isArray(entities.climate) ? entities.climate : [];
-    const climateActive = climateIds.filter((id) => ["heating", "cooling"].includes(this._entity(id)?.attributes?.hvac_action)).length;
-    const climateBad = this._countUnavailable(climateIds);
+    const climate = this._climate(entities.climate);
     const windows = this._countOn(entities.windows);
     const gate = this._access(entities.access?.sectional, "Ворота", "gate");
     const entrance = this._access(entities.access?.entrance, "Входная");
     const weather = this._weather(entities.weather);
     const cameras = this._camera(entities.cameras);
     const power = this._power(entities.power);
-    const water = this._water(entities.water);
+    const water = this._water();
     const internet = this._internet(entities.internet);
     const heating = this._heating(entities.heating);
 
     const openingsTone = openings > 0 ? "yellow" : openingBad > 0 ? "orange" : "green";
     const motionTone = motionBad > 0 ? "orange" : motion > 0 ? "yellow" : "green";
     const lightsTone = lightBad > 0 ? "orange" : lights > 0 ? "yellow" : "green";
-    const climateTone = climateBad > 0 ? "orange" : climateActive > 0 ? "yellow" : "green";
     const windowTone = windows > 0 ? "yellow" : openingBad > 0 ? "orange" : "green";
     const now = new Date();
     const time = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -341,14 +374,14 @@ class NikasHouseHero extends HTMLElement {
       .clock-camera.green{color:var(--green)}.clock-camera.red{color:var(--red)}.clock-camera.grey{color:var(--grey)}
       .zones{position:absolute;z-index:2;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.zone{fill:none;stroke:var(--green);stroke-width:4;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 7px rgba(46,189,89,.34))}.zone.yellow{stroke:var(--yellow);filter:drop-shadow(0 0 7px rgba(255,191,0,.42))}.zone.orange{stroke:var(--orange);filter:drop-shadow(0 0 7px rgba(242,139,0,.42))}.zone.red{stroke:var(--red);filter:drop-shadow(0 0 7px rgba(229,57,53,.4))}.zone.grey{stroke:rgba(122,137,148,.6);filter:none}
       .callout{position:absolute;z-index:4;border-radius:17px;padding:9px 12px;cursor:pointer;min-width:108px;appearance:none}.callout b{display:block;font-size:13px;color:var(--ink)}.callout span{display:block;margin-top:3px;font-size:12px;font-weight:800}.window-callout{left:7%;top:39%}.gate-callout{left:4%;top:59%}.door-callout{right:5%;top:56%}
-      .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.utility-card{border-radius:19px;padding:12px 11px;min-height:88px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px 1fr;column-gap:8px;align-items:start}.utility-card ha-icon{margin-top:2px}.utility-copy{min-width:0;display:flex;flex-direction:column}.utility-copy small{font-size:12px;font-weight:750;color:var(--ink)}.utility-copy strong{margin-top:5px;font-size:15px;font-weight:850}.utility-copy em{margin-top:5px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .utilities{position:absolute;z-index:4;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.utility-card{border-radius:18px;padding:9px 10px;min-height:72px;cursor:pointer;appearance:none;text-align:left;display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:8px;align-items:center}.utility-card ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.utility-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;line-height:1.1}.utility-copy small{font-size:12px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.utility-copy strong{margin-top:4px;font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.utility-copy em{margin-top:3px;font-size:12px;font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       [data-route]:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
       @media(max-width:600px){
         ha-card{border-radius:22px}.hero{height:var(--house-hero-available-height,calc(100dvh - 224px));min-height:0;max-height:none;background-size:cover;background-position:center 50%}
         .top-grid{gap:5px;left:8px;right:8px;top:8px}.status-card{height:68px;padding:5px 3px;gap:2px;border-radius:14px;flex-direction:column;justify-content:center;text-align:center}.status-card ha-icon{width:20px;flex:0 0 20px}.status-copy{width:100%;align-items:center}.status-copy small{font-size:12px}.status-copy strong{margin-top:2px;font-size:14px}.status-copy em{display:none}
         .float-card{top:84px;padding:9px 10px}.float-main{font-size:21px}.float-sub{font-size:12px}.clock-camera{font-size:12px;margin-top:4px}.clock-camera ha-icon{--mdc-icon-size:15px;width:15px;height:15px}
         .window-callout{left:5%;top:38%}.gate-callout{left:3%;top:57%}.door-callout{right:3%;top:55%}.callout{min-width:92px;padding:7px 8px}.callout b{font-size:12px}.callout span{font-size:12px}
-        .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;left:8px;right:8px;bottom:8px}.utility-card{min-height:68px;padding:8px;grid-template-columns:24px 1fr}.utility-copy small{font-size:12px}.utility-copy strong{font-size:14px}.utility-copy em{font-size:12px}
+        .utilities{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;left:8px;right:8px;bottom:8px}.utility-card{min-height:62px;padding:7px 8px;grid-template-columns:24px minmax(0,1fr);column-gap:7px}.utility-card ha-icon{--mdc-icon-size:23px;width:23px;height:23px}.utility-copy small{font-size:12px}.utility-copy strong{margin-top:3px;font-size:14px}.utility-copy em{margin-top:2px;font-size:12px}
       }
       :host([standalone]){height:100%;min-height:0}
       :host([standalone]) ha-card,:host([standalone]) .hero{height:100%;min-height:0;max-height:none}
@@ -359,7 +392,7 @@ class NikasHouseHero extends HTMLElement {
         ${this._card("mdi:door-open","Открыто",String(openings),openingsTone,routes.open)}
         ${this._card("mdi:motion-sensor","Движение",String(motion),motionTone,routes.activity)}
         ${this._card("mdi:lightbulb-group","Свет",String(lights),lightsTone,routes.lights)}
-        ${this._card("mdi:thermostat","Климат",String(climateActive),climateTone,routes.climate)}
+        ${this._card("mdi:thermostat","Климат",climate.value,climate.tone,routes.climate)}
       </div>
       <button class="float-card weather ${weather.tone}" data-route="${escapeHtml(routes.weather)}" type="button"><span class="float-main"><ha-icon icon="${escapeHtml(weather.icon)}"></ha-icon>${escapeHtml(weather.label)}</span><span class="float-sub">${escapeHtml(weather.detail)}</span></button>
       <div class="float-card clock"><span class="float-main">${escapeHtml(time)}</span><span class="float-sub">${escapeHtml(date)}</span><button class="clock-camera ${cameras.tone}" data-route="${escapeHtml(routes.cameras)}" type="button"><ha-icon icon="${escapeHtml(cameras.icon)}"></ha-icon>${escapeHtml(cameras.label)}</button></div>
@@ -392,7 +425,7 @@ if (!window.customCards.some((card) => card.type === ELEMENT_NAME)) {
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.37.4";
+  const UI_VERSION = "0.37.5";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

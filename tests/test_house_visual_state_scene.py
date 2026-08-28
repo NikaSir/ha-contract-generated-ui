@@ -20,7 +20,7 @@ def test_house_visual_scene_is_local_layered_and_fail_closed() -> None:
     assert "min < 150 || max > 265" in bundle
     assert "Нет данных" in bundle
     assert "Авария" in bundle
-    assert "Отклонение" in bundle
+    assert "Рабочий предел" in bundle
     assert "Внимание" in bundle
 
     # The decorative asset is a local binary image, not Base64 or an external URL.
@@ -119,3 +119,34 @@ def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
         "font-size:11px",
     ):
         assert forbidden not in bundle
+
+
+def test_house_climate_summary_distinguishes_missing_and_unavailable() -> None:
+    bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
+
+    assert "_climate(ids)" in bundle
+    assert 'state === "unknown" || state === "unavailable"' in bundle
+    assert "missing: source.length - resolved" in bundle
+    assert 'resolved > 0 ? "green" : "grey"' in bundle
+
+
+def test_house_water_uses_verified_irrigation_pressure() -> None:
+    bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
+
+    assert 'const IRRIGATION_PRESSURE_ENTITY = "sensor.nikas_h2000_pro_voda_na_poliv_2"' in bundle
+    assert "_irrigationPressureEntity()" in bundle
+    assert 'if (value <= 0) return { label: "Нет воды", tone: "red"' in bundle
+    assert 'return { label: "Есть", tone: "green"' in bundle
+    assert "value < 2.4" not in bundle
+
+
+def test_house_utility_cards_keep_compact_readable_mobile_geometry() -> None:
+    bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
+
+    assert ".utility-card{min-height:62px" in bundle
+    assert ".utility-copy small{font-size:12px}" in bundle
+    assert ".utility-copy em{margin-top:2px;font-size:12px}" in bundle
+    assert 'label: "Доступен", tone: "green", detail: ""' in bundle
+    assert 'this._card("mdi:thermostat","Климат",climate.value,climate.tone,routes.climate)' in bundle
+    assert "climateBad" not in bundle
+    assert "climateActive" not in bundle

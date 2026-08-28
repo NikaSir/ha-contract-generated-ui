@@ -139,7 +139,7 @@ jobs:
               electricity: '/electricity', water: '/water', network: '/network', heating: '/heating'
             }
           });
-          card.hass = {
+          const hass = {
             states: {
               'binary_sensor.safety': { state: 'off', attributes: {} },
               'binary_sensor.window': { state: 'off', attributes: {} },
@@ -151,7 +151,10 @@ jobs:
               'sensor.va': { state: '220', attributes: {} },
               'sensor.vb': { state: '221', attributes: {} },
               'sensor.vc': { state: '222', attributes: {} },
-              'sensor.water': { state: '2.8', attributes: {} },
+              'sensor.nikas_h2000_pro_voda_na_poliv_2': {
+                state: '2.90',
+                attributes: { friendly_name: 'Датчик давления полив', unit_of_measurement: 'bar' }
+              },
               'binary_sensor.internet': { state: 'on', attributes: {} },
               'binary_sensor.main': { state: 'off', attributes: {} },
               'binary_sensor.reserve': { state: 'off', attributes: {} },
@@ -164,8 +167,41 @@ jobs:
               'binary_sensor.door': { state: 'off', attributes: {} },
             }
           };
+          card.hass = hass;
           if (!card.shadowRoot.innerHTML.includes('Электросеть')) {
             throw new Error('House hero did not render expected markup');
+          }
+          const healthy = card._climate(['climate.room', 'climate.missing']);
+          if (healthy.tone !== 'green' || healthy.active !== 0 || healthy.unavailable !== 0 || healthy.missing !== 1) {
+            throw new Error(`Healthy climate summary mismatch: ${JSON.stringify(healthy)}`);
+          }
+          hass.states['climate.room'] = { state: 'heat', attributes: { hvac_action: 'heating' } };
+          const active = card._climate(['climate.room']);
+          if (active.tone !== 'yellow' || active.active !== 1) {
+            throw new Error(`Active climate summary mismatch: ${JSON.stringify(active)}`);
+          }
+          hass.states['climate.room'] = { state: 'unavailable', attributes: {} };
+          const unavailable = card._climate(['climate.room']);
+          if (unavailable.tone !== 'orange' || unavailable.unavailable !== 1) {
+            throw new Error(`Unavailable climate summary mismatch: ${JSON.stringify(unavailable)}`);
+          }
+          const missing = card._climate(['climate.missing']);
+          if (missing.tone !== 'grey' || missing.value !== '—' || missing.missing !== 1) {
+            throw new Error(`Missing climate summary mismatch: ${JSON.stringify(missing)}`);
+          }
+          const water = card._water();
+          if (water.tone !== 'green' || water.label !== 'Есть' || water.detail !== '2,90 бар') {
+            throw new Error(`Irrigation pressure water summary mismatch: ${JSON.stringify(water)}`);
+          }
+          hass.states['sensor.nikas_h2000_pro_voda_na_poliv_2'] = { state: '0', attributes: { unit_of_measurement: 'bar' } };
+          const noWater = card._water();
+          if (noWater.tone !== 'red' || noWater.label !== 'Нет воды') {
+            throw new Error(`Zero irrigation pressure mismatch: ${JSON.stringify(noWater)}`);
+          }
+          delete hass.states['sensor.nikas_h2000_pro_voda_na_poliv_2'];
+          const missingWater = card._water();
+          if (missingWater.tone !== 'grey' || missingWater.label !== 'Нет данных') {
+            throw new Error(`Missing irrigation pressure mismatch: ${JSON.stringify(missingWater)}`);
           }
           card._fitViewport();
           if (card.style.getPropertyValue('--house-hero-available-height') !== '708px') {
