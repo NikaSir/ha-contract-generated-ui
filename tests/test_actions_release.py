@@ -132,7 +132,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "SPECIALIZED_SHELL_MODULE_URL" in const_source
     assert 'HOUSE_HERO_BUILD = "b013"' in const_source
     assert 'HOUSE_PANEL_FILENAME = "dist/nikas-house-overview.js"' in const_source
-    assert 'HOUSE_PANEL_BUILD = "b008"' in const_source
+    assert 'HOUSE_PANEL_BUILD = "b010"' in const_source
     assert 'INFRASTRUCTURE_PANEL_FILENAME = "dist/nikas-infrastructure-overview.js"' in const_source
     assert 'INFRASTRUCTURE_PANEL_BUILD = "b005"' in const_source
     assert 'HOUSE_HERO_ASSETS_STATIC_PATH = f"/{DOMAIN}/frontend/assets"' in const_source
