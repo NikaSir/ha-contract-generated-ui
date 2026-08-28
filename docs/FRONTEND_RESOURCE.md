@@ -1,6 +1,6 @@
 # NikaS frontend resources
 
-> Shell, Header, zoom/scroll, stable rendering, optional indicators, typography and Bottom Tab Bar requirements are governed by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Older explicit-Back configuration notes are historical.
+> Shell, Header, source-aware return, zoom/scroll, stable rendering, optional indicators, typography and Bottom Tab Bar requirements are governed by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7. Older explicit-Back configuration notes are historical.
 
 Home Assistant 2026 can construct Lovelace before a late `custom:` element is registered. NikaS central dashboards therefore keep their primary content native Lovelace. Frontend JavaScript is used only where an application shell materially improves navigation.
 

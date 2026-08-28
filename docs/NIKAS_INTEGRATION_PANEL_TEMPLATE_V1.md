@@ -1,6 +1,6 @@
-# NikaS Integration Panel Template v1.6
+# NikaS Integration Panel Template v1.7
 
-> **SUPERSEDED FOR SHELL GEOMETRY AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.6. Domain composition guidance remains valid only when compatible with v1.6.
+> **SUPERSEDED FOR SHELL GEOMETRY, HEADER NAVIGATION AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7. Domain composition guidance remains valid only when compatible with v1.7.
 
 **Status:** Required reference implementation  
 **Primary target:** iPhone Pro Max, portrait  
@@ -54,7 +54,7 @@ Rules:
 - menu and Refresh use matching 44×44 px, radius 16 px plaques with 25 px `ha-icon` glyphs;
 - title is geometrically centered on the viewport;
 - first line is the human application name;
-- second line is `<type/model/context> · UI vX.Y.Z`;
+- second line contains only `UI vX.Y.Z`; type, model and context text are prohibited there;
 - first/second lines are `23/14px`; narrow fallback is `21/13px`;
 - decorative brand/device icon is not placed next to the title;
 - right zone contains at most one primary global action, normally Refresh, plus overflow only when genuinely needed.
@@ -244,8 +244,8 @@ templates/integration-panel-v1/
 
 It provides:
 
-- `panel-shell-reference.js` — stable shell/reference component designed to be concatenated with the copied v1.6 zoom controller into one autonomous bundle;
-- `zoom-controller-reference.js` — the copy/adapt v1.6 gesture controller; concatenate it into the integration-owned production bundle;
+- `panel-shell-reference.js` — stable shell/reference component designed to be concatenated with the copied v1.7 zoom controller into one autonomous bundle;
+- `zoom-controller-reference.js` — the copy/adapt v1.7 gesture controller; concatenate it into the integration-owned production bundle;
 - `panel-contract.example.json` — machine-readable metadata example;
 - `README.md` — adoption checklist.
 

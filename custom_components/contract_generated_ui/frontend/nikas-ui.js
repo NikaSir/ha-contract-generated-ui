@@ -1,13 +1,14 @@
-import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b011";
+import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b012";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b010";
+const BOOTSTRAP_VERSION = "b012";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
 const BAR_ID = "nikas-global-tabbar";
 const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
+const SPECIALIZED_SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
 const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
 const FALLBACK_ITEMS = [
@@ -19,12 +20,30 @@ const FALLBACK_ITEMS = [
 const ACTIONS_HEADER_MODEL = {
   id: "global-actions",
   title: "Действия · v11.0",
-  subtitle: "Быстрые команды · UI v0.37.3",
+  subtitle: "Быстрые команды · UI v0.37.4",
 };
 
 let navigationRegistry = null;
 let syncFrame = null;
 let chromeHostObserver = null;
+
+function sourceBaseRoute(pathname) {
+  if (pathname.startsWith("/dashboard-house")) return "/dashboard-house";
+  if (pathname.startsWith("/dashboard-actions")) return "/dashboard-actions";
+  if (pathname.startsWith("/dashboard-infrastructure")) return "/dashboard-infrastructure/overview";
+  return null;
+}
+
+function rememberSpecializedSourceRoute(pathname) {
+  const route = sourceBaseRoute(pathname);
+  if (!route) return;
+  try {
+    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
+  } catch (_err) {
+    // Storage can be unavailable in a hardened WebView; specialized panels
+    // still retain their configured safe fallback.
+  }
+}
 
 function navigate(path) {
   if (!path || window.location.pathname === path) return;
@@ -226,6 +245,7 @@ function syncHeader(model) {
 
 function syncChrome() {
   if (!document.body) return;
+  rememberSpecializedSourceRoute(window.location.pathname);
   const model = navigationModel(window.location.pathname);
   syncBar(model);
   syncHeader(model);
