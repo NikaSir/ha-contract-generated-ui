@@ -295,8 +295,7 @@ class NikasHouseHero extends HTMLElement {
 
   _navigate(path) {
     if (!path || !String(path).startsWith("/")) return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   _bindRoutes() {
@@ -440,9 +439,7 @@ if (!window.customCards.some((card) => card.type === ELEMENT_NAME)) {
   const CLICK_GUARD = 460;
 
   function navigate(path) {
-    if (!path || window.location.pathname === path) return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   function distance(left, right) {

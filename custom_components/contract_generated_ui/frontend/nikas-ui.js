@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b013";
+const BOOTSTRAP_VERSION = "b014";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -9,11 +9,21 @@ const BAR_ID = "nikas-global-tabbar";
 const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 const SPECIALIZED_SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
+const SPECIALIZED_SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
+const SPECIALIZED_PANEL_PATHS = new Set([
+  "/dashboard-zont",
+  "/starline",
+  "/dashboard-s8-omni",
+  "/dashboard-irrigation",
+  "/dashboard-ups",
+  "/dashboard-keenetic",
+  "/dashboard-lider",
+]);
 const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
 const FALLBACK_ITEMS = [
-  { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house" },
-  { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions" },
+  { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house-v11/home" },
+  { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions/home" },
   { id: "infrastructure", label: "Инфра", icon: "mdi:server-network", path: "/dashboard-infrastructure/overview" },
 ];
 
@@ -28,31 +38,79 @@ let syncFrame = null;
 let chromeHostObserver = null;
 
 function sourceBaseRoute(pathname) {
-  if (pathname.startsWith("/dashboard-house")) return "/dashboard-house";
-  if (pathname.startsWith("/dashboard-actions")) return "/dashboard-actions";
+  if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
+  if (pathname === "/dashboard-actions" || pathname.startsWith("/dashboard-actions/")) return "/dashboard-actions/home";
   if (pathname.startsWith("/dashboard-infrastructure")) return "/dashboard-infrastructure/overview";
   return null;
 }
 
-function rememberSpecializedSourceRoute(pathname) {
-  const route = sourceBaseRoute(pathname);
-  if (!route) return;
+function isSpecializedPanelRoute(path) {
+  if (!path) return false;
   try {
-    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
+    const target = new URL(String(path), window.location.origin);
+    if (target.origin !== window.location.origin) return false;
+    return [...SPECIALIZED_PANEL_PATHS].some(
+      (root) => target.pathname === root || target.pathname.startsWith(`${root}/`)
+    );
   } catch (_err) {
-    // Storage can be unavailable in a hardened WebView; specialized panels
-    // still retain their configured safe fallback.
+    return false;
   }
 }
 
-function navigate(path) {
-  if (!path || window.location.pathname === path) return;
-  window.history.pushState(null, "", path);
-  window.dispatchEvent(new Event("location-changed"));
+function sameOriginNavigationPath(path) {
+  if (!path || typeof path !== "string" || !path.startsWith("/")) return null;
+  try {
+    const target = new URL(path, window.location.origin);
+    if (target.origin !== window.location.origin) return null;
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch (_err) {
+    return null;
+  }
 }
 
+function clearSpecializedSourceRoute() {
+  try {
+    window.sessionStorage.removeItem(SPECIALIZED_SOURCE_ROUTE_KEY);
+    window.sessionStorage.removeItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY);
+  } catch (_err) {
+    // Storage is optional; the specialized panel retains its safe fallback.
+  }
+}
+
+function rememberSpecializedSourceRoute(pathname, destination) {
+  if (!isSpecializedPanelRoute(destination)) return false;
+  const route = sourceBaseRoute(pathname);
+  if (!route) return false;
+  const timestamp = String(Date.now());
+  try {
+    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
+    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY, timestamp);
+  } catch (_err) {
+    // Never leave a partial route/timestamp pair behind.
+    clearSpecializedSourceRoute();
+    return false;
+  }
+  return true;
+}
+
+function navigateWithSourceHandoff(path) {
+  const target = sameOriginNavigationPath(path);
+  if (!target) return false;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (current === target) return false;
+  rememberSpecializedSourceRoute(window.location.pathname, target);
+  window.history.pushState(null, "", target);
+  window.dispatchEvent(new Event("location-changed"));
+  return true;
+}
+
+window.NikasPanelNavigation = Object.freeze({
+  contractVersion: "1.1",
+  navigate: navigateWithSourceHandoff,
+});
+
 function fallbackSurface(pathname) {
-  if (pathname.startsWith("/dashboard-house")) return "home";
+  if (pathname.startsWith("/dashboard-house-v11")) return "home";
   if (pathname.startsWith("/dashboard-actions")) return "actions";
   if (pathname.startsWith("/dashboard-infrastructure")) return "infrastructure";
   return null;
@@ -169,7 +227,7 @@ function renderBar(root, model) {
     label.textContent = item.label ?? item.title ?? item.id;
     button.append(icon, label);
     button.onclick = () => {
-      if (!isActive) navigate(item.path);
+      if (!isActive) navigateWithSourceHandoff(item.path);
     };
     nav.appendChild(button);
   }
@@ -245,7 +303,6 @@ function syncHeader(model) {
 
 function syncChrome() {
   if (!document.body) return;
-  rememberSpecializedSourceRoute(window.location.pathname);
   const model = navigationModel(window.location.pathname);
   syncBar(model);
   syncHeader(model);

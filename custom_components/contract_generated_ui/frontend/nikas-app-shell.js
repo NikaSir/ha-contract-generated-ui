@@ -23,8 +23,7 @@ class NikaSAppShell extends HTMLElement {
 
   _navigate(path) {
     if (!path || typeof path !== "string") return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   _render() {
@@ -222,8 +221,7 @@ class NikaSInfrastructureSummary extends HTMLElement {
 
   _navigate(path) {
     if (!path || typeof path !== "string") return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   _status(label, tone) {

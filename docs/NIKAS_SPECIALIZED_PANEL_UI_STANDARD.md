@@ -1,4 +1,4 @@
-# NikaS Specialized Panel UI Standard v1.7
+# NikaS Specialized Panel UI Standard v1.9
 
 **Status:** REQUIRED
 **Canonical source:** `NikaSir/ha-contract-generated-ui`
@@ -6,6 +6,8 @@
 **Primary acceptance viewport:** iPhone Pro Max, portrait
 **Reference visual implementation:** Stark SolarPower / UPS
 **Reference typography and status treatment:** LIDER
+**Reference Header title plaque:** LIDER
+**Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md`
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents remain useful only where they do not conflict with this standard.
 
@@ -44,13 +46,18 @@ BOTTOM TAB BAR                              native scale
 ### Center title plaque — return to the source NikaS base panel
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
-- The first line is the current specialized-panel name. The second line contains only the interface version in the exact form `UI vX.Y.Z`; a device type, model, context label or other prefix/suffix on that line is prohibited.
-- The whole plaque is one semantic `button` with a minimum `44px` touch height. It has a visible plaque surface, visible `:focus-visible` state and pressed `:active` response, while retaining geometric centering between the side rails.
+- The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
+- The whole plaque is one semantic `button` and copies the LIDER reference geometry and tone exactly; it retains geometric centering between the side rails.
+- Default geometry: `justify-self:center`, `min-width:min(290px,100%)`, `max-width:100%`, `min-height:44px`, `padding:5px 14px`. On narrow phones it uses `min-width:0; width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
+- Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
+- Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
+- The focus state and pressed response are mandatory and remain visibly distinct from the default state.
+- A transparent title, a plain text label without the LIDER surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
-- When a specialized panel is opened from `/dashboard-house`, `/dashboard-actions` or `/dashboard-infrastructure`, it returns to that same base panel. A permitted sub-route may be normalized to the configured canonical route of its base panel.
-- The base shell records the source route before or while opening the specialized panel. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
-- The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at the three allowed NikaS base dashboards are accepted.
-- Capture precedence is: the first valid explicit route from `return_to` then `from`, one-shot session hand-off, saved route for that specialized panel, safe same-origin referrer, configured `parent_route`, then the repository-defined safe base-panel fallback. An invalid `return_to` must not suppress a valid `from`.
+- When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
+- The base shell records the source route in the same click/keyboard handler, immediately before changing location to the specialized panel. Ambient shell synchronization and telemetry updates must not refresh the hand-off timestamp. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
+- The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at `/dashboard-house-v11`, `/dashboard-actions` and `/dashboard-infrastructure` are accepted.
+- Capture precedence is: explicit `return_to`/`from`, one-shot session hand-off, saved route for that specialized panel, safe same-origin referrer, configured `parent_route`, then the repository-defined safe base-panel fallback.
 - Navigation is explicit Home Assistant navigation: `history.pushState()` followed by a `location-changed` event. Browser history is never the routing contract.
 - The title plaque, its accepted route and its click handler are mounted with the fixed Header and survive tab switches, polling, loss/recovery and every state-only patch.
 
@@ -150,7 +157,29 @@ The two-level indicator is introduced only by an explicit product request. It is
 - No polling loop may rebuild the active tab. Time-only displays patch their own text nodes.
 - A full-screen loading frame is allowed only during initial mount. Later loss, staleness and recovery patch the mounted content in place.
 
-## 10. Brand and repository identity
+## 10. Data truth and command safety
+
+- A panel renders facts only from Home Assistant state objects, integration-owned APIs/coordinators or the Home Assistant entity/device registries. Frontend code must not invent entity IDs, raw device datapoints, capabilities, samples or success states.
+- Entity mapping is supplied by the integration, panel configuration or registry discovery. A hard-coded entity ID is allowed only when it is an explicit, tested part of that integration's public contract.
+- Missing, malformed, `unknown` and `unavailable` data are rendered explicitly and never receive a healthy tone. A preserved last-known sample remains visibly stale until a newer successful sample is accepted.
+- Derived values identify their factual inputs and fail closed when those inputs are absent. The UI must not replace an unknown value with zero, an optimistic default or fabricated history.
+- Read-only panels remain read-only. A refresh action may request new telemetry but must not masquerade as a device command.
+- A write action is allowed only through a registered integration service or a discovered Home Assistant entity capability. It is disabled when its target or capability is unavailable, prevents duplicate submission, awaits completion and exposes busy/error feedback without inventing success.
+- Secrets, raw credentials and vendor tokens never enter panel configuration, DOM attributes, logs or frontend bundles.
+- Every repository declares its data source and command policy in `.nikas-ui-standard.json` and verifies the product-specific mapping in tests.
+
+## 11. Production bundle and version coherence
+
+- Every specialized panel has exactly one shipped JavaScript `production_entrypoint`. `module_url` points only to that entrypoint with deterministic cache busting tied to the current UI version.
+- The production entrypoint is autonomous: it contains no runtime `import`, dynamic `import()` or `export`, and it does not load a previous UI module, remote script, stylesheet or CDN dependency. Local versioned artwork may remain a separately packaged asset.
+- Historical source layers may be composed at build time only when the generated entrypoint contains one active shell, one active Header-return implementation and no superseded zoom or navigation engine.
+- `runtime_files` lists only files executed by Home Assistant. Build inputs are declared separately as `build_source_files`; documentation and test fixtures are never presented as runtime.
+- Generated bundles are deterministic. CI regenerates them and fails on a diff, or invokes an equivalent `--check` mode that fails when the tracked bundle is stale.
+- The visible `UI vX.Y.Z`, configured `ui_version`, panel manifest, panel contract, registration/cache key and current web-component name describe the same release. A runtime change that affects behavior increments the UI version and cache key.
+- The production bundle is syntax-checked directly. Tests reject runtime imports, duplicate current component registration and more than one active shell/viewport.
+- Styles required for the shell are bundled or shipped locally with the same deterministic version policy. Runtime network failure must not remove Header, navigation or core state presentation.
+
+## 12. Brand and repository identity
 
 - Every integration repository ships a recognizable integration brand asset.
 - A packaged `custom_components/<domain>/brand/icon.png` is mandatory; it is the minimum HACS brand asset and must not be an empty placeholder.
@@ -160,7 +189,7 @@ The two-level indicator is introduced only by an explicit product request. It is
 - Header does not display the brand icon; it is for repository/HACS/HA identity, sidebar/launcher and suitable domain cards.
 - Changed raster assets use deterministic cache/version handling where served by the panel.
 
-## 11. Required automated guards
+## 13. Required automated guards
 
 Repository tests or static checks must verify:
 
@@ -176,13 +205,17 @@ Repository tests or static checks must verify:
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
 12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary and status-tinted plaque;
-13. the center title is a two-line `44px`+ semantic button, its second line is exactly `UI vX.Y.Z`, it has visible focus/pressed states, contains no arrow or separate Back label and retains geometric centering;
-14. source-route capture accepts only the three NikaS base dashboard roots, uses the common session hand-off, performs explicit HA navigation and contains no `history.back()`;
-15. JavaScript syntax, package validation, HACS and Hassfest pass.
+13. the center title is a two-line `44px`+ semantic button, contains no arrow or separate Back label and retains geometric centering;
+14. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
+15. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
+16. the production entrypoint is the only runtime file, is autonomous and is reproducible from its declared build inputs;
+17. UI version, manifest/contract, component registration and cache key stay coherent;
+18. unknown/unavailable data and product command policy are explicit and fail closed;
+19. JavaScript syntax, package validation, HACS and Hassfest pass.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
-## 12. Mandatory phone acceptance
+## 14. Mandatory phone acceptance
 
 - long diagnostics pages scroll vertically at 100%;
 - 100% cannot move horizontally or be pulled away from the top origin;
@@ -192,7 +225,7 @@ Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or 
 - card activation does not become accidental pan;
 - Header, selector and Bottom Tab Bar remain stationary at every scale;
 - both Header buttons are visible matching plaques below Dynamic Island;
-- the centered title plaque shows the panel name and exact version-only `UI vX.Y.Z` second line, visibly responds to keyboard focus and press, returns to each of the three originating NikaS base panels and uses the configured safe fallback after a direct open;
+- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the three originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
@@ -202,8 +235,10 @@ Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or 
 - loss/recovery changes telemetry and any enabled indicator in place; preserved samples are visibly stale;
 - `Дом сейчас` and StarLine contain no unrequested two-level connection indicator.
 - repeated telemetry and tab changes do not change the captured Header return destination or replace its click handler.
+- an unavailable target cannot be commanded and never flashes an optimistic success state;
+- a missing or stale hand-off timestamp falls back safely instead of reusing an old source route.
 
-## 13. Publication
+## 15. Publication
 
 - NikaS panel and integration work is published through traceable commits, branches and pull requests.
 - GitHub Releases are not used.

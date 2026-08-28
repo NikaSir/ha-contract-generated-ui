@@ -8,9 +8,9 @@ This document covers only the three central NikaS surfaces:
 
 Integration-owned application panels are outside this migration scope.
 
-## Complete-set release candidate — CGUI 0.29.1
+## Current complete set
 
-The isolated mock-up phase is closed. The next field-test unit is the complete three-panel application shell:
+The isolated mock-up and route cut-over phases are closed. The canonical three-panel application shell is:
 
 1. `Дом` — `/dashboard-house-v11/home`;
 2. `Действия` — `/dashboard-actions/home`;
@@ -18,12 +18,12 @@ The isolated mock-up phase is closed. The next field-test unit is the complete t
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
 
-The accepted live `/dashboard-house` is intentionally left untouched during the release-candidate test. Navigation contract `1.1.1` temporarily points only the global `Дом` tab to `/dashboard-house-v11/home`, so transitions from `Действия` and `Инфраструктура` return to the preview rather than the accepted production House. Existing `house.heating`, `actions` and generated-irrigation parent routes remain unchanged for subpanel compatibility.
+Navigation contract `1.2.0` owns all three canonical entry routes. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target. Specialized-panel transitions use the dedicated public routes below and return through NikaS Panel Navigation and Return Contract v1.1.
 
-Canonical deep routes used by the House/Actions release-candidate manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
+Canonical deep routes used by the House/Actions manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
 - heating — `/dashboard-zont`;
-- vehicles — `/dashboard-starline`;
+- vehicles — `/starline`;
 - cleaning — `/dashboard-s8-omni`;
 - irrigation — `/dashboard-irrigation`;
 - UPS — `/dashboard-ups`.
@@ -77,11 +77,11 @@ Public contracts/manifests are synchronized from the integration package. Privat
 
 `/config/contract_generated_ui/inventory/`
 
-The release candidate therefore requires the verified House and Actions private inventory files on the target Home Assistant instance before generation.
+The current set therefore requires the verified House and Actions private inventory files on the target Home Assistant instance before generation.
 
 ## Acceptance gate
 
-Promotion of the complete set requires:
+Acceptance of the complete set requires:
 
 - successful generation with current private semantic inventory;
 - no broken global or integration-owned navigation targets;
@@ -90,4 +90,4 @@ Promotion of the complete set requires:
 - S8 OMNI commands confirmed and working;
 - the House protected section order preserved;
 - all three main panels reviewed on the real iPhone frontend;
-- semantic diff reviewed before House route cut-over.
+- semantic diff reviewed for every route-contract change.

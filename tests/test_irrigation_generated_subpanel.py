@@ -87,7 +87,7 @@ def test_irrigation_candidate_shell_has_actions_back_and_four_tabs() -> None:
     assert group["id"] == "irrigation"
     assert group["title"] == "Полив"
     assert group["parent"]["id"] == "actions"
-    assert group["parent"]["path"] == "/dashboard-actions"
+    assert group["parent"]["path"] == "/dashboard-actions/home"
     assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
         f"{CANDIDATE_DASHBOARD}/overview",
@@ -103,7 +103,7 @@ def test_irrigation_candidate_shell_has_actions_back_and_four_tabs() -> None:
     ):
         assert view["path"] == expected_path
         assert view["subview"] is True
-        assert view["back_path"] == "/dashboard-actions"
+        assert view["back_path"] == "/dashboard-actions/home"
         assert view["title"] == "Полив"
         spacer = view["sections"][-1]["cards"][0]
         assert spacer["type"] == "markdown"

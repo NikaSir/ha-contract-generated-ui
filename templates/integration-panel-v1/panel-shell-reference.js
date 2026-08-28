@@ -1,4 +1,4 @@
-// NikaS Integration Panel Template v1.7
+// NikaS Integration Panel Template v1.9
 // Canonical copy/adapt reference implementation.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
@@ -16,18 +16,30 @@ const APP = {
 
 const TONES = new Set(["ok", "active", "warn", "bad", "unknown"]);
 const SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
+const SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
 const RETURN_ROUTE_KEY = "nikas.example.return_route.v1";
 const SAFE_DEFAULT_ROUTE = "/dashboard-infrastructure/overview";
-const SAFE_ROUTE_PREFIXES = ["/dashboard-house", "/dashboard-actions", "/dashboard-infrastructure"];
+const SOURCE_ROUTE_TTL_MS = 30_000;
+
+function canonicalBaseRoute(pathname) {
+  if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) {
+    return "/dashboard-house-v11/home";
+  }
+  if (pathname === "/dashboard-actions" || pathname.startsWith("/dashboard-actions/")) {
+    return "/dashboard-actions/home";
+  }
+  if (pathname === "/dashboard-infrastructure" || pathname.startsWith("/dashboard-infrastructure/")) {
+    return "/dashboard-infrastructure/overview";
+  }
+  return null;
+}
 
 function safeReturnRoute(value) {
   if (!value) return null;
   try {
     const url = new URL(decodeURIComponent(String(value).trim()), window.location.origin);
     if (url.origin !== window.location.origin) return null;
-    return SAFE_ROUTE_PREFIXES.some((prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`))
-      ? `${url.pathname}${url.search}${url.hash}`
-      : null;
+    return canonicalBaseRoute(url.pathname);
   } catch (_err) {
     return null;
   }
@@ -35,14 +47,20 @@ function safeReturnRoute(value) {
 
 function resolveReturnRoute(panel) {
   const current = new URL(window.location.href);
-  const explicit = ["return_to", "from"]
-    .map((key) => safeReturnRoute(current.searchParams.get(key)))
-    .find(Boolean) || null;
+  const explicit = safeReturnRoute(current.searchParams.get("return_to")) || safeReturnRoute(current.searchParams.get("from"));
   let handedOff = null;
   let saved = null;
   try {
-    handedOff = safeReturnRoute(sessionStorage.getItem(SOURCE_ROUTE_KEY));
+    const handedOffRaw = sessionStorage.getItem(SOURCE_ROUTE_KEY);
+    const handedOffAtRaw = sessionStorage.getItem(SOURCE_ROUTE_AT_KEY);
     sessionStorage.removeItem(SOURCE_ROUTE_KEY);
+    sessionStorage.removeItem(SOURCE_ROUTE_AT_KEY);
+    if (handedOffRaw !== null && handedOffAtRaw !== null) {
+      const handedOffAt = Number(handedOffAtRaw);
+      const age = Date.now() - handedOffAt;
+      const handoffIsFresh = Number.isFinite(handedOffAt) && age >= 0 && age <= SOURCE_ROUTE_TTL_MS;
+      handedOff = handoffIsFresh ? safeReturnRoute(handedOffRaw) : null;
+    }
     saved = safeReturnRoute(sessionStorage.getItem(RETURN_ROUTE_KEY));
   } catch (_err) {}
   const configured = safeReturnRoute(panel?._panel?.config?.parent_route);
@@ -64,6 +82,14 @@ function esc(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function uiVersionLine(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/^UI\s+v/i, "")
+    .replace(/^v/i, "");
+  return /^\d+\.\d+\.\d+$/.test(normalized) ? `UI v${normalized}` : `UI v${APP.uiVersion}`;
 }
 
 function sameTreeShape(current, desired) {
@@ -141,11 +167,9 @@ class NikaSIntegrationPanelReference extends HTMLElement {
 
   _config() {
     const tabs = (this._panel?.config?.tabs || APP.tabs).slice(0, 5);
-    const requestedUiVersion = String(this._panel?.config?.ui_version || APP.uiVersion).replace(/^v/i, "");
-    const uiVersion = /^\d+\.\d+\.\d+$/.test(requestedUiVersion) ? requestedUiVersion : APP.uiVersion;
     return {
       title: this._panel?.config?.title || APP.title,
-      subtitle: `UI v${uiVersion}`,
+      versionLine: uiVersionLine(this._panel?.config?.ui_version || APP.uiVersion),
       tabs,
     };
   }
@@ -162,7 +186,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
       </button>
       <button type="button" class="header-title" id="return-source" aria-label="Вернуться в базовую панель NikaS">
         <strong>${esc(config.title)}</strong>
-        <span>${esc(config.subtitle)}</span>
+        <span>${esc(config.versionLine)}</span>
       </button>
       <button type="button" class="header-action" id="refresh" aria-label="Обновить">
         <ha-icon icon="mdi:refresh"></ha-icon>
@@ -369,7 +393,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     this._mountShell();
     const config = this._config();
     this.shadowRoot.querySelector(".header-title strong").textContent = config.title;
-    this.shadowRoot.querySelector(".header-title span").textContent = config.subtitle;
+    this.shadowRoot.querySelector(".header-title span").textContent = config.versionLine;
     commitStableMarkup(this.shadowRoot.querySelector(".device-selector-slot"), this._renderDeviceSelector());
     commitStableMarkup(
       this.shadowRoot.querySelector(".work-canvas"),
@@ -378,7 +402,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     commitStableMarkup(this.shadowRoot.querySelector(".bottom-slot"), this._renderTabBar());
     this._attachEntityInteractions();
 
-    // Production bundles concatenate the v1.7 zoom controller before this
+    // Production bundles concatenate the v1.9 zoom controller before this
     // component. No repository or network runtime import is allowed.
     window.NikasPanelZoom?.attach?.(this, { min: 0.75, max: 2.0 })?.bind?.();
   }
@@ -420,9 +444,9 @@ button{font:inherit}
   background:var(--nika-surface);color:var(--primary-text-color);display:grid;place-items:center;padding:0;box-shadow:0 7px 20px rgba(23,45,76,.08);
 }
 .header-action ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.header-action#refresh{color:var(--nika-primary)}
-.header-title{min-width:0;min-height:44px;border:1px solid var(--nika-border);border-radius:16px;background:var(--nika-surface);color:var(--primary-text-color);text-align:center;line-height:1.1;padding:4px 12px;box-shadow:0 4px 14px rgba(23,45,76,.06)}
-.header-title:active{transform:scale(.985);background:color-mix(in srgb,var(--nika-primary) 8%,var(--nika-surface))}
-.header-title:focus-visible{outline:2px solid var(--nika-primary);outline-offset:2px}
+.header-title{justify-self:center;min-width:min(290px,100%);max-width:100%;min-height:44px;border:1px solid color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8));border-radius:16px;background:color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff));color:var(--primary-text-color);text-align:center;line-height:1.1;padding:5px 14px;box-shadow:0 5px 16px rgba(23,45,76,.06);-webkit-tap-highlight-color:transparent}
+.header-title:active{background:color-mix(in srgb,var(--primary-color,#03a9d9) 13%,var(--card-background-color,#fff));border-color:color-mix(in srgb,var(--primary-color,#03a9d9) 42%,var(--divider-color,#dfe3e8));box-shadow:0 2px 7px rgba(23,45,76,.05);transform:scale(.985)}
+.header-title:focus-visible{outline:2px solid var(--primary-color,#03a9d9);outline-offset:2px}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-title strong{font-size:23px;font-weight:800}
 .header-title span{margin-top:3px;color:var(--nika-muted);font-size:14px;font-weight:560}
@@ -458,7 +482,7 @@ button{font:inherit}
 .tabbar button{min-width:0;min-height:52px;border:0;border-radius:16px;background:transparent;color:var(--nika-muted);display:grid;place-items:center;align-content:center;gap:3px;padding:4px 2px}.tabbar button.active{color:var(--nika-primary);background:color-mix(in srgb,var(--nika-primary) 11%,transparent)}.tabbar ha-icon{--mdc-icon-size:28px;width:28px;height:28px}.tabbar span{width:100%;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:15px;font-weight:700}
 .scale-status{position:absolute;z-index:40;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);opacity:0;pointer-events:none;padding:9px 14px;border-radius:999px;background:rgba(20,27,34,.88);color:#fff;font-size:13px;font-weight:720;transition:opacity .14s ease,transform .14s ease}.scale-status.visible{opacity:1;transform:translate(-50%,0)}
 @media(max-width:680px){:host{position:fixed;inset:0;width:auto;height:auto}.app-shell{position:absolute;inset:0;width:auto;height:auto}}
-@media(max-width:390px){.app-header{grid-template-columns:48px minmax(0,1fr) 48px}.header-title strong{font-size:21px}.header-title span{font-size:13px}.work-canvas{width:min(calc(100% - 20px),1280px)}.canvas-viewport.zoomed .work-canvas{left:10px;right:10px}}
+@media(max-width:390px){.app-header{grid-template-columns:48px minmax(0,1fr) 48px}.header-title{min-width:0;width:100%;padding-inline:8px}.header-title strong{font-size:21px}.header-title span{font-size:13px}.work-canvas{width:min(calc(100% - 20px),1280px)}.canvas-viewport.zoomed .work-canvas{left:10px;right:10px}}
 @media(min-width:760px){.content-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.scale-status{transition:none}}
 `;

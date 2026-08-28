@@ -178,8 +178,7 @@ class NikaSInfrastructureSummaryV2 extends HTMLElement {
 
   _navigate(path) {
     if (!path || typeof path !== "string") return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   _status(label, tone) {
@@ -513,9 +512,7 @@ if (!window.customCards.some((card) => card.type === "nikas-infrastructure-summa
   const CLICK_GUARD = 460;
 
   function navigate(path) {
-    if (!path || window.location.pathname === path) return;
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new Event("location-changed"));
+    window.NikasPanelNavigation?.navigate?.(path);
   }
 
   function distance(left, right) {

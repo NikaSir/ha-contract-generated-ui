@@ -13,7 +13,7 @@ spec:
     active: home
     routes:
       home: /dashboard-house-v11/home
-      actions: /dashboard-actions
+      actions: /dashboard-actions/home
       infrastructure: /dashboard-infrastructure/overview
   navigation:
     safety: /dashboard-house/safety
@@ -26,9 +26,9 @@ spec:
     rooms: /dashboard-rooms/rooms
     family: /dashboard-family/family
     heating: /dashboard-zont
-    cars: /dashboard-starline
+    cars: /starline
     infrastructure: /dashboard-infrastructure/overview
-    actions: /dashboard-actions
+    actions: /dashboard-actions/home
     water: /dashboard-infrastructure/overview
     electricity: /dashboard-infrastructure/overview
     network: /dashboard-infrastructure/overview
