@@ -140,13 +140,19 @@ def test_house_water_uses_verified_irrigation_pressure() -> None:
     assert "value < 2.4" not in bundle
 
 
-def test_house_utility_cards_keep_compact_readable_mobile_geometry() -> None:
+def test_house_utility_cards_are_text_only_state_plaques() -> None:
     bundle = (FRONTEND / "nikas-house-hero.js").read_text(encoding="utf-8")
 
-    assert ".utility-card{min-height:62px" in bundle
-    assert ".utility-copy small{font-size:12px}" in bundle
-    assert ".utility-copy em{margin-top:2px;font-size:12px}" in bundle
-    assert 'label: "Доступен", tone: "green", detail: ""' in bundle
+    assert "_utility(title, tone, route)" in bundle
+    assert '<button class="utility-card ${tone}"' in bundle
+    assert ".utility-card{min-height:48px" in bundle
+    assert ".utility-card strong{font-size:16px}" in bundle
+    assert "utility-copy" not in bundle
+    assert "utility-card ha-icon" not in bundle
+    assert 'this._utility("Электросеть",power.tone,routes.electricity)' in bundle
+    assert 'this._utility("Вода",water.tone,routes.water)' in bundle
+    assert 'this._utility("Интернет",internet.tone,routes.network)' in bundle
+    assert 'this._utility("Отопление",heating.tone,routes.heating)' in bundle
     assert 'this._card("mdi:thermostat","Климат",climate.value,climate.tone,routes.climate)' in bundle
     assert "climateBad" not in bundle
     assert "climateActive" not in bundle
