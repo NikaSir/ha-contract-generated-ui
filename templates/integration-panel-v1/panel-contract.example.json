@@ -1,6 +1,7 @@
 {
   "api_version": "nikas.home-assistant/integration-panel/v1",
-  "template": "NikaS Integration Panel Template v1.8",
+  "template": "NikaS Integration Panel Template v1.9",
+  "navigation_contract_version": "1.1",
   "panel": {
     "id": "example",
     "title": "Example Panel",
@@ -52,6 +53,9 @@
     },
     "source_route_handoff_key": "nikas.specialized.source_route.v1",
     "source_route_timestamp_key": "nikas.specialized.source_route_at.v1",
+    "source_route_pair_required": true,
+    "source_route_valid_age_ms": [0, 30000],
+    "source_route_partial_write_rollback": true,
     "allowed_source_routes": ["/dashboard-house-v11/home", "/dashboard-actions/home", "/dashboard-infrastructure/overview"],
     "browser_history_back_allowed": false,
     "show_brand_icon": false,
@@ -158,8 +162,17 @@
     "meaningful_max_px": 25,
     "schematic_redundant_annotation_px": [9, 10]
   },
+  "data_truth": {
+    "entity_source": "integration_or_ha_registry",
+    "invented_entity_ids": false,
+    "fixed_entity_ids": "none",
+    "unknown_unavailable": "explicit",
+    "command_policy": "integration_services"
+  },
   "frontend_delivery": {
     "mode": "self_contained_bundle",
+    "production_entrypoints": 1,
+    "deterministic_build": true,
     "runtime_shared_template_dependency": false,
     "runtime_previous_version_imports": false,
     "cache_busting": "query_ui_version",

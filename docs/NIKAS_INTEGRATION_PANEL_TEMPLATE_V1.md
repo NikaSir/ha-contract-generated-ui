@@ -1,6 +1,6 @@
-# NikaS Integration Panel Template v1.8
+# NikaS Integration Panel Template v1.9
 
-> **SUPERSEDED FOR SHELL GEOMETRY, HEADER NAVIGATION AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.8 and `NIKAS_PANEL_NAVIGATION_CONTRACT.md`. Domain composition guidance remains valid only when compatible with those documents.
+> **SUPERSEDED FOR SHELL GEOMETRY, HEADER NAVIGATION AND GESTURES:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.9 and `NIKAS_PANEL_NAVIGATION_CONTRACT.md`. Domain composition guidance remains valid only when compatible with those documents.
 
 **Status:** Required reference implementation
 **Primary target:** iPhone Pro Max, portrait
@@ -55,7 +55,7 @@ Rules:
 - title is geometrically centered on the viewport;
 - first line is the human application name;
 - second line contains only `UI vX.Y.Z`; type, model and context text are prohibited there;
-- the whole title is the sole standard return button and copies the exact LIDER plaque geometry, surface, pressed and focus-visible states from the v1.8 standard;
+- the whole title is the sole standard return button and copies the exact LIDER plaque geometry, surface, pressed and focus-visible states from the v1.9 standard;
 - first/second lines are `23/14px`; narrow fallback is `21/13px`;
 - decorative brand/device icon is not placed next to the title;
 - right zone contains at most one primary global action, normally Refresh, plus overflow only when genuinely needed.
@@ -248,8 +248,8 @@ templates/integration-panel-v1/
 
 It provides:
 
-- `panel-shell-reference.js` — stable shell/reference component designed to be concatenated with the copied v1.8 zoom controller into one autonomous bundle;
-- `zoom-controller-reference.js` — the copy/adapt v1.8 gesture controller; concatenate it into the integration-owned production bundle;
+- `panel-shell-reference.js` — stable shell/reference component designed to be concatenated with the copied v1.9 zoom controller into one autonomous bundle;
+- `zoom-controller-reference.js` — the copy/adapt v1.9 gesture controller; concatenate it into the integration-owned production bundle;
 - `panel-contract.example.json` — machine-readable metadata example;
 - `README.md` — adoption checklist.
 

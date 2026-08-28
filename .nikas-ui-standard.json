@@ -1,9 +1,10 @@
 {
-  "version": "1.8",
+  "version": "1.9",
+  "navigation_contract_version": "1.1",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "af41ee58956f0076519157c295f8e9b97f82c1e764fe64456680a1aeae0ba244",
+  "standard_sha256": "f02b40c0e16d49ced98f3f099382ede1798837e1d709cb8934787c110455fb9c",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
-  "navigation_contract_sha256": "b434169a733d5c40eb0155ccc1a0377354002caab6d2073801754ac5a367c37b",
+  "navigation_contract_sha256": "c87dc760c0900701f6a807a35aba40e790f68f52c39f4579583598f697997e52",
   "role": "base",
   "runtime_files": [
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",
@@ -17,11 +18,14 @@
   "production_entrypoint": "custom_components/contract_generated_ui/frontend/nikas-ui.js",
   "source_handoff": {
     "storage_write_marker": "sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY",
+    "timestamp_write_marker": "sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY",
+    "rollback_marker": "clearSpecializedSourceRoute();",
     "route_normalizer_marker": "function sourceBaseRoute",
     "specialized_route_marker": "const SPECIALIZED_PANEL_PATHS",
-    "capture_marker": "rememberSpecializedSourceRoute(window.location.pathname, path)",
+    "capture_marker": "rememberSpecializedSourceRoute(window.location.pathname, target)",
     "navigation_marker": "function navigateWithSourceHandoff",
-    "delegation_marker": "window.NikasPanelNavigation?.navigate?.(path)"
+    "delegation_marker": "window.NikasPanelNavigation?.navigate?.(path)",
+    "contract_version_marker": "contractVersion: \"1.1\""
   },
   "delegated_navigation_files": [
     "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",

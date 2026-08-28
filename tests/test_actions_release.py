@@ -60,7 +60,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     infrastructure_panel_bundle = (frontend_root / "nikas-infrastructure-overview.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
-    assert 'const BOOTSTRAP_VERSION = "b013"' in bundle
+    assert 'const BOOTSTRAP_VERSION = "b014"' in bundle
     assert "new MutationObserver" in bundle
     assert "chromeHostObserver.observe(document.body, { childList: true })" in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
@@ -124,7 +124,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert not (frontend_root / "assets" / "zont-dhw-shell-v0812.webp").exists()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b013"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b014"' in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source

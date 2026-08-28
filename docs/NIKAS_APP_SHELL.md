@@ -1,6 +1,6 @@
 # NikaS App Shell v1
 
-> Specialized-panel Header references are superseded by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.8 and `NIKAS_PANEL_NAVIGATION_CONTRACT.md`. All specialized panels use the permanent Home Assistant system menu and a centered source-return title plaque.
+> Specialized-panel Header references are superseded by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.9 and `NIKAS_PANEL_NAVIGATION_CONTRACT.md`. All specialized panels use the permanent Home Assistant system menu and a centered source-return title plaque.
 
 **Status:** staged for production rollout  
 **Primary target:** iPhone Pro Max, portrait

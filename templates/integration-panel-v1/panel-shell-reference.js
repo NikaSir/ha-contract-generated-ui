@@ -1,4 +1,4 @@
-// NikaS Integration Panel Template v1.8
+// NikaS Integration Panel Template v1.9
 // Canonical copy/adapt reference implementation.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
@@ -51,12 +51,16 @@ function resolveReturnRoute(panel) {
   let handedOff = null;
   let saved = null;
   try {
+    const handedOffRaw = sessionStorage.getItem(SOURCE_ROUTE_KEY);
     const handedOffAtRaw = sessionStorage.getItem(SOURCE_ROUTE_AT_KEY);
-    const handedOffAt = Number(handedOffAtRaw);
-    const handoffIsFresh = handedOffAtRaw === null || (Number.isFinite(handedOffAt) && Date.now() - handedOffAt <= SOURCE_ROUTE_TTL_MS);
-    handedOff = handoffIsFresh ? safeReturnRoute(sessionStorage.getItem(SOURCE_ROUTE_KEY)) : null;
     sessionStorage.removeItem(SOURCE_ROUTE_KEY);
     sessionStorage.removeItem(SOURCE_ROUTE_AT_KEY);
+    if (handedOffRaw !== null && handedOffAtRaw !== null) {
+      const handedOffAt = Number(handedOffAtRaw);
+      const age = Date.now() - handedOffAt;
+      const handoffIsFresh = Number.isFinite(handedOffAt) && age >= 0 && age <= SOURCE_ROUTE_TTL_MS;
+      handedOff = handoffIsFresh ? safeReturnRoute(handedOffRaw) : null;
+    }
     saved = safeReturnRoute(sessionStorage.getItem(RETURN_ROUTE_KEY));
   } catch (_err) {}
   const configured = safeReturnRoute(panel?._panel?.config?.parent_route);
@@ -398,7 +402,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     commitStableMarkup(this.shadowRoot.querySelector(".bottom-slot"), this._renderTabBar());
     this._attachEntityInteractions();
 
-    // Production bundles concatenate the v1.8 zoom controller before this
+    // Production bundles concatenate the v1.9 zoom controller before this
     // component. No repository or network runtime import is allowed.
     window.NikasPanelZoom?.attach?.(this, { min: 0.75, max: 2.0 })?.bind?.();
   }

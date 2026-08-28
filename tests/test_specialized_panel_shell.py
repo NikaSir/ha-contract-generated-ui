@@ -38,10 +38,10 @@ def test_specialized_shell_keeps_application_chrome_native() -> None:
     assert "pointercancel" in zoom
 
 
-def test_v18_canonical_contract_covers_indicator_flicker_typography_and_return() -> None:
+def test_v19_canonical_contract_covers_truth_bundle_and_return() -> None:
     standard = (DOCS / "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md").read_text(encoding="utf-8")
 
-    assert "Standard v1.8" in standard
+    assert "Standard v1.9" in standard
     assert "nikas.specialized.source_route.v1" in standard
     assert "history.back()" in standard
     assert "12–25px" in standard
@@ -56,6 +56,10 @@ def test_v18_canonical_contract_covers_indicator_flicker_typography_and_return()
     assert "lazy DOM caching" in standard
     assert "23/14px" in standard
     assert "21/13px" in standard
+    assert "Data truth and command safety" in standard
+    assert "Production bundle and version coherence" in standard
+    assert "runtime `import`" in standard
+    assert "unknown" in standard and "unavailable" in standard
 
 
 def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
@@ -66,7 +70,7 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
         (ROOT / "templates" / "integration-panel-v1" / "panel-contract.example.json").read_text(encoding="utf-8")
     )
 
-    assert "Template v1.8" in reference
+    assert "Template v1.9" in reference
     assert 'icon="mdi:menu"' in reference
     assert "hass-toggle-menu" in reference
     assert "mdi:arrow-left" not in reference
@@ -94,6 +98,10 @@ def test_copy_adapt_template_cannot_reintroduce_legacy_shell() -> None:
     assert "var(--primary-color,#03a9d9) 42%" in reference
     assert "box-shadow:0 2px 7px rgba(23,45,76,.05)" in reference
     assert ".header-title:focus-visible{outline:2px solid" in reference
+    assert "handedOffAtRaw !== null" in reference
+    assert "age >= 0" in reference
+    assert "sessionStorage.removeItem(SOURCE_ROUTE_KEY)" in reference
+    assert "sessionStorage.removeItem(SOURCE_ROUTE_AT_KEY)" in reference
     assert contract["header"]["left_event"] == "hass-toggle-menu"
     assert contract["header"]["title_action"] == "return_to_source_base_panel"
     assert contract["header"]["source_route_handoff_key"] == "nikas.specialized.source_route.v1"
@@ -135,11 +143,15 @@ def test_base_navigation_handoff_is_written_only_at_outbound_navigation_time() -
 
     assert "const SPECIALIZED_PANEL_PATHS = new Set([" in navigation
     assert "function navigateWithSourceHandoff(path)" in navigation
-    assert "rememberSpecializedSourceRoute(window.location.pathname, path);" in navigation
+    assert '!path.startsWith("/")' in navigation
+    assert "target.origin !== window.location.origin" in navigation
+    assert "rememberSpecializedSourceRoute(window.location.pathname, target);" in navigation
     assert "rememberSpecializedSourceRoute(window.location.pathname);" not in navigation
-    assert navigation.index("rememberSpecializedSourceRoute(window.location.pathname, path);") < navigation.index(
-        'window.history.pushState(null, "", path);'
+    assert navigation.index("rememberSpecializedSourceRoute(window.location.pathname, target);") < navigation.index(
+        'window.history.pushState(null, "", target);'
     )
+    assert "clearSpecializedSourceRoute();" in navigation
+    assert 'contractVersion: "1.1"' in navigation
     for path in delegated:
         assert "window.NikasPanelNavigation?.navigate?.(path)" in path.read_text(encoding="utf-8")
 

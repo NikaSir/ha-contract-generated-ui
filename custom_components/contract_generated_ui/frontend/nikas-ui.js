@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b013";
+const BOOTSTRAP_VERSION = "b014";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -57,31 +57,55 @@ function isSpecializedPanelRoute(path) {
   }
 }
 
+function sameOriginNavigationPath(path) {
+  if (!path || typeof path !== "string" || !path.startsWith("/")) return null;
+  try {
+    const target = new URL(path, window.location.origin);
+    if (target.origin !== window.location.origin) return null;
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function clearSpecializedSourceRoute() {
+  try {
+    window.sessionStorage.removeItem(SPECIALIZED_SOURCE_ROUTE_KEY);
+    window.sessionStorage.removeItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY);
+  } catch (_err) {
+    // Storage is optional; the specialized panel retains its safe fallback.
+  }
+}
+
 function rememberSpecializedSourceRoute(pathname, destination) {
   if (!isSpecializedPanelRoute(destination)) return false;
   const route = sourceBaseRoute(pathname);
   if (!route) return false;
+  const timestamp = String(Date.now());
   try {
     window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
-    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY, String(Date.now()));
+    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY, timestamp);
   } catch (_err) {
-    // Storage can be unavailable in a hardened WebView; specialized panels
-    // still retain their configured safe fallback.
+    // Never leave a partial route/timestamp pair behind.
+    clearSpecializedSourceRoute();
+    return false;
   }
   return true;
 }
 
 function navigateWithSourceHandoff(path) {
-  if (!path || typeof path !== "string" || !path.startsWith("/")) return false;
-  if (window.location.pathname === path) return false;
-  rememberSpecializedSourceRoute(window.location.pathname, path);
-  window.history.pushState(null, "", path);
+  const target = sameOriginNavigationPath(path);
+  if (!target) return false;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (current === target) return false;
+  rememberSpecializedSourceRoute(window.location.pathname, target);
+  window.history.pushState(null, "", target);
   window.dispatchEvent(new Event("location-changed"));
   return true;
 }
 
 window.NikasPanelNavigation = Object.freeze({
-  contractVersion: "1.0",
+  contractVersion: "1.1",
   navigate: navigateWithSourceHandoff,
 });
 
