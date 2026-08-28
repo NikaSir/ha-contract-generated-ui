@@ -25,23 +25,37 @@ def read_relative(path: str) -> str:
 
 def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    require(config.get("version") == "1.7", "NikaS UI standard version must be 1.7")
+    require(config.get("version") == "1.8", "NikaS UI standard version must be 1.8")
 
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
-    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v1.7 copy")
+    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v1.8 copy")
+    navigation_contract = read_relative(config["navigation_contract_path"])
+    navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
+    require(
+        navigation_digest == config.get("navigation_contract_sha256"),
+        "local NikaS navigation contract is not the canonical copy",
+    )
     for clause in (
         "Center title plaque — return to the source NikaS base panel",
         'sessionStorage["nikas.specialized.source_route.v1"]',
         "return_to",
         "history.pushState()",
         "history.back()",
-        "first valid explicit route",
-        "version-only `UI vX.Y.Z`",
-        ":focus-visible",
+        "Capture precedence is:",
+        "exact form `UI vX.Y.Z`",
+        "focus state and pressed response",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
+    for clause in (
+        "/dashboard-house-v11/home",
+        "/dashboard-actions/home",
+        "/dashboard-infrastructure/overview",
+        "/starline",
+        "A missing, orphaned or mismatched public route is a blocking defect.",
+    ):
+        require(clause in navigation_contract, f"canonical navigation clause missing: {clause}")
 
     role = config.get("role")
     require(role in {"base", "specialized", "readiness"}, f"unsupported NikaS UI role: {role}")
@@ -67,19 +81,34 @@ def main() -> None:
 
     for token in (
         "nikas.specialized.source_route.v1",
-        "/dashboard-house",
-        "/dashboard-actions",
-        "/dashboard-infrastructure",
+        "nikas.specialized.source_route_at.v1",
+        "/dashboard-house-v11/home",
+        "/dashboard-actions/home",
+        "/dashboard-infrastructure/overview",
     ):
         require(token in sources, f"runtime route contract missing token: {token}")
+    require('"/dashboard-house"' not in sources, "legacy /dashboard-house route is forbidden in runtime")
+    require("'/dashboard-house'" not in sources, "legacy /dashboard-house route is forbidden in runtime")
+    require("/dashboard-starline" not in sources, "invalid /dashboard-starline route is forbidden in runtime")
 
     if role == "base":
+        require("sessionStorage" in sources, "base shell must persist the source-route hand-off")
         markers = config.get("source_handoff", {})
         require(isinstance(markers, dict) and markers, "base shell must declare source_handoff markers")
         for name in ("storage_write_marker", "route_normalizer_marker", "capture_marker"):
             marker = markers.get(name)
             require(isinstance(marker, str) and marker, f"source_handoff.{name} must be configured")
             require(marker in sources, f"base source-route hand-off marker missing: {marker}")
+        for token in (
+            "/dashboard-zont",
+            "/starline",
+            "/dashboard-s8-omni",
+            "/dashboard-irrigation",
+            "/dashboard-ups",
+            "/dashboard-keenetic",
+            "/dashboard-lider",
+        ):
+            require(token in sources, f"canonical specialized-panel route missing from base registry: {token}")
         return
 
     for token in (

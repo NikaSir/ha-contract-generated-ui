@@ -1,11 +1,11 @@
-// NikaS Integration Panel Template v1.7
+// NikaS Integration Panel Template v1.8
 // Canonical copy/adapt reference implementation.
 // Production rule: copy/adapt into the integration repository and build one
 // self-contained integration-owned frontend bundle. Never import this at runtime.
 
 const APP = {
   title: "Example Panel",
-  uiVersion: "1.0.0",
+  subtitle: "Device model · UI v1.0.0",
   preferredView: "overview",
   tabs: [
     ["overview", "mdi:view-dashboard-outline", "Обзор"],
@@ -16,18 +16,30 @@ const APP = {
 
 const TONES = new Set(["ok", "active", "warn", "bad", "unknown"]);
 const SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
+const SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
 const RETURN_ROUTE_KEY = "nikas.example.return_route.v1";
 const SAFE_DEFAULT_ROUTE = "/dashboard-infrastructure/overview";
-const SAFE_ROUTE_PREFIXES = ["/dashboard-house", "/dashboard-actions", "/dashboard-infrastructure"];
+const SOURCE_ROUTE_TTL_MS = 30_000;
+
+function canonicalBaseRoute(pathname) {
+  if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) {
+    return "/dashboard-house-v11/home";
+  }
+  if (pathname === "/dashboard-actions" || pathname.startsWith("/dashboard-actions/")) {
+    return "/dashboard-actions/home";
+  }
+  if (pathname === "/dashboard-infrastructure" || pathname.startsWith("/dashboard-infrastructure/")) {
+    return "/dashboard-infrastructure/overview";
+  }
+  return null;
+}
 
 function safeReturnRoute(value) {
   if (!value) return null;
   try {
     const url = new URL(decodeURIComponent(String(value).trim()), window.location.origin);
     if (url.origin !== window.location.origin) return null;
-    return SAFE_ROUTE_PREFIXES.some((prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`))
-      ? `${url.pathname}${url.search}${url.hash}`
-      : null;
+    return canonicalBaseRoute(url.pathname);
   } catch (_err) {
     return null;
   }
@@ -35,14 +47,16 @@ function safeReturnRoute(value) {
 
 function resolveReturnRoute(panel) {
   const current = new URL(window.location.href);
-  const explicit = ["return_to", "from"]
-    .map((key) => safeReturnRoute(current.searchParams.get(key)))
-    .find(Boolean) || null;
+  const explicit = safeReturnRoute(current.searchParams.get("return_to")) || safeReturnRoute(current.searchParams.get("from"));
   let handedOff = null;
   let saved = null;
   try {
-    handedOff = safeReturnRoute(sessionStorage.getItem(SOURCE_ROUTE_KEY));
+    const handedOffAtRaw = sessionStorage.getItem(SOURCE_ROUTE_AT_KEY);
+    const handedOffAt = Number(handedOffAtRaw);
+    const handoffIsFresh = handedOffAtRaw === null || (Number.isFinite(handedOffAt) && Date.now() - handedOffAt <= SOURCE_ROUTE_TTL_MS);
+    handedOff = handoffIsFresh ? safeReturnRoute(sessionStorage.getItem(SOURCE_ROUTE_KEY)) : null;
     sessionStorage.removeItem(SOURCE_ROUTE_KEY);
+    sessionStorage.removeItem(SOURCE_ROUTE_AT_KEY);
     saved = safeReturnRoute(sessionStorage.getItem(RETURN_ROUTE_KEY));
   } catch (_err) {}
   const configured = safeReturnRoute(panel?._panel?.config?.parent_route);
@@ -141,11 +155,9 @@ class NikaSIntegrationPanelReference extends HTMLElement {
 
   _config() {
     const tabs = (this._panel?.config?.tabs || APP.tabs).slice(0, 5);
-    const requestedUiVersion = String(this._panel?.config?.ui_version || APP.uiVersion).replace(/^v/i, "");
-    const uiVersion = /^\d+\.\d+\.\d+$/.test(requestedUiVersion) ? requestedUiVersion : APP.uiVersion;
     return {
       title: this._panel?.config?.title || APP.title,
-      subtitle: `UI v${uiVersion}`,
+      subtitle: this._panel?.config?.subtitle || APP.subtitle,
       tabs,
     };
   }
@@ -378,7 +390,7 @@ class NikaSIntegrationPanelReference extends HTMLElement {
     commitStableMarkup(this.shadowRoot.querySelector(".bottom-slot"), this._renderTabBar());
     this._attachEntityInteractions();
 
-    // Production bundles concatenate the v1.7 zoom controller before this
+    // Production bundles concatenate the v1.6 zoom controller before this
     // component. No repository or network runtime import is allowed.
     window.NikasPanelZoom?.attach?.(this, { min: 0.75, max: 2.0 })?.bind?.();
   }
@@ -421,8 +433,6 @@ button{font:inherit}
 }
 .header-action ha-icon{--mdc-icon-size:25px;width:25px;height:25px}.header-action#refresh{color:var(--nika-primary)}
 .header-title{min-width:0;min-height:44px;border:1px solid var(--nika-border);border-radius:16px;background:var(--nika-surface);color:var(--primary-text-color);text-align:center;line-height:1.1;padding:4px 12px;box-shadow:0 4px 14px rgba(23,45,76,.06)}
-.header-title:active{transform:scale(.985);background:color-mix(in srgb,var(--nika-primary) 8%,var(--nika-surface))}
-.header-title:focus-visible{outline:2px solid var(--nika-primary);outline-offset:2px}
 .header-title strong,.header-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-title strong{font-size:23px;font-weight:800}
 .header-title span{margin-top:3px;color:var(--nika-muted);font-size:14px;font-weight:560}

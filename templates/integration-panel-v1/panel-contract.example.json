@@ -1,6 +1,6 @@
 {
   "api_version": "nikas.home-assistant/integration-panel/v1",
-  "template": "NikaS Integration Panel Template v1.7",
+  "template": "NikaS Integration Panel Template v1.8",
   "panel": {
     "id": "example",
     "title": "Example Panel",
@@ -36,7 +36,8 @@
     "title_second_line": "UI vX.Y.Z",
     "title_action": "return_to_source_base_panel",
     "source_route_handoff_key": "nikas.specialized.source_route.v1",
-    "allowed_source_roots": ["/dashboard-house", "/dashboard-actions", "/dashboard-infrastructure"],
+    "source_route_timestamp_key": "nikas.specialized.source_route_at.v1",
+    "allowed_source_routes": ["/dashboard-house-v11/home", "/dashboard-actions/home", "/dashboard-infrastructure/overview"],
     "browser_history_back_allowed": false,
     "show_brand_icon": false,
     "max_actions": 1,

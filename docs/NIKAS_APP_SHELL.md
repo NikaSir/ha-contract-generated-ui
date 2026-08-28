@@ -1,6 +1,6 @@
 # NikaS App Shell v1
 
-> Specialized-panel Header references are superseded by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7. All specialized panels now use the permanent Home Assistant system menu on the left and the centered title plaque for source-aware return.
+> Specialized-panel Header references are superseded by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.8 and `NIKAS_PANEL_NAVIGATION_CONTRACT.md`. All specialized panels use the permanent Home Assistant system menu and a centered source-return title plaque.
 
 **Status:** staged for production rollout  
 **Primary target:** iPhone Pro Max, portrait
@@ -35,8 +35,8 @@ The active tab is highlighted inside the common bar and does not navigate when t
 
 | Surface | Route | Tab label |
 | --- | --- | --- |
-| Дом | `/dashboard-house` | `Дом` |
-| Действия | `/dashboard-actions` | `Действия` |
+| Дом | `/dashboard-house-v11/home` | `Дом` |
+| Действия | `/dashboard-actions/home` | `Действия` |
 | Инфраструктура | `/dashboard-infrastructure/overview` | `Инфра` |
 
 These are application routes, not browser-history targets.

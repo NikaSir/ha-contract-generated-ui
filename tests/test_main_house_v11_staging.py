@@ -58,8 +58,8 @@ def test_house_preview_keeps_protected_main_panel_routes() -> None:
     manifest = _load(ROOT / "manifests" / "house_v11_preview.yaml")
     navigation = manifest["spec"]["navigation"]
     assert navigation["heating"] == "/dashboard-zont"
-    assert navigation["cars"] == "/dashboard-starline"
+    assert navigation["cars"] == "/starline"
     assert navigation["infrastructure"] == "/dashboard-infrastructure/overview"
-    assert navigation["actions"] == "/dashboard-actions"
+    assert navigation["actions"] == "/dashboard-actions/home"
     assert navigation["safety"] == "/dashboard-house/safety"
     assert navigation["open"] == "/dashboard-house/open"

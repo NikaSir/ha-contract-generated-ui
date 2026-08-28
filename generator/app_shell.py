@@ -12,14 +12,14 @@ APP_SHELL_ITEMS = (
         "label": "Дом",
         "title": "Дом",
         "icon": "mdi:home-outline",
-        "path": "/dashboard-house",
+        "path": "/dashboard-house-v11/home",
     },
     {
         "id": "actions",
         "label": "Действия",
         "title": "Действия",
         "icon": "mdi:lightning-bolt-outline",
-        "path": "/dashboard-actions",
+        "path": "/dashboard-actions/home",
     },
     {
         "id": "infrastructure",

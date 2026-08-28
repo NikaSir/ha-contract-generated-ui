@@ -9,11 +9,12 @@ const BAR_ID = "nikas-global-tabbar";
 const HEADER_ID = "nikas-generated-subpanel-header";
 const REGISTRY_URL = "/contract_generated_ui/navigation.json";
 const SPECIALIZED_SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
+const SPECIALIZED_SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
 const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
 const FALLBACK_ITEMS = [
-  { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house" },
-  { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions" },
+  { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house-v11/home" },
+  { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions/home" },
   { id: "infrastructure", label: "Инфра", icon: "mdi:server-network", path: "/dashboard-infrastructure/overview" },
 ];
 
@@ -28,8 +29,8 @@ let syncFrame = null;
 let chromeHostObserver = null;
 
 function sourceBaseRoute(pathname) {
-  if (pathname.startsWith("/dashboard-house")) return "/dashboard-house";
-  if (pathname.startsWith("/dashboard-actions")) return "/dashboard-actions";
+  if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
+  if (pathname === "/dashboard-actions" || pathname.startsWith("/dashboard-actions/")) return "/dashboard-actions/home";
   if (pathname.startsWith("/dashboard-infrastructure")) return "/dashboard-infrastructure/overview";
   return null;
 }
@@ -39,6 +40,7 @@ function rememberSpecializedSourceRoute(pathname) {
   if (!route) return;
   try {
     window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_KEY, route);
+    window.sessionStorage.setItem(SPECIALIZED_SOURCE_ROUTE_AT_KEY, String(Date.now()));
   } catch (_err) {
     // Storage can be unavailable in a hardened WebView; specialized panels
     // still retain their configured safe fallback.
@@ -52,7 +54,7 @@ function navigate(path) {
 }
 
 function fallbackSurface(pathname) {
-  if (pathname.startsWith("/dashboard-house")) return "home";
+  if (pathname.startsWith("/dashboard-house-v11")) return "home";
   if (pathname.startsWith("/dashboard-actions")) return "actions";
   if (pathname.startsWith("/dashboard-infrastructure")) return "infrastructure";
   return null;

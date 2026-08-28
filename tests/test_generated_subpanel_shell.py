@@ -157,7 +157,7 @@ def test_generic_standalone_subpanel_remains_supported(tmp_path: Path) -> None:
     assert len(groups) == 1
     group = groups[0]
     assert group["id"] == "example"
-    assert group["parent"]["path"] == "/dashboard-house/heating"
+    assert group["parent"]["path"] == "/dashboard-zont"
     assert group["embedded"] is False
     assert [tab["path"] for tab in group["tabs"]] == [
         "/dashboard-example/overview",

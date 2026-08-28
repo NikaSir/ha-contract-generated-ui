@@ -23,7 +23,7 @@ The accepted live `/dashboard-house` is intentionally left untouched during the 
 Canonical deep routes used by the House/Actions release-candidate manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
 - heating — `/dashboard-zont`;
-- vehicles — `/dashboard-starline`;
+- vehicles — `/starline`;
 - cleaning — `/dashboard-s8-omni`;
 - irrigation — `/dashboard-irrigation`;
 - UPS — `/dashboard-ups`.
