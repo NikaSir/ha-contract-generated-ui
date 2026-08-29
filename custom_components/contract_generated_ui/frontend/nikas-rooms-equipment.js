@@ -47,6 +47,18 @@ function norm(value) {
   return String(value || "").trim().toLocaleLowerCase("ru-RU").replace(/ё/g, "е").replace(/\s+/g, " ");
 }
 
+function normAreaName(value) {
+  return norm(value).replace(/^\d+(?:[.,]\d+)?\s*(?:[-–—.:)]\s*)?/, "").trim();
+}
+
+function findRoomArea(areas, roomName) {
+  const target = norm(roomName);
+  return (areas || []).find((item) => {
+    const rawName = norm(item?.name);
+    return rawName === target || normAreaName(item?.name) === target;
+  }) || null;
+}
+
 function getHass() {
   const home = document.querySelector("home-assistant");
   if (home?.hass) return home.hass;
@@ -138,7 +150,7 @@ function entityTitle(entity, hass) {
 
 function collectRoomEquipment(registries, roomName, hass) {
   const labelMap = buildLabelMap(registries.labels);
-  const area = registries.areas.find((item) => norm(item.name) === norm(roomName));
+  const area = findRoomArea(registries.areas, roomName);
   if (!area) return { area: null, items: [], labelMap };
 
   const deviceMap = new Map(registries.devices.map((device) => [device.id, device]));
