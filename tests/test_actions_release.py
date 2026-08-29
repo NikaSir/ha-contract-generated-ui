@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.36.18"
+    assert manifest["version"] == "0.36.19"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -121,6 +121,9 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     assert 'ACTIVE_LABEL_ID = "v_ekspluatatsii"' in rooms_live
     assert 'CLIMATE_LABEL_ID = "datchik_klimata_pomeshcheniia"' in rooms_live
+    assert 'primaryClimate' in rooms_live
+    assert 'extraClimate' in rooms_live
+    assert 'Дополнительные климатические датчики' in rooms_live
     assert '"motion","occupancy","presence","illuminance"' in rooms_live
     assert '"door","window","opening","garage_door"' in rooms_live
     assert 'domain==="camera"' in rooms_live
@@ -131,7 +134,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'ROOMS_EQUIPMENT_BUILD = "b004"' in const_source
     assert "ROOMS_EQUIPMENT_MODULE_URL" in const_source
     assert 'ROOMS_LIVE_FILENAME = "nikas-rooms-live-sections.js"' in const_source
-    assert 'ROOMS_LIVE_BUILD = "b001"' in const_source
+    assert 'ROOMS_LIVE_BUILD = "b002"' in const_source
     assert "ROOMS_LIVE_MODULE_URL" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
