@@ -74,6 +74,7 @@ async def async_setup_entry(
         write_empty_navigation_registry,
         write_navigation_registry,
     )
+    from .snapshot_download import async_register_snapshot_download_view
 
     source_root = Path(hass.config.path(SOURCE_DIRECTORY))
     generated_root = source_root / GENERATED_DIRECTORY
@@ -86,6 +87,8 @@ async def async_setup_entry(
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
         _LOGGER.warning("Cannot build NikaS navigation registry during setup: %s", err)
         await hass.async_add_executor_job(write_empty_navigation_registry, navigation_registry_path)
+
+    async_register_snapshot_download_view(hass)
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     if not domain_data.get(FRONTEND_STATIC_REGISTERED):
