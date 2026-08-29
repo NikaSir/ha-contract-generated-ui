@@ -14,6 +14,9 @@
       "capture_registry_snapshot": {
         "name": "Capture registry snapshot"
       },
+      "download_registry_snapshot": {
+        "name": "Download registry snapshot"
+      },
       "generate_dashboards": {
         "name": "Generate dashboards"
       }
