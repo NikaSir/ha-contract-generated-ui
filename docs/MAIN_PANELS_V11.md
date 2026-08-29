@@ -1,8 +1,9 @@
 # Main panels v11
 
-This document covers only the three central NikaS surfaces:
+This document covers the four central NikaS surfaces:
 
 - `Дом`;
+- `Помещения`;
 - `Действия`;
 - `Инфраструктура`.
 
@@ -10,13 +11,14 @@ Integration-owned application panels are outside this migration scope.
 
 ## Current complete set
 
-The isolated mock-up and route cut-over phases are closed. The canonical three-panel application shell is:
+The isolated mock-up and route cut-over phases are closed. The canonical four-panel application shell is:
 
 1. `Дом` — `/dashboard-house-v11/home`;
-2. `Действия` — `/dashboard-actions/home`;
-3. `Инфраструктура` — `/dashboard-infrastructure/overview`.
+2. `Помещения` — `/dashboard-rooms/rooms`;
+3. `Действия` — `/dashboard-actions/home`;
+4. `Инфраструктура` — `/dashboard-infrastructure/overview`.
 
-The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
+The global fixed bottom navigation is evaluated only as a complete set: `Дом / Помещения / Действия / Инфра`.
 
 Navigation contract `1.3.0` owns the four canonical entry routes: `Дом`, `Помещения`, `Действия` and `Инфра`. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target. Specialized-panel transitions use the dedicated public routes below and return through NikaS Panel Navigation and Return Contract v1.1.
 
@@ -30,6 +32,10 @@ Canonical deep routes used by the House/Actions manifests and renderers point to
 - electricity — `/dashboard-lider`;
 - internet/router — `/dashboard-keenetic`;
 - rooms — `/dashboard-rooms/rooms`.
+
+## Помещения
+
+The existing Lovelace room cards and their verified entity logic remain authoritative. Contract Generated UI owns their shared application chrome: the fixed NikaS Header and Bottom Tab Bar, the active `Помещения` route, and return from room detail views through the centered title. The legacy duplicate `Помещения · v10.8.18` overview heading is suppressed by the shell; no room entity bindings are copied into the public repository.
 
 ## Дом
 
