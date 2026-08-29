@@ -46,15 +46,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGene
         PANEL_ZOOM_FILENAME,
         PANEL_ZOOM_MODULE_URL,
         PANEL_ZOOM_STATIC_PATH,
-        ROOMS_DIAGNOSTICS_FILENAME,
-        ROOMS_DIAGNOSTICS_MODULE_URL,
-        ROOMS_DIAGNOSTICS_STATIC_PATH,
-        ROOMS_EQUIPMENT_FILENAME,
-        ROOMS_EQUIPMENT_MODULE_URL,
-        ROOMS_EQUIPMENT_STATIC_PATH,
-        ROOMS_LIVE_FILENAME,
-        ROOMS_LIVE_MODULE_URL,
-        ROOMS_LIVE_STATIC_PATH,
+        ROOMS_PANEL_FILENAME,
+        ROOMS_PANEL_STATIC_PATH,
         SOURCE_DIRECTORY,
         SPECIALIZED_SHELL_FILENAME,
         SPECIALIZED_SHELL_MODULE_URL,
@@ -67,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGene
     from .generated_panels import async_register_generated_subpanels, strip_standalone_navigation_groups
     from .house_panel import async_register_house_panel
     from .infrastructure_panel import async_register_infrastructure_panel
+    from .rooms_panel import async_register_rooms_panel
     from .runtime_source_sync import sync_bundled_public_sources
     from .runtime_subpanel_shell import write_empty_navigation_registry, write_navigation_registry
     from .snapshot_download import async_register_snapshot_download_view
@@ -90,9 +84,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGene
             StaticPathConfig(APP_SHELL_STATIC_PATH, str(frontend_root / APP_SHELL_FILENAME), False),
             StaticPathConfig(INFRA_SUMMARY_STATIC_PATH, str(frontend_root / INFRA_SUMMARY_FILENAME), False),
             StaticPathConfig(UI_BUNDLE_STATIC_PATH, str(frontend_root / UI_BUNDLE_FILENAME), False),
-            StaticPathConfig(ROOMS_EQUIPMENT_STATIC_PATH, str(frontend_root / ROOMS_EQUIPMENT_FILENAME), False),
-            StaticPathConfig(ROOMS_LIVE_STATIC_PATH, str(frontend_root / ROOMS_LIVE_FILENAME), False),
-            StaticPathConfig(ROOMS_DIAGNOSTICS_STATIC_PATH, str(frontend_root / ROOMS_DIAGNOSTICS_FILENAME), False),
+            StaticPathConfig(ROOMS_PANEL_STATIC_PATH, str(frontend_root / ROOMS_PANEL_FILENAME), False),
             StaticPathConfig(PANEL_ZOOM_STATIC_PATH, str(frontend_root / PANEL_ZOOM_FILENAME), False),
             StaticPathConfig(SPECIALIZED_SHELL_STATIC_PATH, str(frontend_root / SPECIALIZED_SHELL_FILENAME), False),
             StaticPathConfig(HOUSE_HERO_STATIC_PATH, str(frontend_root / HOUSE_HERO_FILENAME), False),
@@ -105,9 +97,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGene
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
     add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
-    add_extra_js_url(hass, ROOMS_EQUIPMENT_MODULE_URL)
-    add_extra_js_url(hass, ROOMS_LIVE_MODULE_URL)
-    add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)
     add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)
     add_extra_js_url(hass, SPECIALIZED_SHELL_MODULE_URL)
     add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)
@@ -116,6 +105,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGene
         await async_register_house_panel(hass, source_root)
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
         _LOGGER.warning("Cannot register specialized NikaS House panel: %s", err)
+    try:
+        await async_register_rooms_panel(hass)
+    except (OSError, ValueError, RuntimeError) as err:
+        _LOGGER.warning("Cannot register NikaS Rooms v11 panel: %s", err)
     try:
         await async_register_infrastructure_panel(hass, source_root)
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
@@ -139,26 +132,22 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry[ContractGen
     from .const import (
         HOUSE_HERO_MODULE_URL,
         PANEL_ZOOM_MODULE_URL,
-        ROOMS_DIAGNOSTICS_MODULE_URL,
-        ROOMS_EQUIPMENT_MODULE_URL,
-        ROOMS_LIVE_MODULE_URL,
         SPECIALIZED_SHELL_MODULE_URL,
         UI_BUNDLE_MODULE_URL,
     )
     from .generated_panels import async_unregister_generated_subpanels
     from .house_panel import async_unregister_house_panel
     from .infrastructure_panel import async_unregister_infrastructure_panel
+    from .rooms_panel import async_unregister_rooms_panel
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, (Platform.SENSOR, Platform.BUTTON))
     if unloaded:
         async_unregister_house_panel(hass)
+        async_unregister_rooms_panel(hass)
         async_unregister_infrastructure_panel(hass)
         async_unregister_generated_subpanels(hass)
         for module_url in (
             UI_BUNDLE_MODULE_URL,
-            ROOMS_EQUIPMENT_MODULE_URL,
-            ROOMS_LIVE_MODULE_URL,
-            ROOMS_DIAGNOSTICS_MODULE_URL,
             PANEL_ZOOM_MODULE_URL,
             SPECIALIZED_SHELL_MODULE_URL,
             HOUSE_HERO_MODULE_URL,
