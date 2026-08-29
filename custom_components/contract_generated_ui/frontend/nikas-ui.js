@@ -61,6 +61,8 @@ let navigationRegistry = null;
 let syncFrame = null;
 let chromeHostObserver = null;
 let hiddenRoomsHeading = null;
+let roomsHeadingRetryTimer = null;
+let roomsHeadingRetryCount = 0;
 
 function sourceBaseRoute(pathname) {
   if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
@@ -235,9 +237,21 @@ function walkOpenShadowRoots(start, visitor) {
   }
 }
 
+function scheduleRoomsHeadingRetry() {
+  if (roomsHeadingRetryTimer !== null || roomsHeadingRetryCount >= 24) return;
+  roomsHeadingRetryCount += 1;
+  roomsHeadingRetryTimer = window.setTimeout(() => {
+    roomsHeadingRetryTimer = null;
+    scheduleSync();
+  }, 100);
+}
+
 function syncRoomsLegacyHeading(pathname) {
   if (pathname !== ROOMS_ROOT_PATH) {
     hiddenRoomsHeading = null;
+    roomsHeadingRetryCount = 0;
+    if (roomsHeadingRetryTimer !== null) window.clearTimeout(roomsHeadingRetryTimer);
+    roomsHeadingRetryTimer = null;
     return;
   }
   if (hiddenRoomsHeading?.isConnected) return;
@@ -248,8 +262,14 @@ function syncRoomsLegacyHeading(pathname) {
     const heading = node._config?.heading || node.config?.heading || node.textContent || "";
     if (/^Помещения\s*·\s*v\d/i.test(String(heading).trim())) match = node;
   });
-  if (!match) return;
+  if (!match) {
+    scheduleRoomsHeadingRetry();
+    return;
+  }
 
+  if (roomsHeadingRetryTimer !== null) window.clearTimeout(roomsHeadingRetryTimer);
+  roomsHeadingRetryTimer = null;
+  roomsHeadingRetryCount = 0;
   const host = match.closest?.("hui-section, hui-grid-section, section") || match;
   host.style.setProperty("display", "none", "important");
   hiddenRoomsHeading = host;
@@ -349,9 +369,13 @@ function renderHeader(root, group) {
 
   const backPath = sameOriginNavigationPath(group.back_path);
   title.classList.toggle("link", Boolean(backPath));
-  title.toggleAttribute("tabindex", Boolean(backPath));
-  if (backPath) title.setAttribute("role", "button");
-  else title.removeAttribute("role");
+  if (backPath) {
+    title.setAttribute("role", "button");
+    title.tabIndex = 0;
+  } else {
+    title.removeAttribute("role");
+    title.removeAttribute("tabindex");
+  }
   title.onclick = backPath ? () => navigateWithSourceHandoff(backPath) : null;
   title.onkeydown = backPath
     ? (event) => {
