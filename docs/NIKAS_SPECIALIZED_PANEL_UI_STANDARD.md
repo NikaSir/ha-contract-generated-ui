@@ -4,9 +4,10 @@
 **Canonical source:** `NikaSir/ha-contract-generated-ui`
 **Applies to:** every integration-owned specialized Home Assistant panel
 **Primary acceptance viewport:** iPhone Pro Max, portrait
-**Reference visual implementation:** Stark SolarPower / UPS
-**Reference typography and status treatment:** LIDER
-**Reference Header title plaque:** LIDER
+**Reference shell implementation:** Stark SolarPower / UPS
+**Reference Header surface and controls:** S8 OMNI
+**Reference connection/freshness plaque:** S8 OMNI
+**Reference typography and domain status treatment:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md`
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents remain useful only where they do not conflict with this standard.
@@ -29,30 +30,37 @@ BOTTOM TAB BAR                              native scale
 - Prevent scroll chaining from the work viewport into Home Assistant's outer document. A sticky element inside the scrolling/transformed subtree does not satisfy the fixed-chrome requirement.
 - Short views fill the available work row rather than shrinking the application shell and pulling either menu toward their content.
 
-## 2. Header — UPS reference geometry
+## 2. Header — S8 OMNI reference surface and geometry
+
+The complete upper application menu copies the S8 OMNI Header, not merely its title typography. The Header surface, menu plaque, center return plaque and optional right action are one visual system.
 
 - Grid: `52px minmax(0,1fr) 52px`; on very narrow screens: `48px minmax(0,1fr) 48px`.
 - Minimum height: `62px`; phone target: `60px`, plus the effective top safe area.
+- Header side padding is at least `12px` and consumes the effective left/right safe area once. The top inset is consumed by the Header once; no child plaque adds a second safe-area offset.
+- The Header strip uses the S8 OMNI surface: background `color-mix(in srgb,var(--primary-background-color) 97%,transparent)`, bottom border `1px solid color-mix(in srgb,var(--divider-color) 70%,transparent)`, and `backdrop-filter:blur(18px) saturate(130%)`. The iOS-prefixed equivalent may be added.
+- The Header strip remains a persistent mounted layer. Blur, border and background must not be toggled or remounted during scroll, pinch, telemetry changes or tab switches.
+- A solid integration-brand color, a transparent strip that exposes moving work content, or a card-white strip disconnected from `var(--primary-background-color)` is non-conforming.
 - Title remains geometrically centered regardless of side actions.
 - Primary title: `23px`, weight `800`, one line; `21px` on very narrow phones.
 - Secondary/version line: `14px`, weight approximately `560`, `var(--secondary-text-color)`; `13px` on very narrow phones.
 - The permanent left action is only Home Assistant system menu `mdi:menu`; it dispatches bubbling/composed `hass-toggle-menu`.
 - At most one panel-global action occupies the right rail. Refresh uses `mdi:refresh`.
-- Menu and refresh are visually identical plaques: `44px × 44px`, `16px` radius, `1px` divider border, `var(--card-background-color)` background, subtle `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph.
+- Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph.
 - Menu glyph uses `var(--primary-text-color)`; refresh uses `var(--primary-color)`.
-- A transparent refresh rail is non-conforming.
+- Disabled global action may reduce opacity, but its plaque geometry and reserved rail remain unchanged so title centering never moves.
+- A transparent refresh rail, a borderless side action, a locally selected integration color or mismatched menu/refresh geometry is non-conforming.
 - Back, an integration drawer, a device command or a decorative brand icon is prohibited in the permanent left rail.
 
 ### Center title plaque — return to the source NikaS base panel
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
 - The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
-- The whole plaque is one semantic `button` and copies the LIDER reference geometry and tone exactly; it retains geometric centering between the side rails.
+- The whole plaque is one semantic `button` and copies the S8 OMNI reference geometry and tone exactly; it retains geometric centering between the side rails.
 - Default geometry: `justify-self:center`, `min-width:min(290px,100%)`, `max-width:100%`, `min-height:44px`, `padding:5px 14px`. On narrow phones it uses `min-width:0; width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
 - Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
 - Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
 - The focus state and pressed response are mandatory and remain visibly distinct from the default state.
-- A transparent title, a plain text label without the LIDER surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
+- A transparent title, a plain text label without the S8 OMNI surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
 - When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
 - The base shell records the source route in the same click/keyboard handler, immediately before changing location to the specialized panel. Ambient shell synchronization and telemetry updates must not refresh the hand-off timestamp. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
@@ -89,6 +97,7 @@ The former rule that one-finger transform panning also provides vertical movemen
 - Permanent zoom buttons are prohibited.
 - Pinch ending within `97–103%` snaps to exactly 100% and origin.
 - Two-finger double tap resets scale, transform and native scroll to 100%/origin and briefly shows `Масштаб 100%`.
+- Every route to 100% — explicit two-finger reset, automatic `97–103%` snap, invalid stored-state normalization or programmatic reset — uses one canonical reset operation: `scale=1`, `x=0`, `y=0`, `scrollLeft=0`, `scrollTop=0`, then persists the normalized 100% state.
 - Scale persists locally per panel/client and per selected peer device where applicable.
 - One-finger transform panning is enabled only when `scale > 1`.
 - Each axis is enabled only when scaled content exceeds the viewport on that axis.
@@ -123,9 +132,11 @@ The former rule that one-finger transform panning also provides vertical movemen
 - `9–10px` is allowed only for redundant, non-interactive schematic annotations whose meaning is already conveyed elsewhere. It is prohibited for statuses, controls, navigation, entity names, measurements and required explanations.
 - A layout that needs meaningful text below `12px` must be recomposed instead of shrinking the type.
 
-## 8. Optional connection and freshness indicator
+## 8. Optional connection and freshness indicator — S8 OMNI reference
 
 The two-level indicator is introduced only by an explicit product request. It is not a mandatory shell element. In particular, it is absent from `Дом сейчас` and StarLine until separately requested.
+
+### Semantics
 
 - The first line describes the actual data path: `Локально`, `Облако`, `Резерв`, `Нет связи` or `Нет данных`.
 - `Онлайн` is not used: it duplicates `Локально`/`Облако` and hides the transport path.
@@ -135,12 +146,33 @@ The two-level indicator is introduced only by an explicit product request. It is
 - The second line describes freshness only: `Данные актуальны`, `Данные устарели` or `Нет данных`.
 - Transport and freshness are independent. For example, `Облако · Данные устарели` is valid; stale data must not be relabelled as a transport outage without evidence.
 - A failed current poll makes preserved telemetry `Данные устарели`. Unless a domain documents another justified threshold, a sample also becomes stale after three normal polling intervals; it becomes current again only after a new successful sample is accepted.
-- Main line: `16px/700`; freshness line: `13px/550–600`.
-- The main status color drives the dot, main label, approximately `8–12%` tinted plaque background and approximately `30%` border. A current freshness line remains neutral; stale/no-data freshness uses the appropriate warning/unreliable color.
-- `Локально`/`Облако` use the success color, `Резерв` warning, `Нет связи` error and `Нет данных` neutral. Color is always accompanied by text.
-- The status lamp stays fully inside the plaque. Size the stable two-line surface for the longest allowed label; do not move a lamp outside its rounded background.
+
+### Placement and geometry
+
+- The canonical placement copies S8 OMNI: upper-right of the first operational Hero/card, in the same heading row as the current-state title. The plaque belongs to the work viewport, not the fixed Header, and therefore scales with work content.
+- Use a two-column heading row with the state/title in `minmax(0,1fr)` and the plaque in an intrinsic right column. On normal phone widths the plaque receives enough room for its longest label; the S8 OMNI reference reserves approximately `minmax(168px,44%)`.
+- At extremely narrow widths where the title and plaque cannot remain readable, stack the row and align the plaque to the start. Shrinking required text below the typography envelope or allowing overlap is non-conforming.
+- Surface layout: `display:grid`, columns `10px minmax(0,1fr)`, vertically centered, `11px` column gap.
+- Minimum height: `58px`; padding: `12px 14px`; radius: `18px`; `white-space:nowrap`; `max-width:100%`.
+- Default surface before state coloring: `var(--card-background-color)` background, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border and `0 4px 14px rgba(0,0,0,.055)` shadow.
+- Status lamp: `10px × 10px`, fully inside the plaque, circular, never moved outside the rounded surface.
+- Text block is a stable vertical flex column with `3px` gap. Main line: `16px/700`, line-height approximately `1.05`. Freshness line: `13px/600`, line-height approximately `1.05`.
+- The plaque is sized from the longest permitted transport/freshness pair. It must not change width, height or alignment when state changes.
+
+### State surfaces and colors
+
+- `Локально` and `Облако`: lamp and main line use `var(--success-color,#43a047)`; background is an `11%` success-color mix with `var(--card-background-color)`; border is a `30%` success-color mix with `var(--divider-color)`.
+- `Резерв`: lamp and main line use `var(--warning-color,#f6a623)`; background is a `10%` warning-color mix with `var(--card-background-color)`; border is a `30%` warning-color mix with `var(--divider-color)`.
+- `Нет связи`: lamp and main line use `var(--error-color,#db4437)`; background is a `10%` error-color mix with `var(--card-background-color)`; border is a `30%` error-color mix with `var(--divider-color)`.
+- `Нет данных`: lamp and main line use `var(--disabled-text-color,var(--secondary-text-color))`; background is an `8%` secondary-text-color mix with `var(--card-background-color)`; border is a `28%` secondary-text-color mix with `var(--divider-color)`.
+- A current freshness line uses `var(--secondary-text-color)`. `Данные устарели` uses `var(--warning-color,#f6a623)` at weight `600`. `Нет данных` uses `var(--secondary-text-color)`.
+- Color is always accompanied by text. Saturated full fills, arbitrary product colors and a green surface for `unknown`, `unavailable`, stale or untrusted data are prohibited.
+
+### Rendering behavior
+
 - Flashing, pulsing, saturated full fills and repeated entrance animations are prohibited.
-- The indicator is a stable DOM subtree. State updates patch its text, classes and ARIA label; they never remount the panel or animate layout geometry.
+- The indicator is a stable DOM subtree. State updates patch only text, classes, ARIA label and state color variables; they never remount the plaque, Hero, panel or fixed shell and never animate layout geometry.
+- The plaque remains structurally present when changing among local/cloud/reserve/offline/no-data states so that telemetry changes cannot make the page flash or shift.
 
 ## 9. Stable rendering and flicker prevention
 
@@ -196,7 +228,7 @@ Repository tests or static checks must verify:
 1. exactly one work/zoom viewport;
 2. no permanent scale controls;
 3. `hass-toggle-menu` and `mdi:menu` in the left rail;
-4. both Header actions use the standard plaque geometry;
+4. the Header strip and both side actions use the S8 OMNI reference surface, border, blur, dimensions and shadow;
 5. Bottom Tab icons use `ha-icon` and canonical size;
 6. no horizontal movement and no transform pan at 100%;
 7. axis-aware overflow bounds above 100%;
@@ -204,14 +236,15 @@ Repository tests or static checks must verify:
 9. brand `icon.png` exists in the shipped integration package;
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
-12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary and status-tinted plaque;
+12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary, S8 OMNI geometry and exact state-tinted surface percentages;
 13. the center title is a two-line `44px`+ semantic button, contains no arrow or separate Back label and retains geometric centering;
-14. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
-15. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
-16. the production entrypoint is the only runtime file, is autonomous and is reproducible from its declared build inputs;
-17. UI version, manifest/contract, component registration and cache key stay coherent;
-18. unknown/unavailable data and product command policy are explicit and fail closed;
-19. JavaScript syntax, package validation, HACS and Hassfest pass.
+14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
+15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
+16. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
+17. the production entrypoint is the only runtime file, is autonomous and is reproducible from its declared build inputs;
+18. UI version, manifest/contract, component registration and cache key stay coherent;
+19. unknown/unavailable data and product command policy are explicit and fail closed;
+20. JavaScript syntax, package validation, HACS and Hassfest pass.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -224,10 +257,12 @@ Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or 
 - pinch never causes content snap-back;
 - card activation does not become accidental pan;
 - Header, selector and Bottom Tab Bar remain stationary at every scale;
-- both Header buttons are visible matching plaques below Dynamic Island;
+- the upper menu visually matches S8 OMNI: persistent 97% primary-background strip, divider, blur and three aligned plaques below Dynamic Island;
+- both Header side buttons are visible matching `44px × 44px` plaques;
 - the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the three originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
+- a requested connection indicator visually matches S8 OMNI: `58px` minimum height, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
 - short views do not pull either menu inward, and long views expose their last control above the Bottom Tab Bar;
