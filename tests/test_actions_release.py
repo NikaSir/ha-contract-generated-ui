@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.36.10"
+    assert manifest["version"] == "0.36.11"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -130,6 +130,9 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b016"' in const_source
+    assert 'ROOMS_EQUIPMENT_FILENAME = "nikas-rooms-equipment.js"' in const_source
+    assert 'ROOMS_EQUIPMENT_BUILD = "b001"' in const_source
+    assert "ROOMS_EQUIPMENT_MODULE_URL" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
@@ -157,6 +160,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
         assert not any(line.lstrip().startswith("import ") for line in packaged.splitlines())
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
+    assert "ROOMS_EQUIPMENT_STATIC_PATH" in init_source
+    assert "add_extra_js_url(hass, ROOMS_EQUIPMENT_MODULE_URL)" in init_source
     assert "PANEL_ZOOM_STATIC_PATH" in init_source
     assert "SPECIALIZED_SHELL_STATIC_PATH" in init_source
     assert "add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)" in init_source
