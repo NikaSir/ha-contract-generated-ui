@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.36.17"
+    assert manifest["version"] == "0.36.18"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -26,15 +26,9 @@ def test_release_version_and_schema_are_packaged() -> None:
     packaged_navigation_schema = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "schemas" / "navigation.schema.json").read_text(encoding="utf-8"))
     assert navigation_schema == packaged_navigation_schema
 
-    assert (ROOT / "contracts" / "actions_home.yaml").read_bytes() == (
-        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "contracts" / "actions_home.yaml"
-    ).read_bytes()
-    assert (ROOT / "manifests" / "actions.yaml").read_bytes() == (
-        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "manifests" / "actions.yaml"
-    ).read_bytes()
-    assert (ROOT / "navigation" / "main.yaml").read_bytes() == (
-        ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "navigation" / "main.yaml"
-    ).read_bytes()
+    assert (ROOT / "contracts" / "actions_home.yaml").read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "contracts" / "actions_home.yaml").read_bytes()
+    assert (ROOT / "manifests" / "actions.yaml").read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "manifests" / "actions.yaml").read_bytes()
+    assert (ROOT / "navigation" / "main.yaml").read_bytes() == (ROOT / "custom_components" / "contract_generated_ui" / "bundled_sources" / "navigation" / "main.yaml").read_bytes()
 
 
 def test_repository_and_integration_ship_the_same_recognizable_icon() -> None:
@@ -58,6 +52,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     house_panel_bundle = (frontend_root / "nikas-house-overview.js").read_text(encoding="utf-8")
     infrastructure_panel_bundle = (frontend_root / "nikas-infrastructure-overview.js").read_text(encoding="utf-8")
+    rooms_live = (frontend_root / "nikas-rooms-live-sections.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
     assert 'const BOOTSTRAP_VERSION = "b016"' in bundle
@@ -95,7 +90,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'const ELEMENT_NAME = "nikas-infrastructure-overview"' in infrastructure_panel_bundle
     assert 'new CustomEvent("hass-toggle-menu"' in infrastructure_panel_bundle
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in infrastructure_panel_bundle
-
     assert "class ZoomController" in zoom_bundle
     assert 'const DEFAULT_MIN = 0.75' in zoom_bundle
     assert 'const DEFAULT_MAX = 2.0' in zoom_bundle
@@ -105,7 +99,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "this.state.scale <= 1" in zoom_bundle
     assert "this.viewport.scrollTop = 0" in zoom_bundle
     assert "pointercancel" in zoom_bundle
-
     assert '"nikas-generated-subpanel"' in shell_bundle
     assert '"nikas-generated-zont"' not in shell_bundle
     assert '"NIKAS-GENERATED-ZONT"' not in zoom_bundle
@@ -113,7 +106,6 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "env(safe-area-inset-top,0px)" in shell_bundle
     assert "env(safe-area-inset-bottom,0px)" in shell_bundle
     assert "grid-template-columns:52px minmax(0,1fr) 52px" in shell_bundle
-
     assert 'const ELEMENT_NAME = "nikas-generated-subpanel"' in panel_bundle
     assert 'icon="mdi:menu"' in panel_bundle
     assert 'new CustomEvent("hass-toggle-menu"' in panel_bundle
@@ -122,17 +114,25 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert 'class="work-canvas"' in panel_bundle
     assert ".callService(" not in panel_bundle
     assert 'type: "call_service"' not in panel_bundle
-
     assert not (frontend_root / "nikas-generated-zont.js").exists()
     assert not (frontend_root / "nikas-generated-zont-v080.js").exists()
     assert not (frontend_root / "assets" / "zont-boiler-casing-v0812.webp").exists()
     assert not (frontend_root / "assets" / "zont-dhw-shell-v0812.webp").exists()
+
+    assert 'ACTIVE_LABEL_ID = "v_ekspluatatsii"' in rooms_live
+    assert 'CLIMATE_LABEL_ID = "datchik_klimata_pomeshcheniia"' in rooms_live
+    assert '"motion","occupancy","presence","illuminance"' in rooms_live
+    assert '"door","window","opening","garage_door"' in rooms_live
+    assert 'domain==="camera"' in rooms_live
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b016"' in const_source
     assert 'ROOMS_EQUIPMENT_FILENAME = "nikas-rooms-equipment.js"' in const_source
     assert 'ROOMS_EQUIPMENT_BUILD = "b004"' in const_source
     assert "ROOMS_EQUIPMENT_MODULE_URL" in const_source
+    assert 'ROOMS_LIVE_FILENAME = "nikas-rooms-live-sections.js"' in const_source
+    assert 'ROOMS_LIVE_BUILD = "b001"' in const_source
+    assert "ROOMS_LIVE_MODULE_URL" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
@@ -151,17 +151,15 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "GENERATED_ZONT" not in const_source
 
     dist = frontend_root / "dist"
-    for name in (
-        "nikas-house-overview.js",
-        "nikas-infrastructure-overview.js",
-        "nikas-generated-subpanel.js",
-    ):
+    for name in ("nikas-house-overview.js", "nikas-infrastructure-overview.js", "nikas-generated-subpanel.js"):
         packaged = (dist / name).read_text(encoding="utf-8")
         assert not any(line.lstrip().startswith("import ") for line in packaged.splitlines())
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
     assert "ROOMS_EQUIPMENT_STATIC_PATH" in init_source
     assert "add_extra_js_url(hass, ROOMS_EQUIPMENT_MODULE_URL)" in init_source
+    assert "ROOMS_LIVE_STATIC_PATH" in init_source
+    assert "add_extra_js_url(hass, ROOMS_LIVE_MODULE_URL)" in init_source
     assert "PANEL_ZOOM_STATIC_PATH" in init_source
     assert "SPECIALIZED_SHELL_STATIC_PATH" in init_source
     assert "add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)" in init_source
