@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.36.11"
+    assert manifest["version"] == "0.36.12"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -43,7 +43,7 @@ def test_repository_and_integration_ship_the_same_recognizable_icon() -> None:
     assert icon[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", icon[16:24])
     assert (width, height) == (256, 256)
-    assert icon[25] == 6  # RGBA, suitable for repository and integration surfaces.
+    assert icon[25] == 6
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "custom_components/contract_generated_ui/brand/icon.png" in readme
 
@@ -131,7 +131,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b016"' in const_source
     assert 'ROOMS_EQUIPMENT_FILENAME = "nikas-rooms-equipment.js"' in const_source
-    assert 'ROOMS_EQUIPMENT_BUILD = "b001"' in const_source
+    assert 'ROOMS_EQUIPMENT_BUILD = "b002"' in const_source
     assert "ROOMS_EQUIPMENT_MODULE_URL" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
