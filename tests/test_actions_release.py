@@ -60,7 +60,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     infrastructure_panel_bundle = (frontend_root / "nikas-infrastructure-overview.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
-    assert 'const BOOTSTRAP_VERSION = "b014"' in bundle
+    assert 'const BOOTSTRAP_VERSION = "b015"' in bundle
     assert "new MutationObserver" in bundle
     assert "chromeHostObserver.observe(document.body, { childList: true })" in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle

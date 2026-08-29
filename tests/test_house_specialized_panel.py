@@ -62,7 +62,7 @@ def test_house_panel_spec_resolves_verified_semantics(tmp_path: Path) -> None:
     assert panel["title"] == "Дом сейчас"
     assert panel["url_path"] == "dashboard-house-v11"
     assert panel["default_path"] == "/dashboard-house-v11/home"
-    assert [tab["id"] for tab in panel["tabs"]] == ["home", "actions", "infrastructure"]
+    assert [tab["id"] for tab in panel["tabs"]] == ["home", "rooms", "actions", "infrastructure"]
     assert panel["hero"]["standalone"] is True
     assert "type" not in panel["hero"]
     assert "grid_options" not in panel["hero"]

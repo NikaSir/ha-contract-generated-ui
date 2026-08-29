@@ -71,7 +71,7 @@ def test_infrastructure_panel_resolves_four_verified_cards(tmp_path: Path) -> No
     assert panel["title"] == "Инфраструктура · v11.0"
     assert panel["url_path"] == "dashboard-infrastructure"
     assert panel["default_path"] == "/dashboard-infrastructure/overview"
-    assert [tab["id"] for tab in panel["tabs"]] == ["home", "actions", "infrastructure"]
+    assert [tab["id"] for tab in panel["tabs"]] == ["home", "rooms", "actions", "infrastructure"]
     assert [card["variant"] for card in panel["cards"]] == [
         "power_grid",
         "ups",
