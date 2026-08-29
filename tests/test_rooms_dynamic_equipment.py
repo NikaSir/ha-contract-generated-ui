@@ -17,6 +17,14 @@ def test_rooms_equipment_uses_live_home_assistant_registries():
     assert 'HIDE_LABEL_PATTERN' in source
 
 
+def test_rooms_equipment_matches_numbered_area_names():
+    source = FRONTEND.read_text(encoding="utf-8")
+    assert 'function normAreaName(value)' in source
+    assert 'function findRoomArea(areas, roomName)' in source
+    assert 'normAreaName(item?.name) === target' in source
+    assert 'const area = findRoomArea(registries.areas, roomName);' in source
+
+
 def test_rooms_equipment_applies_operational_admission_policy():
     source = FRONTEND.read_text(encoding="utf-8")
     assert 'ACTIVE_LABEL_ID = "v_ekspluatatsii"' in source
@@ -44,4 +52,4 @@ def test_rooms_equipment_module_is_registered_and_unloaded():
     assert 'ROOMS_EQUIPMENT_STATIC_PATH' in init_source
     assert init_source.count('ROOMS_EQUIPMENT_MODULE_URL') >= 3
     assert 'nikas-rooms-equipment.js' in const_source
-    assert 'ROOMS_EQUIPMENT_BUILD = "b003"' in const_source
+    assert 'ROOMS_EQUIPMENT_BUILD = "b004"' in const_source
