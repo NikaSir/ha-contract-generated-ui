@@ -52,4 +52,4 @@ def test_rooms_equipment_module_is_registered_and_unloaded():
     assert 'ROOMS_EQUIPMENT_STATIC_PATH' in init_source
     assert init_source.count('ROOMS_EQUIPMENT_MODULE_URL') >= 3
     assert 'nikas-rooms-equipment.js' in const_source
-    assert 'ROOMS_EQUIPMENT_BUILD = "b004"' in const_source
+    assert 'ROOMS_EQUIPMENT_BUILD = "b005"' in const_source
