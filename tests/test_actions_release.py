@@ -121,29 +121,33 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     # Rooms v11: one autonomous production runtime, registry-driven model,
     # stable state patching and no legacy Lovelace DOM reconciliation.
-    assert 'const ELEMENT_NAME="nikas-rooms-v11"' in rooms_bundle
-    assert 'const UI_VERSION="11.0.0"' in rooms_bundle
-    assert 'const ACTIVE_LABEL="v_ekspluatatsii"' in rooms_bundle
-    assert 'const CLIMATE_LABEL="datchik_klimata_pomeshcheniia"' in rooms_bundle
+    assert 'const ELEMENT_NAME = "nikas-rooms-v11"' in rooms_bundle
+    assert 'const UI_VERSION = "11.0.0"' in rooms_bundle
+    assert 'const ACTIVE_LABEL = "v_ekspluatatsii"' in rooms_bundle
+    assert 'const CLIMATE_LABEL = "datchik_klimata_pomeshcheniia"' in rooms_bundle
     assert "config/area_registry/list" in rooms_bundle
     assert "config/device_registry/list" in rooms_bundle
     assert "config/entity_registry/list" in rooms_bundle
     assert "config/label_registry/list" in rooms_bundle
-    assert "patchStates()" in rooms_bundle
+    assert "scheduleStatePatch()" in rooms_bundle
+    assert "node.textContent !== value" in rooms_bundle
     assert "data-summary-room" in rooms_bundle
     assert "Дополнительные климатические датчики" in rooms_bundle
-    assert '"motion","occupancy","presence","illuminance"' in rooms_bundle
-    assert '"door","window","opening","garage_door"' in rooms_bundle
-    assert 'domain(e.entity_id)==="camera"' in rooms_bundle
+    assert "OPENING_CLASSES" in rooms_bundle
+    assert "ACTIVITY_CLASSES" in rooms_bundle
+    assert 'domain(entity.entity_id) === "camera"' in rooms_bundle
+    assert "data-filter" in rooms_bundle
     assert "Диагностика" in rooms_bundle
-    assert "MutationObserver" not in rooms_bundle
+    assert "ensureTitleButton(shadow)" in rooms_bundle
+    assert "button.title.rooms-return" in rooms_bundle
+    assert "MutationObserver" in rooms_bundle
     assert not any(line.lstrip().startswith("import ") for line in rooms_bundle.splitlines())
     assert "dynamic import" not in rooms_bundle.lower()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
     assert 'UI_BUNDLE_BUILD = "b017"' in const_source
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b001"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b002"' in const_source
     assert "ROOMS_PANEL_MODULE_URL" in const_source
     assert "ROOMS_PANEL_PATH" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
