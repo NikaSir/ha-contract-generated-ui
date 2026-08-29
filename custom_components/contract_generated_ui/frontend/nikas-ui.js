@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b015";
+const BOOTSTRAP_VERSION = "b016";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -34,9 +34,35 @@ const ACTIONS_HEADER_MODEL = {
   subtitle: "Быстрые команды · UI v0.37.4",
 };
 
+const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms";
+const ROOMS_UI_VERSION = "10.8.19";
+const ROOM_VIEW_TITLES = Object.freeze({
+  "/dashboard-rooms/room-bathroom": "Ванная",
+  "/dashboard-rooms/room-bedroom": "Спальня",
+  "/dashboard-rooms/room-wardrobe": "Гардероб",
+  "/dashboard-rooms/room-sasha": "У Саши",
+  "/dashboard-rooms/room-ilya": "У Ильи",
+  "/dashboard-rooms/room-stairs": "Лестница",
+  "/dashboard-rooms/room-corridor": "Коридор",
+  "/dashboard-rooms/room-hall": "Холл",
+  "/dashboard-rooms/room-boiler": "Котельная",
+  "/dashboard-rooms/room-kitchen": "Кухня",
+  "/dashboard-rooms/room-dining": "Столовая",
+  "/dashboard-rooms/room-living": "Гостиная",
+  "/dashboard-rooms/room-toilet": "Туалет",
+  "/dashboard-rooms/room-vestibule": "Тамбур",
+  "/dashboard-rooms/room-veranda": "Веранда",
+  "/dashboard-rooms/room-garage": "Гараж",
+  "/dashboard-rooms/room-attic": "Чердак",
+  "/dashboard-rooms/room-greenhouse": "Теплица",
+});
+
 let navigationRegistry = null;
 let syncFrame = null;
 let chromeHostObserver = null;
+let hiddenRoomsHeading = null;
+let roomsHeadingRetryTimer = null;
+let roomsHeadingRetryCount = 0;
 
 function sourceBaseRoute(pathname) {
   if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
@@ -113,6 +139,7 @@ window.NikasPanelNavigation = Object.freeze({
 
 function fallbackSurface(pathname) {
   if (pathname.startsWith("/dashboard-house-v11")) return "home";
+  if (pathname.startsWith("/dashboard-rooms")) return "rooms";
   if (pathname.startsWith("/dashboard-actions")) return "actions";
   if (pathname.startsWith("/dashboard-infrastructure")) return "infrastructure";
   return null;
@@ -183,6 +210,71 @@ function navigationModel(pathname) {
   );
 }
 
+function roomsHeaderModel(pathname) {
+  if (!pathname.startsWith("/dashboard-rooms")) return null;
+  const root = pathname === "/dashboard-rooms" || pathname === ROOMS_ROOT_PATH;
+  return {
+    id: root ? "global-rooms" : "global-room-detail",
+    title: root ? "Помещения" : (ROOM_VIEW_TITLES[pathname] || "Помещение"),
+    subtitle: root
+      ? `Обзор · UI v${ROOMS_UI_VERSION}`
+      : `Помещения · UI v${ROOMS_UI_VERSION}`,
+    back_path: root ? null : ROOMS_ROOT_PATH,
+  };
+}
+
+function walkOpenShadowRoots(start, visitor) {
+  const stack = [start];
+  const seen = new Set();
+  while (stack.length) {
+    const root = stack.pop();
+    if (!root || seen.has(root)) continue;
+    seen.add(root);
+    for (const node of root.querySelectorAll?.("*") || []) {
+      visitor(node);
+      if (node.shadowRoot) stack.push(node.shadowRoot);
+    }
+  }
+}
+
+function scheduleRoomsHeadingRetry() {
+  if (roomsHeadingRetryTimer !== null || roomsHeadingRetryCount >= 24) return;
+  roomsHeadingRetryCount += 1;
+  roomsHeadingRetryTimer = window.setTimeout(() => {
+    roomsHeadingRetryTimer = null;
+    scheduleSync();
+  }, 100);
+}
+
+function syncRoomsLegacyHeading(pathname) {
+  if (pathname !== ROOMS_ROOT_PATH) {
+    hiddenRoomsHeading = null;
+    roomsHeadingRetryCount = 0;
+    if (roomsHeadingRetryTimer !== null) window.clearTimeout(roomsHeadingRetryTimer);
+    roomsHeadingRetryTimer = null;
+    return;
+  }
+  if (hiddenRoomsHeading?.isConnected) return;
+
+  let match = null;
+  walkOpenShadowRoots(document, (node) => {
+    if (match || node.localName !== "hui-heading-card") return;
+    const heading = node._config?.heading || node.config?.heading || node.textContent || "";
+    if (/^Помещения\s*·\s*v\d/i.test(String(heading).trim())) match = node;
+  });
+  if (!match) {
+    scheduleRoomsHeadingRetry();
+    return;
+  }
+
+  if (roomsHeadingRetryTimer !== null) window.clearTimeout(roomsHeadingRetryTimer);
+  roomsHeadingRetryTimer = null;
+  roomsHeadingRetryCount = 0;
+  const host = match.closest?.("hui-section, hui-grid-section, section") || match;
+  host.style.setProperty("display", "none", "important");
+  hiddenRoomsHeading = host;
+}
+
 function createBar(model) {
   const root = document.createElement("div");
   root.id = BAR_ID;
@@ -251,6 +343,8 @@ function createHeader(group) {
       .title strong,.title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .title strong{font-size:23px;font-weight:800}
       .title span{margin-top:3px;color:var(--secondary-text-color,#6b7280);font-size:14px;font-weight:560}
+      .title.link{cursor:pointer;border-radius:12px}
+      .title.link:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:3px}
       #refresh{color:var(--primary-color,#03a9f4)}
       @media(max-width:390px){.shell{grid-template-columns:48px minmax(0,1fr) 48px}.title strong{font-size:21px}.title span{font-size:13px}}
     </style>
@@ -269,8 +363,27 @@ function createHeader(group) {
 
 function renderHeader(root, group) {
   const shadow = root.shadowRoot;
+  const title = shadow.querySelector(".title");
   shadow.querySelector(".title strong").textContent = group.title || "";
   shadow.querySelector(".title span").textContent = group.subtitle || group.parent?.title || "";
+
+  const backPath = sameOriginNavigationPath(group.back_path);
+  title.classList.toggle("link", Boolean(backPath));
+  if (backPath) {
+    title.setAttribute("role", "button");
+    title.tabIndex = 0;
+  } else {
+    title.removeAttribute("role");
+    title.removeAttribute("tabindex");
+  }
+  title.onclick = backPath ? () => navigateWithSourceHandoff(backPath) : null;
+  title.onkeydown = backPath
+    ? (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        navigateWithSourceHandoff(backPath);
+      }
+    : null;
   root.dataset.subpanel = group.id || "";
 }
 
@@ -288,9 +401,12 @@ function syncBar(model) {
   }
 }
 
-function syncHeader(model) {
+function syncHeader(model, pathname) {
   let root = document.getElementById(HEADER_ID);
-  const group = model?.group || (model?.active === "actions" ? ACTIONS_HEADER_MODEL : null);
+  const group =
+    model?.group ||
+    (model?.active === "actions" ? ACTIONS_HEADER_MODEL : null) ||
+    (model?.active === "rooms" ? roomsHeaderModel(pathname) : null);
   if (!group) {
     if (root) root.remove();
     return;
@@ -305,9 +421,11 @@ function syncHeader(model) {
 
 function syncChrome() {
   if (!document.body) return;
-  const model = navigationModel(window.location.pathname);
+  const pathname = window.location.pathname;
+  const model = navigationModel(pathname);
   syncBar(model);
-  syncHeader(model);
+  syncHeader(model, pathname);
+  syncRoomsLegacyHeading(pathname);
 }
 
 function scheduleSync() {
@@ -324,9 +442,13 @@ function observeChromeHost() {
     const chromeRemoved = records.some((record) => [...record.removedNodes].some(
       (node) => node?.id === BAR_ID || node?.id === HEADER_ID
     ));
-    if (chromeRemoved) scheduleSync();
+    const roomsContentAdded =
+      window.location.pathname === ROOMS_ROOT_PATH &&
+      !hiddenRoomsHeading?.isConnected &&
+      records.some((record) => record.addedNodes.length > 0);
+    if (chromeRemoved || roomsContentAdded) scheduleSync();
   });
-  chromeHostObserver.observe(document.body, { childList: true });
+  chromeHostObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 async function loadNavigationRegistry() {
