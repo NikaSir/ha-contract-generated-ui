@@ -2,7 +2,7 @@
   "version": "1.9",
   "navigation_contract_version": "1.1",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "f02b40c0e16d49ced98f3f099382ede1798837e1d709cb8934787c110455fb9c",
+  "standard_sha256": "a31dc45499443f8fa43eaea1906fe3a793dffcb411b10cebcd3a3a205fbcef27",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "c87dc760c0900701f6a807a35aba40e790f68f52c39f4579583598f697997e52",
   "role": "base",
@@ -35,8 +35,21 @@
     "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
     "custom_components/contract_generated_ui/frontend/nikas-app-shell.js"
   ],
+  "header_reference": {
+    "implementation": "S8 OMNI",
+    "implementation_source": "NikaSir/ha-s8-omni",
+    "background_primary_mix_percent": 97,
+    "divider_mix_percent": 70,
+    "blur_px": 18,
+    "saturation_percent": 130,
+    "side_action_size_px": 44,
+    "side_action_radius_px": 16,
+    "side_action_border_divider_mix_percent": 72,
+    "side_action_shadow": "0 7px 20px rgba(23,45,76,.08)"
+  },
   "title_plaque_reference": {
-    "implementation": "LIDER",
+    "implementation": "S8 OMNI",
+    "implementation_source": "NikaSir/ha-s8-omni",
     "min_width": "min(290px,100%)",
     "min_height_px": 44,
     "padding_px": "5 14",
@@ -44,5 +57,22 @@
     "primary_background_mix_percent": 5,
     "primary_border_mix_percent": 24,
     "shadow": "0 5px 16px rgba(23,45,76,.06)"
+  },
+  "connection_plaque_reference": {
+    "implementation": "S8 OMNI",
+    "implementation_source": "NikaSir/ha-s8-omni",
+    "min_height_px": 58,
+    "padding_px": "12 14",
+    "radius_px": 18,
+    "lamp_px": 10,
+    "column_gap_px": 11,
+    "main_font": "16px/700",
+    "freshness_font": "13px/600",
+    "success_background_mix_percent": 11,
+    "status_background_mix_percent": 10,
+    "neutral_background_mix_percent": 8,
+    "status_border_mix_percent": 30,
+    "neutral_border_mix_percent": 28,
+    "shadow": "0 4px 14px rgba(0,0,0,.055)"
   }
 }
