@@ -118,7 +118,13 @@ class NikasRoomsV11 extends HTMLElement {
     this._bodyObserver = null;
     this._headerObserver = null;
     this._observedHeader = null;
-    this._onLocation = () => this.renderRoute();
+    this._onLocation = () => {
+      if (!this.isRoomsPath()) {
+        this.restoreSharedChrome();
+        return;
+      }
+      this.renderRoute();
+    };
     this._onResize = () => this.scheduleChromeSync();
   }
 
@@ -152,6 +158,7 @@ class NikasRoomsV11 extends HTMLElement {
     window.visualViewport?.removeEventListener?.("resize", this._onResize);
     this._bodyObserver?.disconnect();
     this._headerObserver?.disconnect();
+    this.restoreSharedChrome();
     this._bodyObserver = null;
     this._headerObserver = null;
     this._observedHeader = null;
@@ -188,7 +195,6 @@ class NikasRoomsV11 extends HTMLElement {
     this._headerObserver.observe(header.shadowRoot, {
       childList: true,
       subtree: true,
-      attributes: true,
       characterData: true,
     });
   }
@@ -267,6 +273,11 @@ class NikasRoomsV11 extends HTMLElement {
         labelMap,
       };
     });
+  }
+
+  isRoomsPath() {
+    return window.location.pathname === "/dashboard-rooms"
+      || window.location.pathname.startsWith("/dashboard-rooms/");
   }
 
   route() {
@@ -413,6 +424,7 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   renderRoute(force = false) {
+    if (!this.isRoomsPath()) return;
     this.mountShell();
     const route = this.route();
     const key = this.routeKey(route);
@@ -730,6 +742,7 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   syncSharedChrome(route = this.route()) {
+    if (!this.isRoomsPath()) return;
     const header = document.getElementById(HEADER_ID);
     const bar = document.getElementById(BAR_ID);
     this.observeHeader(header);
@@ -752,7 +765,8 @@ class NikasRoomsV11 extends HTMLElement {
     title.onclick = model.backPath ? () => this.navigate(model.backPath) : null;
     title.onkeydown = null;
     if (model.backPath) {
-      title.setAttribute("aria-label", `Вернуться: ${model.backPath === ROOT_PATH ? "Помещения" : model.title}`);
+      const label = `Вернуться: ${model.backPath === ROOT_PATH ? "Помещения" : model.title}`;
+      if (title.getAttribute("aria-label") !== label) title.setAttribute("aria-label", label);
     } else {
       title.removeAttribute("aria-label");
     }
@@ -760,20 +774,44 @@ class NikasRoomsV11 extends HTMLElement {
     const refresh = shadow.getElementById("refresh");
     if (refresh) {
       refresh.onclick = () => this.loadRegistries();
-      refresh.disabled = this._loading;
-      refresh.setAttribute("aria-busy", this._loading ? "true" : "false");
+      if (refresh.disabled !== this._loading) refresh.disabled = this._loading;
+      const busy = this._loading ? "true" : "false";
+      if (refresh.getAttribute("aria-busy") !== busy) refresh.setAttribute("aria-busy", busy);
     }
-    header.dataset.subpanel = `rooms-v11-${route.kind}`;
+    const subpanel = `rooms-v11-${route.kind}`;
+    if (header.dataset.subpanel !== subpanel) header.dataset.subpanel = subpanel;
+    if (bar && bar.dataset.roomsV11 !== "true") bar.dataset.roomsV11 = "true";
+  }
 
-    if (bar) bar.dataset.roomsV11 = "true";
+  restoreSharedChrome() {
+    const header = document.getElementById(HEADER_ID);
+    const shadow = header?.shadowRoot;
+    const title = shadow?.querySelector("button.title");
+    if (title) {
+      const replacement = document.createElement("div");
+      replacement.className = "title";
+      while (title.firstChild) replacement.appendChild(title.firstChild);
+      title.replaceWith(replacement);
+    }
+    shadow?.getElementById("nikas-rooms-v11-header-style")?.remove();
+    const refresh = shadow?.getElementById("refresh");
+    if (refresh) {
+      refresh.disabled = false;
+      refresh.removeAttribute("aria-busy");
+      refresh.onclick = () => window.location.reload();
+    }
+    if (header?.dataset?.subpanel?.startsWith("rooms-v11-")) delete header.dataset.subpanel;
+    const bar = document.getElementById(BAR_ID);
+    if (bar?.dataset?.roomsV11) delete bar.dataset.roomsV11;
   }
 
   syncRefreshState() {
     const header = document.getElementById(HEADER_ID);
     const refresh = header?.shadowRoot?.getElementById("refresh");
     if (!refresh) return;
-    refresh.disabled = this._loading;
-    refresh.setAttribute("aria-busy", this._loading ? "true" : "false");
+    if (refresh.disabled !== this._loading) refresh.disabled = this._loading;
+    const busy = this._loading ? "true" : "false";
+    if (refresh.getAttribute("aria-busy") !== busy) refresh.setAttribute("aria-busy", busy);
   }
 
   scheduleFit() {
