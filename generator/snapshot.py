@@ -25,14 +25,17 @@ class ParsedBinding:
     entity_id: str
 
 
-def canonical_snapshot_id(entities: Iterable[Mapping[str, Any]]) -> str:
-    """Return a stable content ID for the scrubbed registry payload."""
-    ordered = sorted(
-        (dict(entity) for entity in entities),
-        key=lambda item: item["entity_id"],
-    )
+def canonical_snapshot_id(payload_source: Mapping[str, Any] | Iterable[Mapping[str, Any]]) -> str:
+    """Return a stable content ID for v1 entity facts or v2 registry topology."""
+    if isinstance(payload_source, Mapping):
+        payload_obj: Any = payload_source
+    else:
+        payload_obj = sorted(
+            (dict(entity) for entity in payload_source),
+            key=lambda item: item["entity_id"],
+        )
     payload = json.dumps(
-        ordered,
+        payload_obj,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -51,7 +54,8 @@ def validate_snapshot_document(
     if issues or not isinstance(document, dict):
         return issues
 
-    entities = document.get("spec", {}).get("entities", [])
+    spec = document.get("spec", {})
+    entities = spec.get("entities", [])
     seen: set[str] = set()
     for index, entity in enumerate(entities):
         if not isinstance(entity, dict):
@@ -79,7 +83,10 @@ def validate_snapshot_document(
             seen.add(entity_id)
 
     metadata = document.get("metadata", {})
-    expected_snapshot_id = canonical_snapshot_id(entities)
+    if document.get("api_version") == "nikas.home-assistant/registry-snapshot/v2":
+        expected_snapshot_id = canonical_snapshot_id(spec)
+    else:
+        expected_snapshot_id = canonical_snapshot_id(entities)
     snapshot_id = metadata.get("snapshot_id")
     if isinstance(snapshot_id, str) and snapshot_id != expected_snapshot_id:
         issues.append(
@@ -164,6 +171,8 @@ def build_inventory(
             ("device_class", "device_class"),
             ("unit_of_measurement", "unit_of_measurement"),
             ("area", "area"),
+            ("area_id", "area_id"),
+            ("device_id", "device_id"),
         ):
             value = entity.get(source_key)
             if value is not None:

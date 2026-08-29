@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 CURRENT_SNAPSHOT = "current.json"
 PREVIOUS_SNAPSHOT = "previous.json"
+SNAPSHOT_API_VERSION = "nikas.home-assistant/registry-snapshot/v2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,14 +27,38 @@ class SnapshotWriteResult:
     changed: bool
 
 
-def canonical_snapshot_id(entities: Iterable[Mapping[str, Any]]) -> str:
-    """Return a stable content ID for scrubbed entity facts."""
-    ordered = sorted(
-        (dict(entity) for entity in entities),
-        key=lambda item: item["entity_id"],
-    )
+def _ordered_records(
+    records: Iterable[Mapping[str, Any]],
+    key: str,
+) -> list[dict[str, Any]]:
+    return sorted((dict(record) for record in records), key=lambda item: str(item[key]))
+
+
+def _labels(value: Any) -> list[str]:
+    """Return deterministic label IDs without depending on registry container type."""
+    if not value:
+        return []
+    return sorted(str(item) for item in value)
+
+
+def canonical_snapshot_id(spec: Mapping[str, Any] | Iterable[Mapping[str, Any]]) -> str:
+    """Return a stable content ID for scrubbed registry topology.
+
+    Iterable input is retained for compatibility with v1 callers and is treated as
+    an entity-only snapshot.
+    """
+    if isinstance(spec, Mapping):
+        payload_obj: Any = spec
+    else:
+        payload_obj = {
+            "entities": _ordered_records(spec, "entity_id"),
+            "devices": [],
+            "areas": [],
+            "floors": [],
+            "labels": [],
+        }
     payload = json.dumps(
-        ordered,
+        payload_obj,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -46,34 +71,57 @@ def build_snapshot_document(
     *,
     captured_at: str,
     home_assistant_version: str,
+    devices: Iterable[Mapping[str, Any]] = (),
+    areas: Iterable[Mapping[str, Any]] = (),
+    floors: Iterable[Mapping[str, Any]] = (),
+    labels: Iterable[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
-    """Create a deterministic, scrubbed snapshot document."""
-    ordered = sorted(
-        (dict(entity) for entity in entities),
-        key=lambda item: item["entity_id"],
-    )
+    """Create a deterministic, scrubbed registry topology snapshot."""
+    spec = {
+        "entities": _ordered_records(entities, "entity_id"),
+        "devices": _ordered_records(devices, "device_id"),
+        "areas": _ordered_records(areas, "area_id"),
+        "floors": _ordered_records(floors, "floor_id"),
+        "labels": _ordered_records(labels, "label_id"),
+    }
     return {
-        "api_version": "nikas.home-assistant/registry-snapshot/v1",
+        "api_version": SNAPSHOT_API_VERSION,
         "kind": "RegistrySnapshot",
         "metadata": {
             "captured_at": captured_at,
             "source": "home_assistant",
             "scrubbed": True,
-            "snapshot_id": canonical_snapshot_id(ordered),
+            "snapshot_id": canonical_snapshot_id(spec),
             "home_assistant_version": home_assistant_version,
+            "contents": {
+                "entities": len(spec["entities"]),
+                "devices": len(spec["devices"]),
+                "areas": len(spec["areas"]),
+                "floors": len(spec["floors"]),
+                "labels": len(spec["labels"]),
+            },
         },
-        "spec": {"entities": ordered},
+        "spec": spec,
     }
 
 
 def capture_registry_snapshot(hass: HomeAssistant) -> dict[str, Any]:
-    """Capture only registry fields needed for contract binding and drift review."""
+    """Capture scrubbed registry topology required for binding and drift review."""
     from homeassistant.const import __version__
+    from homeassistant.helpers import area_registry as ar
+    from homeassistant.helpers import device_registry as dr
     from homeassistant.helpers import entity_registry as er
+    from homeassistant.helpers import floor_registry as fr
+    from homeassistant.helpers import label_registry as lr
 
-    registry = er.async_get(hass)
+    entity_registry = er.async_get(hass)
+    device_registry = dr.async_get(hass)
+    area_registry = ar.async_get(hass)
+    floor_registry = fr.async_get(hass)
+    label_registry = lr.async_get(hass)
+
     entities: list[dict[str, Any]] = []
-    for entry in registry.entities.values():
+    for entry in entity_registry.entities.values():
         entity: dict[str, Any] = {
             "entity_id": entry.entity_id,
             "domain": entry.domain,
@@ -81,6 +129,17 @@ def capture_registry_snapshot(hass: HomeAssistant) -> dict[str, Any]:
             "disabled": entry.disabled_by is not None,
             "hidden": entry.hidden_by is not None,
         }
+        if entry.device_id is not None:
+            entity["device_id"] = entry.device_id
+        if entry.area_id is not None:
+            entity["area_id"] = entry.area_id
+        entity_labels = _labels(getattr(entry, "labels", None))
+        if entity_labels:
+            entity["labels"] = entity_labels
+        if entry.name is not None:
+            entity["name"] = entry.name
+        if entry.original_name is not None:
+            entity["original_name"] = entry.original_name
         device_class = entry.device_class or entry.original_device_class
         if device_class is not None:
             entity["device_class"] = device_class
@@ -88,9 +147,88 @@ def capture_registry_snapshot(hass: HomeAssistant) -> dict[str, Any]:
             entity["unit_of_measurement"] = entry.unit_of_measurement
         entities.append(entity)
 
+    devices: list[dict[str, Any]] = []
+    for entry in device_registry.devices.values():
+        device: dict[str, Any] = {
+            "device_id": entry.id,
+            "disabled": entry.disabled_by is not None,
+        }
+        if entry.area_id is not None:
+            device["area_id"] = entry.area_id
+        device_labels = _labels(getattr(entry, "labels", None))
+        if device_labels:
+            device["labels"] = device_labels
+        if entry.name_by_user is not None:
+            device["name_by_user"] = entry.name_by_user
+        if entry.name is not None:
+            device["name"] = entry.name
+        if entry.manufacturer is not None:
+            device["manufacturer"] = entry.manufacturer
+        if entry.model is not None:
+            device["model"] = entry.model
+        if getattr(entry, "model_id", None) is not None:
+            device["model_id"] = entry.model_id
+        if entry.via_device_id is not None:
+            device["via_device_id"] = entry.via_device_id
+        entry_type = getattr(entry, "entry_type", None)
+        if entry_type is not None:
+            device["entry_type"] = str(getattr(entry_type, "value", entry_type))
+        devices.append(device)
+
+    areas: list[dict[str, Any]] = []
+    for entry in area_registry.areas.values():
+        area: dict[str, Any] = {
+            "area_id": entry.id,
+            "name": entry.name,
+        }
+        if getattr(entry, "floor_id", None) is not None:
+            area["floor_id"] = entry.floor_id
+        if getattr(entry, "icon", None) is not None:
+            area["icon"] = entry.icon
+        aliases = sorted(str(item) for item in (getattr(entry, "aliases", None) or []))
+        if aliases:
+            area["aliases"] = aliases
+        area_labels = _labels(getattr(entry, "labels", None))
+        if area_labels:
+            area["labels"] = area_labels
+        areas.append(area)
+
+    floors: list[dict[str, Any]] = []
+    for entry in floor_registry.floors.values():
+        floor: dict[str, Any] = {
+            "floor_id": entry.floor_id,
+            "name": entry.name,
+        }
+        if getattr(entry, "level", None) is not None:
+            floor["level"] = entry.level
+        if getattr(entry, "icon", None) is not None:
+            floor["icon"] = entry.icon
+        aliases = sorted(str(item) for item in (getattr(entry, "aliases", None) or []))
+        if aliases:
+            floor["aliases"] = aliases
+        floors.append(floor)
+
+    labels: list[dict[str, Any]] = []
+    for entry in label_registry.labels.values():
+        label: dict[str, Any] = {
+            "label_id": entry.label_id,
+            "name": entry.name,
+        }
+        if getattr(entry, "color", None) is not None:
+            label["color"] = entry.color
+        if getattr(entry, "icon", None) is not None:
+            label["icon"] = entry.icon
+        if getattr(entry, "description", None):
+            label["description"] = entry.description
+        labels.append(label)
+
     captured_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     return build_snapshot_document(
         entities,
+        devices=devices,
+        areas=areas,
+        floors=floors,
+        labels=labels,
         captured_at=captured_at,
         home_assistant_version=__version__,
     )
