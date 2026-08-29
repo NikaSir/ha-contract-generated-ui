@@ -432,7 +432,7 @@ if (!window.customCards.some((card) => card.type === ELEMENT_NAME)) {
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.37.7";
+  const UI_VERSION = "0.37.8";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

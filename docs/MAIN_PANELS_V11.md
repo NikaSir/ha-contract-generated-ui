@@ -18,7 +18,7 @@ The isolated mock-up and route cut-over phases are closed. The canonical three-p
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Действия / Инфра`.
 
-Navigation contract `1.2.0` owns all three canonical entry routes. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target. Specialized-panel transitions use the dedicated public routes below and return through NikaS Panel Navigation and Return Contract v1.1.
+Navigation contract `1.3.0` owns the four canonical entry routes: `Дом`, `Помещения`, `Действия` and `Инфра`. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target. Specialized-panel transitions use the dedicated public routes below and return through NikaS Panel Navigation and Return Contract v1.1.
 
 Canonical deep routes used by the House/Actions manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
@@ -28,7 +28,8 @@ Canonical deep routes used by the House/Actions manifests and renderers point to
 - irrigation — `/dashboard-irrigation`;
 - UPS — `/dashboard-ups`;
 - electricity — `/dashboard-lider`;
-- internet/router — `/dashboard-keenetic`.
+- internet/router — `/dashboard-keenetic`;
+- rooms — `/dashboard-rooms/rooms`.
 
 ## Дом
 

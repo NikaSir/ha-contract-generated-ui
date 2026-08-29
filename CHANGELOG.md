@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.36.9` updates House UI to `0.37.8`: the fixed Bottom Tab Bar gains a fourth `Помещения` item using `mdi:floor-plan` and opens the existing rooms panel at `/dashboard-rooms/rooms`. The route is part of the canonical navigation registry and preserves return handoff when rooms launch a specialized panel.
+
 - Contract Generated UI `0.36.8` updates House UI to `0.37.7`: the `Дом сейчас` top row is fixed as `Окна / Двери / Свет / Движение / Климат`; weather and protection occupy the next row, date/time and cameras the row below. `Электросеть`, `Отопление` and `Интернет` now open their owning LIDER, ZONT and Keenetic panels directly. Main-menu labels use the approved NikaS panel names.
 - Contract Generated UI `0.36.7` updates House UI to `0.37.6`: the lower resource row now renders four compact text-only state plaques (`Электросеть`, `Вода`, `Интернет`, `Отопление`). Icons, status words and numeric secondary lines are removed; the existing fail-closed state logic controls only the highlighted text colour, while each plaque retains its route and a 48 px minimum mobile touch target.
 - Contract Generated UI `0.36.6` updates House UI to `0.37.5`: the Climate summary no longer treats absent configured entities as unavailable, while explicit `unknown`/`unavailable` states remain orange and active heating/cooling remains yellow. The compact lower resource cards retain 12 px minimum copy, remove redundant secondary text and determine `Вода` exclusively from the verified irrigation-mainline pressure sensor: positive pressure is `Есть`, zero is `Нет воды`, and missing/unavailable telemetry is `Нет данных`.
@@ -127,3 +129,7 @@ All notable changes to this project will be documented in this file.
 # 0.36.8
 
 - House UI `0.37.7` separates windows and doors in the five-item top status row, moves protection beside weather, and moves cameras beside the date/time card. Resource navigation delegates directly to the LIDER, ZONT and Keenetic owner panels; main navigation uses the approved panel names.
+
+# 0.36.9
+
+- House UI `0.37.8` adds the `Помещения` global bottom-navigation item and connects it to `/dashboard-rooms/rooms`. The navigation fallback, runtime registry and specialized-panel source-route handoff use the same canonical route.
