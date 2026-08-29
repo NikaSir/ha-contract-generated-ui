@@ -28,6 +28,8 @@ let renderTimer = null;
 let cache = null;
 let cacheAt = 0;
 let observer = null;
+let mountedRoot = null;
+const hiddenLegacyHosts = new Set();
 
 function roomSlug(pathname = window.location.pathname) {
   if (!pathname.startsWith(ROOT_PREFIX)) return null;
@@ -163,9 +165,24 @@ function findMountHost() {
   let candidate = null;
   walkRoots(document, (node) => {
     if (candidate) return;
-    if (node.localName === "hui-view" || node.localName === "hui-panel-view" || node.localName === "ha-panel-lovelace") candidate = node;
+    if (node.localName === "hui-view" || node.localName === "hui-panel-view") candidate = node;
   });
-  return candidate || document.body;
+  return candidate;
+}
+
+function restoreLegacyEquipmentSections() {
+  for (const host of hiddenLegacyHosts) {
+    if (!host?.style) continue;
+    host.style.removeProperty("display");
+    if (host.dataset) delete host.dataset[LEGACY_MARK];
+  }
+  hiddenLegacyHosts.clear();
+}
+
+function cleanupRuntime() {
+  mountedRoot?.remove();
+  mountedRoot = null;
+  restoreLegacyEquipmentSections();
 }
 
 function hideLegacyEquipmentSection() {
@@ -177,6 +194,7 @@ function hideLegacyEquipmentSection() {
     const host = node.closest?.("hui-section, hui-grid-section, section, ha-card") || node;
     host.style.setProperty("display", "none", "important");
     host.dataset[LEGACY_MARK] = "1";
+    hiddenLegacyHosts.add(host);
   });
 }
 
@@ -294,27 +312,43 @@ if (!customElements.get("nikas-room-equipment")) customElements.define("nikas-ro
 async function sync() {
   renderTimer = null;
   const slug = roomSlug();
-  const existing = document.getElementById(ROOT_ID);
   if (!slug) {
-    existing?.remove();
+    cleanupRuntime();
     return;
   }
 
   const roomName = ROOM_NAMES[slug];
   const hass = getHass();
-  if (!roomName || !hass?.callWS) return;
+  if (!roomName || !hass?.callWS) {
+    cleanupRuntime();
+    return;
+  }
 
   try {
     const registries = await loadRegistries(hass);
+
+    // Navigation may have changed while the registry requests were in flight.
+    // Never mount room content into a different Home Assistant surface.
+    if (roomSlug() !== slug || ROOM_NAMES[roomSlug()] !== roomName) {
+      cleanupRuntime();
+      return;
+    }
+
+    const mountHost = findMountHost();
+    if (!mountHost) {
+      cleanupRuntime();
+      return;
+    }
+
     const model = collectRoomEquipment(registries, roomName, hass);
     hideLegacyEquipmentSection();
-    let root = document.getElementById(ROOT_ID);
-    if (!root) {
-      root = document.createElement("nikas-room-equipment");
-      root.id = ROOT_ID;
-      findMountHost().append(root);
+
+    if (!mountedRoot?.isConnected) {
+      mountedRoot = document.createElement("nikas-room-equipment");
+      mountedRoot.id = ROOT_ID;
+      mountHost.append(mountedRoot);
     }
-    root.model = { ...model, hass };
+    mountedRoot.model = { ...model, hass };
   } catch (err) {
     console.warn("[NikaS Rooms] Cannot build dynamic equipment list", err);
   }
