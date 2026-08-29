@@ -166,6 +166,8 @@ def test_nikas_ui_bundle_uses_registry_for_local_navigation() -> None:
     assert "ROOM_VIEW_TITLES" in asset
     assert "roomsHeaderModel" in asset
     assert "syncRoomsLegacyHeading" in asset
+    assert "scheduleRoomsHeadingRetry" in asset
+    assert "roomsHeadingRetryCount >= 24" in asset
     assert 'title: root ? "Помещения"' in asset
     assert 'back_path: root ? null : ROOMS_ROOT_PATH' in asset
     assert "createHeader" in asset
