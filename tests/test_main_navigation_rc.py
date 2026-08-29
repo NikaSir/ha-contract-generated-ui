@@ -14,6 +14,12 @@ def test_complete_v11_rc_global_tabs_stay_inside_preview_set() -> None:
     tabs = {tab["id"]: tab for tab in registry["global_tabs"]}
 
     assert tabs["home"]["path"] == "/dashboard-house-v11/home"
+    assert tabs["rooms"] == {
+        "id": "rooms",
+        "label": "Помещения",
+        "icon": "mdi:floor-plan",
+        "path": "/dashboard-rooms/rooms",
+    }
     assert tabs["actions"]["path"] == "/dashboard-actions/home"
     assert tabs["infrastructure"]["path"] == "/dashboard-infrastructure/overview"
 
@@ -22,8 +28,9 @@ def test_navigation_registry_uses_canonical_public_panel_routes() -> None:
     navigation = yaml.safe_load((ROOT / "navigation" / "main.yaml").read_text(encoding="utf-8"))
     routes = navigation["spec"]["routes"]
 
-    assert navigation["metadata"]["version"] == "1.2.0"
+    assert navigation["metadata"]["version"] == "1.3.0"
     assert routes["home"]["path"] == "/dashboard-house-v11/home"
+    assert routes["rooms"]["path"] == "/dashboard-rooms/rooms"
     assert routes["house.heating"]["path"] == "/dashboard-zont"
     assert routes["house.vehicles"]["path"] == "/starline"
     assert routes["house.cleaning"]["path"] == "/dashboard-s8-omni"

@@ -160,6 +160,8 @@ def test_nikas_ui_bundle_uses_registry_for_local_navigation() -> None:
     assert "env(safe-area-inset-bottom" in asset
     assert 'window.addEventListener("location-changed"' in asset
     assert "registrySubpanelModel" in asset
+    assert '{ id: "rooms", label: "Помещения", icon: "mdi:floor-plan", path: "/dashboard-rooms/rooms" }' in asset
+    assert 'return "/dashboard-rooms/rooms"' in asset
     assert "createHeader" in asset
     assert "POWER_ITEMS" not in asset
     assert 'path: "/dashboard-infrastructure/power-overview"' not in asset

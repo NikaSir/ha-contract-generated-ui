@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b014";
+const BOOTSTRAP_VERSION = "b015";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -23,6 +23,7 @@ const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-in
 
 const FALLBACK_ITEMS = [
   { id: "home", label: "Дом", icon: "mdi:home-outline", path: "/dashboard-house-v11/home" },
+  { id: "rooms", label: "Помещения", icon: "mdi:floor-plan", path: "/dashboard-rooms/rooms" },
   { id: "actions", label: "Действия", icon: "mdi:lightning-bolt-outline", path: "/dashboard-actions/home" },
   { id: "infrastructure", label: "Инфра", icon: "mdi:server-network", path: "/dashboard-infrastructure/overview" },
 ];
@@ -39,6 +40,7 @@ let chromeHostObserver = null;
 
 function sourceBaseRoute(pathname) {
   if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
+  if (pathname === "/dashboard-rooms" || pathname.startsWith("/dashboard-rooms/")) return "/dashboard-rooms/rooms";
   if (pathname === "/dashboard-actions" || pathname.startsWith("/dashboard-actions/")) return "/dashboard-actions/home";
   if (pathname.startsWith("/dashboard-infrastructure")) return "/dashboard-infrastructure/overview";
   return null;
