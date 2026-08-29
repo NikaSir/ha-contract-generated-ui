@@ -2,6 +2,7 @@ from custom_components.contract_generated_ui.registry_snapshot import (
     SNAPSHOT_API_VERSION,
     build_snapshot_document,
 )
+from generator.semantic_diff import diff_registry_snapshots
 
 
 def _snapshot(*, device_area: str = "bathroom", device_labels=None, entity_labels=None):
@@ -72,3 +73,17 @@ def test_snapshot_id_changes_when_labels_change():
     before = _snapshot(device_labels=["in_service"])
     after = _snapshot(device_labels=["maintenance"])
     assert before["metadata"]["snapshot_id"] != after["metadata"]["snapshot_id"]
+
+
+def test_topology_diff_reports_device_area_and_label_changes():
+    before = _snapshot(device_area="bathroom", device_labels=["in_service"])
+    after = _snapshot(device_area="bedroom", device_labels=["maintenance"])
+
+    changes = diff_registry_snapshots(before, after)
+    assert [(change.kind, change.key) for change in changes] == [
+        ("changed", "device:dev-temp")
+    ]
+    assert changes[0].before["area_id"] == "bathroom"
+    assert changes[0].after["area_id"] == "bedroom"
+    assert changes[0].before["labels"] == ["in_service"]
+    assert changes[0].after["labels"] == ["maintenance"]
