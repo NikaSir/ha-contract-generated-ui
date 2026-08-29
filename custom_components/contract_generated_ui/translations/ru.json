@@ -14,6 +14,9 @@
       "capture_registry_snapshot": {
         "name": "Снять снимок реестра"
       },
+      "download_registry_snapshot": {
+        "name": "Скачать снимок реестра"
+      },
       "generate_dashboards": {
         "name": "Сгенерировать панели"
       }
