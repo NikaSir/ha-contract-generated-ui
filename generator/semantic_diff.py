@@ -56,18 +56,55 @@ def diff_inventories(
     )
 
 
+def _records_by_id(
+    spec: Mapping[str, Any],
+    collection: str,
+    id_field: str,
+) -> dict[str, Any]:
+    return {
+        str(record[id_field]): record
+        for record in spec.get(collection, [])
+        if isinstance(record, Mapping) and id_field in record
+    }
+
+
 def diff_registry_snapshots(
     before: Mapping[str, Any],
     after: Mapping[str, Any],
 ) -> list[SemanticChange]:
-    """Compare scrubbed entity registry facts independently of capture time."""
-    old_entities = {
-        entity["entity_id"]: entity for entity in before["spec"]["entities"]
-    }
-    new_entities = {
-        entity["entity_id"]: entity for entity in after["spec"]["entities"]
-    }
-    return _diff_keyed(old_entities, new_entities)
+    """Compare scrubbed registry topology independently of capture time.
+
+    Entity keys remain unprefixed for v1 compatibility. Topology collections added
+    in snapshot v2 use explicit prefixes so an area/device/label change is visible
+    and cannot collide with a Home Assistant entity_id.
+    """
+    old_spec = before["spec"]
+    new_spec = after["spec"]
+    changes = _diff_keyed(
+        _records_by_id(old_spec, "entities", "entity_id"),
+        _records_by_id(new_spec, "entities", "entity_id"),
+    )
+
+    for collection, id_field, prefix in (
+        ("devices", "device_id", "device:"),
+        ("areas", "area_id", "area:"),
+        ("floors", "floor_id", "floor:"),
+        ("labels", "label_id", "label:"),
+    ):
+        scoped = _diff_keyed(
+            _records_by_id(old_spec, collection, id_field),
+            _records_by_id(new_spec, collection, id_field),
+        )
+        changes.extend(
+            SemanticChange(
+                change.kind,
+                f"{prefix}{change.key}",
+                change.before,
+                change.after,
+            )
+            for change in scoped
+        )
+    return changes
 
 
 def render_text(changes: list[SemanticChange]) -> str:
