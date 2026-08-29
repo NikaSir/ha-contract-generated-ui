@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.36.10` integrates the existing `/dashboard-rooms` Lovelace dashboard into the current NikaS shell without copying or changing room entity logic. Rooms now receive the fixed Header, active four-item Bottom Tab Bar, room-aware centered titles and explicit return to `/dashboard-rooms/rooms`; the obsolete duplicate `Помещения · v10.8.18` overview heading is suppressed.
+
 - Contract Generated UI `0.36.9` updates House UI to `0.37.8`: the fixed Bottom Tab Bar gains a fourth `Помещения` item using `mdi:floor-plan` and opens the existing rooms panel at `/dashboard-rooms/rooms`. The route is part of the canonical navigation registry and preserves return handoff when rooms launch a specialized panel.
 
 - Contract Generated UI `0.36.8` updates House UI to `0.37.7`: the `Дом сейчас` top row is fixed as `Окна / Двери / Свет / Движение / Климат`; weather and protection occupy the next row, date/time and cameras the row below. `Электросеть`, `Отопление` and `Интернет` now open their owning LIDER, ZONT and Keenetic panels directly. Main-menu labels use the approved NikaS panel names.
@@ -133,3 +135,7 @@ All notable changes to this project will be documented in this file.
 # 0.36.9
 
 - House UI `0.37.8` adds the `Помещения` global bottom-navigation item and connects it to `/dashboard-rooms/rooms`. The navigation fallback, runtime registry and specialized-panel source-route handoff use the same canonical route.
+
+# 0.36.10
+
+- Rooms UI `10.8.19` adopts the current fixed NikaS shell while preserving all existing room cards, entities and detail routes.
