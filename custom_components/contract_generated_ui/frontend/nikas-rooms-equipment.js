@@ -2,6 +2,13 @@ const ROOT_PREFIX = "/dashboard-rooms/room-";
 const ROOT_ID = "nikas-room-equipment-runtime";
 const LEGACY_MARK = "nikas-room-equipment-legacy-hidden";
 const HIDE_LABEL_PATTERN = /(?:^|[: _-])(rooms?|помещени[ея])?(?:[: _-])?(?:hide|hidden|exclude|скрыть|скрыто|не[_ -]?показывать)(?:$|[: _-])/i;
+const ACTIVE_LABEL_ID = "v_ekspluatatsii";
+const EXCLUDED_LABEL_IDS = new Set([
+  "rezerv",
+  "na_obsluzhivanii",
+  "trebuet_zameny",
+  "vyvedeno_iz_ekspluatatsii",
+]);
 
 const ROOM_NAMES = Object.freeze({
   bathroom: "Ванная",
@@ -87,6 +94,20 @@ function labelIds(item) {
   return [];
 }
 
+function labelIdSet(item) {
+  return new Set(labelIds(item));
+}
+
+function hasExcludedOperationalLabel(item) {
+  const ids = labelIdSet(item);
+  return [...EXCLUDED_LABEL_IDS].some((id) => ids.has(id));
+}
+
+function isOperationalItem(item) {
+  const ids = labelIdSet(item);
+  return ids.has(ACTIVE_LABEL_ID) && ![...EXCLUDED_LABEL_IDS].some((id) => ids.has(id));
+}
+
 function buildLabelMap(labels) {
   const map = new Map();
   for (const label of labels || []) {
@@ -121,7 +142,12 @@ function collectRoomEquipment(registries, roomName, hass) {
   if (!area) return { area: null, items: [], labelMap };
 
   const deviceMap = new Map(registries.devices.map((device) => [device.id, device]));
-  const roomDevices = registries.devices.filter((device) => device.area_id === area.area_id && !hiddenByLabel(device, labelMap));
+  const roomDevices = registries.devices.filter((device) =>
+    device.area_id === area.area_id
+    && !device.disabled_by
+    && isOperationalItem(device)
+    && !hiddenByLabel(device, labelMap)
+  );
   const byDevice = new Map();
 
   for (const device of roomDevices) {
@@ -138,21 +164,27 @@ function collectRoomEquipment(registries, roomName, hass) {
   for (const entity of registries.entities) {
     if (entity.disabled_by || entity.hidden_by) continue;
     if (effectiveAreaId(entity, deviceMap) !== area.area_id) continue;
-    if (hiddenByLabel(entity, labelMap)) continue;
+    if (hiddenByLabel(entity, labelMap) || hasExcludedOperationalLabel(entity)) continue;
 
-    if (entity.device_id && byDevice.has(entity.device_id)) {
-      const row = byDevice.get(entity.device_id);
-      row.entities.push(entity);
-      for (const id of labelIds(entity)) row.labelIds.add(id);
-    } else {
-      standalone.push({
-        key: `entity:${entity.entity_id}`,
-        title: entityTitle(entity, hass),
-        device: null,
-        entities: [entity],
-        labelIds: new Set(labelIds(entity)),
-      });
+    if (entity.device_id) {
+      if (byDevice.has(entity.device_id)) {
+        const row = byDevice.get(entity.device_id);
+        row.entities.push(entity);
+        for (const id of labelIds(entity)) row.labelIds.add(id);
+      }
+      // Entity-backed rows never bypass the device's operational status.
+      continue;
     }
+
+    // A standalone entity is equipment only when it is explicitly in operation.
+    if (!isOperationalItem(entity)) continue;
+    standalone.push({
+      key: `entity:${entity.entity_id}`,
+      title: entityTitle(entity, hass),
+      device: null,
+      entities: [entity],
+      labelIds: new Set(labelIds(entity)),
+    });
   }
 
   const items = [...byDevice.values(), ...standalone]
