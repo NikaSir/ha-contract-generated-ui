@@ -51,6 +51,9 @@ async def async_setup_entry(
         PANEL_ZOOM_FILENAME,
         PANEL_ZOOM_MODULE_URL,
         PANEL_ZOOM_STATIC_PATH,
+        ROOMS_EQUIPMENT_FILENAME,
+        ROOMS_EQUIPMENT_MODULE_URL,
+        ROOMS_EQUIPMENT_STATIC_PATH,
         SOURCE_DIRECTORY,
         SPECIALIZED_SHELL_FILENAME,
         SPECIALIZED_SHELL_MODULE_URL,
@@ -92,6 +95,7 @@ async def async_setup_entry(
                 StaticPathConfig(APP_SHELL_STATIC_PATH, str(frontend_root / APP_SHELL_FILENAME), False),
                 StaticPathConfig(INFRA_SUMMARY_STATIC_PATH, str(frontend_root / INFRA_SUMMARY_FILENAME), False),
                 StaticPathConfig(UI_BUNDLE_STATIC_PATH, str(frontend_root / UI_BUNDLE_FILENAME), False),
+                StaticPathConfig(ROOMS_EQUIPMENT_STATIC_PATH, str(frontend_root / ROOMS_EQUIPMENT_FILENAME), False),
                 StaticPathConfig(PANEL_ZOOM_STATIC_PATH, str(frontend_root / PANEL_ZOOM_FILENAME), False),
                 StaticPathConfig(SPECIALIZED_SHELL_STATIC_PATH, str(frontend_root / SPECIALIZED_SHELL_FILENAME), False),
                 StaticPathConfig(HOUSE_HERO_STATIC_PATH, str(frontend_root / HOUSE_HERO_FILENAME), False),
@@ -105,6 +109,7 @@ async def async_setup_entry(
         domain_data[FRONTEND_STATIC_REGISTERED] = True
 
     add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
+    add_extra_js_url(hass, ROOMS_EQUIPMENT_MODULE_URL)
     add_extra_js_url(hass, PANEL_ZOOM_MODULE_URL)
     add_extra_js_url(hass, SPECIALIZED_SHELL_MODULE_URL)
     add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)
@@ -143,6 +148,7 @@ async def async_unload_entry(
     from .const import (
         HOUSE_HERO_MODULE_URL,
         PANEL_ZOOM_MODULE_URL,
+        ROOMS_EQUIPMENT_MODULE_URL,
         SPECIALIZED_SHELL_MODULE_URL,
         UI_BUNDLE_MODULE_URL,
     )
@@ -157,6 +163,7 @@ async def async_unload_entry(
         async_unregister_generated_subpanels(hass)
         for module_url in (
             UI_BUNDLE_MODULE_URL,
+            ROOMS_EQUIPMENT_MODULE_URL,
             PANEL_ZOOM_MODULE_URL,
             SPECIALIZED_SHELL_MODULE_URL,
             HOUSE_HERO_MODULE_URL,
