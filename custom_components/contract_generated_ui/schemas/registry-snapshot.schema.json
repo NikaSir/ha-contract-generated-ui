@@ -1,17 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://nikasir.github.io/ha-contract-generated-ui/schemas/registry-snapshot.schema.json",
-  "title": "Scrubbed Home Assistant registry topology snapshot",
+  "title": "Scrubbed Home Assistant registry snapshot",
   "type": "object",
   "additionalProperties": false,
   "required": ["api_version", "kind", "metadata", "spec"],
   "properties": {
-    "api_version": {"const": "nikas.home-assistant/registry-snapshot/v2"},
+    "api_version": {"enum": ["nikas.home-assistant/registry-snapshot/v1", "nikas.home-assistant/registry-snapshot/v2"]},
     "kind": {"const": "RegistrySnapshot"},
     "metadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["captured_at", "source", "scrubbed", "snapshot_id", "home_assistant_version", "contents"],
+      "required": ["captured_at", "source", "scrubbed", "snapshot_id"],
       "properties": {
         "captured_at": {"type": "string", "format": "date-time"},
         "source": {"const": "home_assistant"},
@@ -35,7 +35,7 @@
     "spec": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["entities", "devices", "areas", "floors", "labels"],
+      "required": ["entities"],
       "properties": {
         "entities": {"type": "array", "items": {"$ref": "#/$defs/entity"}},
         "devices": {"type": "array", "items": {"$ref": "#/$defs/device"}},
@@ -57,6 +57,7 @@
         "platform": {"type": "string", "minLength": 1},
         "device_id": {"type": "string", "minLength": 1},
         "area_id": {"type": "string", "minLength": 1},
+        "area": {"type": ["string", "null"]},
         "labels": {"$ref": "#/$defs/labels"},
         "name": {"type": "string"},
         "original_name": {"type": "string"},
