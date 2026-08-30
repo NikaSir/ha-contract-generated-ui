@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b016";
+const BOOTSTRAP_VERSION = "b017";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -31,11 +31,11 @@ const FALLBACK_ITEMS = [
 const ACTIONS_HEADER_MODEL = {
   id: "global-actions",
   title: "Действия · v11.0",
-  subtitle: "Быстрые команды · UI v0.37.5",
+  subtitle: "Быстрые команды · UI v0.37.6",
 };
 
 const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms";
-const ROOMS_UI_VERSION = "10.8.24";
+const ROOMS_UI_VERSION = "10.8.25";
 const ROOM_VIEW_TITLES = Object.freeze({
   "/dashboard-rooms/room-bathroom": "Ванная",
   "/dashboard-rooms/room-bedroom": "Спальня",

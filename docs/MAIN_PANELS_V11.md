@@ -35,31 +35,11 @@ Canonical deep routes used by the House/Actions manifests and renderers point to
 
 ## Помещения
 
-Rooms v11 is an integration-owned base-panel renderer registered directly at `/dashboard-rooms` through `panel_custom`. Legacy Lovelace room cards are no longer the runtime owner.
+`/dashboard-rooms` remains owned by the existing Lovelace dashboard. Contract Generated UI must not remove it or register a replacement `panel_custom` at the same route.
 
-The shared NikaS base shell continues to own the fixed Header and Bottom Tab Bar. The Rooms renderer owns exactly one work viewport between them and does not create a second Header, Bottom Tab Bar or safe-area layer.
+The shared NikaS shell adds only the fixed Header, the four-item Bottom Tab Bar, room-aware titles and the return path. Existing room cards, Area/entity filtering, detailed views and their navigation remain owned by the Lovelace dashboard. This preserves the last field-proven architecture (`10.8.19`) and prevents a generated runtime from shadowing a working panel.
 
-The Rooms data model is discovered from Home Assistant registries:
-
-`Area → Device → Entity → Labels`.
-
-Admission policy:
-
-- the physical device belongs to the current Area;
-- the device has `В эксплуатации` (`v_ekspluatatsii`);
-- devices labelled `Резерв`, `На обслуживании`, `Требует замены` or `Выведено из эксплуатации` are excluded from the operational model;
-- additional labels classify devices but do not replace Area ownership;
-- room entity IDs are not manually hard-coded in the renderer.
-
-The three internal views are:
-
-1. **Overview** — compact navigation for floors and technical rooms; the reference iPhone portrait view is designed to fit between the fixed Header and Bottom Tab Bar without relying on hidden Lovelace spacing.
-2. **Room** — operational climate, additional climate sensors, activity, security, cameras and a full-width `Диагностика` plaque.
-3. **Diagnostics** — full device/entity listing for the selected room, including service/diagnostic entities; long scrolling is allowed here.
-
-Routine Home Assistant state updates patch stable DOM values and classes. They do not remount the work viewport or rebuild the shared shell. Structural route changes replace only the active Rooms work-view subtree.
-
-The previous `nikas-rooms-equipment.js`, `nikas-rooms-live-sections.js` and `nikas-rooms-diagnostics.js` source files may remain temporarily for rollback history, but they are not registered runtime modules after the Rooms v11 cut-over.
+The autonomous `rooms_panel.py` and `dist/nikas-rooms-v11.js` implementation is retained only as rollback/development history. It is not imported, registered, exposed as a static runtime path or listed as a production runtime file.
 
 ## Дом
 

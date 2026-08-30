@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.37.5"
+    assert manifest["version"] == "0.37.6"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -52,10 +52,9 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     panel_bundle = (frontend_root / "nikas-generated-subpanel.js").read_text(encoding="utf-8")
     house_panel_bundle = (frontend_root / "nikas-house-overview.js").read_text(encoding="utf-8")
     infrastructure_panel_bundle = (frontend_root / "nikas-infrastructure-overview.js").read_text(encoding="utf-8")
-    rooms_bundle = (frontend_root / "dist" / "nikas-rooms-v11.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
-    assert 'const BOOTSTRAP_VERSION = "b016"' in bundle
+    assert 'const BOOTSTRAP_VERSION = "b017"' in bundle
     assert "new MutationObserver" in bundle
     assert "chromeHostObserver.observe(document.body, { childList: true, subtree: true })" in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
@@ -65,7 +64,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "roomsHeaderModel" in bundle
     assert 'model?.active === "rooms" ? roomsHeaderModel(pathname) : null' in bundle
     assert 'title: "Действия · v11.0"' in bundle
-    assert 'subtitle: "Быстрые команды · UI v0.37.5"' in bundle
+    assert 'subtitle: "Быстрые команды · UI v0.37.6"' in bundle
     assert 'model?.active === "actions" ? ACTIONS_HEADER_MODEL : null' in bundle
     assert "position:fixed" in bundle
     assert 'id="menu"' in bundle
@@ -119,40 +118,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert not (frontend_root / "assets" / "zont-boiler-casing-v0812.webp").exists()
     assert not (frontend_root / "assets" / "zont-dhw-shell-v0812.webp").exists()
 
-    # Rooms v11: one autonomous production runtime, registry-driven model,
-    # stable state patching and no legacy Lovelace DOM reconciliation.
-    assert 'const ELEMENT_NAME = "nikas-rooms-v11-10824"' in rooms_bundle
-    assert 'const UI_VERSION = "11.0.0"' in rooms_bundle
-    assert 'const ACTIVE_LABEL = "v_ekspluatatsii"' in rooms_bundle
-    assert 'const CLIMATE_LABEL = "datchik_klimata_pomeshcheniia"' in rooms_bundle
-    assert "config/area_registry/list" in rooms_bundle
-    assert "config/device_registry/list" in rooms_bundle
-    assert "config/entity_registry/list" in rooms_bundle
-    assert "config/label_registry/list" in rooms_bundle
-    assert "scheduleStatePatch()" in rooms_bundle
-    assert "node.textContent !== value" in rooms_bundle
-    assert "data-summary-room" in rooms_bundle
-    assert "Дополнительные климатические датчики" in rooms_bundle
-    assert "OPENING_CLASSES" in rooms_bundle
-    assert "ACTIVITY_CLASSES" in rooms_bundle
-    assert 'domain(entity.entity_id) === "camera"' in rooms_bundle
-    assert "data-filter" in rooms_bundle
-    assert "Диагностика" in rooms_bundle
-    assert "ensureTitleButton(shadow)" in rooms_bundle
-    assert "button.title.rooms-return" in rooms_bundle
-    assert "MutationObserver" in rooms_bundle
-    assert 'const LOAD_WATCHDOG_MS = 6000' in rooms_bundle
-    assert 'this._panel?.config?.registry_bootstrap' in rooms_bundle
-    assert 'document.querySelector("home-assistant")?.hass' in rooms_bundle
-    assert not any(line.lstrip().startswith("import ") for line in rooms_bundle.splitlines())
-    assert "dynamic import" not in rooms_bundle.lower()
-
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b022"' in const_source
-    assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b007"' in const_source
-    assert "ROOMS_PANEL_MODULE_URL" in const_source
-    assert "ROOMS_PANEL_PATH" in const_source
+    assert 'UI_BUNDLE_BUILD = "b023"' in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
     assert 'PANEL_ZOOM_BUILD = "b002"' in const_source
     assert 'SPECIALIZED_SHELL_FILENAME = "nikas-specialized-panel-shell.js"' in const_source
@@ -171,15 +138,15 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "GENERATED_ZONT" not in const_source
 
     dist = frontend_root / "dist"
-    for name in ("nikas-house-overview.js", "nikas-infrastructure-overview.js", "nikas-generated-subpanel.js", "nikas-rooms-v11.js"):
+    for name in ("nikas-house-overview.js", "nikas-infrastructure-overview.js", "nikas-generated-subpanel.js"):
         packaged = (dist / name).read_text(encoding="utf-8")
         assert not any(line.lstrip().startswith("import ") for line in packaged.splitlines())
 
     init_source = (ROOT / "custom_components" / "contract_generated_ui" / "__init__.py").read_text(encoding="utf-8")
-    assert "ROOMS_PANEL_STATIC_PATH" in init_source
-    assert "StaticPathConfig(ROOMS_PANEL_STATIC_PATH" in init_source
-    assert "async_register_rooms_panel" in init_source
-    assert "async_unregister_rooms_panel" in init_source
+    assert "ROOMS_PANEL_STATIC_PATH" not in init_source
+    assert "StaticPathConfig(ROOMS_PANEL_STATIC_PATH" not in init_source
+    assert "async_register_rooms_panel" not in init_source
+    assert "async_unregister_rooms_panel" not in init_source
     assert "add_extra_js_url(hass, ROOMS_EQUIPMENT_MODULE_URL)" not in init_source
     assert "add_extra_js_url(hass, ROOMS_LIVE_MODULE_URL)" not in init_source
     assert "add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)" not in init_source
