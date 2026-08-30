@@ -9,7 +9,7 @@ from .const import DOMAIN, ROOMS_PANEL_MODULE_URL, ROOMS_PANEL_PATH
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10822"
+ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10823"
 ROOMS_PANEL_URL_PATH = "dashboard-rooms"
 
 

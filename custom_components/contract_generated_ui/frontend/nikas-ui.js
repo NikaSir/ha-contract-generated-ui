@@ -35,7 +35,7 @@ const ACTIONS_HEADER_MODEL = {
 };
 
 const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms";
-const ROOMS_UI_VERSION = "10.8.22";
+const ROOMS_UI_VERSION = "10.8.23";
 const ROOM_VIEW_TITLES = Object.freeze({
   "/dashboard-rooms/room-bathroom": "Ванная",
   "/dashboard-rooms/room-bedroom": "Спальня",

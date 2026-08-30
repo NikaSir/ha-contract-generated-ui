@@ -99,6 +99,10 @@ def test_rooms_v11_recovers_from_registry_loading_races_and_timeouts():
     assert 'Registry request timed out' in source
     assert 'id="retry-registries"' in source
     assert 'Не удалось прочитать реестры Home Assistant.' in source
+    assert 'registrySnapshot()' in source
+    assert 'Object.values(this._hass.labels)' in source
+    assert 'this.waitForHass();' in source
+    assert 'Панель не получила данные от Home Assistant.' in source
 
 
 def test_rooms_v11_owns_header_version_and_hierarchical_return():
@@ -125,8 +129,8 @@ def test_rooms_v11_is_registered_and_legacy_runtime_is_not_loaded():
     assert 'add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)' not in init_source
 
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b005"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b006"' in const_source
     assert 'ROOMS_PANEL_MODULE_URL' in const_source
-    assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10822"' in panel_source
+    assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10823"' in panel_source
     assert 'ROOMS_PANEL_URL_PATH = "dashboard-rooms"' in panel_source
     assert '"ui_version": "11.0.0"' in panel_source
