@@ -20,6 +20,8 @@ The canonical four-panel application shell is:
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Помещения / Действия / Инфра`.
 
+All four canonical routes follow one non-destructive ownership rule: if Home Assistant already has a panel at the route, Contract Generated UI preserves that panel and layers only the shared shell enhancements that are safe for Lovelace. It never removes the existing route to install a replacement `panel_custom`. A CGUI custom panel may be registered only as a fallback for a genuinely unowned route, and only that recorded fallback may be removed during unload.
+
 Navigation contract `1.3.0` owns the four canonical entry routes. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target.
 
 Canonical deep routes used by the House/Actions manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
@@ -42,6 +44,8 @@ The shared NikaS shell adds only the fixed Header, the four-item Bottom Tab Bar,
 The autonomous `rooms_panel.py` and `dist/nikas-rooms-v11.js` implementation is retained only as rollback/development history. It is not imported, registered, exposed as a static runtime path or listed as a production runtime file.
 
 ## Дом
+
+`/dashboard-house-v11` preserves an existing Home Assistant/Lovelace panel. The CGUI House custom panel is fallback-only and must not displace an already registered route.
 
 The formal public contract is `contracts/house_home.yaml`. It contains semantic roles only and no private Home Assistant entity ids. The matching private semantic inventory remains local to the Home Assistant installation and is not tracked in Git.
 
@@ -68,6 +72,8 @@ Approved specialized-panel labels used by the main navigation are `Электр�
 
 ## Действия
 
+`/dashboard-actions` remains owned by its existing Home Assistant/Lovelace dashboard. Generation produces reviewable YAML candidates and does not replace the live panel registration.
+
 The formal public contract is `contracts/actions_home.yaml`. The generated main manifest is `manifests/actions.yaml`.
 
 The central Actions surface contains:
@@ -80,7 +86,7 @@ The renderer does not introduce a generic service-call mechanism. Unsupported co
 
 ## Инфраструктура
 
-`manifests/infrastructure.yaml` remains the current generated infrastructure main panel. It is tested in the same global shell without a parallel replacement.
+`manifests/infrastructure.yaml` remains the current generated infrastructure main panel. It is tested in the same global shell without a parallel replacement. `/dashboard-infrastructure` preserves an existing Home Assistant/Lovelace panel; the CGUI Infrastructure custom panel is fallback-only.
 
 The overview remains summary-first. Detailed electricity, UPS, WAN/LTE and other diagnostics stay in their owned detail views/panels.
 

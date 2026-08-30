@@ -18,13 +18,15 @@ It renders the common `Дом · Действия · Инфра` Bottom Tab Bar 
 
 ## Generic generated application panels
 
-Non-specialized manifest-defined subpanels are **автоматически** registered as Home Assistant custom panels by Contract Generated UI using one shared web component and one self-contained frontend bundle:
+Non-specialized manifest-defined subpanels use one shared web component and one self-contained frontend bundle only when their declared route is not already registered:
 
 ```text
 /contract_generated_ui/frontend/nikas-generated-subpanel.js?build=b006
 ```
 
 The shared host receives panel title/subtitle, an optional parent route for an in-work link, 2–5 tab descriptors and optional read-only runtime source metadata from `PanelManifest + NavigationContract`.
+
+An existing Home Assistant/Lovelace panel always wins a route collision. Contract Generated UI does not remove or replace it. The integration records only routes it registered as missing-route fallbacks, and unload removes only those recorded fallbacks.
 
 For runtime read-only panels the host reads both Home Assistant **Entity Registry** and **Device Registry**. Current values are resolved only from `hass.states`. It does not call Home Assistant services, does not invoke `call_service`, and does not expose toggle/control handlers.
 
@@ -76,12 +78,12 @@ The permanent Header control remains the Home Assistant system menu. When a pare
 
 ## House overview specialized panel
 
-Starting with `0.35.0`, `/dashboard-house-v11/home` is owned by the integration's `nikas-house-overview` custom panel. Its Header and global Bottom Tab Bar remain native-sized around one transform-owned canvas. Lovelace no longer creates the House hero, so a cold refresh cannot race custom-card registration and report a configuration error.
+The `nikas-house-overview` runtime remains available as a missing-route fallback. If `/dashboard-house-v11` already exists, Contract Generated UI preserves the existing Home Assistant/Lovelace panel and does not register the fallback over it. The shared shell can still provide the fixed Header and global Bottom Tab Bar without taking ownership of the panel content.
 
-Starting with `0.36.0`, `/dashboard-infrastructure/overview` is likewise owned by `nikas-infrastructure-overview`. It resolves four verified operational modules—grid, two UPS devices and Keenetic—before registration and applies the same single-canvas gesture architecture. The incoming grid is classified by the LIDER PS7500W-30 passport; downstream voltage is a separate ГОСТ policy and is never inferred from the incoming phases.
+The same rule applies to `nikas-infrastructure-overview`: it may register only when `/dashboard-infrastructure` is unowned. Its verified operational model—grid, two UPS devices and Keenetic—remains available for that fallback and for generated review, but it cannot displace an existing panel.
 
 ## Lovelace registration
 
-Generated application subpanels are not exported under `lovelace.dashboards:` and require no manual edit of `configuration.yaml`.
+Generated application subpanels may be exported for reviewed Lovelace registration. Runtime fallback registration never overwrites an existing dashboard and requires no automatic edit of `configuration.yaml`.
 
 After an integration update, fully restart Home Assistant so custom-panel module cache keys are refreshed. ZONT lifecycle and cache invalidation are handled entirely by `ha-zont`.

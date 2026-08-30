@@ -142,7 +142,7 @@ async def async_register_generated_subpanels(
     hass: HomeAssistant,
     source_root: Path,
 ) -> None:
-    """Register standalone generated subpanels with manifest-selected web components."""
+    """Register only missing generated subpanels without replacing existing panels."""
     from homeassistant.components import frontend, panel_custom
 
     specs = await hass.async_add_executor_job(build_generated_panel_specs, source_root)
@@ -152,7 +152,7 @@ async def async_register_generated_subpanels(
     for spec in specs:
         url_path = spec["url_path"]
         if frontend.async_panel_exists(hass, url_path):
-            frontend.async_remove_panel(hass, url_path, warn_if_unknown=False)
+            continue
 
         await panel_custom.async_register_panel(
             hass=hass,
@@ -179,7 +179,7 @@ async def async_register_generated_subpanels(
 
 
 def async_unregister_generated_subpanels(hass: HomeAssistant) -> None:
-    """Remove generated subpanels when Contract Generated UI unloads."""
+    """Remove only generated subpanels registered by this integration."""
     from homeassistant.components import frontend
 
     paths = hass.data.get(DOMAIN, {}).pop(GENERATED_SUBPANEL_PATHS, [])

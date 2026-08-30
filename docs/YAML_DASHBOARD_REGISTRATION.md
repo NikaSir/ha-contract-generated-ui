@@ -23,7 +23,7 @@ It also writes:
 
 The snippet uses Home Assistant's supported YAML dashboard configuration shape.
 
-Integration-owned specialized panels are not included in the snippet. Contract Generated UI registers `Дом сейчас` automatically at `/dashboard-house-v11/home` and, starting with `0.36.0`, `Инфраструктура · v11.0` at `/dashboard-infrastructure/overview`. Keeping second manual Lovelace registrations for either route is unnecessary.
+Integration-owned specialized panels are not included in the snippet. Contract Generated UI preserves existing `Дом`, `Помещения`, `Действия` and `Инфраструктура` registrations. Its House, Infrastructure and generic custom-panel runtimes are missing-route fallbacks only; they never remove or replace an existing Lovelace/custom panel.
 
 ## Important safety rule
 

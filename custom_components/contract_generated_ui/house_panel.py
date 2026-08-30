@@ -98,13 +98,13 @@ def build_house_panel_spec(source_root: Path) -> dict[str, Any]:
 
 
 async def async_register_house_panel(hass: HomeAssistant, source_root: Path) -> None:
-    """Replace the legacy Lovelace host with the integration-owned House panel."""
+    """Register the House fallback only when the canonical route is unowned."""
     from homeassistant.components import frontend, panel_custom
 
     panel_spec = await hass.async_add_executor_job(build_house_panel_spec, source_root)
     url_path = panel_spec["url_path"]
     if frontend.async_panel_exists(hass, url_path):
-        frontend.async_remove_panel(hass, url_path, warn_if_unknown=False)
+        return
 
     await panel_custom.async_register_panel(
         hass=hass,
@@ -128,7 +128,7 @@ async def async_register_house_panel(hass: HomeAssistant, source_root: Path) -> 
 
 
 def async_unregister_house_panel(hass: HomeAssistant) -> None:
-    """Remove the integration-owned House panel on config-entry unload."""
+    """Remove only the House fallback registered by this integration."""
     from homeassistant.components import frontend
 
     url_path = hass.data.get(DOMAIN, {}).pop(HOUSE_PANEL_PATH, None)

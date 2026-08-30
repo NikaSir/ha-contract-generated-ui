@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.37.7` extends the field-proven Rooms ownership rule to every central and generated route. House, Infrastructure and manifest-defined generated panels now preserve an existing Home Assistant panel instead of removing and replacing it; a CGUI custom panel is registered only as a fallback when the route is genuinely unowned. Unload removes only fallbacks that CGUI registered itself. Existing Lovelace cards, entity logic, routes and specialized integration-owned applications remain untouched.
+
 - Contract Generated UI `0.37.6` updates the Rooms shell to UI `10.8.25` and restores the proven non-destructive architecture from `10.8.19`: `/dashboard-rooms` remains owned by the existing Lovelace dashboard. The integration no longer removes that panel, registers a replacement `panel_custom`, or serves an autonomous Rooms renderer at the same route. The shared fixed Header and Bottom Tab Bar are layered over the existing room cards, preserving their data and navigation logic.
 
 - Contract Generated UI `0.37.5` updates Rooms to UI `10.8.24`: the panel receives a compact Rooms-only registry bootstrap directly from Home Assistant during `panel_custom` registration, renders from it before any frontend/WebSocket lookup, and has an independent six-second startup watchdog. Registry preparation errors now become a visible retryable state instead of an endless loading screen.
