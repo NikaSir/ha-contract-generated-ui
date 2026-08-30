@@ -90,6 +90,17 @@ def test_rooms_v11_patches_state_without_rebuilding_the_shell():
     assert 'this.shadowRoot.innerHTML' not in source[source.index('patchStates() {'):source.index('scheduleChromeSync() {')]
 
 
+def test_rooms_v11_recovers_from_registry_loading_races_and_timeouts():
+    source = FRONTEND.read_text(encoding="utf-8")
+    assert 'const REGISTRY_TIMEOUT_MS = 12000' in source
+    assert 'if (!this.isConnected) return;' in source
+    assert 'this._loadGeneration += 1;' in source
+    assert 'generation !== this._loadGeneration' in source
+    assert 'Registry request timed out' in source
+    assert 'id="retry-registries"' in source
+    assert 'Не удалось прочитать реестры Home Assistant.' in source
+
+
 def test_rooms_v11_owns_header_version_and_hierarchical_return():
     source = FRONTEND.read_text(encoding="utf-8")
     assert 'const UI_VERSION = "11.0.0"' in source
@@ -114,7 +125,7 @@ def test_rooms_v11_is_registered_and_legacy_runtime_is_not_loaded():
     assert 'add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)' not in init_source
 
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b003"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b004"' in const_source
     assert 'ROOMS_PANEL_MODULE_URL' in const_source
     assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11"' in panel_source
     assert 'ROOMS_PANEL_URL_PATH = "dashboard-rooms"' in panel_source
