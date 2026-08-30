@@ -31,11 +31,11 @@ const FALLBACK_ITEMS = [
 const ACTIONS_HEADER_MODEL = {
   id: "global-actions",
   title: "Действия · v11.0",
-  subtitle: "Быстрые команды · UI v0.37.4",
+  subtitle: "Быстрые команды · UI v0.37.5",
 };
 
 const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms";
-const ROOMS_UI_VERSION = "10.8.23";
+const ROOMS_UI_VERSION = "10.8.24";
 const ROOM_VIEW_TITLES = Object.freeze({
   "/dashboard-rooms/room-bathroom": "Ванная",
   "/dashboard-rooms/room-bedroom": "Спальня",
