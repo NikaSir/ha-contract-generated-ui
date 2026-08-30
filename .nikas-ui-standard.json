@@ -10,7 +10,6 @@
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",
     "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
     "custom_components/contract_generated_ui/frontend/nikas-house-overview.js",
-    "custom_components/contract_generated_ui/frontend/dist/nikas-rooms-v11.js",
     "custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js",
     "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
     "custom_components/contract_generated_ui/frontend/nikas-app-shell.js",
