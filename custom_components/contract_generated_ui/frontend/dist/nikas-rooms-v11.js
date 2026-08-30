@@ -13,7 +13,9 @@ const EXCLUDED_LABELS = new Set([
 ]);
 const BAD_STATES = new Set(["unknown", "unavailable", "none", "null", ""]);
 const SUMMARY_CLASSES = ["yellow", "blue", "orange", "green", "grey"];
-const OPENING_CLASSES = new Set(["door", "window", "opening", "garage_door"]);
+const OPENING_CLASSES = new Set([
+  "door", "window", "opening", "garage_door", "shutter", "blind", "curtain", "awning",
+]);
 const ACTIVITY_CLASSES = new Set(["motion", "occupancy", "presence"]);
 
 const ROOMS = [
@@ -73,6 +75,21 @@ function domain(entityId) {
 
 function stateClass(entity, hass) {
   return entity?.device_class || hass?.states?.[entity?.entity_id]?.attributes?.device_class || "";
+}
+
+function openingKind(entity, hass) {
+  const deviceClass = stateClass(entity, hass);
+  if (deviceClass === "window") return "windows";
+  if (deviceClass === "garage_door") return "gates";
+  if (["shutter", "blind", "curtain", "awning"].includes(deviceClass)) return "shutters";
+  if (["door", "opening"].includes(deviceClass)) return "doors";
+  if (domain(entity?.entity_id) === "cover") return "shutters";
+  return null;
+}
+
+function isOpenState(entity, state) {
+  if (domain(entity?.entity_id) === "cover") return ["open", "opening", "on"].includes(state);
+  return state === "on";
 }
 
 function titleOfEntity(entity, hass) {
@@ -244,24 +261,29 @@ class NikasRoomsV11 extends HTMLElement {
           devices: [],
           entities: [],
           standalone: [],
+          diagnosticDevices: [],
+          diagnosticEntities: [],
+          diagnosticStandalone: [],
           labelMap,
         };
       }
 
-      const roomDevices = devices.filter((device) =>
-        device.area_id === area.area_id
-        && !device.disabled_by
-        && operational(device));
+      const diagnosticDevices = devices.filter((device) => device.area_id === area.area_id);
+      const roomDevices = diagnosticDevices.filter((device) => !device.disabled_by && operational(device));
       const deviceIds = new Set(roomDevices.map((device) => device.id));
 
-      const roomEntities = entities.filter((entity) => {
-        if (entity.disabled_by || entity.hidden_by || hasExcludedLabel(entity)) return false;
+      const diagnosticEntities = entities.filter((entity) => {
         if (entity.device_id) {
-          if (!deviceIds.has(entity.device_id)) return false;
           const effectiveArea = entity.area_id || deviceMap.get(entity.device_id)?.area_id || null;
           return effectiveArea === area.area_id;
         }
-        return entity.area_id === area.area_id && operational(entity);
+        return entity.area_id === area.area_id;
+      });
+
+      const roomEntities = diagnosticEntities.filter((entity) => {
+        if (entity.disabled_by || entity.hidden_by || hasExcludedLabel(entity)) return false;
+        if (entity.device_id) return deviceIds.has(entity.device_id);
+        return operational(entity);
       });
 
       return {
@@ -270,6 +292,9 @@ class NikasRoomsV11 extends HTMLElement {
         devices: roomDevices,
         entities: roomEntities,
         standalone: roomEntities.filter((entity) => !entity.device_id),
+        diagnosticDevices,
+        diagnosticEntities,
+        diagnosticStandalone: diagnosticEntities.filter((entity) => !entity.device_id),
         labelMap,
       };
     });
@@ -309,44 +334,65 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   summary(room) {
-    if (!room?.area) return { text: "Нет данных", tone: "grey" };
+    if (!room?.area) return { text: "Система не настроена", tone: "orange" };
     const entities = room.entities.filter((entity) => {
       const deviceClass = stateClass(entity, this._hass);
-      return domain(entity.entity_id) === "binary_sensor"
-        && (OPENING_CLASSES.has(deviceClass) || ACTIVITY_CLASSES.has(deviceClass));
+      return openingKind(entity, this._hass)
+        || (domain(entity.entity_id) === "binary_sensor" && ACTIVITY_CLASSES.has(deviceClass));
     });
 
-    if (!entities.length) return { text: "Нет данных", tone: "grey" };
+    if (!entities.length) return { text: "Нет датчиков", tone: "grey" };
 
-    let open = 0;
+    const open = { windows: 0, doors: 0, gates: 0, shutters: 0 };
     let activity = 0;
     let unavailable = 0;
+    let missing = 0;
     for (const entity of entities) {
-      const state = this.entityState(entity)?.state;
+      const stateObject = this.entityState(entity);
+      if (!stateObject) {
+        missing += 1;
+        continue;
+      }
+      const state = stateObject.state;
       const deviceClass = stateClass(entity, this._hass);
       if (!goodState(state)) {
         unavailable += 1;
         continue;
       }
-      if (state === "on" && OPENING_CLASSES.has(deviceClass)) open += 1;
+      const kind = openingKind(entity, this._hass);
+      if (kind && isOpenState(entity, state)) open[kind] += 1;
       if (state === "on" && ACTIVITY_CLASSES.has(deviceClass)) activity += 1;
     }
 
-    if (open) return { text: `Открыто ${open}`, tone: "yellow" };
+    const openLabels = [
+      ["windows", "Окна"],
+      ["doors", "Двери"],
+      ["gates", "Ворота"],
+      ["shutters", "Роллеты"],
+    ].filter(([kind]) => open[kind]).map(([kind, label]) => `${label} ${open[kind]}`);
+    if (openLabels.length) {
+      const suffix = unavailable ? ` · недоступно ${unavailable}` : missing ? ` · нет связи ${missing}` : "";
+      return { text: `${openLabels.join(" · ")}${suffix}`, tone: "yellow" };
+    }
     if (activity) return { text: `Активность ${activity}`, tone: "blue" };
-    if (unavailable) return { text: "Требует внимания", tone: "orange" };
+    if (missing) return { text: "Соединение с HA потеряно", tone: "orange" };
+    if (unavailable) return { text: `Недоступно ${unavailable}`, tone: "orange" };
     return { text: "Спокойно", tone: "green" };
   }
 
   formatEntity(entity) {
     const stateObject = this.entityState(entity);
-    if (!stateObject || !goodState(stateObject.state)) return "Нет данных";
+    if (!stateObject) return "Соединение с HA потеряно";
+    if (stateObject.state === "unavailable") return "Недоступно";
+    if (!goodState(stateObject.state)) return "Состояние неизвестно";
     const state = stateObject.state;
     const unit = stateObject.attributes?.unit_of_measurement || "";
     const deviceClass = stateClass(entity, this._hass);
 
+    if (openingKind(entity, this._hass)) {
+      return isOpenState(entity, state) ? "Открыто" : "Закрыто";
+    }
     if (domain(entity.entity_id) === "binary_sensor") {
-      if (OPENING_CLASSES.has(deviceClass)) return state === "on" ? "Открыто" : "Закрыто";
       if (ACTIVITY_CLASSES.has(deviceClass)) return state === "on" ? "Обнаружено" : "Не обнаружено";
     }
     return `${state}${unit ? ` ${unit}` : ""}`;
@@ -401,6 +447,10 @@ class NikasRoomsV11 extends HTMLElement {
       window: "Окно",
       opening: "Открытие",
       garage_door: "Ворота",
+      shutter: "Роллета",
+      blind: "Жалюзи",
+      curtain: "Штора",
+      awning: "Маркиза",
     };
     return names[deviceClass] || titleOfEntity(entity, this._hass);
   }
@@ -418,6 +468,10 @@ class NikasRoomsV11 extends HTMLElement {
       window: "mdi:window-closed-variant",
       opening: "mdi:door-open",
       garage_door: "mdi:garage",
+      shutter: "mdi:window-shutter",
+      blind: "mdi:blinds-horizontal",
+      curtain: "mdi:curtains",
+      awning: "mdi:awning-outline",
     };
     if (domain(entity.entity_id) === "camera") return "mdi:cctv";
     return icons[deviceClass] || "mdi:information-outline";
@@ -521,7 +575,7 @@ class NikasRoomsV11 extends HTMLElement {
       const deviceClass = stateClass(entity, this._hass);
       return ACTIVITY_CLASSES.has(deviceClass) || deviceClass === "illuminance";
     });
-    const security = room.entities.filter((entity) => OPENING_CLASSES.has(stateClass(entity, this._hass)));
+    const security = room.entities.filter((entity) => openingKind(entity, this._hass));
     const cameras = room.entities.filter((entity) => domain(entity.entity_id) === "camera");
     const extraClimate = this.extraClimate(room, primaryClimate);
 
@@ -541,8 +595,8 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   diagnosticItems(room) {
-    const deviceItems = room.devices.map((device) => {
-      const entities = room.entities.filter((entity) => entity.device_id === device.id);
+    const deviceItems = room.diagnosticDevices.map((device) => {
+      const entities = room.diagnosticEntities.filter((entity) => entity.device_id === device.id);
       const labels = new Set(labelsOf(device));
       for (const entity of entities) for (const label of labelsOf(entity)) labels.add(label);
       return {
@@ -552,7 +606,7 @@ class NikasRoomsV11 extends HTMLElement {
         entities,
       };
     });
-    const standaloneItems = room.standalone.map((entity) => ({
+    const standaloneItems = room.diagnosticStandalone.map((entity) => ({
       key: `entity:${entity.entity_id}`,
       title: titleOfEntity(entity, this._hass),
       labels: new Set(labelsOf(entity)),
@@ -645,7 +699,7 @@ class NikasRoomsV11 extends HTMLElement {
 
   patchStates() {
     if (!this._registries || !this.isConnected) return;
-    const allEntities = this._rooms.flatMap((room) => room.entities);
+    const allEntities = this._rooms.flatMap((room) => room.diagnosticEntities);
     const byId = new Map(allEntities.map((entity) => [entity.entity_id, entity]));
 
     for (const node of this.shadowRoot.querySelectorAll("[data-value]")) {
@@ -853,9 +907,9 @@ class NikasRoomsV11 extends HTMLElement {
         pointer-events:auto;background:var(--primary-background-color,#f7f7f7);
         -webkit-overflow-scrolling:touch
       }
-      .canvas{min-height:100%;padding:10px 8px 14px}
+      .canvas{min-height:100%;padding:10px 8px max(18px,env(safe-area-inset-bottom,0px))}
       .loading{padding:24px;text-align:center;color:var(--secondary-text-color,#666);font-size:14px}
-      .overview{min-height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+      .overview{min-height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:14px}
       .floor h2{
         height:22px;margin:0 0 4px;display:flex;align-items:center;gap:7px;
         font-size:16px;font-weight:650
@@ -930,7 +984,7 @@ class NikasRoomsV11 extends HTMLElement {
       .diagnostic-empty{padding:12px 2px;color:var(--secondary-text-color,#666);font-size:13px}
       @media(max-height:780px){
         .canvas{padding-top:7px}.room-card{min-height:43px}.room-card b{font-size:13px}
-        .floor h2{height:20px;margin-bottom:2px}.overview{gap:3px}
+        .floor h2{height:20px;margin-bottom:2px}.overview{gap:10px}
       }
       @media(min-width:850px){.canvas{width:min(900px,100%);margin:0 auto}}
     `;

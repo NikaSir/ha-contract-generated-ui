@@ -30,9 +30,41 @@ def test_rooms_v11_applies_operational_admission_policy():
     assert '"na_obsluzhivanii"' in source
     assert '"trebuet_zameny"' in source
     assert '"vyvedeno_iz_ekspluatatsii"' in source
-    assert 'operational(device)' in source
+    assert 'diagnosticDevices.filter((device)' in source
     assert 'hasExcludedLabel(entity)' in source
-    assert 'entity.area_id === area.area_id && operational(entity)' in source
+    assert 'if (entity.device_id) return deviceIds.has(entity.device_id);' in source
+    assert 'return operational(entity);' in source
+
+
+def test_rooms_v11_keeps_non_operational_inventory_in_diagnostics():
+    source = FRONTEND.read_text(encoding="utf-8")
+    assert 'diagnosticDevices: []' in source
+    assert 'diagnosticEntities: []' in source
+    assert 'diagnosticStandalone: []' in source
+    assert 'room.diagnosticDevices.map' in source
+    assert 'room.diagnosticEntities.filter' in source
+    assert 'room.diagnosticStandalone.map' in source
+
+
+def test_rooms_v11_explains_status_and_opening_type():
+    source = FRONTEND.read_text(encoding="utf-8")
+    assert 'function openingKind(entity, hass)' in source
+    assert '"Окна"' in source
+    assert '"Двери"' in source
+    assert '"Ворота"' in source
+    assert '"Роллеты"' in source
+    assert 'Система не настроена' in source
+    assert 'Нет датчиков' in source
+    assert 'Соединение с HA потеряно' in source
+    assert 'Недоступно ${unavailable}' in source
+    assert 'Состояние неизвестно' in source
+
+
+def test_rooms_v11_overview_does_not_stretch_floors_and_respects_safe_area():
+    source = FRONTEND.read_text(encoding="utf-8")
+    assert 'justify-content:flex-start' in source
+    assert 'justify-content:space-between' not in source
+    assert 'env(safe-area-inset-bottom,0px)' in source
 
 
 def test_rooms_v11_builds_operational_and_diagnostic_views_from_labels():
@@ -44,7 +76,7 @@ def test_rooms_v11_builds_operational_and_diagnostic_views_from_labels():
     assert 'Диагностика' in source
     assert 'data-filter' in source
     assert 'applyDiagnosticFilter(filter)' in source
-    assert 'room.standalone.map' in source
+    assert 'room.diagnosticStandalone.map' in source
     assert 'hass-more-info' in source
 
 
@@ -82,7 +114,7 @@ def test_rooms_v11_is_registered_and_legacy_runtime_is_not_loaded():
     assert 'add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)' not in init_source
 
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b002"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b003"' in const_source
     assert 'ROOMS_PANEL_MODULE_URL' in const_source
     assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11"' in panel_source
     assert 'ROOMS_PANEL_URL_PATH = "dashboard-rooms"' in panel_source
