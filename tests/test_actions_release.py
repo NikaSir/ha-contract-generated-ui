@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.37.4"
+    assert manifest["version"] == "0.37.5"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -65,7 +65,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "roomsHeaderModel" in bundle
     assert 'model?.active === "rooms" ? roomsHeaderModel(pathname) : null' in bundle
     assert 'title: "Действия · v11.0"' in bundle
-    assert 'subtitle: "Быстрые команды · UI v0.37.4"' in bundle
+    assert 'subtitle: "Быстрые команды · UI v0.37.5"' in bundle
     assert 'model?.active === "actions" ? ACTIONS_HEADER_MODEL : null' in bundle
     assert "position:fixed" in bundle
     assert 'id="menu"' in bundle
@@ -121,7 +121,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
 
     # Rooms v11: one autonomous production runtime, registry-driven model,
     # stable state patching and no legacy Lovelace DOM reconciliation.
-    assert 'const ELEMENT_NAME = "nikas-rooms-v11-10823"' in rooms_bundle
+    assert 'const ELEMENT_NAME = "nikas-rooms-v11-10824"' in rooms_bundle
     assert 'const UI_VERSION = "11.0.0"' in rooms_bundle
     assert 'const ACTIVE_LABEL = "v_ekspluatatsii"' in rooms_bundle
     assert 'const CLIMATE_LABEL = "datchik_klimata_pomeshcheniia"' in rooms_bundle
@@ -141,13 +141,16 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "ensureTitleButton(shadow)" in rooms_bundle
     assert "button.title.rooms-return" in rooms_bundle
     assert "MutationObserver" in rooms_bundle
+    assert 'const LOAD_WATCHDOG_MS = 6000' in rooms_bundle
+    assert 'this._panel?.config?.registry_bootstrap' in rooms_bundle
+    assert 'document.querySelector("home-assistant")?.hass' in rooms_bundle
     assert not any(line.lstrip().startswith("import ") for line in rooms_bundle.splitlines())
     assert "dynamic import" not in rooms_bundle.lower()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b021"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b022"' in const_source
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b006"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b007"' in const_source
     assert "ROOMS_PANEL_MODULE_URL" in const_source
     assert "ROOMS_PANEL_PATH" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source

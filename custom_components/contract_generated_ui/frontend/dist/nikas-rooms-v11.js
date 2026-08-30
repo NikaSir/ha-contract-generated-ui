@@ -1,4 +1,4 @@
-const ELEMENT_NAME = "nikas-rooms-v11-10823";
+const ELEMENT_NAME = "nikas-rooms-v11-10824";
 const UI_VERSION = "11.0.0";
 const ROOT_PATH = "/dashboard-rooms/rooms";
 const HEADER_ID = "nikas-generated-subpanel-header";
@@ -14,6 +14,7 @@ const EXCLUDED_LABELS = new Set([
 const BAD_STATES = new Set(["unknown", "unavailable", "none", "null", ""]);
 const SUMMARY_CLASSES = ["yellow", "blue", "orange", "green", "grey"];
 const REGISTRY_TIMEOUT_MS = 12000;
+const LOAD_WATCHDOG_MS = 6000;
 const OPENING_CLASSES = new Set([
   "door", "window", "opening", "garage_door", "shutter", "blind", "curtain", "awning",
 ]);
@@ -129,6 +130,7 @@ class NikasRoomsV11 extends HTMLElement {
     this._loading = false;
     this._loadGeneration = 0;
     this._hassWaitTimer = null;
+    this._loadWatchdogTimer = null;
     this._mounted = false;
     this._routeKey = "";
     this._diagnosticFilter = "*";
@@ -150,6 +152,11 @@ class NikasRoomsV11 extends HTMLElement {
 
   set panel(value) {
     this._panel = value;
+    if (this.isConnected && !this._registries) {
+      this._loadGeneration += 1;
+      this._loading = false;
+      this.loadRegistries();
+    }
   }
 
   set hass(value) {
@@ -166,6 +173,7 @@ class NikasRoomsV11 extends HTMLElement {
 
   connectedCallback() {
     this.mountShell();
+    this.startLoadWatchdog();
     window.addEventListener("location-changed", this._onLocation);
     window.addEventListener("popstate", this._onLocation);
     window.addEventListener("resize", this._onResize, { passive: true });
@@ -181,6 +189,8 @@ class NikasRoomsV11 extends HTMLElement {
     this._loading = false;
     if (this._hassWaitTimer !== null) window.clearTimeout(this._hassWaitTimer);
     this._hassWaitTimer = null;
+    if (this._loadWatchdogTimer !== null) window.clearTimeout(this._loadWatchdogTimer);
+    this._loadWatchdogTimer = null;
     window.removeEventListener("location-changed", this._onLocation);
     window.removeEventListener("popstate", this._onLocation);
     window.removeEventListener("resize", this._onResize);
@@ -208,6 +218,7 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   showRegistryError(detail = "Не удалось прочитать реестры Home Assistant.") {
+    this.clearLoadWatchdog();
     const canvas = this.shadowRoot?.getElementById("canvas");
     if (!canvas) return;
     canvas.innerHTML = `
@@ -216,13 +227,66 @@ class NikasRoomsV11 extends HTMLElement {
         <span>${escapeHtml(detail)}</span>
         <button type="button" id="retry-registries">Повторить</button>
       </div>`;
-    canvas.querySelector("#retry-registries")?.addEventListener("click", () => this.loadRegistries());
+    canvas.querySelector("#retry-registries")?.addEventListener("click", () => this.loadRegistries(true));
+  }
+
+  startLoadWatchdog() {
+    if (this._loadWatchdogTimer !== null || this._registries) return;
+    this._loadWatchdogTimer = window.setTimeout(() => {
+      this._loadWatchdogTimer = null;
+      if (!this.isConnected || this._registries) return;
+      this._loadGeneration += 1;
+      this._loading = false;
+      this.showRegistryError("Начальные данные помещений не были подготовлены вовремя.");
+      this.syncRefreshState();
+    }, LOAD_WATCHDOG_MS);
+  }
+
+  clearLoadWatchdog() {
+    if (this._loadWatchdogTimer !== null) window.clearTimeout(this._loadWatchdogTimer);
+    this._loadWatchdogTimer = null;
+  }
+
+  normalizeRegistries(value) {
+    if (!value || typeof value !== "object") return null;
+    const areas = Array.isArray(value.areas) ? value.areas.filter(Boolean) : [];
+    if (!areas.length) return null;
+    return {
+      areas,
+      devices: Array.isArray(value.devices) ? value.devices.filter(Boolean) : [],
+      entities: Array.isArray(value.entities) ? value.entities.filter(Boolean) : [],
+      labels: Array.isArray(value.labels) ? value.labels.filter(Boolean) : [],
+    };
+  }
+
+  panelRegistryBootstrap() {
+    return this.normalizeRegistries(
+      this._panel?.config?.registry_bootstrap || this._panel?.registry_bootstrap,
+    );
+  }
+
+  resolveHass() {
+    if (this._hass?.states || this._hass?.callWS) return this._hass;
+    const hass = document.querySelector("home-assistant")?.hass || null;
+    if (hass) this._hass = hass;
+    return hass;
+  }
+
+  adoptRegistries(value) {
+    const registries = this.normalizeRegistries(value);
+    if (!registries) throw new Error("Registry payload has no areas");
+    this._registries = registries;
+    this.buildRooms();
+    this.renderRoute(true);
+    this.clearLoadWatchdog();
+    this.syncRefreshState();
   }
 
   registrySnapshot() {
-    const areas = this._hass?.areas;
-    const devices = this._hass?.devices;
-    const entities = this._hass?.entities;
+    const hass = this.resolveHass();
+    const areas = hass?.areas;
+    const devices = hass?.devices;
+    const entities = hass?.entities;
     if (!areas || !devices || !entities || typeof areas !== "object"
       || typeof devices !== "object" || typeof entities !== "object") return null;
     const areaEntries = Object.values(areas);
@@ -231,8 +295,8 @@ class NikasRoomsV11 extends HTMLElement {
       areas: areaEntries,
       devices: Object.values(devices),
       entities: Object.values(entities),
-      labels: this._hass?.labels && typeof this._hass.labels === "object"
-        ? Object.values(this._hass.labels)
+      labels: hass?.labels && typeof hass.labels === "object"
+        ? Object.values(hass.labels)
         : [],
     };
   }
@@ -242,7 +306,7 @@ class NikasRoomsV11 extends HTMLElement {
     this._hassWaitTimer = window.setTimeout(() => {
       this._hassWaitTimer = null;
       if (!this.isConnected || this._registries) return;
-      if (this._hass?.callWS || this.registrySnapshot()) this.loadRegistries();
+      if (this.resolveHass()?.callWS || this.registrySnapshot()) this.loadRegistries();
       else this.showRegistryError("Панель не получила данные от Home Assistant.");
     }, 3000);
   }
@@ -279,29 +343,37 @@ class NikasRoomsV11 extends HTMLElement {
     });
   }
 
-  async loadRegistries() {
+  async loadRegistries(force = false) {
     if (this._loading || !this.isConnected) return;
     this.mountShell();
-    const snapshot = this.registrySnapshot();
-    if (snapshot) {
-      this._registries = snapshot;
-      this.buildRooms();
-      this.renderRoute(true);
-      this.syncRefreshState();
-      return;
-    }
-    if (!this._hass?.callWS) {
-      this.waitForHass();
-      return;
-    }
-    const generation = ++this._loadGeneration;
-    this._loading = true;
-    if (!this._registries) {
-      const canvas = this.shadowRoot?.getElementById("canvas");
-      if (canvas) canvas.innerHTML = '<div class="loading">Загрузка помещений…</div>';
-    }
-    this.syncRefreshState();
+    this.startLoadWatchdog();
     try {
+      if (!force) {
+        const bootstrap = this.panelRegistryBootstrap();
+        if (bootstrap) {
+          this.adoptRegistries(bootstrap);
+          return;
+        }
+        const snapshot = this.registrySnapshot();
+        if (snapshot) {
+          this.adoptRegistries(snapshot);
+          return;
+        }
+      }
+
+      const hass = this.resolveHass();
+      if (!hass?.callWS) {
+        this.waitForHass();
+        return;
+      }
+
+      const generation = ++this._loadGeneration;
+      this._loading = true;
+      if (!this._registries) {
+        const canvas = this.shadowRoot?.getElementById("canvas");
+        if (canvas) canvas.innerHTML = '<div class="loading">Загрузка помещений…</div>';
+      }
+      this.syncRefreshState();
       const labelsPromise = this.registryRequest("config/label_registry/list", 5000).catch(() => []);
       const [areas, devices, entities, labels] = await Promise.all([
         this.registryRequest("config/area_registry/list"),
@@ -310,22 +382,23 @@ class NikasRoomsV11 extends HTMLElement {
         labelsPromise,
       ]);
       if (!this.isConnected || generation !== this._loadGeneration) return;
-      this._registries = {
+      this.adoptRegistries({
         areas: Array.isArray(areas) ? areas : [],
         devices: Array.isArray(devices) ? devices : [],
         entities: Array.isArray(entities) ? entities : [],
         labels: Array.isArray(labels) ? labels : [],
-      };
-      this.buildRooms();
-      this.renderRoute(true);
+      });
     } catch (error) {
       console.warn("[NikaS Rooms v11] registry load failed", error);
-      if (generation === this._loadGeneration && !this._registries) this.showRegistryError();
-    } finally {
-      if (generation === this._loadGeneration) {
-        this._loading = false;
-        this.syncRefreshState();
+      if (!this._registries) {
+        const detail = error instanceof Error && error.message
+          ? `Не удалось подготовить данные: ${error.message}`
+          : "Не удалось прочитать реестры Home Assistant.";
+        this.showRegistryError(detail);
       }
+    } finally {
+      this._loading = false;
+      this.syncRefreshState();
     }
   }
 
@@ -913,7 +986,7 @@ class NikasRoomsV11 extends HTMLElement {
 
     const refresh = shadow.getElementById("refresh");
     if (refresh) {
-      refresh.onclick = () => this.loadRegistries();
+      refresh.onclick = () => this.loadRegistries(true);
       if (refresh.disabled !== this._loading) refresh.disabled = this._loading;
       const busy = this._loading ? "true" : "false";
       if (refresh.getAttribute("aria-busy") !== busy) refresh.setAttribute("aria-busy", busy);

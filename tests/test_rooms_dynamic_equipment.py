@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from custom_components.contract_generated_ui.rooms_panel import build_rooms_registry_bootstrap
+
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "custom_components" / "contract_generated_ui" / "frontend" / "dist" / "nikas-rooms-v11.js"
 INIT = ROOT / "custom_components" / "contract_generated_ui" / "__init__.py"
@@ -100,9 +102,65 @@ def test_rooms_v11_recovers_from_registry_loading_races_and_timeouts():
     assert 'id="retry-registries"' in source
     assert 'Не удалось прочитать реестры Home Assistant.' in source
     assert 'registrySnapshot()' in source
-    assert 'Object.values(this._hass.labels)' in source
+    assert 'Object.values(hass.labels)' in source
     assert 'this.waitForHass();' in source
     assert 'Панель не получила данные от Home Assistant.' in source
+    assert 'const LOAD_WATCHDOG_MS = 6000' in source
+    assert 'this.panelRegistryBootstrap()' in source
+    assert 'this.adoptRegistries(bootstrap)' in source
+    assert 'document.querySelector("home-assistant")?.hass' in source
+
+
+def test_rooms_registry_bootstrap_is_compact_and_frontend_compatible():
+    document = {
+        "spec": {
+            "areas": [
+                {"area_id": "bathroom", "name": "01 — Ванная"},
+                {"area_id": "office", "name": "Кабинет"},
+            ],
+            "devices": [
+                {
+                    "device_id": "bath-sensor",
+                    "area_id": "bathroom",
+                    "labels": ["v_ekspluatatsii"],
+                    "disabled": False,
+                },
+                {"device_id": "office-sensor", "area_id": "office", "disabled": False},
+            ],
+            "entities": [
+                {
+                    "entity_id": "binary_sensor.bath_window",
+                    "device_id": "bath-sensor",
+                    "labels": ["v_ekspluatatsii"],
+                    "disabled": False,
+                    "hidden": False,
+                },
+                {
+                    "entity_id": "sensor.office_temperature",
+                    "device_id": "office-sensor",
+                    "disabled": False,
+                    "hidden": False,
+                },
+            ],
+            "labels": [
+                {"label_id": "v_ekspluatatsii", "name": "В эксплуатации"},
+                {"label_id": "unrelated", "name": "Лишний"},
+            ],
+        }
+    }
+
+    bootstrap = build_rooms_registry_bootstrap(document)
+
+    assert bootstrap["areas"] == [{"area_id": "bathroom", "name": "01 — Ванная"}]
+    assert [device["id"] for device in bootstrap["devices"]] == ["bath-sensor"]
+    assert bootstrap["devices"][0]["disabled_by"] is None
+    assert [entity["entity_id"] for entity in bootstrap["entities"]] == [
+        "binary_sensor.bath_window"
+    ]
+    assert bootstrap["entities"][0]["hidden_by"] is None
+    assert bootstrap["labels"] == [
+        {"label_id": "v_ekspluatatsii", "name": "В эксплуатации"}
+    ]
 
 
 def test_rooms_v11_owns_header_version_and_hierarchical_return():
@@ -129,8 +187,9 @@ def test_rooms_v11_is_registered_and_legacy_runtime_is_not_loaded():
     assert 'add_extra_js_url(hass, ROOMS_DIAGNOSTICS_MODULE_URL)' not in init_source
 
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b006"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b007"' in const_source
     assert 'ROOMS_PANEL_MODULE_URL' in const_source
-    assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10823"' in panel_source
+    assert 'ROOMS_PANEL_WEB_COMPONENT = "nikas-rooms-v11-10824"' in panel_source
     assert 'ROOMS_PANEL_URL_PATH = "dashboard-rooms"' in panel_source
     assert '"ui_version": "11.0.0"' in panel_source
+    assert '"registry_bootstrap": registry_bootstrap' in panel_source
