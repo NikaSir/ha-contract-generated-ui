@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Contract Generated UI `0.37.4` updates Rooms to UI `10.8.23`: it consumes the registry snapshots already carried by the Home Assistant frontend before falling back to WebSocket list calls, and turns a missing `hass` handoff into a bounded, retryable error instead of an endless loading screen.
+
 - Contract Generated UI `0.37.3` updates Rooms to UI `10.8.22` and assigns it a new custom-element identity. This prevents an iOS Home Assistant WebView from retaining the previously registered Rooms class after an integration upgrade while preserving the bounded registry loading, error state and retry path from `0.37.2`.
 
 - Contract Generated UI `0.36.10` integrates the existing `/dashboard-rooms` Lovelace dashboard into the current NikaS shell without copying or changing room entity logic. Rooms now receive the fixed Header, active four-item Bottom Tab Bar, room-aware centered titles and explicit return to `/dashboard-rooms/rooms`; the obsolete duplicate `Помещения · v10.8.18` overview heading is suppressed.
