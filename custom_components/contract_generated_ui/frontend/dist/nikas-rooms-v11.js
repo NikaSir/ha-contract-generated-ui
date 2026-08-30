@@ -13,6 +13,7 @@ const EXCLUDED_LABELS = new Set([
 ]);
 const BAD_STATES = new Set(["unknown", "unavailable", "none", "null", ""]);
 const SUMMARY_CLASSES = ["yellow", "blue", "orange", "green", "grey"];
+const REGISTRY_TIMEOUT_MS = 12000;
 const OPENING_CLASSES = new Set([
   "door", "window", "opening", "garage_door", "shutter", "blind", "curtain", "awning",
 ]);
@@ -126,6 +127,7 @@ class NikasRoomsV11 extends HTMLElement {
     this._registries = null;
     this._rooms = [];
     this._loading = false;
+    this._loadGeneration = 0;
     this._mounted = false;
     this._routeKey = "";
     this._diagnosticFilter = "*";
@@ -152,6 +154,7 @@ class NikasRoomsV11 extends HTMLElement {
   set hass(value) {
     const first = !this._hass;
     this._hass = value;
+    if (!this.isConnected) return;
     if (first || !this._registries) this.loadRegistries();
     else this.scheduleStatePatch();
   }
@@ -169,6 +172,8 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._loadGeneration += 1;
+    this._loading = false;
     window.removeEventListener("location-changed", this._onLocation);
     window.removeEventListener("popstate", this._onLocation);
     window.removeEventListener("resize", this._onResize);
@@ -182,6 +187,29 @@ class NikasRoomsV11 extends HTMLElement {
     if (this._fitFrame !== null) window.cancelAnimationFrame(this._fitFrame);
     if (this._stateFrame !== null) window.cancelAnimationFrame(this._stateFrame);
     if (this._chromeFrame !== null) window.cancelAnimationFrame(this._chromeFrame);
+  }
+
+  registryRequest(type, timeoutMs = REGISTRY_TIMEOUT_MS) {
+    let timeoutId = null;
+    const request = Promise.resolve().then(() => this._hass.callWS({ type }));
+    const timeout = new Promise((_, reject) => {
+      timeoutId = window.setTimeout(() => reject(new Error(`Registry request timed out: ${type}`)), timeoutMs);
+    });
+    return Promise.race([request, timeout]).finally(() => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+    });
+  }
+
+  showRegistryError() {
+    const canvas = this.shadowRoot?.getElementById("canvas");
+    if (!canvas) return;
+    canvas.innerHTML = `
+      <div class="loading registry-error">
+        <b>Не удалось загрузить помещения</b>
+        <span>Не удалось прочитать реестры Home Assistant.</span>
+        <button type="button" id="retry-registries">Повторить</button>
+      </div>`;
+    canvas.querySelector("#retry-registries")?.addEventListener("click", () => this.loadRegistries());
   }
 
   mountShell() {
@@ -217,29 +245,40 @@ class NikasRoomsV11 extends HTMLElement {
   }
 
   async loadRegistries() {
-    if (this._loading || !this._hass?.callWS) return;
+    if (this._loading || !this.isConnected || !this._hass?.callWS) return;
     this.mountShell();
+    const generation = ++this._loadGeneration;
     this._loading = true;
+    if (!this._registries) {
+      const canvas = this.shadowRoot?.getElementById("canvas");
+      if (canvas) canvas.innerHTML = '<div class="loading">Загрузка помещений…</div>';
+    }
     this.syncRefreshState();
     try {
+      const labelsPromise = this.registryRequest("config/label_registry/list", 5000).catch(() => []);
       const [areas, devices, entities, labels] = await Promise.all([
-        this._hass.callWS({ type: "config/area_registry/list" }),
-        this._hass.callWS({ type: "config/device_registry/list" }),
-        this._hass.callWS({ type: "config/entity_registry/list" }),
-        this._hass.callWS({ type: "config/label_registry/list" }).catch(() => []),
+        this.registryRequest("config/area_registry/list"),
+        this.registryRequest("config/device_registry/list"),
+        this.registryRequest("config/entity_registry/list"),
+        labelsPromise,
       ]);
-      this._registries = { areas, devices, entities, labels };
+      if (!this.isConnected || generation !== this._loadGeneration) return;
+      this._registries = {
+        areas: Array.isArray(areas) ? areas : [],
+        devices: Array.isArray(devices) ? devices : [],
+        entities: Array.isArray(entities) ? entities : [],
+        labels: Array.isArray(labels) ? labels : [],
+      };
       this.buildRooms();
       this.renderRoute(true);
     } catch (error) {
       console.warn("[NikaS Rooms v11] registry load failed", error);
-      if (!this._registries) {
-        const canvas = this.shadowRoot?.getElementById("canvas");
-        if (canvas) canvas.innerHTML = '<div class="loading">Не удалось прочитать реестр Home Assistant</div>';
-      }
+      if (generation === this._loadGeneration && !this._registries) this.showRegistryError();
     } finally {
-      this._loading = false;
-      this.syncRefreshState();
+      if (generation === this._loadGeneration) {
+        this._loading = false;
+        this.syncRefreshState();
+      }
     }
   }
 
@@ -909,6 +948,14 @@ class NikasRoomsV11 extends HTMLElement {
       }
       .canvas{min-height:100%;padding:10px 8px max(18px,env(safe-area-inset-bottom,0px))}
       .loading{padding:24px;text-align:center;color:var(--secondary-text-color,#666);font-size:14px}
+      .registry-error{display:grid;justify-items:center;gap:10px;padding-top:32px}
+      .registry-error b{font-size:17px;color:var(--primary-text-color,#111)}
+      .registry-error span{font-size:13px}
+      .registry-error button{
+        min-width:140px;min-height:42px;padding:8px 16px;border:1px solid var(--divider-color,#ddd);
+        border-radius:14px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#111);
+        font-weight:750
+      }
       .overview{min-height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:14px}
       .floor h2{
         height:22px;margin:0 0 4px;display:flex;align-items:center;gap:7px;

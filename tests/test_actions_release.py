@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.37.1"
+    assert manifest["version"] == "0.37.2"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -145,9 +145,9 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "dynamic import" not in rooms_bundle.lower()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b018"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b019"' in const_source
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
-    assert 'ROOMS_PANEL_BUILD = "1100b003"' in const_source
+    assert 'ROOMS_PANEL_BUILD = "1100b004"' in const_source
     assert "ROOMS_PANEL_MODULE_URL" in const_source
     assert "ROOMS_PANEL_PATH" in const_source
     assert 'PANEL_ZOOM_FILENAME = "nikas-panel-zoom.js"' in const_source
