@@ -11,5 +11,5 @@
   "issue_tracker": "https://github.com/NikaSir/ha-contract-generated-ui/issues",
   "requirements": ["jsonschema==4.26.0", "PyYAML==6.0.3"],
   "single_config_entry": true,
-  "version": "0.37.2"
+  "version": "0.37.3"
 }
