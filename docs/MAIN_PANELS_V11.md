@@ -20,7 +20,7 @@ The canonical four-panel application shell is:
 
 The global fixed bottom navigation is evaluated only as a complete set: `Дом / Помещения / Действия / Инфра`.
 
-Navigation contract `1.3.0` owns the four canonical entry routes. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target.
+Navigation contract `1.4.0` owns the four canonical entry routes and the registered specialized-panel routes. `/dashboard-house` may remain only as a temporary legacy detail/redirect surface; it is not a base-panel source route, return fallback or global-tab target.
 
 Canonical deep routes used by the House/Actions manifests and renderers point to integration-owned applications rather than recreating them inside Contract Generated UI:
 
@@ -30,6 +30,7 @@ Canonical deep routes used by the House/Actions manifests and renderers point to
 - irrigation — `/dashboard-irrigation`;
 - UPS — `/dashboard-ups`;
 - electricity — `/dashboard-lider`;
+- water accounting — `/dashboard-water`;
 - internet/router — `/dashboard-keenetic`;
 - rooms — `/dashboard-rooms/rooms`.
 
@@ -82,9 +83,9 @@ The accepted `Дом сейчас` composition is fixed as three information row
 2. `Погода | Защита`;
 3. `Дата и время | Камеры`.
 
-The lower resource plaques delegate directly to their owners: `Электросеть` opens LIDER at `/dashboard-lider`, `Отопление` opens ZONT at `/dashboard-zont`, and `Интернет` opens Keenetic at `/dashboard-keenetic`.
+The lower resource plaques delegate directly to their owners: `Электросеть` opens LIDER at `/dashboard-lider`, `Вода` opens the water-accounting panel at `/dashboard-water`, `Отопление` opens ZONT at `/dashboard-zont`, and `Интернет` opens Keenetic at `/dashboard-keenetic`.
 
-Approved specialized-panel labels used by the main navigation are `Электросеть`, `Отопление`, `Пылесос`, `StarLine`, `Автополив` and `ИБП Stark`.
+Approved specialized-panel labels used by the main navigation are `Электросеть`, `Учёт воды`, `Отопление`, `Пылесос`, `StarLine`, `Автополив` and `ИБП Stark`.
 
 ## Действия
 

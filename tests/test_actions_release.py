@@ -55,7 +55,8 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     rooms_bundle = (frontend_root / "dist" / "nikas-rooms-v11.js").read_text(encoding="utf-8")
 
     assert 'const BAR_ID = "nikas-global-tabbar"' in bundle
-    assert 'const BOOTSTRAP_VERSION = "b016"' in bundle
+    assert 'const BOOTSTRAP_VERSION = "b017"' in bundle
+    assert '"/dashboard-water"' in bundle
     assert "new MutationObserver" in bundle
     assert "chromeHostObserver.observe(document.body, { childList: true, subtree: true })" in bundle
     assert 'const REGISTRY_URL = "/contract_generated_ui/navigation.json"' in bundle
@@ -145,7 +146,7 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "dynamic import" not in rooms_bundle.lower()
 
     const_source = (ROOT / "custom_components" / "contract_generated_ui" / "const.py").read_text(encoding="utf-8")
-    assert 'UI_BUNDLE_BUILD = "b020"' in const_source
+    assert 'UI_BUNDLE_BUILD = "b021"' in const_source
     assert 'ROOMS_PANEL_FILENAME = "dist/nikas-rooms-v11.js"' in const_source
     assert 'ROOMS_PANEL_BUILD = "1100b005"' in const_source
     assert "ROOMS_PANEL_MODULE_URL" in const_source

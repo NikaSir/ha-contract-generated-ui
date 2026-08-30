@@ -145,6 +145,7 @@ def main() -> None:
             "/dashboard-ups",
             "/dashboard-keenetic",
             "/dashboard-lider",
+            "/dashboard-water",
         ):
             require(token in sources, f"canonical specialized-panel route missing from base registry: {token}")
         return

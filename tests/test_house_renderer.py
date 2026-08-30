@@ -234,6 +234,7 @@ def test_house_release_manifest_routes_resource_plaques_to_owner_panels() -> Non
     manifest = yaml.safe_load((ROOT / "manifests" / "house_v11_preview.yaml").read_text(encoding="utf-8"))
     navigation = manifest["spec"]["navigation"]
     assert navigation["electricity"] == "/dashboard-lider"
+    assert navigation["water"] == "/dashboard-water"
     assert navigation["heating"] == "/dashboard-zont"
     assert navigation["network"] == "/dashboard-keenetic"
 

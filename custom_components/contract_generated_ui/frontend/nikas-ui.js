@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b016";
+const BOOTSTRAP_VERSION = "b017";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -18,6 +18,7 @@ const SPECIALIZED_PANEL_PATHS = new Set([
   "/dashboard-ups",
   "/dashboard-keenetic",
   "/dashboard-lider",
+  "/dashboard-water",
 ]);
 const INTEGRATION_OWNED_PANEL_PREFIXES = ["/dashboard-house-v11", "/dashboard-infrastructure"];
 
