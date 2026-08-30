@@ -33,6 +33,7 @@ The specialized-panel registry is:
 | Stark SolarPower | `/dashboard-ups` | `/dashboard-infrastructure/overview` |
 | Keenetic Hero 4G+ | `/dashboard-keenetic` | `/dashboard-infrastructure/overview` |
 | LIDER | `/dashboard-lider` | `/dashboard-infrastructure/overview` |
+| Water Accounting | `/dashboard-water` | `/dashboard-house-v11/home` |
 
 `/dashboard-starline` is invalid. The registered StarLine route is `/starline`.
 
@@ -42,7 +43,7 @@ The specialized-panel registry is:
 - Every integration repository exposes its registered root, canonical route, safe fallback and contract version in a machine-readable panel contract.
 - One active route has exactly one owner.
 - Every installed specialized panel has at least one visible entry link from the NikaS base interface; a sidebar-only or direct-URL-only panel is non-conforming.
-- Required owners are: House now → ZONT and StarLine; Actions → S8 OMNI and HO-SC-8W; Infrastructure → Stark SolarPower and Keenetic; the Infrastructure power section → LIDER.
+- Required owners are: House now → ZONT, StarLine and Water Accounting; Actions → S8 OMNI and HO-SC-8W; Infrastructure → Stark SolarPower and Keenetic; the Infrastructure power section → LIDER.
 - A `more-info` action does not count as the required entry link.
 
 Legacy `/dashboard-house/*` pages may remain declared detail routes during migration. They are not base-panel source routes and must not be used as a return fallback.

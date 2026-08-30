@@ -28,10 +28,11 @@ def test_navigation_registry_uses_canonical_public_panel_routes() -> None:
     navigation = yaml.safe_load((ROOT / "navigation" / "main.yaml").read_text(encoding="utf-8"))
     routes = navigation["spec"]["routes"]
 
-    assert navigation["metadata"]["version"] == "1.3.0"
+    assert navigation["metadata"]["version"] == "1.4.0"
     assert routes["home"]["path"] == "/dashboard-house-v11/home"
     assert routes["rooms"]["path"] == "/dashboard-rooms/rooms"
     assert routes["house.heating"]["path"] == "/dashboard-zont"
+    assert routes["house.water"]["path"] == "/dashboard-water"
     assert routes["house.vehicles"]["path"] == "/starline"
     assert routes["house.cleaning"]["path"] == "/dashboard-s8-omni"
     assert routes["actions"]["path"] == "/dashboard-actions/home"

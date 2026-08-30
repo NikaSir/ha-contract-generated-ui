@@ -2,7 +2,7 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 1.3.0
+  version: 1.4.0
   description: Central route and tab ownership for the NikaS v11 complete-set release candidate.
 spec:
   routes:
@@ -21,6 +21,10 @@ spec:
     house.heating:
       title: Отопление
       path: /dashboard-zont
+      parent: home
+    house.water:
+      title: Учёт воды
+      path: /dashboard-water
       parent: home
     house.vehicles:
       title: StarLine

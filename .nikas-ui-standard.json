@@ -4,7 +4,7 @@
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
   "standard_sha256": "a31dc45499443f8fa43eaea1906fe3a793dffcb411b10cebcd3a3a205fbcef27",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
-  "navigation_contract_sha256": "c87dc760c0900701f6a807a35aba40e790f68f52c39f4579583598f697997e52",
+  "navigation_contract_sha256": "97dcf01cca19b83507f0a4ea438b9cca7374178b50719c6828d47e4c4db33217",
   "role": "base",
   "runtime_files": [
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",

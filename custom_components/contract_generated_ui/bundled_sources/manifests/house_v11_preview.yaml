@@ -29,7 +29,7 @@ spec:
     cars: /starline
     infrastructure: /dashboard-infrastructure/overview
     actions: /dashboard-actions/home
-    water: /dashboard-infrastructure/overview
+    water: /dashboard-water
     electricity: /dashboard-lider
     network: /dashboard-keenetic
     equipment: /dashboard-infrastructure/overview
