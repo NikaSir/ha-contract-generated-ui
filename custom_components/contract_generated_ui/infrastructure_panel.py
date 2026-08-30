@@ -164,13 +164,13 @@ def build_infrastructure_panel_spec(source_root: Path) -> dict[str, Any]:
 
 
 async def async_register_infrastructure_panel(hass: HomeAssistant, source_root: Path) -> None:
-    """Replace the legacy Infrastructure Lovelace host with a custom panel."""
+    """Register the Infrastructure fallback only when its route is unowned."""
     from homeassistant.components import frontend, panel_custom
 
     panel_spec = await hass.async_add_executor_job(build_infrastructure_panel_spec, source_root)
     url_path = panel_spec["url_path"]
     if frontend.async_panel_exists(hass, url_path):
-        frontend.async_remove_panel(hass, url_path, warn_if_unknown=False)
+        return
 
     await panel_custom.async_register_panel(
         hass=hass,
@@ -194,7 +194,7 @@ async def async_register_infrastructure_panel(hass: HomeAssistant, source_root: 
 
 
 def async_unregister_infrastructure_panel(hass: HomeAssistant) -> None:
-    """Remove the integration-owned Infrastructure panel on unload."""
+    """Remove only the Infrastructure fallback registered by this integration."""
     from homeassistant.components import frontend
 
     url_path = hass.data.get(DOMAIN, {}).pop(INFRASTRUCTURE_PANEL_PATH, None)

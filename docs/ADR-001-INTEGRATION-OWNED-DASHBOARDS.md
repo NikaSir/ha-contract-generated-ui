@@ -58,6 +58,10 @@ Detailed controls should have **one canonical UI owner**.
 
 A central dashboard may expose selected quick actions when explicitly justified, but it must not silently fork or independently reimplement the integration's full interaction model.
 
+### 3.1. Existing route wins
+
+Panel registration is non-destructive. When Home Assistant already exposes a Lovelace or custom panel at a canonical route, that panel keeps ownership. Contract Generated UI must not call `async_remove_panel` as part of registration and must not install a replacement at the same path. It may register a fallback only for a genuinely missing route and must record that ownership so unload removes only its own fallback.
+
 ### 4. Specialized dashboard contract
 
 An integration-owned dashboard should expose stable metadata that can be consumed by the central UI. The exact schema may evolve, but the minimum contract is:

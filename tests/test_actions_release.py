@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 def test_release_version_and_schema_are_packaged() -> None:
     manifest = json.loads((ROOT / "custom_components" / "contract_generated_ui" / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.37.6"
+    assert manifest["version"] == "0.37.7"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -167,5 +167,5 @@ def test_frontend_bundle_and_generated_panel_hosts_are_packaged() -> None:
     assert "add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)" in init_source
 
     doc = (ROOT / "docs" / "FRONTEND_RESOURCE.md").read_text(encoding="utf-8")
-    assert "автоматически" in doc.lower()
+    assert "does not remove or replace" in doc
     assert "nikas-generated-subpanel.js" in doc
