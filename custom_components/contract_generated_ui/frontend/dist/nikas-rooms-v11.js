@@ -1,4 +1,4 @@
-const ELEMENT_NAME = "nikas-rooms-v11";
+const ELEMENT_NAME = "nikas-rooms-v11-10822";
 const UI_VERSION = "11.0.0";
 const ROOT_PATH = "/dashboard-rooms/rooms";
 const HEADER_ID = "nikas-generated-subpanel-header";
