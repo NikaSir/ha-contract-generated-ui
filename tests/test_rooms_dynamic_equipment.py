@@ -20,10 +20,14 @@ def test_rooms_keeps_shared_shell_navigation_without_owning_content() -> None:
     source = UI.read_text(encoding="utf-8")
 
     assert 'const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms"' in source
-    assert 'const ROOMS_UI_VERSION = "10.8.25"' in source
+    assert 'const ROOMS_UI_VERSION = "10.8.26"' in source
     assert "ROOM_VIEW_TITLES" in source
     assert "roomsHeaderModel" in source
     assert "syncRoomsLegacyHeading" in source
+    assert "fitRoomsOverview" in source
+    assert "clearRoomsOverviewFit" in source
+    assert "const desiredGap = 8" in source
+    assert 'first.style.setProperty("margin-top", `${-lift}px`, "important")' in source
     assert 'model?.active === "rooms" ? roomsHeaderModel(pathname) : null' in source
 
 
