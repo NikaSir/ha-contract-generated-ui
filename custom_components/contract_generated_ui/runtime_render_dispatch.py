@@ -1,4 +1,4 @@
-"""Runtime dispatcher for Contract Generated UI layout engines."""
+"""House-only runtime dispatcher for Contract Generated UI."""
 
 from __future__ import annotations
 
@@ -10,80 +10,39 @@ from typing import Any, Mapping
 
 import yaml
 
-from . import runtime_operational as operational
-from .runtime_actions import (
-    ACTIONS_RENDERER,
-    _layout_engine_sha256 as _actions_layout_engine_sha256,
-    render_actions_dashboard,
-)
-from .runtime_app_shell import (
-    app_shell_engine_sha256,
-    append_app_shell,
-    manifest_app_shell_config,
-)
-from .runtime_render_infrastructure_summary import (
-    SUMMARY_RENDERER,
-    _filter_trace as _infrastructure_summary_filter_trace,
-    _layout_engine_sha256 as _infrastructure_summary_layout_engine_sha256,
-    _summary_dashboard as _infrastructure_summary_dashboard,
-)
-from .runtime_render_subpanel_placeholder import (
-    PLACEHOLDER_RENDERER,
-    _layout_engine_sha256 as _placeholder_layout_engine_sha256,
-    render_subpanel_placeholder_dashboard,
-)
-from .runtime_subpanel_shell import (
-    apply_navigation_shell,
-    embed_subpanel_dashboard,
-    navigation_shell_engine_sha256,
+from . import runtime_renderer as base
+from .runtime_house import (
+    HOUSE_RENDERER,
+    _layout_engine_sha256 as _house_layout_engine_sha256,
+    render_house_dashboard,
 )
 
-base = operational.base
 RuntimeRenderError = base.RuntimeRenderError
 GeneratedArtifact = base.GeneratedArtifact
-
-SUPPORTED_RENDERERS = frozenset({
-    operational.DEFAULT_RENDERER,
-    operational.HOUSE_RENDERER,
-    ACTIONS_RENDERER,
-    SUMMARY_RENDERER,
-    PLACEHOLDER_RENDERER,
-})
+SUPPORTED_RENDERERS = frozenset({HOUSE_RENDERER})
 
 
 def manifest_renderer(manifest: Mapping[str, Any]) -> str:
+    """Require every manifest in this repository to describe the House panel."""
     views = manifest.get("spec", {}).get("views")
     if not isinstance(views, list) or not views:
-        raise RuntimeRenderError("panel manifest has no views")
+        raise RuntimeRenderError("House panel manifest has no views")
     renderers: set[str] = set()
     for view in views:
         if not isinstance(view, dict):
-            raise RuntimeRenderError("panel manifest view must be an object")
-        renderer = view.get("renderer", operational.DEFAULT_RENDERER)
+            raise RuntimeRenderError("House panel manifest view must be an object")
+        renderer = view.get("renderer")
         if renderer not in SUPPORTED_RENDERERS:
-            raise RuntimeRenderError(f"unsupported view renderer {renderer!r}")
-        modules = view.get("modules")
-        if not isinstance(modules, list):
-            raise RuntimeRenderError("panel manifest view modules must be an array")
-        if renderer == PLACEHOLDER_RENDERER:
-            if modules:
-                raise RuntimeRenderError(
-                    "subpanel_placeholder_v1 views must not bind entity modules"
-                )
-            if not isinstance(view.get("placeholder"), str) or not view["placeholder"].strip():
-                raise RuntimeRenderError(
-                    "subpanel_placeholder_v1 requires placeholder text"
-                )
-        elif not modules:
             raise RuntimeRenderError(
-                f"renderer {renderer!r} requires at least one entity module"
+                f"this repository supports only {HOUSE_RENDERER!r}, got {renderer!r}"
             )
+        modules = view.get("modules")
+        if not isinstance(modules, list) or not modules:
+            raise RuntimeRenderError("House panel view requires entity modules")
         renderers.add(renderer)
-    if len(renderers) != 1:
-        raise RuntimeRenderError(
-            "mixed view renderers are not supported in one manifest"
-        )
-    return renderers.pop()
+    if renderers != {HOUSE_RENDERER}:
+        raise RuntimeRenderError("House panel manifest renderer is inconsistent")
+    return HOUSE_RENDERER
 
 
 def _render_manifest_entry(
@@ -92,191 +51,77 @@ def _render_manifest_entry(
     contracts: Mapping[str, Any],
     inventory: Mapping[str, Any],
     snapshot_ids: list[str],
-    source_root: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     dashboard, base_trace = base._render_manifest(
         manifest,
         contracts,
         inventory,
         snapshot_ids=snapshot_ids,
     )
-    renderer = manifest_renderer(manifest)
-
-    if renderer == ACTIONS_RENDERER:
-        dashboard = render_actions_dashboard(dashboard, base_trace)
-        trace = copy.deepcopy(base_trace)
-        trace["renderer_engine_sha256"] = _actions_layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
-    elif renderer == operational.HOUSE_RENDERER:
-        dashboard = operational.render_house_dashboard(
-            dashboard,
-            base_trace,
-            manifest,
-        )
-        trace = copy.deepcopy(base_trace)
-        trace["renderer_engine_sha256"] = operational._house_layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
-    elif renderer == SUMMARY_RENDERER:
-        dashboard = _infrastructure_summary_dashboard(dashboard, base_trace)
-        trace = _infrastructure_summary_filter_trace(base_trace)
-        trace["renderer_engine_sha256"] = _infrastructure_summary_layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
-    elif renderer == PLACEHOLDER_RENDERER:
-        dashboard = render_subpanel_placeholder_dashboard(dashboard, manifest)
-        trace = copy.deepcopy(base_trace)
-        trace["renderer_engine_sha256"] = _placeholder_layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
-    else:
-        dashboard = operational._operational_dashboard(
-            dashboard,
-            base_trace,
-            contracts,
-            manifest,
-        )
-        trace = operational._filter_trace(base_trace, contracts, manifest)
-        trace["renderer_engine_sha256"] = operational._layout_engine_sha256(
-            base_trace["renderer_engine_sha256"]
-        )
-
-    dashboard, navigation_groups = apply_navigation_shell(
-        dashboard,
-        manifest,
-        source_root,
+    manifest_renderer(manifest)
+    dashboard = render_house_dashboard(dashboard, base_trace, manifest)
+    trace = copy.deepcopy(base_trace)
+    trace["renderer_engine_sha256"] = _house_layout_engine_sha256(
+        base_trace["renderer_engine_sha256"]
     )
-    trace["renderer_engine_sha256"] = navigation_shell_engine_sha256(
-        trace["renderer_engine_sha256"],
-        navigation_groups,
-    )
-
-    app_shell_config = manifest_app_shell_config(manifest)
-    if app_shell_config is not None:
-        app_shell_active, app_shell_routes = app_shell_config
-        dashboard = append_app_shell(
-            dashboard,
-            active=app_shell_active,
-            routes=app_shell_routes,
-        )
-        trace["renderer_engine_sha256"] = app_shell_engine_sha256(
-            trace["renderer_engine_sha256"]
-        )
-
-    return {
-        "manifest": manifest,
-        "dashboard": dashboard,
-        "trace": trace,
-        "navigation_groups": navigation_groups,
-    }
-
-
-def _compose_embedded(entries: dict[str, dict[str, Any]]) -> None:
-    for child_id, child in list(entries.items()):
-        manifest = child["manifest"]
-        if manifest.get("spec", {}).get("subpanel") is None:
-            continue
-        groups = child["navigation_groups"]
-        if not groups or not groups[0].get("embedded"):
-            continue
-        if len(groups) != 1:
-            raise RuntimeRenderError(
-                f"embedded subpanel {child_id!r} must resolve to exactly one navigation group"
-            )
-        group = groups[0]
-        host_path = group["dashboard_path"]
-        hosts = [
-            (manifest_id, entry)
-            for manifest_id, entry in entries.items()
-            if manifest_id != child_id
-            and entry["manifest"].get("spec", {}).get("subpanel") is None
-            and entry["manifest"].get("spec", {}).get("dashboard_path") == host_path
-        ]
-        if len(hosts) != 1:
-            raise RuntimeRenderError(
-                f"embedded subpanel {child_id!r} requires exactly one host manifest for {host_path!r}; found {len(hosts)}"
-            )
-        _, host = hosts[0]
-        host["dashboard"] = embed_subpanel_dashboard(
-            host["dashboard"],
-            host["manifest"],
-            child["dashboard"],
-            group,
-        )
-        host["trace"]["renderer_engine_sha256"] = navigation_shell_engine_sha256(
-            host["trace"]["renderer_engine_sha256"],
-            [group],
-        )
-
-
-def _finalize_trace(entry: dict[str, Any]) -> None:
     canonical = json.dumps(
-        entry["dashboard"],
+        dashboard,
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
     ).encode("utf-8")
-    entry["trace"]["dashboard_sha256"] = hashlib.sha256(canonical).hexdigest()
+    trace["dashboard_sha256"] = hashlib.sha256(canonical).hexdigest()
+    return dashboard, trace
 
 
 def render_all_manifests(
     source_root: Path,
     generated_root: Path,
 ) -> list[GeneratedArtifact]:
+    """Render the single House manifest without touching Home Assistant YAML."""
     contracts = base._index_contracts(source_root)
     inventory, snapshot_ids = base._index_inventory(source_root)
-
     manifest_paths = list(base._documents(source_root / "manifests"))
-    if not manifest_paths:
-        raise RuntimeRenderError("no panel manifests found")
-
-    entries: dict[str, dict[str, Any]] = {}
-    order: list[str] = []
-    for manifest_path in manifest_paths:
-        manifest = base._load_object(manifest_path)
-        if manifest.get("kind") != "PanelManifest":
-            raise RuntimeRenderError(f"unexpected manifest kind in {manifest_path}")
-        manifest_id = manifest.get("metadata", {}).get("id")
-        if not isinstance(manifest_id, str) or not manifest_id:
-            raise RuntimeRenderError(f"manifest id missing in {manifest_path}")
-        if manifest_id in entries:
-            raise RuntimeRenderError(f"duplicate manifest id {manifest_id!r}")
-        entries[manifest_id] = _render_manifest_entry(
-            manifest,
-            contracts=contracts,
-            inventory=inventory,
-            snapshot_ids=snapshot_ids,
-            source_root=source_root,
-        )
-        order.append(manifest_id)
-
-    _compose_embedded(entries)
-    for entry in entries.values():
-        _finalize_trace(entry)
-
-    artifacts: list[GeneratedArtifact] = []
-    for manifest_id in order:
-        entry = entries[manifest_id]
-        dashboard = entry["dashboard"]
-        trace = entry["trace"]
-        output_path = generated_root / f"{manifest_id}.yaml"
-        trace_path = generated_root / f"{manifest_id}.meta.json"
-        yaml_text = yaml.safe_dump(dashboard, allow_unicode=True, sort_keys=False)
-        trace_text = json.dumps(trace, ensure_ascii=False, indent=2) + "\n"
-        output_changed = base._atomic_write(output_path, yaml_text)
-        trace_changed = base._atomic_write(trace_path, trace_text)
-        artifacts.append(
-            GeneratedArtifact(
-                manifest_id=manifest_id,
-                output_path=output_path,
-                trace_path=trace_path,
-                dashboard_sha256=trace["dashboard_sha256"],
-                changed=output_changed or trace_changed,
-            )
+    if len(manifest_paths) != 1:
+        raise RuntimeRenderError(
+            "House-only repository requires exactly one panel manifest; "
+            f"found {len(manifest_paths)}"
         )
 
-    return artifacts
+    manifest = base._load_object(manifest_paths[0])
+    if manifest.get("kind") != "PanelManifest":
+        raise RuntimeRenderError("unexpected House manifest kind")
+    manifest_id = manifest.get("metadata", {}).get("id")
+    if manifest_id != "house_v11_preview":
+        raise RuntimeRenderError(
+            f"House-only repository received unexpected manifest {manifest_id!r}"
+        )
+
+    dashboard, trace = _render_manifest_entry(
+        manifest,
+        contracts=contracts,
+        inventory=inventory,
+        snapshot_ids=snapshot_ids,
+    )
+    output_path = generated_root / f"{manifest_id}.yaml"
+    trace_path = generated_root / f"{manifest_id}.meta.json"
+    output_changed = base._atomic_write(
+        output_path,
+        yaml.safe_dump(dashboard, allow_unicode=True, sort_keys=False),
+    )
+    trace_changed = base._atomic_write(
+        trace_path,
+        json.dumps(trace, ensure_ascii=False, indent=2) + "\n",
+    )
+    return [
+        GeneratedArtifact(
+            manifest_id=manifest_id,
+            output_path=output_path,
+            trace_path=trace_path,
+            dashboard_sha256=trace["dashboard_sha256"],
+            changed=output_changed or trace_changed,
+        )
+    ]
 
 
 __all__ = [

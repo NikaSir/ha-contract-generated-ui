@@ -17,9 +17,14 @@ The project treats Home Assistant dashboards as generated artifacts derived from
 
 ## Ownership boundary
 
-The central generator is the **house-wide overview, composition and navigation layer**. It is not the canonical owner of every detailed device/domain workflow.
+The generator is the **main House overview and navigation layer**. It is not the
+canonical owner of Rooms, Actions, Infrastructure or any detailed device/domain
+workflow.
 
-For complex domains, the custom integration that owns the entities and actions should also own its specialized dashboard. Examples include irrigation, robot vacuum, router/WAN failover and UPS telemetry. `ha-contract-generated-ui` may show verified summaries and selected quick actions, then navigate to the integration-owned deep interface.
+For complex domains, the custom integration that owns the entities and actions also
+owns its specialized dashboard in a dedicated repository. `ha-contract-generated-ui`
+may show verified summaries and navigate to that interface, but it does not ship its
+implementation.
 
 This rule is formally recorded in [ADR-001: Integration-owned specialized dashboards](ADR-001-INTEGRATION-OWNED-DASHBOARDS.md).
 
@@ -36,4 +41,8 @@ This rule is formally recorded in [ADR-001: Integration-owned specialized dashbo
 
 ## Current stage
 
-Contract core v1 is implemented as the first executable architectural layer. `UIContract`, `SemanticInventory` and `PanelManifest` have machine-readable schemas; repository validation enforces their boundaries and regression tests protect the core safety invariants. Production infrastructure generation is operating from verified Home Assistant inventory, and the next architectural extension is a stable navigation contract for linking house-wide generated panels to integration-owned specialized dashboards.
+Contract core v1 is implemented for the main House overview. `UIContract`,
+`SemanticInventory`, `PanelManifest` and `NavigationContract` have machine-readable
+schemas; repository validation enforces their boundaries and regression tests protect
+the safety and repository-ownership invariants. Other panels evolve in their own
+repositories and are connected only by declared routes.

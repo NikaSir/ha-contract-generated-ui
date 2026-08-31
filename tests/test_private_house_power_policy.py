@@ -6,7 +6,9 @@ ROOT = Path(__file__).parents[1]
 
 
 def test_house_power_rebind_policy_stays_semantic_only_in_public_sources() -> None:
-    doc = (ROOT / "docs" / "FIELD_POLISH_0292.md").read_text(encoding="utf-8")
+    doc = (ROOT / "docs" / "RUNTIME_PRIVATE_INVENTORY.md").read_text(
+        encoding="utf-8"
+    )
     manifest = (ROOT / "manifests" / "house_v11_preview.yaml").read_text(encoding="utf-8")
 
     assert "infrastructure.power.voltage_a/b/c" in doc

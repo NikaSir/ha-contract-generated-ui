@@ -24,59 +24,38 @@ def _calls(function: ast.AsyncFunctionDef, attribute: str) -> list[ast.Call]:
     ]
 
 
-def _existing_route_guard(
-    function: ast.AsyncFunctionDef,
-) -> ast.If:
-    for node in ast.walk(function):
-        if not isinstance(node, ast.If):
-            continue
-        if any(
+def test_house_registration_preserves_an_existing_route() -> None:
+    function = _function(PACKAGE / "house_panel.py", "async_register_house_panel")
+    assert _calls(function, "async_panel_exists")
+    assert not _calls(function, "async_remove_panel")
+
+    guards = [
+        node
+        for node in ast.walk(function)
+        if isinstance(node, ast.If)
+        and any(
             isinstance(child, ast.Call)
             and isinstance(child.func, ast.Attribute)
             and child.func.attr == "async_panel_exists"
             for child in ast.walk(node.test)
-        ):
-            return node
-    raise AssertionError("missing existing-route guard")
+        )
+    ]
+    assert len(guards) == 1
+    assert any(isinstance(node, ast.Return) for node in guards[0].body)
 
 
-def test_central_panel_registration_never_removes_an_existing_route() -> None:
-    targets = (
-        (PACKAGE / "house_panel.py", "async_register_house_panel"),
-        (
-            PACKAGE / "infrastructure_panel.py",
-            "async_register_infrastructure_panel",
-        ),
-        (
-            PACKAGE / "generated_panels.py",
-            "async_register_generated_subpanels",
-        ),
-    )
-
-    for path, name in targets:
-        function = _function(path, name)
-        assert _calls(function, "async_panel_exists")
-        assert not _calls(function, "async_remove_panel")
-        guard = _existing_route_guard(function)
-        if name == "async_register_generated_subpanels":
-            assert any(isinstance(node, ast.Continue) for node in guard.body)
-        else:
-            assert any(isinstance(node, ast.Return) for node in guard.body)
-
-
-def test_unload_still_removes_only_paths_recorded_as_cgui_owned() -> None:
+def test_unload_removes_only_the_recorded_house_fallback() -> None:
     house = (PACKAGE / "house_panel.py").read_text(encoding="utf-8")
-    infrastructure = (PACKAGE / "infrastructure_panel.py").read_text(
-        encoding="utf-8"
-    )
-    generated = (PACKAGE / "generated_panels.py").read_text(encoding="utf-8")
+    init = (PACKAGE / "__init__.py").read_text(encoding="utf-8")
 
     assert "hass.data.setdefault(DOMAIN, {})[HOUSE_PANEL_PATH] = url_path" in house
     assert "pop(HOUSE_PANEL_PATH, None)" in house
-    assert (
-        "hass.data.setdefault(DOMAIN, {})[INFRASTRUCTURE_PANEL_PATH] = url_path"
-        in infrastructure
-    )
-    assert "pop(INFRASTRUCTURE_PANEL_PATH, None)" in infrastructure
-    assert "domain_data[GENERATED_SUBPANEL_PATHS] = registered" in generated
-    assert "pop(GENERATED_SUBPANEL_PATHS, [])" in generated
+    assert "async_unregister_house_panel(hass)" in init
+    assert "async_unregister_infrastructure_panel" not in init
+    assert "async_unregister_generated_subpanels" not in init
+    assert "async_unregister_rooms_panel" not in init
+
+
+def test_non_house_panel_owners_are_not_shipped() -> None:
+    for name in ("infrastructure_panel.py", "rooms_panel.py", "generated_panels.py"):
+        assert not (PACKAGE / name).exists()

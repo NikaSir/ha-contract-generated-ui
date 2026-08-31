@@ -1,5 +1,8 @@
-# Generator
+# House generator
 
-Implementation of deterministic Lovelace generation will live here.
+This package validates and deterministically renders the main House overview from its
+public contract, private verified inventory and single panel manifest.
 
-The generator must consume validated contracts, inventory and panel manifests; it must not encode project facts that belong in those inputs. Generated output should be reproducible and suitable for semantic comparison before deployment.
+It does not render Rooms, Actions, Infrastructure or integration-specific detailed
+panels. Generated output remains review-only and suitable for semantic comparison
+before deployment.

@@ -72,7 +72,7 @@ def test_house_panel_spec_resolves_verified_semantics(tmp_path: Path) -> None:
 
 def test_house_manifest_declares_integration_owned_specialized_panel() -> None:
     manifest = yaml.safe_load((ROOT / "manifests" / "house_v11_preview.yaml").read_text(encoding="utf-8"))
-    assert manifest["metadata"]["version"] == "0.2.0"
+    assert manifest["metadata"]["version"] == "0.3.0"
     assert manifest["spec"]["specialized_panel"] == {"template": HOUSE_PANEL_TEMPLATE}
     assert HOUSE_PANEL_WEB_COMPONENT == "nikas-house-overview"
 
@@ -81,7 +81,7 @@ def test_house_panel_uses_one_transform_owned_canvas_and_native_chrome() -> None
     frontend = (FRONTEND / "nikas-house-overview.js").read_text(encoding="utf-8")
 
     assert 'const ELEMENT_NAME = "nikas-house-overview"' in frontend
-    assert 'const UI_VERSION = "0.37.8"' in frontend
+    assert 'const UI_VERSION = "0.38.0"' in frontend
     assert frontend.count('class="canvas-viewport"') == 1
     assert frontend.count('class="work-canvas"') == 1
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in frontend

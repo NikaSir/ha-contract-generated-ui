@@ -10,7 +10,7 @@ After **Generate dashboards / Сгенерировать панели** succeeds
 /config/contract_generated_ui/generated/
 ```
 
-For each panel manifest the integration writes:
+For the House manifest the integration writes:
 
 - `<manifest-id>.yaml` — deterministic Lovelace dashboard candidate;
 - `<manifest-id>.meta.json` — RenderTrace with source bindings, semantic model and SHA-256.
@@ -23,7 +23,10 @@ It also writes:
 
 The snippet uses Home Assistant's supported YAML dashboard configuration shape.
 
-Integration-owned specialized panels are not included in the snippet. Contract Generated UI preserves existing `Дом`, `Помещения`, `Действия` and `Инфраструктура` registrations. Its House, Infrastructure and generic custom-panel runtimes are missing-route fallbacks only; they never remove or replace an existing Lovelace/custom panel.
+The House custom panel is not included in the snippet because it is registered by the
+integration only when `/dashboard-house-v11` is unowned. Contract Generated UI
+preserves the existing YAML `Дом`, `Помещения`, `Действия` and `Инфраструктура`
+registrations and never removes or replaces them.
 
 ## Important safety rule
 
@@ -31,7 +34,8 @@ The generated snippet is **merge input**, not an instruction to overwrite `confi
 
 If `configuration.yaml` already contains a top-level `lovelace:` section, merge the generated `dashboards:` entries into it. Preserve existing resources, resource mode, and other dashboards.
 
-Example generated shape for a non-specialized dashboard:
+The generic shape below documents the supported exporter, although this House-only
+repository does not currently ship a non-specialized dashboard manifest:
 
 ```yaml
 lovelace:
@@ -48,7 +52,7 @@ Home Assistant requires additional YAML dashboard URL keys to contain a hyphen. 
 
 ## Deployment boundary
 
-Version `0.3.0` deliberately stops before applying the snippet. The integration does not:
+The integration deliberately stops before applying the snippet. It does not:
 
 - edit `configuration.yaml`;
 - write Home Assistant `.storage` Lovelace files;

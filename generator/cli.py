@@ -12,7 +12,7 @@ from .release_gate import (
     load_validated_render_trace,
     render_diff_payload,
 )
-from .render_operational import RenderError, render_repository_manifest, write_render_result
+from .render_dispatch import RenderError, render_repository_manifest, write_render_result
 from .semantic_diff import diff_inventories, diff_registry_snapshots, render_text
 from .snapshot import (
     SnapshotBindingError,

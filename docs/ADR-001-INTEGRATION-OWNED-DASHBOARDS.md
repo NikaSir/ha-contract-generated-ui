@@ -1,154 +1,59 @@
-# ADR-001: Integration-owned specialized dashboards
+# ADR-001: Repository-owned specialized dashboards
 
-**Status:** Superseded for shell navigation by `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7
-**Date:** 2026-08-22
-
-The domain-ownership decision remains accepted. Explicit Header Back requirements are retired; the permanent left control is the Home Assistant system menu.
+**Status:** Accepted
+**Updated:** 2026-08-31
 
 ## Context
 
-Home Assistant NikaS has two distinct UI responsibilities:
+The main House overview needs concise cross-domain state and stable links. Detailed
+control panels need their own entity semantics, actions, assets, release cadence and
+device-specific testing. Keeping both responsibilities in one repository increases
+the chance that a change for one panel damages another.
 
-1. a house-wide overview and navigation layer (`Дом`, `Инфраструктура`, `Действия` and other cross-domain surfaces);
-2. deep, device- or domain-specific interfaces for complex integrations such as irrigation, robot vacuum, router/failover and UPS telemetry.
-
-A central dashboard generator can reliably compose verified high-level state and navigation, but it should not become the owner of every domain-specific interaction model. The integration that defines the entities, actions and semantics has the best knowledge of how its detailed UI should behave.
+Existing Lovelace YAML dashboards are already the operational fallback and must remain
+untouched while replacements are evaluated.
 
 ## Decision
 
-### 1. Specialized dashboard ownership
+`ha-contract-generated-ui` owns only the new main House overview at
+`/dashboard-house-v11/home`.
 
-A custom integration **owns its specialized dashboard when the device/domain requires a deep interface**.
+Every new detailed panel is owned by a dedicated repository and integration. Its owner
+is responsible for:
 
-The integration owner is responsible for the dashboard's:
+- route registration and non-destructive unload;
+- information hierarchy and interaction semantics;
+- entity/action mapping and failure handling;
+- frontend bundle, assets, tests and releases;
+- mobile acceptance on the target device.
 
-- information hierarchy;
-- entity/action mapping;
-- control semantics and safety;
-- status and diagnostic interpretation;
-- mobile/desktop layout;
-- versioning and compatibility with the integration;
-- detailed UX that may approximate the vendor application where useful.
+This House repository may display verified summaries and explicit links to external
+routes. A link is not ownership: it must not import, register, remove or patch the
+destination panel.
 
-Examples:
+## Route safety
 
-- `ha-ho-sc-8w` owns the detailed irrigation dashboard;
-- `ha-s8-omni` owns the detailed S8 OMNI dashboard;
-- `ha-keenetic-hero-4g` owns the detailed router/WAN/LTE dashboard;
-- the Stark SolarPower integration owns detailed UPS dashboards.
+- Existing Home Assistant YAML routes always win.
+- A preview panel uses a unique route until accepted.
+- Registration is allowed only when the intended route is unowned.
+- Unload removes only a route recorded as registered by that integration.
+- Browser history is not a navigation contract; routes are explicit.
 
-### 2. Role of Contract Generated UI
+## Repository boundary
 
-`ha-contract-generated-ui` remains the **house-wide overview, composition and navigation layer**.
+Runtime JavaScript, Python, assets, contracts and manifests are never shared across
+panel repositories. Approved visual rules may be copied at development time, but each
+repository must be independently installable and releasable.
 
-It may display verified summary states from specialized integrations, but it should prefer a deep link to the integration-owned dashboard instead of duplicating the complete device application.
+## Migration
 
-Its responsibilities are:
-
-- cross-domain dashboards and views;
-- concise operational summaries;
-- active events and reliability indicators;
-- consistent house-wide navigation;
-- links/cards/buttons that open specialized dashboards;
-- semantic validation of the navigation target when that target is declared as a contract dependency.
-
-### 3. No duplicated ownership
-
-Detailed controls should have **one canonical UI owner**.
-
-A central dashboard may expose selected quick actions when explicitly justified, but it must not silently fork or independently reimplement the integration's full interaction model.
-
-### 3.1. Existing route wins
-
-Panel registration is non-destructive. When Home Assistant already exposes a Lovelace or custom panel at a canonical route, that panel keeps ownership. Contract Generated UI must not call `async_remove_panel` as part of registration and must not install a replacement at the same path. It may register a fallback only for a genuinely missing route and must record that ownership so unload removes only its own fallback.
-
-### 4. Specialized dashboard contract
-
-An integration-owned dashboard should expose stable metadata that can be consumed by the central UI. The exact schema may evolve, but the minimum contract is:
-
-- stable panel/dashboard id;
-- title;
-- route/path;
-- icon;
-- owner/integration id;
-- optional sidebar visibility;
-- optional preferred entry view;
-- optional canonical parent route for an in-work-area parent link;
-- compatibility/version metadata where required.
-
-Conceptual example:
-
-```yaml
-panel:
-  id: irrigation
-  title: Полив
-  path: /dashboard-irrigation
-  parent_route: /dashboard-actions
-  icon: mdi:sprinkler
-  owner: ha-ho-sc-8w
-  expose_in_generated_ui: true
-  navigation:
-    header_left: home_assistant_system_menu
-    parent_link: explicit_work_area_route
-    primary_navigation: fixed_bottom_bar
-```
-
-This metadata describes navigation. It does not give `ha-contract-generated-ui` ownership of the specialized panel contents.
-
-### 4.1. Unified application shell
-
-Every integration-owned specialized dashboard follows the normative [Home Assistant NikaS specialized-panel UI standard v1.7](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md).
-
-The shell contract is:
-
-- the permanent left Header action is only `mdi:menu` and emits `hass-toggle-menu`;
-- Back, browser history and device commands are prohibited in that rail; an explicit parent link, when needed, belongs inside the work area;
-- Header is reserved for the native Home Assistant menu and one optional global panel action;
-- primary internal sections live in an iOS-safe **fixed bottom navigation bar**;
-- top primary tabs are not used;
-- factual Home Assistant entities retain long press → native more-info;
-- Header and bottom navigation never execute entity/device actions on hold or double tap.
-
-Canonical parent routes are:
-
-- HO-SC-8W irrigation → `/dashboard-actions`;
-- S8 OMNI vacuum → `/dashboard-actions`;
-- Keenetic Hero 4G+ → `/dashboard-infrastructure/overview`;
-- Stark SolarPower UPS → `/dashboard-infrastructure/overview`.
-
-### 5. Runtime and release boundary
-
-Specialized dashboard code/configuration is released with its owning integration whenever practical. The integration and its dashboard therefore evolve together and can be tested in the same repository/release pipeline.
-
-`ha-contract-generated-ui` should consume only the stable navigation/summary contract required for cross-domain composition.
+The pre-split multi-panel implementation is preserved on
+`archive/multipanel-0.37.8`. Existing YAML dashboards stay available as rollback paths.
+A House link changes to a new detailed panel only after that panel passes its own
+acceptance checks.
 
 ## Consequences
 
-### Positive
-
-- domain knowledge remains with the component that owns the entities and actions;
-- detailed dashboards can evolve without bloating the central generator;
-- central panels remain compact and operational;
-- device-specific UI can closely match the natural workflow of the device or vendor application;
-- release/version compatibility is easier to reason about;
-- failures and `unknown`/`unavailable` semantics remain owned by the integration that understands them;
-- every specialized dashboard has predictable Home Assistant menu semantics and a common one-handed mobile navigation model.
-
-### Costs
-
-- integrations with rich domains must maintain dashboard code/configuration in addition to entities;
-- a common navigation metadata contract is required;
-- visual consistency must be maintained through shared project rules rather than a single renderer owning every screen;
-- canonical parent routes must be treated as stable application-navigation API.
-
-## Initial implementation order
-
-1. `ha-ho-sc-8w` — irrigation dashboard;
-2. `ha-s8-omni` — robot and station dashboard;
-3. `ha-keenetic-hero-4g` — WAN/LTE/failover dashboard;
-4. Stark SolarPower — UPS overview and diagnostics dashboard;
-5. stable deep links from house-wide generated dashboards to these integration-owned panels.
-
-## Project rule
-
-> Complex device/domain UI belongs to the integration that owns the domain. Contract Generated UI owns house-wide overview, composition and navigation. Every specialized dashboard uses the NikaS application shell: permanent Home Assistant menu + fixed bottom section navigation.
+The House codebase becomes smaller and safer to change. Detailed panels can evolve
+independently, at the cost of maintaining explicit route contracts and separate
+release pipelines.
