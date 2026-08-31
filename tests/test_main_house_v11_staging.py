@@ -39,7 +39,7 @@ def test_house_v11_overview_is_an_integration_owned_specialized_panel() -> None:
     assert manifest["metadata"]["id"] == "house_v11_preview"
     assert manifest["spec"]["dashboard_path"] == "/dashboard-house-v11"
     assert manifest["spec"]["specialized_panel"] == {"template": "house_overview_v1"}
-    assert manifest["spec"]["app_shell"]["active"] == "home"
+    assert "app_shell" not in manifest["spec"]
     assert "subpanel" not in manifest["spec"]
     assert manifest["spec"]["views"][0]["renderer"] == "house_home_v1"
     assert not (ROOT / "manifests" / "house.yaml").exists()

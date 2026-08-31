@@ -10,9 +10,7 @@
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",
     "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
     "custom_components/contract_generated_ui/frontend/nikas-house-overview.js",
-    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js",
-    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
-    "custom_components/contract_generated_ui/frontend/nikas-app-shell.js",
+    "manifests/house_v11_preview.yaml",
     "navigation/main.yaml"
   ],
   "production_entrypoint": "custom_components/contract_generated_ui/frontend/nikas-ui.js",
@@ -29,10 +27,7 @@
   },
   "delegated_navigation_files": [
     "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
-    "custom_components/contract_generated_ui/frontend/nikas-house-overview.js",
-    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js",
-    "custom_components/contract_generated_ui/frontend/nikas-infrastructure-overview.js",
-    "custom_components/contract_generated_ui/frontend/nikas-app-shell.js"
+    "custom_components/contract_generated_ui/frontend/nikas-house-overview.js"
   ],
   "header_reference": {
     "implementation": "S8 OMNI",

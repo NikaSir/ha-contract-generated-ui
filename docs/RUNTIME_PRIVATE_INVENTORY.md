@@ -24,19 +24,27 @@ A production `SemanticInventory` is generated only from a captured `RegistrySnap
 
 Do not publish production inventory files to the public GitHub repository.
 
-The public manifest references semantic keys only, for example:
+The public House manifest references semantic keys only, for example:
 
-`infrastructure.ups.internet.output_voltage`
+`house.home.power_a`
 
 The private inventory resolves that semantic key to the actual Home Assistant entity.
 
-## First production slice
+## House production scope
 
-The first runtime slice targets `/dashboard-infrastructure` and covers:
+The runtime inventory for this repository binds only semantic roles consumed by the
+main House overview, including safety, openings, motion, lighting, climate, cameras,
+weather, utilities, heating, vehicles and access.
 
-- electrical grid;
-- UPS Internet;
-- UPS Boiler;
-- Keenetic Hero 4G+ WAN telemetry.
+Detailed-panel bindings are owned by their separate repositories and must not be copied
+into this source tree.
 
-The associated contracts and manifest are public. The matching `inventory/home.yaml` remains private in Home Assistant.
+## Three-phase power policy
+
+The House roles `house.home.power_a/b/c` must be bound to the three verified incoming
+phase-voltage entities. If a separate Infrastructure inventory exposes the trusted
+source as `infrastructure.power.voltage_a/b/c`, that fact may guide the private rebind,
+but it does not create a runtime dependency between repositories.
+
+Concrete Home Assistant entity ids remain exclusively in private inventory. They are
+not recorded in the public contract, manifest, documentation or tests.

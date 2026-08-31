@@ -7,8 +7,8 @@ import pytest
 import yaml
 
 from generator.render import RenderError
+from generator.render_dispatch import manifest_renderer
 from generator.render_house import HOUSE_HERO_ASSET_URL, render_house_dashboard
-from generator.render_operational import _manifest_renderer
 
 ROOT = Path(__file__).parents[1]
 
@@ -263,7 +263,7 @@ def test_house_renderer_requires_verified_role_shape() -> None:
         render_house_dashboard(_dashboard(), trace, _manifest())
 
 
-def test_mixed_manifest_renderers_fail_closed() -> None:
+def test_non_house_manifest_renderer_fails_closed() -> None:
     manifest = _manifest()
     manifest["spec"]["views"].append(
         {
@@ -275,5 +275,5 @@ def test_mixed_manifest_renderers_fail_closed() -> None:
             "modules": [],
         }
     )
-    with pytest.raises(RenderError, match="mixed view renderers"):
-        _manifest_renderer(manifest)
+    with pytest.raises(RenderError, match="supports only 'house_home_v1'"):
+        manifest_renderer(manifest)

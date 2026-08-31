@@ -9,9 +9,19 @@ from pathlib import Path
 PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests", "navigation")
 
 # Public Architecture-as-Code files that were previously shipped by this integration
-# but are now owned by dedicated repositories. These are managed public runtime
-# sources, not private inventory or user data, so removing them during sync is safe.
+# but are not part of the House overview. They are managed public runtime sources,
+# not legacy Lovelace YAML dashboards, private inventory, or user data.
 RETIRED_PUBLIC_SOURCE_FILES = (
+    Path("contracts") / "actions_home.yaml",
+    Path("contracts") / "house_irrigation_controller.yaml",
+    Path("contracts") / "house_irrigation_lab.yaml",
+    Path("contracts") / "house_irrigation_zone.yaml",
+    Path("contracts") / "infrastructure_keenetic.yaml",
+    Path("contracts") / "infrastructure_power_grid.yaml",
+    Path("contracts") / "infrastructure_ups.yaml",
+    Path("manifests") / "actions.yaml",
+    Path("manifests") / "infrastructure.yaml",
+    Path("manifests") / "irrigation.yaml",
     Path("manifests") / "starline.yaml",
     Path("manifests") / "zont.yaml",
 )

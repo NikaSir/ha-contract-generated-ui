@@ -2,8 +2,8 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 1.3.0
-  description: Central route and tab ownership for the NikaS v11 complete-set release candidate.
+  version: 2.0.0
+  description: House-only navigation links; routes outside House are external and remain independently owned.
 spec:
   routes:
     home:
@@ -18,38 +18,6 @@ spec:
     rooms:
       title: Помещения
       path: /dashboard-rooms/rooms
-    house.heating:
-      title: Отопление
-      path: /dashboard-zont
-      parent: home
-    house.vehicles:
-      title: StarLine
-      path: /starline
-      parent: home
-    house.cleaning:
-      title: Пылесос
-      path: /dashboard-s8-omni
-      parent: actions
-    actions.irrigation:
-      title: Автополив
-      path: /dashboard-irrigation
-      parent: actions
-    actions.irrigation_candidate:
-      title: Автополив · candidate
-      path: /dashboard-irrigation-generated/overview
-      parent: actions
-    infrastructure.ups:
-      title: ИБП Stark
-      path: /dashboard-ups
-      parent: infrastructure
-    infrastructure.keenetic:
-      title: Keenetic Hero 4G+
-      path: /dashboard-keenetic
-      parent: infrastructure
-    infrastructure.lider:
-      title: Электросеть
-      path: /dashboard-lider
-      parent: infrastructure
   global_tabs:
     - id: home
       route: home
@@ -67,21 +35,3 @@ spec:
       route: infrastructure
       title: Инфра
       icon: mdi:server-network
-  tab_groups:
-    - id: power
-      title: Электросеть
-      dashboard_path: /dashboard-infrastructure
-      parent: infrastructure
-      tabs:
-        - view: power-overview
-          title: Обзор
-          icon: mdi:view-dashboard-outline
-        - view: power-before
-          title: До стаб.
-          icon: mdi:transmission-tower-import
-        - view: power-after
-          title: После стаб.
-          icon: mdi:transmission-tower-export
-        - view: power-history
-          title: История
-          icon: mdi:chart-line

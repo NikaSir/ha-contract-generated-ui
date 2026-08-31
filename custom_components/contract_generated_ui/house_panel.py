@@ -13,7 +13,7 @@ from .runtime_renderer import (
     _load_object,
     _render_manifest,
 )
-from .runtime_subpanel_shell import compile_navigation_registry
+from .house_navigation import compile_navigation_registry
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant

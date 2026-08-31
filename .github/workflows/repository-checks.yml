@@ -50,18 +50,20 @@ jobs:
                   print(f'YAML OK {path}')
           PY
 
-      - name: Enforce NikaS UI standard v1.7
+      - name: Enforce NikaS UI standard v1.9
         run: python scripts/check_nikas_ui_standard.py
 
       - name: Validate frontend JavaScript syntax
         run: |
-          node --check templates/integration-panel-v1/panel-shell-reference.js
-          node --check templates/integration-panel-v1/zoom-controller-reference.js
           node --check custom_components/contract_generated_ui/frontend/nikas-house-hero.js
           node --check custom_components/contract_generated_ui/frontend/nikas-house-overview.js
           node --check custom_components/contract_generated_ui/frontend/nikas-ui.js
-          node --check custom_components/contract_generated_ui/frontend/nikas-infrastructure-summary.js
-          node --check custom_components/contract_generated_ui/frontend/nikas-generated-subpanel.js
+          node --check custom_components/contract_generated_ui/frontend/dist/nikas-house-overview.js
+
+      - name: Verify deterministic House bundle
+        run: |
+          ./scripts/build_frontend_bundles.sh
+          git diff --exit-code -- custom_components/contract_generated_ui/frontend/dist/nikas-house-overview.js
 
       - name: Smoke-test House hero runtime
         run: |
@@ -255,39 +257,6 @@ jobs:
           console.log('Specialized House panel registration OK');
           JS
 
-      - name: Enforce Integration Panel Template v1.6 invariants
-        shell: bash
-        run: |
-          reference="templates/integration-panel-v1/panel-shell-reference.js"
-          if grep -nE '^[[:space:]]*(import|export)[[:space:]]' "$reference"; then
-            echo "Reference template must remain standalone and copyable."
-            exit 1
-          fi
-          if grep -nE 'window\.history\.back\(|history\.back\(' "$reference"; then
-            echo "Reference template must use explicit parent navigation, not browser history."
-            exit 1
-          fi
-          grep -Fq 'grid-template-columns:52px minmax(0,1fr) 52px' "$reference"
-          grep -Fq 'grid-template-columns:48px minmax(0,1fr) 48px' "$reference"
-          grep -Fq 'grid-template-columns:repeat(var(--nika-tab-count),minmax(0,1fr))' "$reference"
-          grep -Fq '.content-grid{display:grid;grid-template-columns:1fr' "$reference"
-          grep -Fq '.metrics{grid-template-columns:1fr}' "$reference"
-          grep -Fq 'width:min(calc(100% - 24px),1280px)' "$reference"
-          grep -Fq 'mdi:menu' "$reference"
-          grep -Fq 'hass-toggle-menu' "$reference"
-          grep -Fq 'mdi:refresh' "$reference"
-          grep -Fq 'class="canvas-viewport"' "$reference"
-          grep -Fq 'class="work-canvas"' "$reference"
-          grep -Fq 'commitStableMarkup' "$reference"
-          grep -Fq 'font-size:23px' "$reference"
-          grep -Fq 'font-size:14px' "$reference"
-          grep -Fq -- '--mdc-icon-size:28px' "$reference"
-          if grep -Fq 'mdi:arrow-left' "$reference"; then
-            echo "Permanent Header Back is prohibited by v1.6."
-            exit 1
-          fi
-          echo "Integration Panel Template v1.6 shell invariants OK"
-
       - name: Validate contract-generated UI inputs
         run: python -m generator validate .
 
@@ -295,7 +264,7 @@ jobs:
         run: python -m pytest -q
 
       - name: Compile Python sources
-        run: python -m compileall -q generator tests
+        run: python -m compileall -q generator custom_components/contract_generated_ui tests
 
       - name: Reject tracked credential and private Home Assistant files
         shell: bash

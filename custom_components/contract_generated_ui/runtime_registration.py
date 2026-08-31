@@ -80,9 +80,9 @@ def write_lovelace_registration_snippet(
         if not isinstance(metadata, dict) or not isinstance(spec, dict):
             raise RuntimeRegistrationError(f"manifest metadata/spec missing in {manifest_path}")
 
-        # Application subpanels and specialized panels are registered
-        # dynamically by Contract Generated UI. They must never require a
-        # manual `lovelace.dashboards` entry in configuration.yaml.
+        # The House custom panel is registered dynamically by the integration.
+        # It must never require a manual `lovelace.dashboards` entry in
+        # configuration.yaml.
         if spec.get("subpanel") is not None or spec.get("specialized_panel") is not None:
             continue
 
@@ -122,7 +122,7 @@ def write_lovelace_registration_snippet(
         "# Contract Generated UI — registration snippet only.\n"
         "# Merge this with any existing top-level `lovelace:` configuration;\n"
         "# do not replace existing Lovelace resources or dashboards blindly.\n"
-        "# Generated application subpanels are registered automatically.\n"
+        "# The House custom panel is registered automatically.\n"
         "# Home Assistant must reload/restart after configuration.yaml changes.\n"
     )
     text = header + yaml.safe_dump(document, allow_unicode=True, sort_keys=False)

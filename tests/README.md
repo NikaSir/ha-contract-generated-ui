@@ -1,5 +1,7 @@
 # Tests
 
-Regression tests for contract validation, inventory binding, semantic diff and deterministic dashboard generation will live here.
+Regression coverage for the House panel includes contract validation, navigation,
+runtime source synchronization, route ownership and deterministic bundle generation.
 
-Test fixtures must use synthetic or scrubbed data. Real credentials, `.storage` content and private diagnostic exports are prohibited.
+Fixtures must use synthetic or scrubbed data. Real credentials, `.storage` content
+and private diagnostic exports are prohibited.

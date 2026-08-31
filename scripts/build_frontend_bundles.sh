@@ -22,20 +22,7 @@ build_panel \
   "$frontend/nikas-house-overview.js" \
   "$dist/nikas-house-overview.js"
 
-build_panel \
-  "$frontend/nikas-infrastructure-summary.js" \
-  "$frontend/nikas-infrastructure-overview.js" \
-  "$dist/nikas-infrastructure-overview.js"
-
-temporary="$dist/nikas-generated-subpanel.js.tmp"
-cp "$frontend/nikas-panel-zoom.js" "$temporary"
-sed '1{/^import /d;}' "$frontend/nikas-specialized-panel-shell.js" >> "$temporary"
-sed '1{/^import /d;}' "$frontend/nikas-generated-subpanel.js" >> "$temporary"
-mv "$temporary" "$dist/nikas-generated-subpanel.js"
-
-for bundle in "$dist"/*.js; do
-  if grep -Eq '^[[:space:]]*import[[:space:]]' "$bundle"; then
-    echo "runtime import remains in $bundle" >&2
-    exit 1
-  fi
-done
+if grep -Eq '^[[:space:]]*import[[:space:]]' "$dist/nikas-house-overview.js"; then
+  echo "runtime import remains in House bundle" >&2
+  exit 1
+fi
