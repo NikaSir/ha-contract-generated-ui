@@ -1,7 +1,7 @@
 import "/contract_generated_ui/frontend/nikas-house-hero.js?build=b013";
 
 const BOOTSTRAP_KEY = "__nikas_ui_bootstrapped_v1";
-const BOOTSTRAP_VERSION = "b017";
+const BOOTSTRAP_VERSION = "b018";
 const SHOULD_BOOTSTRAP = window[BOOTSTRAP_KEY] !== BOOTSTRAP_VERSION;
 if (SHOULD_BOOTSTRAP) window[BOOTSTRAP_KEY] = BOOTSTRAP_VERSION;
 
@@ -35,7 +35,7 @@ const ACTIONS_HEADER_MODEL = {
 };
 
 const ROOMS_ROOT_PATH = "/dashboard-rooms/rooms";
-const ROOMS_UI_VERSION = "10.8.25";
+const ROOMS_UI_VERSION = "10.8.26";
 const ROOM_VIEW_TITLES = Object.freeze({
   "/dashboard-rooms/room-bathroom": "Ванная",
   "/dashboard-rooms/room-bedroom": "Спальня",
@@ -63,6 +63,9 @@ let chromeHostObserver = null;
 let hiddenRoomsHeading = null;
 let roomsHeadingRetryTimer = null;
 let roomsHeadingRetryCount = 0;
+let roomsOverviewHost = null;
+let roomsOverviewOriginalMargin = "";
+let roomsOverviewOriginalPriority = "";
 
 function sourceBaseRoute(pathname) {
   if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) return "/dashboard-house-v11/home";
@@ -275,6 +278,65 @@ function syncRoomsLegacyHeading(pathname) {
   hiddenRoomsHeading = host;
 }
 
+function clearRoomsOverviewFit() {
+  if (!roomsOverviewHost?.style) return;
+  if (roomsOverviewOriginalMargin) {
+    roomsOverviewHost.style.setProperty(
+      "margin-top",
+      roomsOverviewOriginalMargin,
+      roomsOverviewOriginalPriority,
+    );
+  } else {
+    roomsOverviewHost.style.removeProperty("margin-top");
+  }
+  delete roomsOverviewHost.dataset.nikasRoomsLift;
+  roomsOverviewHost = null;
+  roomsOverviewOriginalMargin = "";
+  roomsOverviewOriginalPriority = "";
+}
+
+function fitRoomsOverview(pathname) {
+  if (pathname !== ROOMS_ROOT_PATH) {
+    clearRoomsOverviewFit();
+    return;
+  }
+
+  const header = document.getElementById(HEADER_ID);
+  const headerBottom = header?.getBoundingClientRect?.().bottom;
+  if (!Number.isFinite(headerBottom)) return;
+
+  let first = null;
+  let firstTop = Number.POSITIVE_INFINITY;
+  walkOpenShadowRoots(document, (node) => {
+    if (!["hui-section", "hui-grid-section"].includes(node.localName)) return;
+    if (node.style?.display === "none") return;
+    const rect = node.getBoundingClientRect?.();
+    if (!rect || rect.height <= 0 || rect.top < headerBottom - 2) return;
+    if (rect.top < firstTop) {
+      first = node;
+      firstTop = rect.top;
+    }
+  });
+  if (!first) {
+    scheduleRoomsHeadingRetry();
+    return;
+  }
+
+  if (roomsOverviewHost !== first) {
+    clearRoomsOverviewFit();
+    roomsOverviewHost = first;
+    roomsOverviewOriginalMargin = first.style.getPropertyValue("margin-top");
+    roomsOverviewOriginalPriority = first.style.getPropertyPriority("margin-top");
+  }
+
+  const currentLift = Number(first.dataset.nikasRoomsLift || 0);
+  const baseTop = first.getBoundingClientRect().top + currentLift;
+  const desiredGap = 8;
+  const lift = Math.max(0, Math.round(baseTop - headerBottom - desiredGap));
+  first.dataset.nikasRoomsLift = String(lift);
+  first.style.setProperty("margin-top", `${-lift}px`, "important");
+}
+
 function createBar(model) {
   const root = document.createElement("div");
   root.id = BAR_ID;
@@ -426,6 +488,7 @@ function syncChrome() {
   syncBar(model);
   syncHeader(model, pathname);
   syncRoomsLegacyHeading(pathname);
+  fitRoomsOverview(pathname);
 }
 
 function scheduleSync() {
