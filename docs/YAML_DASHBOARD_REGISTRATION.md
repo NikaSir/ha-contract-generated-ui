@@ -24,9 +24,10 @@ It also writes:
 The snippet uses Home Assistant's supported YAML dashboard configuration shape.
 
 The House custom panel is not included in the snippet because it is registered by the
-integration only when `/dashboard-house-v11` is unowned. Contract Generated UI
-preserves the existing YAML `Дом`, `Помещения`, `Действия` and `Инфраструктура`
-registrations and never removes or replaces them.
+integration. When `/dashboard-house-v11` is already owned, the autonomous panel uses
+`/dashboard-house-v12/home` instead. Contract Generated UI preserves the existing YAML
+`Дом`, `Помещения`, `Действия` and `Инфраструктура` registrations and never removes or
+replaces them.
 
 ## Important safety rule
 

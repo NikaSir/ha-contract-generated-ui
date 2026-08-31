@@ -9,12 +9,17 @@ The installed integration domain remains `contract_generated_ui` for upgrade com
 | Surface | Route | Owner |
 |---|---|---|
 | Existing YAML Дом | `/dashboard-house` | Existing Home Assistant YAML configuration |
-| New main Дом | `/dashboard-house-v11/home` | This repository |
+| Preferred new Дом | `/dashboard-house-v11/home` | This repository when the route is free |
+| Parallel new Дом | `/dashboard-house-v12/home` | This repository when v11 is already owned |
 | Existing YAML Помещения | `/dashboard-rooms/rooms` | Existing Home Assistant YAML configuration |
 | Existing YAML Действия | `/dashboard-actions/home` | Existing Home Assistant YAML configuration |
 | Existing YAML Инфраструктура | `/dashboard-infrastructure/overview` | Existing Home Assistant YAML configuration |
 
-This integration registers only the new `/dashboard-house-v11` custom panel, and only when that route is unowned. It never removes, replaces or injects UI into the existing YAML dashboards. Unload removes only the House fallback that this integration registered itself.
+The integration first tries the declared `/dashboard-house-v11` route. If an existing
+YAML or custom panel already owns it, that owner remains untouched and the new panel is
+registered at `/dashboard-house-v12/home` as **Дом · новая**. It never removes,
+replaces or injects UI into existing YAML dashboards. Unload removes only the route
+that this integration registered itself.
 
 The House cards may navigate to legacy YAML detail views or to autonomous specialized integrations such as ZONT, StarLine, S8 OMNI, HO-SC-8W, Stark, Keenetic, LIDER and water accounting. Those links do not give this repository ownership of the destination.
 

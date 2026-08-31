@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased — 0.38.0
+## Unreleased — 0.38.1
+
+- Preserves an existing YAML owner at `/dashboard-house-v11` and registers the
+  autonomous House panel in parallel at `/dashboard-house-v12/home` instead of
+  silently omitting it.
+- Labels the collision-safe sidebar entry `Дом · новая` so it cannot be confused
+  with the preserved YAML panel during phone acceptance.
+- Keeps unload ownership exact: only the route actually registered by this
+  integration is removed.
+
+## 0.38.0
 
 - Preserved the complete multi-panel `0.37.8` baseline at commit `c525b30` on branch `archive/multipanel-0.37.8`.
 - Narrowed the production repository to the single new main **Дом** panel at `/dashboard-house-v11/home`.

@@ -11,7 +11,8 @@ The existing configured YAML dashboards remain the working baseline in Home Assi
 | Route | Status | Rule |
 |---|---|---|
 | `/dashboard-house` | Existing YAML | Preserve unchanged |
-| `/dashboard-house-v11/home` | New main House | Owned here |
+| `/dashboard-house-v11/home` | Existing owner or preferred new House route | Preserve an existing owner; use when free |
+| `/dashboard-house-v12/home` | Parallel new House | Register here when v11 is already owned |
 | `/dashboard-rooms/rooms` | Existing YAML | External link until a separate Rooms repository is accepted |
 | `/dashboard-actions/home` | Existing YAML | External link until a separate Actions repository is accepted |
 | `/dashboard-infrastructure/overview` | Existing YAML | External link until a separate Infrastructure repository is accepted |
@@ -31,6 +32,9 @@ This repository may clean only its own packaged contracts, manifests, frontend b
 4. Test the preview on the target phone while the YAML dashboard remains available.
 5. Change the House navigation URL only after the new panel is accepted.
 6. Retain the YAML panel as a rollback path until its retirement is explicitly approved.
+
+The House migration follows the same rule: an occupied v11 route is never replaced;
+the autonomous panel appears as `Дом · новая` on the v12 route for acceptance.
 
 ## Cross-repository boundary
 

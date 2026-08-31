@@ -10,7 +10,7 @@ PACKAGE = ROOT / "custom_components" / "contract_generated_ui"
 
 def test_release_is_house_only() -> None:
     manifest = json.loads((PACKAGE / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.38.0"
+    assert manifest["version"] == "0.38.1"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
@@ -59,6 +59,7 @@ def test_global_frontend_does_not_modify_legacy_yaml_dashboards() -> None:
     assert "createElement" not in bundle
     assert "appendChild" not in bundle
     assert "innerHTML" not in bundle
+    assert 'return "/dashboard-house-v12/home"' in bundle
 
 
 def test_setup_registers_only_house_panel() -> None:

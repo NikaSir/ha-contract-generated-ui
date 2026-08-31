@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
-from .const import DOMAIN, HOUSE_PANEL_MODULE_URL, HOUSE_PANEL_PATH
+from .const import (
+    DOMAIN,
+    HOUSE_PANEL_MODULE_URL,
+    HOUSE_PANEL_PARALLEL_URL_PATH,
+    HOUSE_PANEL_PATH,
+)
 from .runtime_house import HOUSE_RENDERER, house_overview_config
 from .runtime_renderer import (
     _index_contracts,
@@ -20,6 +26,7 @@ if TYPE_CHECKING:
 
 HOUSE_PANEL_TEMPLATE = "house_overview_v1"
 HOUSE_PANEL_WEB_COMPONENT = "nikas-house-overview"
+_LOGGER = logging.getLogger(__name__)
 
 
 def _house_manifest(source_root: Path) -> dict[str, Any]:
@@ -91,20 +98,73 @@ def build_house_panel_spec(source_root: Path) -> dict[str, Any]:
         "sidebar_title": metadata.get("title", "Дом"),
         "sidebar_icon": "mdi:home-outline",
         "url_path": url_path,
+        "view_path": view_path,
         "default_path": f"{dashboard_path}/{view_path}",
         "hero": hero,
         "tabs": tabs,
     }
 
 
+def select_house_panel_route(
+    panel_exists: Callable[[str], bool],
+    preferred_url_path: str,
+) -> str | None:
+    """Select an unowned route without replacing the preserved YAML panel."""
+    if not panel_exists(preferred_url_path):
+        return preferred_url_path
+    if not panel_exists(HOUSE_PANEL_PARALLEL_URL_PATH):
+        return HOUSE_PANEL_PARALLEL_URL_PATH
+    return None
+
+
+def materialize_house_panel_spec(
+    panel_spec: dict[str, Any],
+    url_path: str,
+) -> dict[str, Any]:
+    """Adapt Home and sidebar navigation to the route selected at runtime."""
+    view_path = panel_spec["view_path"]
+    default_path = f"/{url_path}/{view_path}"
+    tabs = [dict(tab) for tab in panel_spec["tabs"]]
+    for tab in tabs:
+        if tab.get("id") == "home":
+            tab["path"] = default_path
+    return {
+        **panel_spec,
+        "url_path": url_path,
+        "default_path": default_path,
+        "tabs": tabs,
+        "sidebar_title": (
+            "Дом · новая"
+            if url_path == HOUSE_PANEL_PARALLEL_URL_PATH
+            else panel_spec["sidebar_title"]
+        ),
+    }
+
+
 async def async_register_house_panel(hass: HomeAssistant, source_root: Path) -> None:
-    """Register the House fallback only when the canonical route is unowned."""
+    """Register House beside an existing YAML owner without replacing it."""
     from homeassistant.components import frontend, panel_custom
 
     panel_spec = await hass.async_add_executor_job(build_house_panel_spec, source_root)
-    url_path = panel_spec["url_path"]
-    if frontend.async_panel_exists(hass, url_path):
+    preferred_url_path = panel_spec["url_path"]
+    url_path = select_house_panel_route(
+        lambda candidate: frontend.async_panel_exists(hass, candidate),
+        preferred_url_path,
+    )
+    if url_path is None:
+        _LOGGER.warning(
+            "Cannot register NikaS House panel: both %s and %s are already owned",
+            preferred_url_path,
+            HOUSE_PANEL_PARALLEL_URL_PATH,
+        )
         return
+    if url_path != preferred_url_path:
+        _LOGGER.info(
+            "Preserving existing panel at %s; registering NikaS House at %s",
+            preferred_url_path,
+            url_path,
+        )
+    panel_spec = materialize_house_panel_spec(panel_spec, url_path)
 
     await panel_custom.async_register_panel(
         hass=hass,
@@ -142,4 +202,6 @@ __all__ = [
     "async_register_house_panel",
     "async_unregister_house_panel",
     "build_house_panel_spec",
+    "materialize_house_panel_spec",
+    "select_house_panel_route",
 ]

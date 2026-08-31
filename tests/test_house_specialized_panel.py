@@ -9,7 +9,10 @@ from custom_components.contract_generated_ui.house_panel import (
     HOUSE_PANEL_TEMPLATE,
     HOUSE_PANEL_WEB_COMPONENT,
     build_house_panel_spec,
+    materialize_house_panel_spec,
+    select_house_panel_route,
 )
+from custom_components.contract_generated_ui.const import HOUSE_PANEL_PARALLEL_URL_PATH
 
 ROOT = Path(__file__).parents[1]
 FRONTEND = ROOT / "custom_components" / "contract_generated_ui" / "frontend"
@@ -61,6 +64,7 @@ def test_house_panel_spec_resolves_verified_semantics(tmp_path: Path) -> None:
     assert panel["id"] == "house_v11_preview"
     assert panel["title"] == "Дом сейчас"
     assert panel["url_path"] == "dashboard-house-v11"
+    assert panel["view_path"] == "home"
     assert panel["default_path"] == "/dashboard-house-v11/home"
     assert [tab["id"] for tab in panel["tabs"]] == ["home", "rooms", "actions", "infrastructure"]
     assert panel["hero"]["standalone"] is True
@@ -68,6 +72,24 @@ def test_house_panel_spec_resolves_verified_semantics(tmp_path: Path) -> None:
     assert "grid_options" not in panel["hero"]
     assert len(panel["hero"]["entities"]["safety"]) == 5
     assert len(panel["hero"]["entities"]["cameras"]) == 8
+
+
+def test_house_panel_uses_parallel_route_when_yaml_owns_v11(tmp_path: Path) -> None:
+    occupied = {"dashboard-house-v11"}
+    selected = select_house_panel_route(occupied.__contains__, "dashboard-house-v11")
+    assert selected == HOUSE_PANEL_PARALLEL_URL_PATH
+
+    panel = materialize_house_panel_spec(build_house_panel_spec(_source_tree(tmp_path)), selected)
+    assert panel["url_path"] == "dashboard-house-v12"
+    assert panel["default_path"] == "/dashboard-house-v12/home"
+    assert panel["sidebar_title"] == "Дом · новая"
+    assert panel["tabs"][0]["path"] == "/dashboard-house-v12/home"
+    assert panel["tabs"][1]["path"] == "/dashboard-rooms/rooms"
+
+
+def test_house_panel_never_replaces_two_existing_route_owners() -> None:
+    occupied = {"dashboard-house-v11", "dashboard-house-v12"}
+    assert select_house_panel_route(occupied.__contains__, "dashboard-house-v11") is None
 
 
 def test_house_manifest_declares_integration_owned_specialized_panel() -> None:
@@ -81,7 +103,7 @@ def test_house_panel_uses_one_transform_owned_canvas_and_native_chrome() -> None
     frontend = (FRONTEND / "nikas-house-overview.js").read_text(encoding="utf-8")
 
     assert 'const ELEMENT_NAME = "nikas-house-overview"' in frontend
-    assert 'const UI_VERSION = "0.38.0"' in frontend
+    assert 'const UI_VERSION = "0.38.1"' in frontend
     assert frontend.count('class="canvas-viewport"') == 1
     assert frontend.count('class="work-canvas"') == 1
     assert "translate3d(${x}px, ${y}px, 0) scale(${scale})" in frontend

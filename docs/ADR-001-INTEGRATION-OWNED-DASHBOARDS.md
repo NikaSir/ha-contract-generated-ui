@@ -15,8 +15,9 @@ untouched while replacements are evaluated.
 
 ## Decision
 
-`ha-contract-generated-ui` owns only the new main House overview at
-`/dashboard-house-v11/home`.
+`ha-contract-generated-ui` owns only the new main House overview. It prefers
+`/dashboard-house-v11/home`; when that route already has a preserved owner, it uses
+the collision-safe `/dashboard-house-v12/home` route instead.
 
 Every new detailed panel is owned by a dedicated repository and integration. Its owner
 is responsible for:
