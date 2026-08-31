@@ -162,12 +162,15 @@ def test_nikas_ui_bundle_uses_registry_for_local_navigation() -> None:
     assert "registrySubpanelModel" in asset
     assert '{ id: "rooms", label: "Помещения", icon: "mdi:floor-plan", path: "/dashboard-rooms/rooms" }' in asset
     assert 'return "/dashboard-rooms/rooms"' in asset
-    assert 'const ROOMS_UI_VERSION = "10.8.25"' in asset
+    assert 'const ROOMS_UI_VERSION = "10.8.26"' in asset
     assert "ROOM_VIEW_TITLES" in asset
     assert "roomsHeaderModel" in asset
     assert "syncRoomsLegacyHeading" in asset
     assert "scheduleRoomsHeadingRetry" in asset
     assert "roomsHeadingRetryCount >= 24" in asset
+    assert "fitRoomsOverview" in asset
+    assert "clearRoomsOverviewFit" in asset
+    assert "const desiredGap = 8" in asset
     assert 'title: root ? "Помещения"' in asset
     assert 'back_path: root ? null : ROOMS_ROOT_PATH' in asset
     assert "createHeader" in asset
