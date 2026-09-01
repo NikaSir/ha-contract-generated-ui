@@ -1,5 +1,5 @@
 (() => {
-  const BOOTSTRAP_KEY = "__nikas_house_navigation_b025";
+  const BOOTSTRAP_KEY = "__nikas_house_navigation_b026";
   if (window[BOOTSTRAP_KEY]) return;
   window[BOOTSTRAP_KEY] = true;
 
@@ -19,6 +19,9 @@
   function sourceBaseRoute(pathname) {
     if (pathname === "/dashboard-house-v11" || pathname.startsWith("/dashboard-house-v11/")) {
       return "/dashboard-house-v11/home";
+    }
+    if (pathname === "/dashboard-house-v12" || pathname.startsWith("/dashboard-house-v12/")) {
+      return "/dashboard-house-v12/home";
     }
     if (pathname === "/dashboard-rooms" || pathname.startsWith("/dashboard-rooms/")) {
       return "/dashboard-rooms/rooms";

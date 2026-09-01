@@ -1,6 +1,7 @@
 # House panel compliance
 
-Scope: the new main House panel at `/dashboard-house-v11/home`.
+Scope: the new main House panel at `/dashboard-house-v11/home`, or the collision-safe
+parallel route `/dashboard-house-v12/home` when v11 already has an owner.
 
 | Requirement | Status |
 |---|---|

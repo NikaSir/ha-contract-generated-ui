@@ -6,13 +6,24 @@ Contract Generated UI `0.35.0` promotes the accepted House visual state scene, n
 
 ## Route and ownership
 
-The public route remains unchanged:
+The preferred route remains:
 
 ```text
 /dashboard-house-v11/home
 ```
 
-The integration registers `dashboard-house-v11` through Home Assistant `panel_custom` and loads the self-contained `nikas-house-overview` web component. The House panel is no longer exported under `lovelace.dashboards:` and does not depend on a Sections view or `custom:nikas-house-hero` being constructed by Lovelace after a cold refresh.
+If that route is already owned by a preserved YAML panel, the integration leaves it
+untouched and registers the autonomous preview at:
+
+```text
+/dashboard-house-v12/home
+```
+
+The collision-safe sidebar title is `Дом · новая`. Both variants use Home Assistant
+`panel_custom` and the self-contained `nikas-house-overview` web component. The House
+panel is no longer exported under `lovelace.dashboards:` and does not depend on a
+Sections view or `custom:nikas-house-hero` being constructed by Lovelace after a cold
+refresh.
 
 The deterministic House YAML and RenderTrace remain available as review evidence, but they are not the runtime host of the overview.
 
@@ -71,7 +82,7 @@ The shell and live scene DOM are created once. Home Assistant state updates patc
 
 ## Release acceptance
 
-- `/dashboard-house-v11/home` opens after a cold app refresh without a Lovelace configuration error;
+- the selected unowned House route opens after a cold app refresh without a Lovelace configuration error;
 - `☰` opens the native Home Assistant menu;
 - Header and Bottom Tab Bar remain at fixed screen coordinates and native-sized while only the work viewport scrolls;
 - exactly one viewport and one transform target survive repeated telemetry updates;
