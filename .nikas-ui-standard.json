@@ -2,7 +2,7 @@
   "version": "2.1",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "34ef66bb1fd305e3efb0272478cc28055a2a2d85c4edce83ab7b1587c542c4ad",
+  "standard_sha256": "776e49c7244d17915acb5839c9958b624e0f9c450a6fef59030e751bde5b6f58",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "d495eca80345b96976c168029a96146803f3d8195b6f6fc723827b601ffb578e",
   "role": "registry",
@@ -14,6 +14,7 @@
     "bottom_nav_body_px": 64,
     "content_max_width_px": 1280,
     "coordinate_tolerance_px": 2,
+    "scroll_boundary_guard": "capture-non-passive-touchmove",
     "specialized_tab_range": [3, 5],
     "viewport_matrix": {
       "phone_portrait": "430x932",
@@ -26,7 +27,7 @@
   "runtime_files": [],
   "source_kit": {
     "path": "templates/shell_v2/nikas-specialized-shell.js",
-    "sha256": "84ba1e2d9db4e1f77af4efb418d10c43967b647a8cc52cb06962c326e02dae76",
+    "sha256": "c7171560b68e2c4118b327c5e6a63c65e3410a4e1f10a02691e0d15560166e65",
     "delivery": "vendored-build-time",
     "runtime_dependency": false
   },

@@ -59,6 +59,8 @@ def main() -> None:
         "Canonical shell rows",
         "Canonical work-content frame",
         "Mandatory viewport acceptance",
+        "capture-phase, non-passive `touchmove` boundary guard",
+        "never displays the Home Assistant refresh spinner",
         "Five destinations, as used by Keenetic, conform to this limit.",
         "Build-time shell source",
         "/dashboard-house-v13/home",
@@ -74,6 +76,10 @@ def main() -> None:
     require(shell.get("bottom_nav_body_px") == 64, "canonical Bottom Tab Bar body must be 64px")
     require(shell.get("content_max_width_px") == 1280, "canonical work-content max width must be 1280px")
     require(shell.get("coordinate_tolerance_px") == 2, "shell coordinate tolerance must be 2px")
+    require(
+        shell.get("scroll_boundary_guard") == "capture-non-passive-touchmove",
+        "shell must block Home Assistant edge scrolling with the iOS boundary guard",
+    )
     require(shell.get("specialized_tab_range") == [3, 5], "specialized Bottom Tab Bar must contain 3–5 tabs")
     expected_matrix = {
         "phone_portrait": "430x932",
@@ -142,6 +148,11 @@ def main() -> None:
             "padding:2px 3px 6px",
             "--mdc-icon-size:26px",
             "line-height:14px",
+            "overscroll-behavior-y:none",
+            "shouldBlockNikasShellBoundaryMove",
+            "createNikasShellScrollBoundaryGuard",
+            "NIKAS_SHELL_BOUNDARY_THRESHOLD_PX = 4",
+            'host.addEventListener("touchmove", moveTouch, { passive: false, capture: true })',
             "captureNikasShellReturnRoute",
             "window.history.pushState",
             'new Event("location-changed")',

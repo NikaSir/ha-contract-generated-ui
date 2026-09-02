@@ -29,6 +29,7 @@ BOTTOM TAB BAR                              native scale
 - The effective iOS safe area is consumed exactly once.
 - On phones the panel owns a height-locked application shell. The outer Home Assistant page must not become the scrolling surface: only the work viewport scrolls, so Header and Bottom Tab Bar stay at fixed screen coordinates.
 - Prevent scroll chaining from the work viewport into Home Assistant's outer document. A sticky element inside the scrolling/transformed subtree does not satisfy the fixed-chrome requirement.
+- On iOS, CSS overscroll containment alone is not sufficient. The shell installs a capture-phase, non-passive `touchmove` boundary guard: a downward finger move at the top edge, an upward finger move at the bottom edge, and either vertical direction on a short view are consumed before Home Assistant can start pull-to-refresh or scroll its outer container. Interior movement on a long view remains native.
 - Short views fill the available work row rather than shrinking the application shell and pulling either menu toward their content.
 
 ### 1.1 Home Assistant host boundary
@@ -39,6 +40,7 @@ BOTTOM TAB BAR                              native scale
 - Opening, closing or resizing the Home Assistant sidebar must resize the shell naturally. A panel must not render below, behind or across the sidebar, and must not reserve a sidebar-sized blank strip when the sidebar is collapsed.
 - If a Home Assistant version does not provide a stable percentage height, a `fixed_root` or `boundary_guard` may be used only when all four coordinates are derived from the current host rectangle. A browser-window fixed root is non-conforming.
 - The outer Home Assistant document remains at scroll origin. Neither native scroll nor overscroll from the work viewport may transfer to it.
+- A vertical gesture that starts on Header or Bottom Tab Bar is also consumed by the shell boundary guard; fixed chrome is never a drag handle for the outer Home Assistant page. Two-finger gestures remain available to the work-area zoom engine.
 
 ### 1.2 Canonical shell rows
 
@@ -298,6 +300,7 @@ Repository tests or static checks must verify:
 24. the outer Home Assistant scrolling element remains at origin while the work viewport scrolls;
 25. the canonical shell row sizes, work-content frame, breakpoint gutters and 3–5 specialized-tab limit are machine-checked.
 26. every Bottom Tab Bar label is fully visible, including Cyrillic descenders, with the sidebar expanded and collapsed and in every mandatory viewport.
+27. the non-passive touch boundary guard blocks Home Assistant pull-to-refresh and outer scrolling at both work-viewport edges without replacing native interior scrolling or two-finger zoom.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -330,6 +333,8 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - a requested connection indicator visually matches S8 OMNI: `58px` minimum height, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
+- pulling downward at the top of any tab never displays the Home Assistant refresh spinner or splash screen; dragging upward at the bottom never moves the complete panel or leaves a blank field below it;
+- a short tab consumes vertical edge gestures in both directions, while a long tab still scrolls naturally between Header and Bottom Tab Bar;
 - short views do not pull either menu inward, and long views expose their last control above the Bottom Tab Bar;
 - at least ten consecutive tab switches produce no blank frame, lost map/image or duplicated viewport;
 - loss/recovery changes telemetry and any enabled indicator in place; preserved samples are visibly stale;
