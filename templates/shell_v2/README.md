@@ -11,6 +11,7 @@ assets remain in the owning repository.
 The kit provides:
 
 - host-bound Header / optional peer selector / work viewport / Bottom Tab Bar geometry;
+- an iOS-safe touch boundary guard that prevents Home Assistant pull-to-refresh and outer-page scrolling;
 - the canonical `1280px` work-content frame and responsive gutters;
 - the four current NikaS base-route normalizers;
 - one-shot source hand-off, stable return-route capture and explicit Home Assistant navigation.
