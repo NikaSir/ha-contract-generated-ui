@@ -418,8 +418,11 @@ class NikasHouseHero extends HTMLElement {
         ${this._utility("Отопление",heating.tone,routes.heating)}
       </div>
     </div></ha-card>`;
-    const replaced = commitStableMarkup(this.shadowRoot, markup);
-    if (replaced) this._bindRoutes();
+    commitStableMarkup(this.shadowRoot, markup);
+    // Stable state updates deliberately preserve the existing DOM tree. Route
+    // handlers must therefore be reconciled independently from DOM replacement.
+    // _bindRoutes is idempotent and only attaches listeners to unbound nodes.
+    this._bindRoutes();
     this._scheduleViewportFit();
   }
 }
@@ -432,7 +435,7 @@ if (!window.customCards.some((card) => card.type === ELEMENT_NAME)) {
 
 (() => {
   const ELEMENT_NAME = "nikas-house-overview";
-  const UI_VERSION = "0.38.1";
+  const UI_VERSION = "0.38.2";
   if (customElements.get(ELEMENT_NAME)) return;
 
   const MIN_SCALE = 0.75;

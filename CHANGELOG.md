@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased — 0.38.1
+## Unreleased — 0.38.2
+
+- Restores taps on all route cards inside the House visual scene by reconciling
+  their idempotent handlers after every stable state render.
+- Bumps the House frontend cache key so installed clients load the corrected
+  card interaction code immediately after the integration update.
+
+## 0.38.1
 
 - Preserves an existing YAML owner at `/dashboard-house-v11` and registers the
   autonomous House panel in parallel at `/dashboard-house-v12/home` instead of
