@@ -4,6 +4,7 @@
 
 - Retires automatic registration of the historical `Дом · новая` panel.
 - Removes the dashboard-generation entity from the installed integration.
+- Removes the obsolete dashboard-generation button from the entity registry on setup.
 - Keeps scrubbed registry capture/download, diagnostics, source validation and the
   retained shared photo/assets path.
 - Stops loading global House JavaScript and removes the Lovelace runtime dependency.

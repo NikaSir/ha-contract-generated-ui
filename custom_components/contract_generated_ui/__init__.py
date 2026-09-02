@@ -25,6 +25,7 @@ async def async_setup_entry(
     """Set up registry snapshots, diagnostics and shared static assets."""
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
+    from homeassistant.helpers import entity_registry as er
 
     from .const import (
         DOMAIN,
@@ -57,6 +58,15 @@ async def async_setup_entry(
             ]
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
+
+    entity_registry = er.async_get(hass)
+    legacy_generate_entity_id = entity_registry.async_get_entity_id(
+        Platform.BUTTON,
+        DOMAIN,
+        f"{entry.entry_id}_generate_dashboards",
+    )
+    if legacy_generate_entity_id is not None:
+        entity_registry.async_remove(legacy_generate_entity_id)
 
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()

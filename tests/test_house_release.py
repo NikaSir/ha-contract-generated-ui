@@ -71,6 +71,8 @@ def test_setup_registers_no_dashboard_or_global_frontend() -> None:
     assert "panel_custom" not in init
     assert "ContractGeneratedUIGenerateDashboardsButton" not in button
     assert "render_all_manifests" not in button
+    assert 'f"{entry.entry_id}_generate_dashboards"' in init
+    assert "entity_registry.async_remove(legacy_generate_entity_id)" in init
 
 
 def test_registry_service_brand_icon_is_packaged() -> None:
