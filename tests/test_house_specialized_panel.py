@@ -84,7 +84,7 @@ def test_house_panel_uses_parallel_route_when_yaml_owns_v11(tmp_path: Path) -> N
     assert panel["default_path"] == "/dashboard-house-v12/home"
     assert panel["sidebar_title"] == "Дом · новая"
     assert panel["tabs"][0]["path"] == "/dashboard-house-v12/home"
-    assert panel["tabs"][1]["path"] == "/dashboard-rooms/rooms"
+    assert panel["tabs"][1]["path"] == "/dashboard-rooms-v11/rooms"
 
 
 def test_house_panel_never_replaces_two_existing_route_owners() -> None:
