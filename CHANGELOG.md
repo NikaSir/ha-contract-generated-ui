@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.39.1
+
+- Prefixes the Home Assistant and HACS display name with `NikaS`.
+- Publishes the local brand icon through a versioned HACS update.
+
 ## 0.39.0
 
 - Retires automatic registration of the historical `Дом · новая` panel.

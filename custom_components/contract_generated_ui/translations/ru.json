@@ -1,9 +1,9 @@
 {
-  "title": "Contract Generated UI",
+  "title": "NikaS Contract Generated UI",
   "config": {
     "step": {
       "user": {
-        "title": "Contract Generated UI",
+        "title": "NikaS Contract Generated UI",
         "description": "Служебные снимки реестра Home Assistant и общие ресурсы NikaS. Интеграция не регистрирует и не заменяет панели.",
         "data": {}
       }
