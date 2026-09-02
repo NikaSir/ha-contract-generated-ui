@@ -106,12 +106,12 @@ function nikasShellV2Styles() {
       box-shadow:0 -5px 22px rgba(23,45,76,.08)
     }
     .nikas-shell__tab{
-      min-inline-size:0;block-size:52px;padding:5px 3px;border:0;border-radius:16px;background:transparent;
+      min-inline-size:0;block-size:52px;padding:2px 3px 6px;border:0;border-radius:16px;background:transparent;
       color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;
-      justify-content:center;gap:3px;font-weight:700;cursor:pointer
+      justify-content:center;gap:1px;overflow:hidden;font-family:inherit;font-weight:700;line-height:1;cursor:pointer
     }
-    .nikas-shell__tab ha-icon{--mdc-icon-size:28px}
-    .nikas-shell__tab small{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-inline-size:100%}
+    .nikas-shell__tab ha-icon{--mdc-icon-size:26px;display:block;flex:0 0 26px}
+    .nikas-shell__tab small{display:block;flex:0 0 14px;max-inline-size:100%;font-family:inherit;font-size:12px;font-weight:700;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .nikas-shell__tab.active{
       color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)
     }

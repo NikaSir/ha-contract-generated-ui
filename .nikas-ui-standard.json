@@ -2,7 +2,7 @@
   "version": "2.1",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "f436204830f602bea84742b66b6861c6b47fb5e82cfdf2f83ae6c6e615cb56bf",
+  "standard_sha256": "34ef66bb1fd305e3efb0272478cc28055a2a2d85c4edce83ab7b1587c542c4ad",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "d495eca80345b96976c168029a96146803f3d8195b6f6fc723827b601ffb578e",
   "role": "registry",
@@ -26,7 +26,7 @@
   "runtime_files": [],
   "source_kit": {
     "path": "templates/shell_v2/nikas-specialized-shell.js",
-    "sha256": "732bcd1872b02bc7804d84dc2607f8c56e43d67e6bc9251fb453b54d499ebe19",
+    "sha256": "84ba1e2d9db4e1f77af4efb418d10c43967b647a8cc52cb06962c326e02dae76",
     "delivery": "vendored-build-time",
     "runtime_dependency": false
   },

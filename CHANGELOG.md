@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keeps Bottom Tab Bar labels clear of the panel-host edge with an explicit
+  `26px` icon, `14px` label line box and reserved lower clearance.
 - Promotes the canonical NikaS Specialized Panel UI Standard to v2.1 with a
   host-bound shell, numeric Header/work/Bottom Nav geometry and a mandatory
   phone/tablet/desktop acceptance matrix.
