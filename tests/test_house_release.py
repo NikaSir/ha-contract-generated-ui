@@ -11,7 +11,7 @@ PACKAGE = ROOT / "custom_components" / "contract_generated_ui"
 
 def test_release_is_registry_service() -> None:
     manifest = json.loads((PACKAGE / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.39.0"
+    assert manifest["version"] == "0.39.1"
     assert manifest["dependencies"] == ["http"]
     assert "after_dependencies" not in manifest
 

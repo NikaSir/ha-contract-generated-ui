@@ -3,7 +3,7 @@
 from datetime import timedelta
 
 DOMAIN = "contract_generated_ui"
-NAME = "Contract Generated UI"
+NAME = "NikaS Contract Generated UI"
 
 SOURCE_DIRECTORY = "contract_generated_ui"
 SOURCE_KINDS = ("contracts", "inventory", "manifests", "navigation")

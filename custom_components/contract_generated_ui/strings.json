@@ -1,9 +1,9 @@
 {
-  "title": "Contract Generated UI",
+  "title": "NikaS Contract Generated UI",
   "config": {
     "step": {
       "user": {
-        "title": "Contract Generated UI",
+        "title": "NikaS Contract Generated UI",
         "description": "Maintain scrubbed Home Assistant registry snapshots and shared NikaS assets. This service does not register or replace dashboards.",
         "data": {}
       }
