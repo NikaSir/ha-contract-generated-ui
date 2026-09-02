@@ -106,6 +106,9 @@ def test_house_visual_scene_point_patches_without_optional_indicator() -> None:
     assert "sameTreeShape" in bundle
     assert "syncTree" in bundle
     assert "_nikasRouteBound" in bundle
+    assert "commitStableMarkup(this.shadowRoot, markup);\n    // Stable state updates" in bundle
+    assert "this._bindRoutes();\n    this._scheduleViewportFit();" in bundle
+    assert "if (replaced) this._bindRoutes()" not in bundle
     assert "connection-primary" not in bundle
     assert "connection-secondary" not in bundle
     top = bundle[bundle.index('<div class="top-grid">'):bundle.index('</div>', bundle.index('<div class="top-grid">'))]

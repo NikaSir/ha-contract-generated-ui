@@ -10,7 +10,7 @@ PACKAGE = ROOT / "custom_components" / "contract_generated_ui"
 
 def test_release_is_house_only() -> None:
     manifest = json.loads((PACKAGE / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.38.1"
+    assert manifest["version"] == "0.38.2"
     assert set(manifest["dependencies"]) == {"frontend", "http"}
     assert manifest["after_dependencies"] == ["lovelace"]
 
