@@ -1,11 +1,28 @@
 {
-  "version": "1.9",
+  "version": "2.0",
   "navigation_contract_version": "1.1",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "a31dc45499443f8fa43eaea1906fe3a793dffcb411b10cebcd3a3a205fbcef27",
+  "standard_sha256": "ea2c3688f4f9e7ea1032b3739ad9553f17c18c6727fe25d2cbc86b8adcfd2013",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "c87dc760c0900701f6a807a35aba40e790f68f52c39f4579583598f697997e52",
   "role": "base",
+  "shell_contract": {
+    "version": "2.0",
+    "host_boundary": "ha-panel",
+    "header_body_px": 60,
+    "peer_selector_px": 52,
+    "bottom_nav_body_px": 64,
+    "content_max_width_px": 1280,
+    "coordinate_tolerance_px": 2,
+    "specialized_tab_range": [3, 5],
+    "viewport_matrix": {
+      "phone_portrait": "430x932",
+      "phone_landscape": "932x430",
+      "tablet_portrait": "768x1024",
+      "tablet_landscape": "1024x768",
+      "desktop": "1440x900"
+    }
+  },
   "runtime_files": [
     "custom_components/contract_generated_ui/frontend/nikas-ui.js",
     "custom_components/contract_generated_ui/frontend/nikas-house-hero.js",
@@ -44,8 +61,8 @@
   "title_plaque_reference": {
     "implementation": "S8 OMNI",
     "implementation_source": "NikaSir/ha-s8-omni",
-    "min_width": "min(290px,100%)",
-    "min_height_px": 44,
+    "width": "min(360px,100%)",
+    "height_px": 52,
     "padding_px": "5 14",
     "radius_px": 16,
     "primary_background_mix_percent": 5,
