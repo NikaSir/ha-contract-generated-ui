@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Contract Generated UI",
-        "description": "Контроль и проверка контрактных источников в `/config/contract_generated_ui`. На этом шаге интеграция не создаёт и не подменяет entity_id Home Assistant.",
+        "description": "Служебные снимки реестра Home Assistant и общие ресурсы NikaS. Интеграция не регистрирует и не заменяет панели.",
         "data": {}
       }
     }
@@ -16,9 +16,6 @@
       },
       "download_registry_snapshot": {
         "name": "Скачать снимок реестра"
-      },
-      "generate_dashboards": {
-        "name": "Сгенерировать панели"
       }
     },
     "sensor": {

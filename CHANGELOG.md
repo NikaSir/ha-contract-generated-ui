@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased — 0.38.2
+## 0.39.0
+
+- Retires automatic registration of the historical `Дом · новая` panel.
+- Removes the dashboard-generation entity from the installed integration.
+- Removes the obsolete dashboard-generation button from the entity registry on setup.
+- Keeps scrubbed registry capture/download, diagnostics, source validation and the
+  retained shared photo/assets path.
+- Stops loading global House JavaScript and removes the Lovelace runtime dependency.
+- Preserves all private inventory, snapshots, generated history and archived sources.
+- Replaces the integration brand icon with the approved NikaS graphite/cyan registry icon.
+
+## 0.38.2
 
 - Restores taps on all route cards inside the House visual scene by reconciling
   their idempotent handlers after every stable state render.

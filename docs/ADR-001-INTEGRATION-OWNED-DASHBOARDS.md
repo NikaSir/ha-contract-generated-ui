@@ -1,5 +1,9 @@
 # ADR-001: Repository-owned specialized dashboards
 
+> Runtime ownership update (0.39.0): the main House panel has moved to
+> `NikaSir/ha-nikas-house`. Contract Generated UI no longer registers a panel. The
+> historical decision below is retained for traceability.
+
 **Status:** Accepted
 **Updated:** 2026-08-31
 
