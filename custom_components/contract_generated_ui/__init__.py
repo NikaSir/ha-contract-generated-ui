@@ -1,4 +1,4 @@
-"""Contract Generated UI integration for the NikaS House overview."""
+"""Contract Generated UI registry and shared-asset service."""
 
 from __future__ import annotations
 
@@ -22,8 +22,7 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
-    """Set up the House-only Contract Generated UI integration."""
-    from homeassistant.components.frontend import add_extra_js_url
+    """Set up registry snapshots, diagnostics and shared static assets."""
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
@@ -32,18 +31,9 @@ async def async_setup_entry(
         FRONTEND_DIRECTORY,
         FRONTEND_STATIC_REGISTERED,
         HOUSE_HERO_ASSETS_STATIC_PATH,
-        HOUSE_HERO_FILENAME,
-        HOUSE_HERO_MODULE_URL,
-        HOUSE_HERO_STATIC_PATH,
-        HOUSE_PANEL_FILENAME,
-        HOUSE_PANEL_STATIC_PATH,
         SOURCE_DIRECTORY,
-        UI_BUNDLE_FILENAME,
-        UI_BUNDLE_MODULE_URL,
-        UI_BUNDLE_STATIC_PATH,
     )
     from .coordinator import ContractGeneratedUICoordinator
-    from .house_panel import async_register_house_panel
     from .runtime_source_sync import sync_bundled_public_sources
     from .snapshot_download import async_register_snapshot_download_view
 
@@ -51,7 +41,7 @@ async def async_setup_entry(
     try:
         await hass.async_add_executor_job(sync_bundled_public_sources, source_root)
     except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
-        _LOGGER.warning("Cannot synchronize NikaS House sources during setup: %s", err)
+        _LOGGER.warning("Cannot synchronize preserved NikaS sources during setup: %s", err)
 
     async_register_snapshot_download_view(hass)
     domain_data = hass.data.setdefault(DOMAIN, {})
@@ -60,21 +50,6 @@ async def async_setup_entry(
         await hass.http.async_register_static_paths(
             [
                 StaticPathConfig(
-                    UI_BUNDLE_STATIC_PATH,
-                    str(frontend_root / UI_BUNDLE_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    HOUSE_HERO_STATIC_PATH,
-                    str(frontend_root / HOUSE_HERO_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
-                    HOUSE_PANEL_STATIC_PATH,
-                    str(frontend_root / HOUSE_PANEL_FILENAME),
-                    False,
-                ),
-                StaticPathConfig(
                     HOUSE_HERO_ASSETS_STATIC_PATH,
                     str(frontend_root / "assets"),
                     False,
@@ -82,16 +57,6 @@ async def async_setup_entry(
             ]
         )
         domain_data[FRONTEND_STATIC_REGISTERED] = True
-
-    # This module supplies only safe HA navigation. It does not inject chrome
-    # into, replace, or hide any legacy YAML dashboard.
-    add_extra_js_url(hass, UI_BUNDLE_MODULE_URL)
-    add_extra_js_url(hass, HOUSE_HERO_MODULE_URL)
-
-    try:
-        await async_register_house_panel(hass, source_root)
-    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
-        _LOGGER.warning("Cannot register specialized NikaS House panel: %s", err)
 
     coordinator = ContractGeneratedUICoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
@@ -107,22 +72,11 @@ async def async_unload_entry(
     hass: HomeAssistant,
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
-    """Unload only resources and the House fallback owned by this integration."""
-    from homeassistant.components.frontend import remove_extra_js_url
+    """Unload registry service entities."""
     from homeassistant.const import Platform
-
-    from .const import HOUSE_HERO_MODULE_URL, UI_BUNDLE_MODULE_URL
-    from .house_panel import async_unregister_house_panel
 
     unloaded = await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
-    if unloaded:
-        async_unregister_house_panel(hass)
-        for module_url in (UI_BUNDLE_MODULE_URL, HOUSE_HERO_MODULE_URL):
-            try:
-                remove_extra_js_url(hass, module_url)
-            except KeyError:
-                pass
     return unloaded

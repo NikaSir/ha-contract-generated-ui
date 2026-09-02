@@ -15,16 +15,15 @@ The project treats Home Assistant dashboards as generated artifacts derived from
 7. **Validation** — reject unknown entity references, contract/schema violations and unsafe state handling.
 8. **Release** — publish only validated generated output with traceable inputs.
 
-## Ownership boundary
+## Runtime ownership boundary
 
-The generator is the **main House overview and navigation layer**. It is not the
-canonical owner of Rooms, Actions, Infrastructure or any detailed device/domain
-workflow.
+The installed integration is a registry and shared-asset service. It does not register
+the main House overview or any other dashboard. The accepted House runtime belongs to
+`ha-nikas-house`; every other specialized panel belongs to its dedicated repository.
 
-For complex domains, the custom integration that owns the entities and actions also
-owns its specialized dashboard in a dedicated repository. `ha-contract-generated-ui`
-may show verified summaries and navigate to that interface, but it does not ship its
-implementation.
+The contract/generator pipeline remains in this repository as reviewed engineering
+history and as an offline validation toolkit. It is not invoked by a Home Assistant
+entity and cannot apply or register generated Lovelace content.
 
 This rule is formally recorded in [ADR-001: Integration-owned specialized dashboards](ADR-001-INTEGRATION-OWNED-DASHBOARDS.md).
 
@@ -41,8 +40,7 @@ This rule is formally recorded in [ADR-001: Integration-owned specialized dashbo
 
 ## Current stage
 
-Contract core v1 is implemented for the main House overview. `UIContract`,
-`SemanticInventory`, `PanelManifest` and `NavigationContract` have machine-readable
-schemas; repository validation enforces their boundaries and regression tests protect
-the safety and repository-ownership invariants. Other panels evolve in their own
-repositories and are connected only by declared routes.
+Runtime version 0.39.0 retains registry capture/download, diagnostics, source
+validation and shared static assets. Historical contracts, manifests, renderers and
+frontend files remain available for audit, while runtime tests ensure no panel module
+is registered or injected.

@@ -1,44 +1,38 @@
-# Repository scope: main House only
+# Repository scope: registry and shared assets
 
 ## Decision
 
-`NikaSir/ha-contract-generated-ui` owns only the new main **Дом** overview. It must not implement or register Rooms, Actions, Infrastructure or any detailed control panel.
+`NikaSir/ha-contract-generated-ui` is a retained service integration. It captures and
+downloads scrubbed Home Assistant registry snapshots, validates preserved source data
+and serves retained shared assets. It owns no runtime dashboard.
 
-The existing configured YAML dashboards remain the working baseline in Home Assistant. The split does not rename, overwrite, unload or delete them.
+The accepted main House panel is owned by `NikaSir/ha-nikas-house`. Rooms, Access and
+all device/domain panels remain owned by their dedicated repositories.
 
-## Ownership matrix
+## Route ownership
 
-| Route | Status | Rule |
+| Route | Owner | Contract Generated UI rule |
 |---|---|---|
 | `/dashboard-house` | Existing YAML | Preserve unchanged |
-| `/dashboard-house-v11/home` | Existing owner or preferred new House route | Preserve an existing owner; use when free |
-| `/dashboard-house-v12/home` | Parallel new House | Register here when v11 is already owned |
-| `/dashboard-rooms/rooms` | Existing YAML | External link until a separate Rooms repository is accepted |
-| `/dashboard-actions/home` | Existing YAML | External link until a separate Actions repository is accepted |
-| `/dashboard-infrastructure/overview` | Existing YAML | External link until a separate Infrastructure repository is accepted |
-| Device-specific routes | Separate integrations | Always externally owned |
+| `/dashboard-house-v11/home` | Existing owner | Do not register or remove |
+| `/dashboard-house-v12/home` | Historical Contract Generated UI route | Retired; do not register |
+| `/dashboard-house-v13/home` | `ha-nikas-house` | External owner; do not modify |
+| Other NikaS routes | Their dedicated integrations or YAML | External owners; do not modify |
 
 ## Preservation
 
-The exact multi-panel code state before the split is commit `c525b30991ce7a52b2b3aeba876d65fc7ba97685` on `archive/multipanel-0.37.8`.
+The exact pre-split multi-panel state is commit
+`c525b30991ce7a52b2b3aeba876d65fc7ba97685` on
+`archive/multipanel-0.37.8`. The final Contract Generated UI House state is commit
+`f5bff81` on the default branch history.
 
-This repository may clean only its own packaged contracts, manifests, frontend bundles and fallback registrations. It must never clean private inventory, snapshots, generated history or Home Assistant YAML dashboard files.
+The integration must never clean private inventory, snapshots, generated history,
+user-supplied assets or Home Assistant YAML dashboard files. Historical House source
+may remain in Git for traceability but is not imported or registered at runtime.
 
-## New detailed-panel workflow
+## Runtime boundary
 
-1. Create a dedicated repository when work on a detailed panel starts.
-2. Give it a unique preview route that does not collide with the existing YAML route.
-3. Keep its contracts, manifest, frontend, assets and tests inside that repository.
-4. Test the preview on the target phone while the YAML dashboard remains available.
-5. Change the House navigation URL only after the new panel is accepted.
-6. Retain the YAML panel as a rollback path until its retirement is explicitly approved.
-
-The House migration follows the same rule: an occupied v11 route is never replaced;
-the autonomous panel appears as `Дом · новая` on the v12 route for acceptance.
-
-## Cross-repository boundary
-
-- Navigation by explicit URL is allowed.
-- Copying an approved UI pattern at development time is allowed.
-- Importing JavaScript, Python, assets or manifests from another panel repository at runtime is forbidden.
-- One repository must never unload or replace a route owned by another repository or by Lovelace YAML.
+- Allowed: registry capture, authenticated snapshot download, source validation and
+  serving the retained assets directory.
+- Forbidden: panel registration, Lovelace generation from an entity button, global
+  frontend injection, route replacement or unloading a route owned by another project.
