@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Promotes the canonical NikaS Specialized Panel UI Standard to v2.0 with a
+  host-bound shell, numeric Header/work/Bottom Nav geometry and a mandatory
+  phone/tablet/desktop acceptance matrix.
+- Adds machine-readable shell dimensions and CI guards, including the correct
+  3–5 specialized-tab range; Keenetic's five destinations remain conforming.
+
 ## 0.39.1
 
 - Prefixes the Home Assistant and HACS display name with `NikaS`.

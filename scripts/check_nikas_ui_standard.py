@@ -26,7 +26,7 @@ def read_relative(path: str) -> str:
 
 def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    require(config.get("version") == "1.9", "NikaS UI standard version must be 1.9")
+    require(config.get("version") == "2.0", "NikaS UI standard version must be 2.0")
     require(
         config.get("navigation_contract_version") == "1.1",
         "NikaS navigation contract version must be 1.1",
@@ -35,7 +35,7 @@ def main() -> None:
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
-    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v1.9 copy")
+    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.0 copy")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(
@@ -55,8 +55,31 @@ def main() -> None:
         "Ambient shell synchronization",
         "Data truth and command safety",
         "Production bundle and version coherence",
+        "Home Assistant host boundary",
+        "Canonical shell rows",
+        "Canonical work-content frame",
+        "Mandatory viewport acceptance",
+        "Five destinations, as used by Keenetic, conform to this limit.",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
+
+    shell = config.get("shell_contract", {})
+    require(shell.get("version") == "2.0", "NikaS shell contract version must be 2.0")
+    require(shell.get("host_boundary") == "ha-panel", "shell must bind to the Home Assistant panel host")
+    require(shell.get("header_body_px") == 60, "canonical Header body must be 60px")
+    require(shell.get("peer_selector_px") == 52, "canonical peer selector must be 52px")
+    require(shell.get("bottom_nav_body_px") == 64, "canonical Bottom Tab Bar body must be 64px")
+    require(shell.get("content_max_width_px") == 1280, "canonical work-content max width must be 1280px")
+    require(shell.get("coordinate_tolerance_px") == 2, "shell coordinate tolerance must be 2px")
+    require(shell.get("specialized_tab_range") == [3, 5], "specialized Bottom Tab Bar must contain 3–5 tabs")
+    expected_matrix = {
+        "phone_portrait": "430x932",
+        "phone_landscape": "932x430",
+        "tablet_portrait": "768x1024",
+        "tablet_landscape": "1024x768",
+        "desktop": "1440x900",
+    }
+    require(shell.get("viewport_matrix") == expected_matrix, "canonical viewport matrix drift")
     for clause in (
         "/dashboard-house-v11/home",
         "/dashboard-actions/home",

@@ -1,6 +1,6 @@
 # House Overview Specialized Panel v2
 
-> This file describes the current implementation snapshot. Compliance requirements are in `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v1.7.
+> This file describes the current implementation snapshot. Compliance requirements are in `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v2.0.
 
 Contract Generated UI `0.35.0` promotes the accepted House visual state scene, now titled `Дом сейчас`, from a Lovelace custom card to an integration-owned Home Assistant specialized panel.
 

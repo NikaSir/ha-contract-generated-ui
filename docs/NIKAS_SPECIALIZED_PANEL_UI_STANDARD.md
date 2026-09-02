@@ -1,16 +1,16 @@
-# NikaS Specialized Panel UI Standard v1.9
+# NikaS Specialized Panel UI Standard v2.0
 
 **Status:** REQUIRED
 **Canonical source:** `NikaSir/ha-contract-generated-ui`
 **Applies to:** every integration-owned specialized Home Assistant panel
-**Primary acceptance viewport:** iPhone Pro Max, portrait
-**Reference shell implementation:** Stark SolarPower / UPS
+**Mandatory acceptance matrix:** phone portrait/landscape, tablet portrait/landscape, desktop with Home Assistant sidebar expanded/collapsed
+**Normative shell reference:** the numeric host-bound geometry in this document; screenshots and individual panels are not normative
 **Reference Header surface and controls:** S8 OMNI
 **Reference connection/freshness plaque:** S8 OMNI
 **Reference typography and domain status treatment:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md`
 
-This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents remain useful only where they do not conflict with this standard.
+This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.0 makes the shell geometry, Home Assistant host boundary and multi-viewport acceptance testable rather than implementation-dependent.
 
 ## 1. Ownership and topology
 
@@ -30,13 +30,50 @@ BOTTOM TAB BAR                              native scale
 - Prevent scroll chaining from the work viewport into Home Assistant's outer document. A sticky element inside the scrolling/transformed subtree does not satisfy the fixed-chrome requirement.
 - Short views fill the available work row rather than shrinking the application shell and pulling either menu toward their content.
 
-## 2. Header — S8 OMNI reference surface and geometry
+### 1.1 Home Assistant host boundary
+
+- The panel root is bound to the actual Home Assistant panel host, not to the browser window. Its border box must equal the current `ha-panel` content box after Home Assistant chrome and an expanded or collapsed sidebar have taken their space.
+- The shell uses the host's local coordinate system: logical `inset:0`, `inline-size:100%`, `block-size:100%`, `min-inline-size:0` and `min-block-size:0`. `100vw`, a hard-coded sidebar offset and viewport-fixed positioning derived from `window.innerWidth` are prohibited.
+- Opening, closing or resizing the Home Assistant sidebar must resize the shell naturally. A panel must not render below, behind or across the sidebar, and must not reserve a sidebar-sized blank strip when the sidebar is collapsed.
+- If a Home Assistant version does not provide a stable percentage height, a `fixed_root` or `boundary_guard` may be used only when all four coordinates are derived from the current host rectangle. A browser-window fixed root is non-conforming.
+- The outer Home Assistant document remains at scroll origin. Neither native scroll nor overscroll from the work viewport may transfer to it.
+
+### 1.2 Canonical shell rows
+
+The shell is one persistent grid with the following rows, in this order:
+
+```text
+Header          60px + effective top safe area
+Peer selector   0px, or exactly 52px when required
+Work viewport   minmax(0, 1fr)
+Bottom Tab Bar  64px + effective bottom safe area
+```
+
+- Header and Bottom Tab Bar always span the complete host width on phone, tablet and desktop.
+- Safe left/right insets are consumed by the corresponding shell row exactly once.
+- Domain content cannot add an outer Header, footer, application margin or second safe-area reserve.
+- A short page fills the work row. A long page scrolls only inside that row. Content height must never determine the vertical position of either menu.
+
+### 1.3 Canonical work-content frame
+
+- The work viewport always occupies the full middle shell row and has `min-width:0`, `min-height:0`, `overflow-y:auto`, `overflow-x:hidden` and contained overscroll.
+- Its immediate content frame is centered, uses `width:100%`, `max-width:1280px`, `box-sizing:border-box`, and exactly `12px` horizontal padding below `600px`, `16px` from `600px` through `1023px`, and `24px` from `1024px` upward.
+- A domain scene, diagram or card collection may choose its own internal composition, but may not change the shell width, shell rows, outer content frame or chrome coordinates.
+- A narrower domain card is allowed inside the canonical content frame. Applying a domain `max-width` to the shell, Header, work viewport or Bottom Tab Bar is prohibited.
+
+### 1.4 Navigation levels
+
+- A NikaS base panel uses the global four-destination navigation: `Дом / Помещения / Действия / Инфра`.
+- A specialized integration panel uses only its own 3–5 primary destinations. Five destinations, as used by Keenetic, conform to this limit.
+- Global base navigation and specialized integration navigation are different levels and must never be mixed in one Bottom Tab Bar.
+
+## 2. Header — canonical geometry with S8 OMNI surface
 
 The complete upper application menu copies the S8 OMNI Header, not merely its title typography. The Header surface, menu plaque, center return plaque and optional right action are one visual system.
 
-- Grid: `52px minmax(0,1fr) 52px`; on very narrow screens: `48px minmax(0,1fr) 48px`.
-- Minimum height: `62px`; phone target: `60px`, plus the effective top safe area.
-- Header side padding is at least `12px` and consumes the effective left/right safe area once. The top inset is consumed by the Header once; no child plaque adds a second safe-area offset.
+- The Header body is exactly `60px` high, plus the effective top safe area owned by the Header.
+- Its body grid is exactly `52px minmax(0,1fr) 52px` with `12px` horizontal padding plus the effective left/right safe area. On widths below `360px`, only the two rails reduce to `48px`; the body height does not change.
+- Both side rails remain reserved even when the right action is disabled or absent. The title therefore never moves when action state changes.
 - The Header strip uses the S8 OMNI surface: background `color-mix(in srgb,var(--primary-background-color) 97%,transparent)`, bottom border `1px solid color-mix(in srgb,var(--divider-color) 70%,transparent)`, and `backdrop-filter:blur(18px) saturate(130%)`. The iOS-prefixed equivalent may be added.
 - The Header strip remains a persistent mounted layer. Blur, border and background must not be toggled or remounted during scroll, pinch, telemetry changes or tab switches.
 - A solid integration-brand color, a transparent strip that exposes moving work content, or a card-white strip disconnected from `var(--primary-background-color)` is non-conforming.
@@ -56,7 +93,7 @@ The complete upper application menu copies the S8 OMNI Header, not merely its ti
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
 - The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
 - The whole plaque is one semantic `button` and copies the S8 OMNI reference geometry and tone exactly; it retains geometric centering between the side rails.
-- Default geometry: `justify-self:center`, `min-width:min(290px,100%)`, `max-width:100%`, `min-height:44px`, `padding:5px 14px`. On narrow phones it uses `min-width:0; width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
+- Default geometry: `justify-self:center`, `width:min(360px,100%)`, `height:52px`, `padding:5px 14px`. Below `360px` it uses `width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
 - Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
 - Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
 - The focus state and pressed response are mandatory and remain visibly distinct from the default state.
@@ -107,19 +144,19 @@ The former rule that one-finger transform panning also provides vertical movemen
 - A second finger cancels pending more-info; post-gesture synthetic clicks are briefly suppressed, while intentional stationary hold still opens native more-info.
 - Pinch and two-finger reset must not open history, a graph or more-info.
 
-## 6. Bottom Tab Bar — UPS reference geometry
+## 6. Bottom Tab Bar — canonical geometry with UPS visual lineage
 
-- One fixed, edge-attached, full-width bar; never a floating card or pill.
+- One persistent, edge-attached bar spanning the complete host width on every supported viewport; never a floating card or pill.
 - It remains outside the work viewport and above the Home Indicator.
 - Background: `var(--card-background-color)`; top divider and a subtle upward shadow.
-- Insets: approximately `6px` top and `calc(6px + env(safe-area-inset-bottom))` bottom, with safe left/right padding.
+- The native bar body is exactly `64px`: `6px` top padding, a `52px` tab target row and `6px` bottom padding. The effective bottom safe area is added below that body exactly once; effective left/right safe areas are added once.
 - All destinations have equal-width columns; 3–5 primary tabs are supported.
-- Tab touch target minimum height: `52px`.
-- Tab radius: approximately `16px`; compact internal padding and approximately `3px` icon/label gap.
+- Tab touch target height: exactly `52px`.
+- Tab radius: `16px`; compact internal padding and `3px` icon/label gap.
 - Icons are MDI through `ha-icon`, never text characters; canonical glyph size is `28px`.
 - Labels are one line, approximately `12px`, weight `700`, readable and ellipsized only when necessary.
 - Inactive content uses `var(--secondary-text-color)`.
-- Active icon/label use `var(--primary-color)` and an approximately 11% primary-color background, without a second shadow.
+- Active icon/label use `var(--primary-color)` and an `11%` primary-color background, without a second shadow and without changing the tab's size, column width or bar height.
 - Navigating between tabs restores the work area to the page start before interaction resumes.
 - A short view must not move the bar. A long view must scroll its final control/card fully clear of the bar and Home Indicator.
 
@@ -237,7 +274,7 @@ Repository tests or static checks must verify:
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
 12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary, S8 OMNI geometry and exact state-tinted surface percentages;
-13. the center title is a two-line `44px`+ semantic button, contains no arrow or separate Back label and retains geometric centering;
+13. the center title is a two-line, exactly `52px` high semantic button, contains no arrow or separate Back label and retains geometric centering;
 14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
 15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
 16. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
@@ -245,10 +282,27 @@ Repository tests or static checks must verify:
 18. UI version, manifest/contract, component registration and cache key stay coherent;
 19. unknown/unavailable data and product command policy are explicit and fail closed;
 20. JavaScript syntax, package validation, HACS and Hassfest pass.
+21. the shell border box equals the Home Assistant panel-host border box within `2px` on every edge and uses no `100vw` or hard-coded sidebar offset;
+22. Header and Bottom Tab Bar span the host width and keep their coordinates within `2px` before and after work scrolling, overscroll, tab changes and sidebar toggles;
+23. the title-plaque horizontal center equals the panel-host horizontal center within `2px` with the right action present, absent, enabled and disabled;
+24. the outer Home Assistant scrolling element remains at origin while the work viewport scrolls;
+25. the canonical shell row sizes, work-content frame, breakpoint gutters and 3–5 specialized-tab limit are machine-checked.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
-## 14. Mandatory phone acceptance
+## 14. Mandatory viewport acceptance
+
+Every changed shell is accepted at all of these CSS viewport sizes:
+
+| Class | Viewport | Home Assistant state |
+|---|---:|---|
+| Phone portrait | `430 × 932` | mobile menu closed and opened |
+| Phone landscape | `932 × 430` | mobile menu closed and opened |
+| Tablet portrait | `768 × 1024` | sidebar expanded and collapsed |
+| Tablet landscape | `1024 × 768` | sidebar expanded and collapsed |
+| Desktop | `1440 × 900` | sidebar expanded and collapsed |
+
+For every matrix entry, compare the measured Header, title plaque, work viewport and Bottom Tab Bar rectangles with the canonical reference. A coordinate or size deviation greater than `2px` is a blocking shell defect. Domain content is compared only against its own approved composition.
 
 - long diagnostics pages scroll vertically at 100%;
 - 100% cannot move horizontally or be pulled away from the top origin;
@@ -272,10 +326,12 @@ Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or 
 - repeated telemetry and tab changes do not change the captured Header return destination or replace its click handler.
 - an unavailable target cannot be commanded and never flashes an optimistic success state;
 - a missing or stale hand-off timestamp falls back safely instead of reusing an old source route.
+- expanding or collapsing the Home Assistant sidebar changes only the available host width; it does not overlap, offset twice or leave a blank sidebar reserve in the NikaS shell;
+- rotating between portrait and landscape preserves one shell, one work viewport, the selected tab and valid scroll/zoom bounds.
 
 ## 15. Publication
 
 - NikaS panel and integration work is published through traceable commits, branches and pull requests.
 - GitHub Releases are not used.
 - Automatic release tags are not used as a publication gate or update channel. An internal integration/UI version does not require a Git tag.
-- A pull request remains draft until automated checks pass and the real-phone acceptance items above are ready for user verification.
+- A pull request remains draft until automated checks pass and the complete viewport matrix above is ready for user verification.

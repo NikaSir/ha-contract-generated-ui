@@ -2,7 +2,7 @@
 
 **Status:** LIVING DOCUMENT  
 **Scope:** Home Assistant custom integrations, integration-owned specialized panels, generated/base panels  
-**Normative baseline:** NikaS Specialized Panel UI Standard v1.9 + NikaS Panel Navigation Contract  
+**Normative baseline:** NikaS Specialized Panel UI Standard v2.0 + NikaS Panel Navigation Contract
 **Purpose:** preserve engineering experience, failure modes, proven practices and acceptance criteria so new work starts from accumulated knowledge rather than from previous implementations.
 
 This file is intentionally broader than the UI standard. The standard defines mandatory behavior. This knowledge base records *why* those rules exist, what repeatedly failed in real devices, and how integration/backend, frontend, history/statistics and release work should be organized.
@@ -88,6 +88,14 @@ Large PNG backgrounds slowed first render and re-render. Reassigning unchanged `
 Desktop/static screenshots did not reveal inertial scroll, iOS safe-area, synthetic click after pinch, WebView flicker or shell movement.
 
 **Correct model:** automated checks are necessary but not sufficient. iPhone Pro Max portrait is the primary acceptance viewport for specialized panels. Regression scenarios are defined before merge.
+
+### 2.9 A common idea is not a common shell
+
+A cross-panel review on phone, tablet landscape and desktop with the Home Assistant sidebar open showed that independently implemented “fixed Header / viewport / Bottom Nav” shells still diverged in top origin, available width, content frame, title centering and bottom-bar attachment. The prose requirements were correct, but phone-first acceptance and approximate geometry allowed every repository to choose a different coordinate system.
+
+**Correct model:** NikaS UI v2.0 binds the shell to the real Home Assistant panel host, defines numeric row sizes and one canonical content frame, and requires the same rectangle checks across phone, tablet and desktop with the Home Assistant menu open and closed. Screenshots of S8, Stark or another panel are visual lineage, not a substitute for the numeric contract.
+
+Five internal destinations are valid. The Keenetic panel has five Bottom Tab destinations and was not the source of this defect; its review finding concerned shell consistency, not tab count.
 
 ---
 
@@ -222,11 +230,13 @@ Add writes last. Every write path receives separate safety, busy-state and failu
 
 ### 5.1 Header
 
-Follow v1.9 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action.
+Follow v2.0 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action. All three tracks are positioned inside the Home Assistant panel host, never against the browser viewport.
 
 ### 5.2 Bottom navigation
 
 3–5 equal destinations, fixed outside the work viewport, MDI icons through `ha-icon`, minimum touch target 52 px. A short page must not pull the bar upward; a long page must scroll its final control above it.
+
+The bar spans the panel host on phone, tablet and desktop. Five destinations are conforming; a sixth requires a secondary navigation level. An active state may change color and background only, never item size, column width or bar height.
 
 ### 5.3 Page hierarchy
 
@@ -422,6 +432,9 @@ Required checks should cover:
 - navigation contract;
 - typography envelope;
 - forbidden legacy patterns (`history.back()`, routine full `innerHTML`, old fixed-layer topology, etc.).
+- host-bound shell geometry and the absence of `100vw` or hard-coded Home Assistant sidebar offsets;
+- numeric Header/work/Bottom Nav rectangle parity across the mandatory v2.0 viewport matrix;
+- unchanged chrome coordinates during work scroll, overscroll and Home Assistant sidebar toggles.
 
 ### 11.2 Dynamic regression gates
 
@@ -451,6 +464,8 @@ Primary phone acceptance checks:
 - images/background do not reflash;
 - history period switching does not freeze;
 - write confirmation and busy/error states behave correctly.
+
+Phone acceptance is followed by tablet portrait/landscape and desktop checks with the Home Assistant sidebar expanded and collapsed. A panel is not shell-complete when only its phone portrait layout has passed.
 
 ---
 
@@ -507,7 +522,7 @@ A NikaS integration/panel is complete only when all of the following are true:
 
 - factual data contract is explicit;
 - command policy is explicit;
-- UI v1.9 shell is compliant;
+- UI v2.0 shell is compliant across the mandatory viewport matrix;
 - live updates are incremental and stable;
 - startup has no blank application frame;
 - mobile scroll/zoom/safe-area behavior is accepted;
