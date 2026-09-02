@@ -1,4 +1,4 @@
-# NikaS Specialized Panel UI Standard v2.0
+# NikaS Specialized Panel UI Standard v2.1
 
 **Status:** REQUIRED
 **Canonical source:** `NikaSir/ha-contract-generated-ui`
@@ -8,9 +8,10 @@
 **Reference Header surface and controls:** S8 OMNI
 **Reference connection/freshness plaque:** S8 OMNI
 **Reference typography and domain status treatment:** LIDER
-**Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md`
+**Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.2
+**Canonical build-time source kit:** `templates/shell_v2/nikas-specialized-shell.js`
 
-This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.0 makes the shell geometry, Home Assistant host boundary and multi-viewport acceptance testable rather than implementation-dependent.
+This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.1 keeps the v2 geometry and adds a vendored build-time shell source plus the current four-panel base route topology.
 
 ## 1. Ownership and topology
 
@@ -33,6 +34,7 @@ BOTTOM TAB BAR                              native scale
 ### 1.1 Home Assistant host boundary
 
 - The panel root is bound to the actual Home Assistant panel host, not to the browser window. Its border box must equal the current `ha-panel` content box after Home Assistant chrome and an expanded or collapsed sidebar have taken their space.
+- Responsive breakpoints are evaluated from the current panel-host inline size, for example with a shell container query; the browser-window width is not a substitute when the Home Assistant sidebar consumes part of the window.
 - The shell uses the host's local coordinate system: logical `inset:0`, `inline-size:100%`, `block-size:100%`, `min-inline-size:0` and `min-block-size:0`. `100vw`, a hard-coded sidebar offset and viewport-fixed positioning derived from `window.innerWidth` are prohibited.
 - Opening, closing or resizing the Home Assistant sidebar must resize the shell naturally. A panel must not render below, behind or across the sidebar, and must not reserve a sidebar-sized blank strip when the sidebar is collapsed.
 - If a Home Assistant version does not provide a stable percentage height, a `fixed_root` or `boundary_guard` may be used only when all four coordinates are derived from the current host rectangle. A browser-window fixed root is non-conforming.
@@ -67,6 +69,13 @@ Bottom Tab Bar  64px + effective bottom safe area
 - A specialized integration panel uses only its own 3–5 primary destinations. Five destinations, as used by Keenetic, conform to this limit.
 - Global base navigation and specialized integration navigation are different levels and must never be mixed in one Bottom Tab Bar.
 
+### 1.5 Build-time shell source
+
+- Every changed panel vendors the exact canonical `templates/shell_v2/nikas-specialized-shell.js` source into its own repository and verifies its SHA-256 in CI.
+- The vendored source is concatenated at build time into the panel's one autonomous production bundle. Loading Contract Generated UI or any shared remote module at runtime is prohibited.
+- The kit owns only host geometry, fixed chrome, canonical work frame and navigation hand-off. Domain cards, entities, commands, routes, state models and assets remain owned by the panel repository.
+- A repository may add domain CSS inside the canonical work frame, but may not override the kit's host, shell rows, Header, outer work frame or Bottom Tab Bar geometry.
+
 ## 2. Header — canonical geometry with S8 OMNI surface
 
 The complete upper application menu copies the S8 OMNI Header, not merely its title typography. The Header surface, menu plaque, center return plaque and optional right action are one visual system.
@@ -99,9 +108,9 @@ The complete upper application menu copies the S8 OMNI Header, not merely its ti
 - The focus state and pressed response are mandatory and remain visibly distinct from the default state.
 - A transparent title, a plain text label without the S8 OMNI surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
-- When a specialized panel is opened from `/dashboard-house-v11/home`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
+- When a specialized panel is opened from `/dashboard-house-v13/home`, `/dashboard-rooms-v11/rooms`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
 - The base shell records the source route in the same click/keyboard handler, immediately before changing location to the specialized panel. Ambient shell synchronization and telemetry updates must not refresh the hand-off timestamp. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
-- The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at `/dashboard-house-v11`, `/dashboard-actions` and `/dashboard-infrastructure` are accepted.
+- The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at `/dashboard-house-v13`, `/dashboard-rooms-v11`, `/dashboard-actions` and `/dashboard-infrastructure` are accepted.
 - Capture precedence is: explicit `return_to`/`from`, one-shot session hand-off, saved route for that specialized panel, safe same-origin referrer, configured `parent_route`, then the repository-defined safe base-panel fallback.
 - Navigation is explicit Home Assistant navigation: `history.pushState()` followed by a `location-changed` event. Browser history is never the routing contract.
 - The title plaque, its accepted route and its click handler are mounted with the fixed Header and survive tab switches, polling, loss/recovery and every state-only patch.
@@ -276,7 +285,7 @@ Repository tests or static checks must verify:
 12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary, S8 OMNI geometry and exact state-tinted surface percentages;
 13. the center title is a two-line, exactly `52px` high semantic button, contains no arrow or separate Back label and retains geometric centering;
 14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
-15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the three canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
+15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the four canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
 16. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
 17. the production entrypoint is the only runtime file, is autonomous and is reproducible from its declared build inputs;
 18. UI version, manifest/contract, component registration and cache key stay coherent;
@@ -313,7 +322,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - Header, selector and Bottom Tab Bar remain stationary at every scale;
 - the upper menu visually matches S8 OMNI: persistent 97% primary-background strip, divider, blur and three aligned plaques below Dynamic Island;
 - both Header side buttons are visible matching `44px × 44px` plaques;
-- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the three originating NikaS base panels and uses the configured safe fallback after a direct open;
+- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
 - a requested connection indicator visually matches S8 OMNI: `58px` minimum height, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;

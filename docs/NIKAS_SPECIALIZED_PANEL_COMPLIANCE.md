@@ -1,19 +1,17 @@
-# House panel compliance
+# Contract Generated UI shell registry compliance
 
-Scope: the new main House panel at `/dashboard-house-v11/home`, or the collision-safe
-parallel route `/dashboard-house-v12/home` when v11 already has an owner.
+Scope: canonical route registry, UI rules and build-time Shell v2 source kit. This
+integration owns no runtime panel; the main House runtime belongs to `ha-nikas-house`.
 
 | Requirement | Status |
 |---|---|
-| One integration-owned route | PASS |
+| No runtime dashboard registration | PASS |
+| Current House v13 and Rooms v11 base routes recorded | PASS |
+| Actions and Infrastructure base routes recorded | PASS |
+| Specialized routes and safe returns recorded | PASS |
+| Shell source is build-time only | PASS |
+| Host-bound Header, work viewport and Bottom Tab Bar geometry | PASS |
+| Autonomous per-panel bundles required | PASS |
 | Existing YAML routes preserved | PASS |
-| Header and Bottom Tab Bar outside the work canvas | PASS |
-| One work canvas | PASS |
-| Explicit Home Assistant navigation; no browser-history Back | PASS |
-| Unknown and unavailable remain explicit | PASS |
-| No connection plaque on `Дом сейчас` | PASS |
-| Autonomous packaged frontend bundle | PASS |
-| No Infrastructure, Actions, Rooms or generated-panel runtime | PASS |
-| Target-phone visual acceptance | PENDING |
 
-Detailed panels are evaluated in their own repositories and are outside this compliance record.
+Runtime visual acceptance remains the responsibility of each owning panel repository.

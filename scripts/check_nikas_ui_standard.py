@@ -26,16 +26,16 @@ def read_relative(path: str) -> str:
 
 def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    require(config.get("version") == "2.0", "NikaS UI standard version must be 2.0")
+    require(config.get("version") == "2.1", "NikaS UI standard version must be 2.1")
     require(
-        config.get("navigation_contract_version") == "1.1",
-        "NikaS navigation contract version must be 1.1",
+        config.get("navigation_contract_version") == "1.2",
+        "NikaS navigation contract version must be 1.2",
     )
 
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
-    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.0 copy")
+    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.1 copy")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(
@@ -60,11 +60,14 @@ def main() -> None:
         "Canonical work-content frame",
         "Mandatory viewport acceptance",
         "Five destinations, as used by Keenetic, conform to this limit.",
+        "Build-time shell source",
+        "/dashboard-house-v13/home",
+        "/dashboard-rooms-v11/rooms",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 
     shell = config.get("shell_contract", {})
-    require(shell.get("version") == "2.0", "NikaS shell contract version must be 2.0")
+    require(shell.get("version") == "2.1", "NikaS shell contract version must be 2.1")
     require(shell.get("host_boundary") == "ha-panel", "shell must bind to the Home Assistant panel host")
     require(shell.get("header_body_px") == 60, "canonical Header body must be 60px")
     require(shell.get("peer_selector_px") == 52, "canonical peer selector must be 52px")
@@ -81,7 +84,8 @@ def main() -> None:
     }
     require(shell.get("viewport_matrix") == expected_matrix, "canonical viewport matrix drift")
     for clause in (
-        "/dashboard-house-v11/home",
+        "/dashboard-house-v13/home",
+        "/dashboard-rooms-v11/rooms",
         "/dashboard-actions/home",
         "/dashboard-infrastructure/overview",
         "/starline",
@@ -95,7 +99,7 @@ def main() -> None:
         require(clause in navigation_contract, f"canonical navigation clause missing: {clause}")
 
     role = config.get("role")
-    require(role in {"base", "specialized", "readiness"}, f"unsupported NikaS UI role: {role}")
+    require(role in {"registry", "base", "specialized", "readiness"}, f"unsupported NikaS UI role: {role}")
     runtime_files = config.get("runtime_files", [])
     require(isinstance(runtime_files, list), "runtime_files must be a list")
     require(len(runtime_files) == len(set(runtime_files)), "runtime_files must not contain duplicates")
@@ -116,12 +120,56 @@ def main() -> None:
         require("autonomous" in compliance.lower(), "readiness record must cover the autonomous-bundle GAP")
         return
 
+    if role == "registry":
+        require(not runtime_files, "registry repository must not claim a panel runtime")
+        require(not production_entrypoint, "registry repository must not claim a production panel entrypoint")
+        source_kit = config.get("source_kit", {})
+        require(source_kit.get("delivery") == "vendored-build-time", "shell kit must be vendored at build time")
+        require(source_kit.get("runtime_dependency") is False, "shell kit must not be a runtime dependency")
+        source_kit_text = read_relative(source_kit["path"])
+        source_kit_digest = hashlib.sha256(source_kit_text.encode("utf-8")).hexdigest()
+        require(source_kit_digest == source_kit.get("sha256"), "canonical shell source-kit hash drift")
+        for token in (
+            'const NIKAS_SHELL_V2_VERSION = "2.1"',
+            "block-size:100%",
+            "calc(60px + env(safe-area-inset-top,0px))",
+            "calc(64px + env(safe-area-inset-bottom,0px))",
+            "max-inline-size:1280px",
+            "container:nikas-panel / inline-size",
+            "@container nikas-panel (min-width:600px)",
+            "@container nikas-panel (min-width:1024px)",
+            "--nikas-shell-tab-count",
+            "captureNikasShellReturnRoute",
+            "window.history.pushState",
+            'new Event("location-changed")',
+            "/dashboard-house-v13/home",
+            "/dashboard-rooms-v11/rooms",
+        ):
+            require(token in source_kit_text, f"canonical shell source-kit token missing: {token}")
+        for forbidden in ("100vw", "100vh", "100dvh", "position:fixed", "position: fixed"):
+            require(forbidden not in source_kit_text, f"host-bound shell contains forbidden marker: {forbidden}")
+        route_registry = config.get("route_registry", {})
+        route_registry_text = read_relative(route_registry["path"])
+        route_registry_digest = hashlib.sha256(route_registry_text.encode("utf-8")).hexdigest()
+        require(route_registry_digest == route_registry.get("sha256"), "canonical route-registry hash drift")
+        for route in (
+            "/dashboard-house-v13/home",
+            "/dashboard-rooms-v11/rooms",
+            "/dashboard-actions/home",
+            "/dashboard-infrastructure/overview",
+            "/dashboard-access-v1/home",
+            "/dashboard-water-accounting",
+        ):
+            require(route in route_registry_text, f"canonical route missing from registry: {route}")
+        return
+
     require(runtime_files, f"{role} repository must declare checked runtime_files")
 
     for token in (
         "nikas.specialized.source_route.v1",
         "nikas.specialized.source_route_at.v1",
-        "/dashboard-house-v11/home",
+        "/dashboard-house-v13/home",
+        "/dashboard-rooms-v11/rooms",
         "/dashboard-actions/home",
         "/dashboard-infrastructure/overview",
     ):

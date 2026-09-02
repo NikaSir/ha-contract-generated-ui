@@ -18,13 +18,13 @@ def test_house_navigation_keeps_external_route_ownership() -> None:
             "id": "home",
             "label": "Дом",
             "icon": "mdi:home-outline",
-            "path": "/dashboard-house-v11/home",
+            "path": "/dashboard-house-v13/home",
         },
         {
             "id": "rooms",
             "label": "Помещения",
             "icon": "mdi:floor-plan",
-            "path": "/dashboard-rooms/rooms",
+            "path": "/dashboard-rooms-v11/rooms",
         },
         {
             "id": "actions",

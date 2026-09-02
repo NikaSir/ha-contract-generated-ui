@@ -46,6 +46,7 @@ but no House module is loaded by the integration at runtime.
 - `custom_components/contract_generated_ui/snapshot_download.py` — authenticated download;
 - `custom_components/contract_generated_ui/frontend/assets/` — retained shared assets;
 - `custom_components/contract_generated_ui/brand/` — integration icon;
+- `templates/shell_v2/` — canonical build-time shell source copied by owning panel repositories;
 - `contracts/`, `manifests/`, `navigation/`, `generator/` — preserved reviewed engineering history;
 - `schemas/` and `tests/` — validation and regression checks.
 

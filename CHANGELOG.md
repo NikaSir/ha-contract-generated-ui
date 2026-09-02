@@ -2,11 +2,15 @@
 
 ## Unreleased
 
-- Promotes the canonical NikaS Specialized Panel UI Standard to v2.0 with a
+- Promotes the canonical NikaS Specialized Panel UI Standard to v2.1 with a
   host-bound shell, numeric Header/work/Bottom Nav geometry and a mandatory
   phone/tablet/desktop acceptance matrix.
 - Adds machine-readable shell dimensions and CI guards, including the correct
   3–5 specialized-tab range; Keenetic's five destinations remain conforming.
+- Adds a build-time Shell v2 source kit so each panel can ship the same geometry
+  inside its own autonomous bundle without a runtime dependency.
+- Updates the canonical base routes to House v13 and Rooms v11, and records
+  Access and Water Accounting in the specialized route registry.
 
 ## 0.39.1
 

@@ -2,13 +2,13 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 2.0.0
-  description: House-only navigation links; routes outside House are external and remain independently owned.
+  version: 2.1.0
+  description: Canonical NikaS base and specialized route registry; every runtime remains independently owned.
 spec:
   routes:
     home:
       title: Дом
-      path: /dashboard-house-v11/home
+      path: /dashboard-house-v13/home
     actions:
       title: Действия
       path: /dashboard-actions/home
@@ -17,7 +17,7 @@ spec:
       path: /dashboard-infrastructure/overview
     rooms:
       title: Помещения
-      path: /dashboard-rooms/rooms
+      path: /dashboard-rooms-v11/rooms
   global_tabs:
     - id: home
       route: home
@@ -35,3 +35,31 @@ spec:
       route: infrastructure
       title: Инфра
       icon: mdi:server-network
+  specialized_routes:
+    access:
+      path: /dashboard-access-v1/home
+      safe_return_route: /dashboard-house-v13/home
+    zont:
+      path: /dashboard-zont
+      safe_return_route: /dashboard-house-v13/home
+    starline:
+      path: /starline
+      safe_return_route: /dashboard-house-v13/home
+    s8_omni:
+      path: /dashboard-s8-omni
+      safe_return_route: /dashboard-actions/home
+    irrigation:
+      path: /dashboard-irrigation
+      safe_return_route: /dashboard-actions/home
+    stark_solarpower:
+      path: /dashboard-ups
+      safe_return_route: /dashboard-infrastructure/overview
+    keenetic:
+      path: /dashboard-keenetic
+      safe_return_route: /dashboard-infrastructure/overview
+    lider:
+      path: /dashboard-lider
+      safe_return_route: /dashboard-infrastructure/overview
+    water_accounting:
+      path: /dashboard-water-accounting
+      safe_return_route: /dashboard-infrastructure/overview
