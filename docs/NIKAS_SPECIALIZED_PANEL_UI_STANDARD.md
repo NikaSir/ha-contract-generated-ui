@@ -159,9 +159,10 @@ The former rule that one-finger transform panning also provides vertical movemen
 - It remains outside the work viewport and above the Home Indicator.
 - Background: `var(--card-background-color)`; top divider and a subtle upward shadow.
 - The native bar body is exactly `64px`: `6px` top padding, a `52px` tab target row and `6px` bottom padding. The effective bottom safe area is added below that body exactly once; effective left/right safe areas are added once.
+- The complete icon/label stack must fit inside the `52px` target row: icon no larger than `26px`, stack gap `1px`, label `12px/14px`, and at least `6px` internal clearance below the label. Browser-default button typography and an implicit `normal` line-height are prohibited because they can clip Cyrillic descenders at the host edge.
 - All destinations have equal-width columns; 3–5 primary tabs are supported.
 - Tab touch target height: exactly `52px`.
-- Tab radius: `16px`; compact internal padding and `3px` icon/label gap.
+- Tab radius: `16px`; compact internal padding and `1px` icon/label gap.
 - Icons are MDI through `ha-icon`, never text characters; canonical glyph size is `28px`.
 - Labels are one line, approximately `12px`, weight `700`, readable and ellipsized only when necessary.
 - Inactive content uses `var(--secondary-text-color)`.
@@ -296,6 +297,7 @@ Repository tests or static checks must verify:
 23. the title-plaque horizontal center equals the panel-host horizontal center within `2px` with the right action present, absent, enabled and disabled;
 24. the outer Home Assistant scrolling element remains at origin while the work viewport scrolls;
 25. the canonical shell row sizes, work-content frame, breakpoint gutters and 3–5 specialized-tab limit are machine-checked.
+26. every Bottom Tab Bar label is fully visible, including Cyrillic descenders, with the sidebar expanded and collapsed and in every mandatory viewport.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
