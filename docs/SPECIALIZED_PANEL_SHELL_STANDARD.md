@@ -1,6 +1,6 @@
 # Specialized Panel Shell Standard v1.3
 
-> **SUPERSEDED:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v2.0 for host-bound shell geometry, Header plaques, source-aware return, safe-area ownership, stable rendering, optional indicators, typography, viewport behavior, Bottom Tab Bar geometry and brand requirements.
+> **SUPERSEDED:** use `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v2.2 for host-bound shell geometry, Header plaques, source-aware return, safe-area ownership, stable rendering, optional indicators, typography, viewport behavior, Bottom Tab Bar geometry and brand requirements.
 
 **Status:** Required  
 **Applies to:** all specialized Home Assistant panels in Home Assistant NikaS  
