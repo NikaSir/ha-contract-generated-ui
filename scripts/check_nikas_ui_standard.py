@@ -26,7 +26,7 @@ def read_relative(path: str) -> str:
 
 def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    require(config.get("version") == "2.1", "NikaS UI standard version must be 2.1")
+    require(config.get("version") == "2.2", "NikaS UI standard version must be 2.2")
     require(
         config.get("navigation_contract_version") == "1.2",
         "NikaS navigation contract version must be 1.2",
@@ -35,7 +35,7 @@ def main() -> None:
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
-    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.1 copy")
+    require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(
@@ -65,6 +65,9 @@ def main() -> None:
         "Build-time shell source",
         "/dashboard-house-v13/home",
         "/dashboard-rooms-v11/rooms",
+        "Peer-device status lamps — Stark SolarPower reference",
+        "red overrides orange, orange overrides green",
+        "Unchanged lamp state produces no DOM write.",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 
@@ -103,6 +106,27 @@ def main() -> None:
         "A missing, orphaned or mismatched public route is a blocking defect.",
     ):
         require(clause in navigation_contract, f"canonical navigation clause missing: {clause}")
+
+    lamp = config.get("peer_device_status_lamp_reference", {})
+    require(lamp.get("implementation") == "Stark SolarPower", "status-lamp reference must be Stark SolarPower")
+    require(lamp.get("diameter_px") == 9, "peer-device status lamp must be 9px")
+    require(lamp.get("halo_px") == 3, "peer-device status lamp halo must be 3px")
+    require(
+        lamp.get("states") == {
+            "good": "green",
+            "warning": "orange",
+            "fault": "red",
+            "unknown": "gray",
+        },
+        "peer-device status-lamp palette drift",
+    )
+    require(
+        lamp.get("state_priority") == ["fault", "warning", "good", "unknown"],
+        "peer-device status lamps must retain fail-closed priority",
+    )
+    require(lamp.get("selection_is_independent") is True, "selection and device health must remain independent")
+    require(lamp.get("update_mode") == "point-patch", "status lamps must use point-only DOM updates")
+    require(lamp.get("accessible_status_required") is True, "status lamps require accessible text")
 
     role = config.get("role")
     require(role in {"registry", "base", "specialized", "readiness"}, f"unsupported NikaS UI role: {role}")

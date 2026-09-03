@@ -1,4 +1,4 @@
-# NikaS Specialized Panel UI Standard v2.1
+# NikaS Specialized Panel UI Standard v2.2
 
 **Status:** REQUIRED
 **Canonical source:** `NikaSir/ha-contract-generated-ui`
@@ -7,11 +7,12 @@
 **Normative shell reference:** the numeric host-bound geometry in this document; screenshots and individual panels are not normative
 **Reference Header surface and controls:** S8 OMNI
 **Reference connection/freshness plaque:** S8 OMNI
+**Reference peer-device status lamps:** Stark SolarPower / StarLine lineage
 **Reference typography and domain status treatment:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.2
 **Canonical build-time source kit:** `templates/shell_v2/nikas-specialized-shell.js`
 
-This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.1 keeps the v2 geometry and adds a vendored build-time shell source plus the current four-panel base route topology.
+This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.2 keeps the v2 geometry and adds the proven peer-device selector status-lamp contract. It retains the vendored build-time shell source and current four-panel base route topology.
 
 ## 1. Ownership and topology
 
@@ -123,6 +124,21 @@ The complete upper application menu copies the S8 OMNI Header, not merely its ti
 - It remains directly below Header, outside the work viewport and at native scale.
 - Selected peer persists across tabs and owns its own locally persisted scale/position state.
 - Hiding a selector on an aggregate view is allowed when all peers are already visible, but the same selector subtree is retained for single-peer views.
+
+### 3.1 Peer-device status lamps — Stark SolarPower reference
+
+- When a peer-device selector is present, every device button carries one compact status lamp, including the selected peer. The lamp reports that device's current health while the button surface reports selection; these two meanings remain independent.
+- The selected button keeps the canonical primary-color selection background, border and text. Device health must never recolor the complete selector button or replace the selection treatment.
+- The reference lamp is a persistent `9px × 9px` circle inside the button, with a subtle `3px` halo mixed from the same state color. It must not change button height, width, order or label alignment.
+- State priority is fail-closed: red overrides orange, orange overrides green, and an untrusted or incomplete result is gray. A lower-priority healthy fact must not conceal a higher-priority fault.
+- Green means the device is reachable, its required telemetry is current and no domain fault or warning is active.
+- Orange means the device remains usable but is in a documented warning state, such as battery operation, degraded/reserve operation, stale telemetry or a non-critical domain alert.
+- Red means a confirmed fault, unavailable device or lost required connection.
+- Gray means unknown, missing, incomplete or otherwise unreliable status. Gray is mandatory until enough factual inputs exist to classify the device safely.
+- The lamp state is derived only from Home Assistant or integration-owned facts for that specific peer. Selection, last-clicked state and optimistic command results are not health inputs.
+- Color is not the sole accessible signal: the button has an `aria-label` containing device name and status, and the lamp exposes the same status as a title or equivalent accessible description.
+- Lamps do not blink, pulse or animate between states. State changes patch only the existing lamp class/color and accessible text; they never rebuild the selector, Header, work viewport or panel shell.
+- The complete peer selector remains mounted during tab switches, telemetry polling, peer changes and loss/recovery. Unchanged lamp state produces no DOM write.
 
 ## 4. Work viewport at 100%
 
@@ -301,6 +317,7 @@ Repository tests or static checks must verify:
 25. the canonical shell row sizes, work-content frame, breakpoint gutters and 3–5 specialized-tab limit are machine-checked.
 26. every Bottom Tab Bar label is fully visible, including Cyrillic descenders, with the sidebar expanded and collapsed and in every mandatory viewport.
 27. the non-passive touch boundary guard blocks Home Assistant pull-to-refresh and outer scrolling at both work-viewport edges without replacing native interior scrolling or two-finger zoom.
+28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -325,6 +342,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - pinch never causes content snap-back;
 - card activation does not become accidental pan;
 - Header, selector and Bottom Tab Bar remain stationary at every scale;
+- every peer selector shows one correctly classified lamp per device; selected styling remains unchanged while green/orange/red/gray health states update independently and without geometry shift;
 - the upper menu visually matches S8 OMNI: persistent 97% primary-background strip, divider, blur and three aligned plaques below Dynamic Island;
 - both Header side buttons are visible matching `44px × 44px` plaques;
 - the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
