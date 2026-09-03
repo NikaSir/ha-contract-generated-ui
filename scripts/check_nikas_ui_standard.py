@@ -34,6 +34,12 @@ def main() -> None:
 
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
+    knowledge_base_path = config.get("knowledge_base_path")
+    if knowledge_base_path:
+        knowledge_base = read_relative(knowledge_base_path)
+        baseline = f"Normative baseline:** NikaS Specialized Panel UI Standard v{config['version']}"
+        require(baseline in knowledge_base, "engineering knowledge base baseline does not match the canonical standard")
+        require("### 2.10 Peer status and selection are different facts" in knowledge_base, "knowledge base is missing the v2.2 peer-status lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
     navigation_contract = read_relative(config["navigation_contract_path"])
@@ -42,6 +48,17 @@ def main() -> None:
         navigation_digest == config.get("navigation_contract_sha256"),
         "local NikaS navigation contract is not the canonical copy",
     )
+    frontend_delivery_path = config.get("frontend_delivery_path")
+    if frontend_delivery_path:
+        frontend_delivery = read_relative(frontend_delivery_path)
+        require(
+            "Bottom Tab Bar MDI icons/labels at 26px and 12px/700" in frontend_delivery,
+            "frontend delivery standard must require 26px Bottom Tab Bar icons",
+        )
+        require(
+            "Bottom Tab Bar MDI icons/labels at 28px" not in frontend_delivery,
+            "frontend delivery standard retains the superseded 28px icon rule",
+        )
     for clause in (
         "Center title plaque — return to the source NikaS base panel",
         'sessionStorage["nikas.specialized.source_route.v1"]',
@@ -68,6 +85,8 @@ def main() -> None:
         "Peer-device status lamps — Stark SolarPower reference",
         "red overrides orange, orange overrides green",
         "Unchanged lamp state produces no DOM write.",
+        "icon no larger than `26px`",
+        "canonical glyph size is `26px`",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 

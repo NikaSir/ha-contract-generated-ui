@@ -181,7 +181,7 @@ The former rule that one-finger transform panning also provides vertical movemen
 - All destinations have equal-width columns; 3–5 primary tabs are supported.
 - Tab touch target height: exactly `52px`.
 - Tab radius: `16px`; compact internal padding and `1px` icon/label gap.
-- Icons are MDI through `ha-icon`, never text characters; canonical glyph size is `28px`.
+- Icons are MDI through `ha-icon`, never text characters; canonical glyph size is `26px`.
 - Labels are one line, approximately `12px`, weight `700`, readable and ellipsized only when necessary.
 - Inactive content uses `var(--secondary-text-color)`.
 - Active icon/label use `var(--primary-color)` and an `11%` primary-color background, without a second shadow and without changing the tab's size, column width or bar height.

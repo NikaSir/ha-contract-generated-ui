@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "fe82b08798e0deee0ee93ad6366e76c28877303162bb492d9c4758b4c4f163a1",
+  "standard_sha256": "3b6cc750b08aa0d2a375d1430ea04ac68c90525a527d197b014abd96728d23d1",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "d495eca80345b96976c168029a96146803f3d8195b6f6fc723827b601ffb578e",
   "role": "registry",
@@ -98,5 +98,7 @@
     "selection_is_independent": true,
     "update_mode": "point-patch",
     "accessible_status_required": true
-  }
+  },
+  "knowledge_base_path": "docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md",
+  "frontend_delivery_path": "docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md"
 }
