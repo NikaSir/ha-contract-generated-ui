@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Publishes NikaS Specialized Panel UI Standard v2.2 and aligns the engineering knowledge base, machine profile and CI version gate.
+- Locks the proven Bottom Tab Bar geometry to one 26px icon rule with no conflicting 28px requirement.
 - Keeps Bottom Tab Bar labels clear of the panel-host edge with an explicit
   `26px` icon, `14px` label line box and reserved lower clearance.
-- Promotes the canonical NikaS Specialized Panel UI Standard to v2.1 with a
+- Records the host-bound NikaS shell lineage introduced in v2.1 with a
   host-bound shell, numeric Header/work/Bottom Nav geometry and a mandatory
   phone/tablet/desktop acceptance matrix.
 - Adds machine-readable shell dimensions and CI guards, including the correct
