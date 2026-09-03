@@ -1,9 +1,9 @@
-/* NikaS specialized panel shell source kit v2.1.
+/* NikaS specialized panel shell source kit v2.2.
  * Copy this file into a panel repository at build time and concatenate it into
  * that panel's single autonomous production bundle. Runtime imports are forbidden.
  */
 
-const NIKAS_SHELL_V2_VERSION = "2.1";
+const NIKAS_SHELL_V2_VERSION = "2.2";
 const NIKAS_SOURCE_ROUTE_KEY = "nikas.specialized.source_route.v1";
 const NIKAS_SOURCE_ROUTE_AT_KEY = "nikas.specialized.source_route_at.v1";
 const NIKAS_SOURCE_ROUTE_MAX_AGE_MS = 30_000;
