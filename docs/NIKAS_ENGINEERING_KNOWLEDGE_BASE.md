@@ -2,7 +2,7 @@
 
 **Status:** LIVING DOCUMENT  
 **Scope:** Home Assistant custom integrations, integration-owned specialized panels, generated/base panels  
-**Normative baseline:** NikaS Specialized Panel UI Standard v2.0 + NikaS Panel Navigation Contract
+**Normative baseline:** NikaS Specialized Panel UI Standard v2.2 + NikaS Panel Navigation Contract
 **Purpose:** preserve engineering experience, failure modes, proven practices and acceptance criteria so new work starts from accumulated knowledge rather than from previous implementations.
 
 This file is intentionally broader than the UI standard. The standard defines mandatory behavior. This knowledge base records *why* those rules exist, what repeatedly failed in real devices, and how integration/backend, frontend, history/statistics and release work should be organized.
@@ -93,9 +93,15 @@ Desktop/static screenshots did not reveal inertial scroll, iOS safe-area, synthe
 
 A cross-panel review on phone, tablet landscape and desktop with the Home Assistant sidebar open showed that independently implemented “fixed Header / viewport / Bottom Nav” shells still diverged in top origin, available width, content frame, title centering and bottom-bar attachment. The prose requirements were correct, but phone-first acceptance and approximate geometry allowed every repository to choose a different coordinate system.
 
-**Correct model:** NikaS UI v2.0 binds the shell to the real Home Assistant panel host, defines numeric row sizes and one canonical content frame, and requires the same rectangle checks across phone, tablet and desktop with the Home Assistant menu open and closed. Screenshots of S8, Stark or another panel are visual lineage, not a substitute for the numeric contract.
+**Correct model:** NikaS UI v2.2 binds the shell to the real Home Assistant panel host, defines numeric row sizes and one canonical content frame, and requires the same rectangle checks across phone, tablet and desktop with the Home Assistant menu open and closed. Screenshots of S8, Stark or another panel are visual lineage, not a substitute for the numeric contract.
 
 Five internal destinations are valid. The Keenetic panel has five Bottom Tab destinations and was not the source of this defect; its review finding concerned shell consistency, not tab count.
+
+### 2.10 Peer status and selection are different facts
+
+A selector button answers which peer device is open. Its status lamp answers whether that device is healthy. Recoloring the whole selected button from telemetry mixed these meanings and made selection unstable.
+
+**Correct model:** retain one persistent 9px lamp per peer device with a subtle 3px halo. Green means healthy and current, orange means a documented warning or degraded/reserve state, red means confirmed fault/offline, and gray means unknown or incomplete data. Classification fails closed in the priority fault → warning → healthy → unknown. Selection styling remains independent. Updates patch only lamp color and accessible status text without rebuilding the selector or shell.
 
 ---
 
@@ -230,7 +236,7 @@ Add writes last. Every write path receives separate safety, busy-state and failu
 
 ### 5.1 Header
 
-Follow v2.0 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action. All three tracks are positioned inside the Home Assistant panel host, never against the browser viewport.
+Follow v2.2 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action. All three tracks are positioned inside the Home Assistant panel host, never against the browser viewport.
 
 ### 5.2 Bottom navigation
 
@@ -433,7 +439,7 @@ Required checks should cover:
 - typography envelope;
 - forbidden legacy patterns (`history.back()`, routine full `innerHTML`, old fixed-layer topology, etc.).
 - host-bound shell geometry and the absence of `100vw` or hard-coded Home Assistant sidebar offsets;
-- numeric Header/work/Bottom Nav rectangle parity across the mandatory v2.0 viewport matrix;
+- numeric Header/work/Bottom Nav rectangle parity across the mandatory v2.2 viewport matrix;
 - unchanged chrome coordinates during work scroll, overscroll and Home Assistant sidebar toggles.
 
 ### 11.2 Dynamic regression gates
@@ -522,7 +528,7 @@ A NikaS integration/panel is complete only when all of the following are true:
 
 - factual data contract is explicit;
 - command policy is explicit;
-- UI v2.0 shell is compliant across the mandatory viewport matrix;
+- UI v2.2 shell is compliant across the mandatory viewport matrix;
 - live updates are incremental and stable;
 - startup has no blank application frame;
 - mobile scroll/zoom/safe-area behavior is accepted;
