@@ -230,7 +230,7 @@ Add writes last. Every write path receives separate safety, busy-state and failu
 
 ### 5.1 Header
 
-Follow v2.0 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action. All three tracks are positioned inside the Home Assistant panel host, never against the browser viewport.
+Follow v2.2 exactly. The center title plaque is the sole standard return control. No browser `history.back()`, no separate arrow or “Назад”. Left rail is HA system menu; right rail has at most one panel-global action. All three tracks are positioned inside the Home Assistant panel host, never against the browser viewport.
 
 ### 5.2 Bottom navigation
 
@@ -433,7 +433,7 @@ Required checks should cover:
 - typography envelope;
 - forbidden legacy patterns (`history.back()`, routine full `innerHTML`, old fixed-layer topology, etc.).
 - host-bound shell geometry and the absence of `100vw` or hard-coded Home Assistant sidebar offsets;
-- numeric Header/work/Bottom Nav rectangle parity across the mandatory v2.0 viewport matrix;
+- numeric Header/work/Bottom Nav rectangle parity across the mandatory v2.2 viewport matrix;
 - unchanged chrome coordinates during work scroll, overscroll and Home Assistant sidebar toggles.
 
 ### 11.2 Dynamic regression gates
@@ -522,7 +522,7 @@ A NikaS integration/panel is complete only when all of the following are true:
 
 - factual data contract is explicit;
 - command policy is explicit;
-- UI v2.0 shell is compliant across the mandatory viewport matrix;
+- UI v2.2 shell is compliant across the mandatory viewport matrix;
 - live updates are incremental and stable;
 - startup has no blank application frame;
 - mobile scroll/zoom/safe-area behavior is accepted;
