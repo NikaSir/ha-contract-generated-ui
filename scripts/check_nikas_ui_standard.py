@@ -26,7 +26,7 @@ def read_relative(path: str) -> str:
 
 def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    require(config.get("version") == "2.2", "NikaS UI standard version must be 2.1")
+    require(config.get("version") == "2.2", "NikaS UI standard version must be 2.2")
     require(
         config.get("navigation_contract_version") == "1.2",
         "NikaS navigation contract version must be 1.2",
@@ -76,7 +76,7 @@ def main() -> None:
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 
     shell = config.get("shell_contract", {})
-    require(shell.get("version") == "2.2", "NikaS shell contract version must be 2.1")
+    require(shell.get("version") == "2.2", "NikaS shell contract version must be 2.2")
     require(shell.get("host_boundary") == "ha-panel", "shell must bind to the Home Assistant panel host")
     require(shell.get("header_body_px") == 60, "canonical Header body must be 60px")
     require(shell.get("peer_selector_px") == 52, "canonical peer selector must be 52px")
