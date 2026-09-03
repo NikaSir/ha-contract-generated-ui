@@ -103,6 +103,27 @@ A selector button answers which peer device is open. Its status lamp answers whe
 
 **Correct model:** retain one persistent 9px lamp per peer device with a subtle 3px halo. Green means healthy and current, orange means a documented warning or degraded/reserve state, red means confirmed fault/offline, and gray means unknown or incomplete data. Classification fails closed in the priority fault → warning → healthy → unknown. Selection styling remains independent. Updates patch only lamp color and accessible status text without rebuilding the selector or shell.
 
+
+### 2.11 Peer selector geometry has one visual reference
+
+Different panels implemented the same peer-device selector as a shared segmented pill, independent cards, or compressed labels. Even when all variants remained usable, the changing frame made the NikaS shell look inconsistent and encouraged selection styling to absorb device health.
+
+**Proven reference:** StarLine UI v0.6.8.
+
+**Correct model for two peers:**
+
+- one 52px selector row immediately below Header and outside the work viewport;
+- the row itself has no shared card surface, border, radius or shadow;
+- horizontal inset is at least 12px plus the relevant safe-area inset;
+- two equal-width independent buttons separated by an 8px gap;
+- each button is 44px high, has a 1px border, a 15px radius and the ordinary card surface;
+- content is left aligned: persistent 9px status lamp with a subtle 3px halo, then one-line peer name;
+- the selected button uses primary-colored text, a primary-color border at about 65% strength and a primary-color surface at about 10% strength;
+- device health never recolors the selected surface: health changes only the lamp and accessible status text;
+- long peer names use one-line ellipsis and must not change button height or selector topology.
+
+More than two peers may use another explicitly approved adaptive composition only when the 44px touch target and legible names remain intact. Do not squeeze unreadable labels into the two-peer reference geometry.
+
 ---
 
 ## 3. Integration architecture
@@ -451,7 +472,8 @@ Automate where practical:
 - period history calls are single-flight/cached;
 - max history concurrency is enforced;
 - command duplicate submission is blocked;
-- unknown/unavailable data does not become healthy.
+- unknown/unavailable data does not become healthy;
+- the two-peer selector keeps the StarLine reference geometry (52px row, 44px independent buttons, 8px gap) and patches status lamps independently of selection.
 
 ### 11.3 Real-device acceptance
 
@@ -468,6 +490,7 @@ Primary phone acceptance checks:
 - synthetic click suppressed after pinch;
 - telemetry updates do not flicker;
 - images/background do not reflash;
+- peer selector geometry and selection/status separation remain identical on phone, tablet and desktop;
 - history period switching does not freeze;
 - write confirmation and busy/error states behave correctly.
 
@@ -507,6 +530,7 @@ The following patterns are considered known regressions unless a new design prov
 - meaningful operational text below 12 px;
 - generic “Online” when transport/freshness distinction is required;
 - status represented by color only;
+- a shared outer pill around peer-device buttons, or selection styling driven by device health;
 - missing/unavailable rendered green or as zero;
 - guessed entity IDs;
 - write controls that claim success before state confirmation;
