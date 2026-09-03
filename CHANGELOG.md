@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Aligns the engineering knowledge base and compatibility documents with UI v2.2 and makes that parity a CI requirement.
+- Resolves the Bottom Tab Bar icon contradiction in favor of the field-tested 26px geometry.
+
 - Promotes the NikaS Specialized Panel UI Standard to v2.2 and standardizes persistent peer-device selector status lamps from the proven Stark SolarPower implementation: green normal, orange warning, red fault/offline and gray unknown, independently of the selected-button surface.
 - Requires fail-closed lamp priority, accessible status text and point-only updates that never rebuild selector or shell DOM.
 - Keeps Bottom Tab Bar labels clear of the panel-host edge with an explicit
