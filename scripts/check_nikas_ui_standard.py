@@ -34,6 +34,12 @@ def main() -> None:
 
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
     standard = read_relative(standard_path)
+    knowledge_base_path = config.get("knowledge_base_path")
+    if knowledge_base_path:
+        knowledge_base = read_relative(knowledge_base_path)
+        baseline = f"Normative baseline:** NikaS Specialized Panel UI Standard v{config['version']}"
+        require(baseline in knowledge_base, "engineering knowledge base baseline does not match the canonical standard")
+        require("### 2.10 Peer status and selection are different facts" in knowledge_base, "knowledge base is missing the v2.2 peer-status lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
     navigation_contract = read_relative(config["navigation_contract_path"])
@@ -68,6 +74,8 @@ def main() -> None:
         "Peer-device status lamps — Stark SolarPower reference",
         "red overrides orange, orange overrides green",
         "Unchanged lamp state produces no DOM write.",
+        "icon no larger than `26px`",
+        "canonical glyph size is `26px`",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 
