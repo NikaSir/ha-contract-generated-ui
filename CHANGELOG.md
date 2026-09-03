@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Promotes the NikaS Specialized Panel UI Standard to v2.2 and standardizes persistent peer-device selector status lamps from the proven Stark SolarPower implementation: green normal, orange warning, red fault/offline and gray unknown, independently of the selected-button surface.
+- Requires fail-closed lamp priority, accessible status text and point-only updates that never rebuild selector or shell DOM.
 - Keeps Bottom Tab Bar labels clear of the panel-host edge with an explicit
   `26px` icon, `14px` label line box and reserved lower clearance.
 - Promotes the canonical NikaS Specialized Panel UI Standard to v2.1 with a
