@@ -1,6 +1,6 @@
 # Integration-owned dashboard UI standard v1.4
 
-> **SUPERSEDED FOR SHELL/ZOOM/NAVIGATION:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v2.0 is normative. Domain guidance below remains valid only where it does not conflict with v2.0.
+> **SUPERSEDED FOR SHELL/ZOOM/NAVIGATION:** `NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md` v2.2 is normative. Domain guidance below remains valid only where it does not conflict with v2.2.
 
 **Status:** Required  
 **Applies to:** all integration-owned specialized dashboards in Home Assistant NikaS  
