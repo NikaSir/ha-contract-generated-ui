@@ -2,7 +2,7 @@
 
 **Status:** LIVING DOCUMENT  
 **Scope:** Home Assistant custom integrations, integration-owned specialized panels, generated/base panels  
-**Normative baseline:** NikaS Specialized Panel UI Standard v2.0 + NikaS Panel Navigation Contract
+**Normative baseline:** NikaS Specialized Panel UI Standard v2.2 + NikaS Panel Navigation Contract
 **Purpose:** preserve engineering experience, failure modes, proven practices and acceptance criteria so new work starts from accumulated knowledge rather than from previous implementations.
 
 This file is intentionally broader than the UI standard. The standard defines mandatory behavior. This knowledge base records *why* those rules exist, what repeatedly failed in real devices, and how integration/backend, frontend, history/statistics and release work should be organized.
@@ -93,7 +93,7 @@ Desktop/static screenshots did not reveal inertial scroll, iOS safe-area, synthe
 
 A cross-panel review on phone, tablet landscape and desktop with the Home Assistant sidebar open showed that independently implemented “fixed Header / viewport / Bottom Nav” shells still diverged in top origin, available width, content frame, title centering and bottom-bar attachment. The prose requirements were correct, but phone-first acceptance and approximate geometry allowed every repository to choose a different coordinate system.
 
-**Correct model:** NikaS UI v2.0 binds the shell to the real Home Assistant panel host, defines numeric row sizes and one canonical content frame, and requires the same rectangle checks across phone, tablet and desktop with the Home Assistant menu open and closed. Screenshots of S8, Stark or another panel are visual lineage, not a substitute for the numeric contract.
+**Correct model:** NikaS UI v2.2 binds the shell to the real Home Assistant panel host, defines numeric row sizes and one canonical content frame, and requires the same rectangle checks across phone, tablet and desktop with the Home Assistant menu open and closed. Screenshots of S8, Stark or another panel are visual lineage, not a substitute for the numeric contract.
 
 Five internal destinations are valid. The Keenetic panel has five Bottom Tab destinations and was not the source of this defect; its review finding concerned shell consistency, not tab count.
 
