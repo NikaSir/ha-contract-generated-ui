@@ -18,7 +18,7 @@ The production bundle must implement the NikaS UI v2.2 application shell:
 - centered two-line semantic title button with panel name plus version-only `UI vX.Y.Z`, visible focus/pressed states and validated return to the originating NikaS base panel;
 - native vertical scrolling with `x = y = 0` at 100%, focal pinch at 75–200%, bounded one-finger pan only above 100%, 97–103% snap and stationary two-finger reset;
 - shell mounted once, telemetry point-patched, visited views lazily cached and no full-screen flash;
-- meaningful text at 12–25px and Bottom Tab Bar MDI icons/labels at 28px and 12px/700;
+- meaningful text at 12–25px and Bottom Tab Bar MDI icons/labels at 26px and 12px/700;
 - optional connection/freshness indicator only when explicitly requested, using the canonical NikaS UI v2.2 vocabulary and status-tinted plaque;
 - packaged repository/integration identity including `custom_components/<domain>/brand/icon.png`, minimum 256×256 RGBA.
 
