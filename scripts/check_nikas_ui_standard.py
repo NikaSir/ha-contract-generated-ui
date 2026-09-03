@@ -48,6 +48,17 @@ def main() -> None:
         navigation_digest == config.get("navigation_contract_sha256"),
         "local NikaS navigation contract is not the canonical copy",
     )
+    frontend_delivery_path = config.get("frontend_delivery_path")
+    if frontend_delivery_path:
+        frontend_delivery = read_relative(frontend_delivery_path)
+        require(
+            "Bottom Tab Bar MDI icons/labels at 26px and 12px/700" in frontend_delivery,
+            "frontend delivery standard must require 26px Bottom Tab Bar icons",
+        )
+        require(
+            "Bottom Tab Bar MDI icons/labels at 28px" not in frontend_delivery,
+            "frontend delivery standard retains the superseded 28px icon rule",
+        )
     for clause in (
         "Center title plaque — return to the source NikaS base panel",
         'sessionStorage["nikas.specialized.source_route.v1"]',
