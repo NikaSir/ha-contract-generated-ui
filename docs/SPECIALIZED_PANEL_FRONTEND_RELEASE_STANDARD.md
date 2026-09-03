@@ -1,7 +1,7 @@
-# NikaS Specialized Panel Frontend Delivery Standard v1.7
+# NikaS Specialized Panel Frontend Delivery Standard v2.2
 
 **Status:** required for every integration-owned Home Assistant specialized panel
-**UI authority:** [`NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md`](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md) v2.0
+**UI authority:** [`NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md`](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md) v2.2
 
 ## Production artifact
 
@@ -11,7 +11,7 @@ Modular development is allowed, but the build must produce one deterministic art
 
 ## Fixed shell acceptance
 
-The production bundle must implement the NikaS UI v2.0 application shell:
+The production bundle must implement the NikaS UI v2.2 application shell:
 
 - fixed Home Assistant menu Header, optional fixed peer-device selector, exactly one work viewport/canvas and fixed safe-area-aware Bottom Tab Bar;
 - permanent left `mdi:menu` action dispatching bubbling/composed `hass-toggle-menu`; no permanent Header Back;
@@ -19,7 +19,7 @@ The production bundle must implement the NikaS UI v2.0 application shell:
 - native vertical scrolling with `x = y = 0` at 100%, focal pinch at 75–200%, bounded one-finger pan only above 100%, 97–103% snap and stationary two-finger reset;
 - shell mounted once, telemetry point-patched, visited views lazily cached and no full-screen flash;
 - meaningful text at 12–25px and Bottom Tab Bar MDI icons/labels at 28px and 12px/700;
-- optional connection/freshness indicator only when explicitly requested, using the canonical NikaS UI v2.0 vocabulary and status-tinted plaque;
+- optional connection/freshness indicator only when explicitly requested, using the canonical NikaS UI v2.2 vocabulary and status-tinted plaque;
 - packaged repository/integration identity including `custom_components/<domain>/brand/icon.png`, minimum 256×256 RGBA.
 
 ## Required verification
