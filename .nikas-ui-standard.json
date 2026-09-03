@@ -99,5 +99,6 @@
     "update_mode": "point-patch",
     "accessible_status_required": true
   },
-  "knowledge_base_path": "docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md"
+  "knowledge_base_path": "docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md",
+  "frontend_delivery_path": "docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md"
 }
