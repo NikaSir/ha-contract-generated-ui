@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Consolidate CI into uniquely named validation jobs and one `validate` gate
+  that requires every job to succeed. Preserve the existing required context
+  and keep manual strict fleet inspection separate from tooling validation.
+
 - Add NikaS Repository Contract v1.0, strict inspection tooling and a factual
   registry of the 17 maintained repositories. Keep unsupported or unverified
   requirements visible; toolkit validation does not certify product readiness.

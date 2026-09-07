@@ -13,7 +13,7 @@ changed by this package.
 | `scripts/nikas_repository_contract.py` | Profile validation and strict inspection |
 | `deployments/repository-contracts/*.json` | Source revision, active delivery, observed standard and open evidence for each repository |
 | `scripts/checkout_nikas_contract_snapshots.py` | Public Git snapshots at the exact profile revisions |
-| `.github/workflows/nikas-contract-toolkit.yml` | Inspector regression tests and profile-schema checks |
+| `.github/workflows/repository-checks.yml` (`nikas-contract-toolkit` job) | Inspector regression tests and profile-schema checks |
 | `.github/workflows/nikas-fleet-inspection.yml` | Manually invoked strict inspection with retained JSON/Markdown results |
 
 The [initial strict baseline](audits/2026-09-07-repository-contract-baseline.md)
@@ -94,6 +94,10 @@ the newly merged Zone 7 verification revision, UI 0.7.06; its additional syntax
 checks do not establish autonomy or complete coverage of its historical imports.
 
 ## Subsequent consumer migration
+
+The [first CI migration](NIKAS_CI_GATE.md) establishes one aggregate `validate`
+context in the canonical repository, House and StarLine while preserving the
+existing checks. It is one adoption step; product compliance remains separate.
 
 1. Review this canonical package and the matching defaults/mirror PR.
 2. Use each strict report to choose a focused consumer PR, starting with actual
