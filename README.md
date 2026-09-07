@@ -69,6 +69,14 @@ inside Home Assistant. See [the adoption guide](docs/NIKAS_REPOSITORY_CONTRACT_A
 for validation commands and the distinction between a valid profile and a
 compliant product.
 
+`Repository checks` runs the code checks, HACS, Hassfest and contract-toolkit
+checks as separate jobs. The single `validate` result depends on all four and
+fails if any result is failed, cancelled, skipped or missing. This preserves the
+existing required GitHub context while removing its former ambiguity. The manual
+strict fleet inspection reports product-compliance gaps separately.
+See the [CI migration notes](docs/NIKAS_CI_GATE.md) for the consumer sequence and
+the distinction between a passing aggregate and enforced branch protection.
+
 ```bash
 python -m pip install -e '.[test]'
 python -m pytest -q
