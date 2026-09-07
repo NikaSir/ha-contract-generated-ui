@@ -61,6 +61,14 @@ For a manual installation, copy `custom_components/contract_generated_ui` to
 
 ## Development validation
 
+The shared [NikaS Repository Contract v1.0](docs/NIKAS_REPOSITORY_CONTRACT.md)
+defines factual delivery, data quality, command confirmation, lifecycle and
+publication evidence across NikaS repositories. Its schema, inspector and
+revision-specific profiles live here as development tooling; they do not run
+inside Home Assistant. See [the adoption guide](docs/NIKAS_REPOSITORY_CONTRACT_ADOPTION.md)
+for validation commands and the distinction between a valid profile and a
+compliant product.
+
 ```bash
 python -m pip install -e '.[test]'
 python -m pytest -q

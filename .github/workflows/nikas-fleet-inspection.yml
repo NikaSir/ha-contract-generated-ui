@@ -1,0 +1,47 @@
+name: NikaS fleet inspection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nikas-fleet-strict-compliance:
+    name: nikas-fleet-strict-compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.13'
+      - name: Install inspector dependencies
+        run: python -m pip install jsonschema==4.26.0 PyYAML==6.0.3
+      - name: Validate profiles before fetching
+        run: python scripts/nikas_repository_contract.py schema --registry deployments/repository-contracts
+      - name: Fetch the exact recorded revisions
+        run: python scripts/checkout_nikas_contract_snapshots.py --registry deployments/repository-contracts --destination "$RUNNER_TEMP/nikas-snapshots"
+      - name: Inspect strict compliance
+        run: |
+          python scripts/nikas_repository_contract.py fleet \
+            --registry deployments/repository-contracts \
+            --repos-root "$RUNNER_TEMP/nikas-snapshots" \
+            --json-output "$RUNNER_TEMP/nikas-results/report.json" \
+            --markdown-output "$RUNNER_TEMP/nikas-results/report.md"
+      - name: Preserve the result summary on failure
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/nikas-results/report.md"; then
+            cat "$RUNNER_TEMP/nikas-results/report.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Strict inspection did not produce a report; setup/input failure is not compliance.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: nikas-strict-inspection
+          path: ${{ runner.temp }}/nikas-results/
+          if-no-files-found: warn

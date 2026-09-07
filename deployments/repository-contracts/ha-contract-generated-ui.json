@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-contract-generated-ui",
+  "source_revision": "956123093a488deda1ea65746f06f03929c61d45",
+  "kind": "ha_integration",
+  "artifacts": [],
+  "domain": "contract_generated_ui",
+  "manifest_path": "custom_components/contract_generated_ui/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Canonical standard and shared-asset/registry service; preserved historical frontend is not registered.",
+    "evidence_paths": [
+      "custom_components/contract_generated_ui/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/hacs-validation.yml",
+    ".github/workflows/hassfest.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/hacs-validation.yml",
+        ".github/workflows/hassfest.yml",
+        ".github/workflows/repository-checks.yml",
+        "tests/shell_v2_harness.mjs",
+        "tests/test_ha_validation.py",
+        "tests/test_house_navigation.py",
+        "tests/test_house_release.py",
+        "tests/test_house_renderer.py",
+        "tests/test_house_runtime_parity.py",
+        "tests/test_house_specialized_panel.py",
+        "tests/test_house_visual_state_scene.py",
+        "tests/test_main_house_v11_staging.py",
+        "tests/test_native_diagnostics_download.py",
+        "tests/test_panel_route_ownership.py",
+        "tests/test_private_house_power_policy.py",
+        "tests/test_registry_snapshot_topology.py",
+        "tests/test_release_gate.py",
+        "tests/test_renderer.py",
+        "tests/test_runtime_registration.py",
+        "tests/test_runtime_source_sync.py",
+        "tests/test_snapshot_disabled_binding.py",
+        "tests/test_snapshot_pipeline.py",
+        "tests/test_validation.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A21",
+      "requirement": "repository_checks",
+      "status": "open",
+      "note": "Legacy workflows publish ambiguous validate job contexts; required check migration pending."
+    }
+  ]
+}

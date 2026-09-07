@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-nikas-access",
+  "source_revision": "90ae7549af3010487676a03c86f579fcd938bb89",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
+      "ui_version": "0.1.7",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_access/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "nikas-access-panel.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.1.7"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_access/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.1.7"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_access/__init__.py",
+        "custom_components/nikas_access/panel.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "nikas_access",
+  "manifest_path": "custom_components/nikas_access/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/nikas_access/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.1",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/validate.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "A08: detach/attach during registry load or command-lock timeout may leave permanent busy flags."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/validate.yml",
+        "tests/frontend_model_harness.mjs",
+        "tests/shell_v2_harness.mjs",
+        "tests/test_command_safety.py",
+        "tests/test_frontend_contract.py",
+        "tests/test_panel_registration.py",
+        "tests/test_perimeter_safety.py",
+        "scripts/check-panel.mjs",
+        "scripts/check_repository.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A08",
+      "requirement": "lifecycle",
+      "status": "open",
+      "note": "Reconnect can leave loading/command locks set."
+    },
+    {
+      "id": "A19",
+      "requirement": "standards",
+      "status": "open",
+      "note": "Observed declaration remains 2.1; required baseline is 2.2. No version-only migration or waiver."
+    }
+  ]
+}

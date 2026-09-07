@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-vless-gateway",
+  "source_revision": "7a96036ddf02a7ca95086785d3dfa504f01ef366",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/vless_gateway/frontend/vless-gateway-panel.js",
+      "ui_version": "0.1.1",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/vless_gateway/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "vless-gateway-panel.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/vless_gateway/frontend/vless-gateway-panel.js",
+          "pattern": "(?m)^\\s*uiVersion\\s*:\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.1.1"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/vless_gateway/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.1.1"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/vless_gateway/__init__.py",
+        "custom_components/vless_gateway/panel.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "vless_gateway",
+  "manifest_path": "custom_components/vless_gateway/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/vless_gateway/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/repository-checks.yml",
+        "tests/shell_v2_harness.mjs",
+        "tests/test_frontend_contract.py",
+        "tests/test_integration_contract.py",
+        "tests/test_specialized_panel_readiness.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": []
+}

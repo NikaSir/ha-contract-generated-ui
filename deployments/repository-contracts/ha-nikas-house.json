@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-nikas-house",
+  "source_revision": "65b12f10b61498cecb1b60645e5de17c50557898",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
+      "ui_version": "1.0.0",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^HOUSE_PANEL_FILENAME\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "dist/nikas-house-overview.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.0.0"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?HOUSE_PANEL_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "v1_0_0_b001"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_house/__init__.py",
+        "custom_components/nikas_house/house_panel.py",
+        "custom_components/nikas_house/const.py"
+      ],
+      "binding_limitations": [
+        "HOUSE_PANEL_FILENAME uses dist/ relative to the frontend directory. Registration evidence establishes the directory; cache build freshness across changes is not established by this snapshot."
+      ]
+    },
+    {
+      "id": "navigation",
+      "path": "custom_components/nikas_house/frontend/nikas-ui.js",
+      "ui_version": "not_declared",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^UI_BUNDLE_FILENAME\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "nikas-ui.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^UI_BUNDLE_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "v1_0_0_b001"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_house/__init__.py",
+        "custom_components/nikas_house/const.py"
+      ],
+      "binding_limitations": [
+        "Registered through add_extra_js_url, independently of the panel module. No independent UI version is declared; build key is recorded as cache evidence only. Effective startup, absence of global side effects and cache freshness require runtime acceptance."
+      ]
+    },
+    {
+      "id": "hero",
+      "path": "custom_components/nikas_house/frontend/nikas-house-hero.js",
+      "ui_version": "not_declared",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^HOUSE_HERO_FILENAME\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "nikas-house-hero.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_house/const.py",
+          "pattern": "(?m)^HOUSE_HERO_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "v1_0_0_b001"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_house/__init__.py",
+        "custom_components/nikas_house/const.py"
+      ],
+      "binding_limitations": [
+        "Registered through add_extra_js_url, independently of the panel module. No independent UI version is declared; build key is recorded as cache evidence only. Effective startup, absence of global side effects and cache freshness require runtime acceptance."
+      ]
+    }
+  ],
+  "domain": "nikas_house",
+  "manifest_path": "custom_components/nikas_house/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/nikas_house/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "1.9",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/hacs-validation.yml",
+    ".github/workflows/hassfest.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/hacs-validation.yml",
+        ".github/workflows/hassfest.yml",
+        ".github/workflows/repository-checks.yml",
+        "tests/test_ha_validation.py",
+        "tests/test_house_navigation.py",
+        "tests/test_house_release.py",
+        "tests/test_house_renderer.py",
+        "tests/test_house_runtime_parity.py",
+        "tests/test_house_specialized_panel.py",
+        "tests/test_house_visual_state_scene.py",
+        "tests/test_inventory_migration.py",
+        "tests/test_main_house_v13_contract.py",
+        "tests/test_native_diagnostics_download.py",
+        "tests/test_panel_route_ownership.py",
+        "tests/test_private_house_power_policy.py",
+        "tests/test_registry_snapshot_topology.py",
+        "tests/test_release_gate.py",
+        "tests/test_renderer.py",
+        "tests/test_runtime_registration.py",
+        "tests/test_runtime_source_sync.py",
+        "tests/test_snapshot_disabled_binding.py",
+        "tests/test_snapshot_pipeline.py",
+        "tests/test_validation.py",
+        "scripts/check_navigation.mjs",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A19",
+      "requirement": "standards",
+      "status": "open",
+      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+    }
+  ]
+}

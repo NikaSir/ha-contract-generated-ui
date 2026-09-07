@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-s8-omni",
+  "source_revision": "eff686b373e92e77f9efa11735143029891ad4fd",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/s8_omni/frontend/s8-omni-panel-bootstrap.js",
+      "ui_version": "v0.7.41",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/s8_omni/__init__.py",
+          "pattern": "(?m)^PANEL_MODULE\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)\\?v=",
+          "expected": "s8-omni-panel-bootstrap.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "v0.7.41"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/s8_omni/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?DASHBOARD_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "v0.7.41"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/s8_omni/__init__.py",
+        "custom_components/s8_omni/const.py"
+      ],
+      "binding_limitations": [
+        "Registered URL combines DASHBOARD_VERSION and VERSION; only its static components are captured. UI value is in a reachable imported module, not the bootstrap. Cache freshness and displayed UI require runtime acceptance."
+      ]
+    }
+  ],
+  "domain": "s8_omni",
+  "manifest_path": "custom_components/s8_omni/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/s8_omni/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A05: missing/unavailable values must stay unknown rather than become 0/false."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "A05: require real available state confirmation for volume=0, DND=false and child_lock=false; preserve verified lighting and presets."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/repository-checks.yml",
+        "tests/test_diagnostic_protocol_fixes_v0734.py",
+        "tests/test_mode_write_guard_b079.py",
+        "tests/test_panel_cleaning_ui_v0732.py",
+        "tests/test_panel_current_rules_ui_v0733.py",
+        "tests/test_panel_dynamic_actions_ui_v0723.py",
+        "tests/test_panel_mobile_audit_ui_v0729.py",
+        "tests/test_panel_mobile_shell_ui_v0721.py",
+        "tests/test_panel_overview_ui_v0727.py",
+        "tests/test_panel_stable_dom_ui_v0720.py",
+        "tests/test_panel_state_transition_grid_ui_v0728.py",
+        "tests/test_panel_ui_standard_v16_v0722.py",
+        "tests/test_panel_ui_standard_v17_v0730.py",
+        "tests/test_pause_dp2_only_b083.py",
+        "tests/test_protocol_capture_v0737.py",
+        "tests/test_return_via_pause_release_b084.py",
+        "tests/test_return_wait_for_standby_b080.py",
+        "tests/test_station_stop_b081.py",
+        "tests/test_verified_drying_stop_v0739.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A05",
+      "requirement": "command_safety",
+      "status": "open",
+      "note": "Unknown readback can falsely confirm 0/off commands."
+    },
+    {
+      "id": "REG-S8-IMPORTS",
+      "requirement": "artifact_autonomy",
+      "status": "open",
+      "note": "Registered bootstrap imports four executable runtime modules; a single autonomous output is pending."
+    }
+  ]
+}

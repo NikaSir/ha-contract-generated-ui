@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-zont",
+  "source_revision": "e8f64b86e35c0f95c19c3bf8d14f4ae8b4fee426",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/zont_local/frontend/zont-ui.js",
+      "ui_version": "0.9.5",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/zont_local/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?FRONTEND_FILENAME\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "zont-ui.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/zont_local/frontend/zont-ui.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.9.5"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/zont_local/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.9.5"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/zont_local/__init__.py",
+        "custom_components/zont_local/const.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "zont_local",
+  "manifest_path": "custom_components/zont_local/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/zont_local/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/integration-validation.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A16: missing DHW status and online transport must not imply heating or a confirmed local channel."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/integration-validation.yml",
+        "tests/shell_v2_harness.mjs",
+        "tests/test_panel_registration.py",
+        "tests/test_zont_shell_v22.py",
+        "tests/test_zont_ui_semantics.cjs",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A16",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Missing DHW and transport channel infer unwarranted states."
+    }
+  ]
+}
