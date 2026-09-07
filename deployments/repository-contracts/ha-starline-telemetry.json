@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-starline-telemetry",
+  "source_revision": "94b36c32e145c7357582bada413c632f46af180e",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/starline_telemetry/frontend/starline-app.js",
+      "ui_version": "0.6.8",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/starline_telemetry/panel.py",
+          "pattern": "(?m)^PANEL_MODULE\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)\\?v=",
+          "expected": "starline-app.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/starline_telemetry/frontend/starline-app.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.6.8"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/starline_telemetry/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.6.8-ui-standard-v2.2"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/starline_telemetry/__init__.py",
+        "custom_components/starline_telemetry/panel.py",
+        "custom_components/starline_telemetry/const.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "starline_telemetry",
+  "manifest_path": "custom_components/starline_telemetry/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/starline_telemetry/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/hacs.yaml",
+    ".github/workflows/hassfest.yaml",
+    ".github/workflows/syntax.yaml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A04: stale bootstrap security and missing discrete fields require tri-state and source freshness acceptance."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/hacs.yaml",
+        ".github/workflows/hassfest.yaml",
+        ".github/workflows/syntax.yaml",
+        "tests/test_frontend_bundle.cjs",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A04",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Old bootstrap and missing binary values distort security status."
+    }
+  ]
+}

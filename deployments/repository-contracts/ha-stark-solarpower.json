@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-stark-solarpower",
+  "source_revision": "d379323a7092d07f6af1ab0680542609f9a7a69f",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
+      "ui_version": "0.9.5",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/stark_solarpower/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "stark-solarpower-panel-bundle.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
+          "pattern": "const UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27];\\s*const SOURCE_ROUTE_KEY\\s*=",
+          "expected": "0.9.5"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/stark_solarpower/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.9.5"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/stark_solarpower/__init__.py",
+        "custom_components/stark_solarpower/panel.py"
+      ],
+      "binding_limitations": [
+        "Bundle contains historical scoped UI_VERSION declarations. Binding selects the last navigation patch adjacent to SOURCE_ROUTE_KEY; effective displayed version and patch ordering require runtime acceptance."
+      ]
+    }
+  ],
+  "domain": "stark_solarpower",
+  "manifest_path": "custom_components/stark_solarpower/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/stark_solarpower/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "1.9",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/frontend-bundle.yml",
+    ".github/workflows/integration-validation.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A17: unknown supply mode must not become a definite non-battery mode."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/frontend-bundle.yml",
+        ".github/workflows/integration-validation.yml",
+        ".github/workflows/repository-checks.yml",
+        "tests/stark_scroll_boundary_harness.mjs",
+        "tests/test_panel_battery_details_ui_v070.py",
+        "tests/test_panel_device_status_lamps_ui_v092.py",
+        "tests/test_panel_field_audit_ui_v084.py",
+        "tests/test_panel_gesture_guard_ui_v071.py",
+        "tests/test_panel_live_patch_ui_v068.py",
+        "tests/test_panel_live_patch_ui_v069.py",
+        "tests/test_panel_mobile_composition_ui_v081.py",
+        "tests/test_panel_navigation_ui_v090.py",
+        "tests/test_panel_peer_device_selector_ui_v095.py",
+        "tests/test_panel_pinch_more_info_guard_ui_v082.py",
+        "tests/test_panel_runtime_ui_v083.py",
+        "tests/test_panel_scroll_boundary_ui_v091.py",
+        "tests/test_panel_stability_ui_v067.py",
+        "tests/test_panel_startup_surface_ui_v086.py",
+        "tests/test_panel_startup_ui_v085.py",
+        "tests/test_panel_status_ui_v066.py",
+        "tests/test_panel_ui_standard_v16.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A17",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Unknown power mode appears as not on battery."
+    },
+    {
+      "id": "A19",
+      "requirement": "standards",
+      "status": "open",
+      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+    }
+  ]
+}

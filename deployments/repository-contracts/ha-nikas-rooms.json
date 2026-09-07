@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-nikas-rooms",
+  "source_revision": "0d5366bf1dbc34e0b449b79c7f06f7d8b520b4d3",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
+      "ui_version": "11.0.13",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_rooms/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "nikas-rooms-panel.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "11.0.13"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_rooms/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "11.0.13"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_rooms/__init__.py",
+        "custom_components/nikas_rooms/panel.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "nikas_rooms",
+  "manifest_path": "custom_components/nikas_rooms/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/nikas_rooms/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "1.9",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/validate.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A10: explicit entity area overrides must be preserved by registry filtering."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "A08: canceled animation frame handle may block subsequent updates; A09: v13 return route validation remains open."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/validate.yml",
+        "tests/registry_loader_harness.js",
+        "tests/test_frontend_contract.py",
+        "tests/test_reference_baseline.py",
+        "tests/test_route_ownership.py",
+        "scripts/check_repository.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A08",
+      "requirement": "lifecycle",
+      "status": "open",
+      "note": "Canceled frame is not reset for reconnect."
+    },
+    {
+      "id": "A09",
+      "requirement": "navigation",
+      "status": "open",
+      "note": "New House v13 return route is rejected."
+    },
+    {
+      "id": "A10",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Explicit entity area override can be lost."
+    },
+    {
+      "id": "A19",
+      "requirement": "standards",
+      "status": "open",
+      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+    }
+  ]
+}

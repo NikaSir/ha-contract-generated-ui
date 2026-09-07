@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/.github",
+  "source_revision": "e0b171fea239ca4c4f1b3b9427f84c34784f3a61",
+  "kind": "standards",
+  "artifacts": [],
+  "standards": {
+    "applicable": true,
+    "reason": "Organization standard mirror.",
+    "evidence_paths": [
+      "README.md"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/standards-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "not_applicable",
+      "paths": [
+        "README.md",
+        "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md"
+      ],
+      "note": "Documentation mirror has no executable device runtime or command surface."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "not_applicable",
+      "paths": [
+        "README.md",
+        "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md"
+      ],
+      "note": "Documentation mirror has no executable device runtime or command surface."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "not_applicable",
+      "paths": [
+        "README.md",
+        "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md"
+      ],
+      "note": "Documentation mirror has no executable device runtime or command surface."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/standards-checks.yml",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    }
+  ],
+  "findings": []
+}

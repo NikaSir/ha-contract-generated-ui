@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-lider-voltage-control",
+  "source_revision": "504829eff79c2bf83308faaab96ae44247d13b3d",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+      "ui_version": "0.8.5",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/lider_voltage_control/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "lider-voltage-control-panel.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?LIDER_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.8.5"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/lider_voltage_control/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.8.5"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/lider_voltage_control/__init__.py",
+        "custom_components/lider_voltage_control/panel.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "lider_voltage_control",
+  "manifest_path": "custom_components/lider_voltage_control/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/lider_voltage_control/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/integration-validation.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A03: cached stale phase voltage can appear normal and fresh. Require per-value quality and incomplete-phase scenarios."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/integration-validation.yml",
+        ".github/workflows/repository-checks.yml",
+        "scripts/check-nikas-ui-standard.py",
+        "scripts/check-stable-dom.mjs"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A03",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Stale cached phase may be shown normal and current."
+    }
+  ]
+}

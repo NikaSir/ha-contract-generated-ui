@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-hikvision-next",
+  "source_revision": "12abd40a3b5ad226198eb9cb0dcc5f0bb103a997",
+  "kind": "ha_integration",
+  "artifacts": [],
+  "domain": "hikvision_next",
+  "manifest_path": "custom_components/hikvision_next/manifest.json",
+  "standards": {
+    "applicable": false,
+    "reason": "No NikaS frontend is registered in this repository.",
+    "evidence_paths": [
+      "custom_components/hikvision_next/__init__.py"
+    ]
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/hacs.yml",
+    ".github/workflows/hassfest.yml",
+    ".github/workflows/testing.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A13: total polling failure may be exposed as successful empty data; A14: preserve disabled entity choices."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "A02: HTTP event sender verification is unresolved; existing notification tests do not demonstrate rejection of foreign senders."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "Backend setup/unload/reconnect and disabled entity persistence require acceptance."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/hacs.yml",
+        ".github/workflows/hassfest.yml",
+        ".github/workflows/testing.yml",
+        "tests/test_camera.py",
+        "tests/test_config_flow.py",
+        "tests/test_diagnostics.py",
+        "tests/test_init.py",
+        "tests/test_isapi.py",
+        "tests/test_notifications.py",
+        "tests/test_pir.py",
+        "tests/test_sensor.py",
+        "tests/test_services.py",
+        "tests/test_switch.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A02",
+      "requirement": "command_safety",
+      "status": "open",
+      "note": "Incoming HTTP event sender is not reliably authenticated."
+    },
+    {
+      "id": "A13",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Total polling failure returns empty successful data."
+    },
+    {
+      "id": "A14",
+      "requirement": "lifecycle",
+      "status": "open",
+      "note": "Setup can override previously disabled entities."
+    }
+  ]
+}

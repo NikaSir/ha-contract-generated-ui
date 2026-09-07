@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-ho-sc-8w",
+  "source_revision": "9b8cac6dc3a9bf88535dddff2c5de46a10c7c5a4",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel-v0706.mjs",
+      "ui_version": "0.7.06",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_ho_sc_8w/const.py",
+          "pattern": "(?m)^PANEL_JS_URL\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)[\\\"\\x27]",
+          "expected": "irrigation-panel-v0706.mjs",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel-v0706.mjs",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.7.06"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_ho_sc_8w/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.7.06"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_ho_sc_8w/frontend.py",
+        "custom_components/nikas_ho_sc_8w/const.py",
+        "custom_components/nikas_ho_sc_8w/__init__.py"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "nikas_ho_sc_8w",
+  "manifest_path": "custom_components/nikas_ho_sc_8w/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/nikas_ho_sc_8w/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "1.9",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/publish-release.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A06: TinyTuya Error/Err and heartbeat failure acceptance remains open; api/coordinator code paths were not corrected by the parity update."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "A01: ownership and current Manual session validation for skip remains open; parity-specific checks are not acceptance of the full command surface."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "Reconnect and loss-of-connection recovery require controlled behavioral acceptance on the pinned runtime."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/publish-release.yml",
+        ".github/workflows/repository-checks.yml",
+        "scripts/check-control-contract-b00587.py",
+        "scripts/check-control-contract.py",
+        "scripts/check-manual-skip-contract.py",
+        "scripts/check-panel-ui-v16.mjs",
+        "scripts/check-zone7-anchor-date-probe.py",
+        "scripts/check-zone7-parity-probe.py",
+        "scripts/check-zone7-parity-ui.mjs",
+        "scripts/check-zone8-dp38-contract.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A01",
+      "requirement": "command_safety",
+      "status": "open",
+      "note": "Stale Manual queue may be sent during Auto."
+    },
+    {
+      "id": "A06",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "TinyTuya Error/Err path leaves local/online state."
+    },
+    {
+      "id": "A07",
+      "requirement": "artifact_autonomy",
+      "status": "open",
+      "note": "Actual v0706 imports historical modules. Main bundle/autonomy check still targets irrigation-panel.js; v0706 syntax and parity checks were added at this revision."
+    },
+    {
+      "id": "A22",
+      "requirement": "publication",
+      "status": "open",
+      "note": "publish-release.yml automatically creates GitHub Releases despite required main publication policy."
+    },
+    {
+      "id": "A19",
+      "requirement": "standards",
+      "status": "open",
+      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+    }
+  ]
+}

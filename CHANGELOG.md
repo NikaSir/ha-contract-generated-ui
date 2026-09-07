@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add NikaS Repository Contract v1.0, strict inspection tooling and a factual
+  registry of the 17 maintained repositories. Keep unsupported or unverified
+  requirements visible; toolkit validation does not certify product readiness.
+- Document staged adoption without changing integration/UI versions, runtime
+  behaviour, existing required checks or the main/HACS publication policy.
+
 - Aligns the engineering knowledge base and compatibility documents with UI v2.2 and makes that parity a CI requirement.
 - Resolves the Bottom Tab Bar icon contradiction in favor of the field-tested 26px geometry.
 

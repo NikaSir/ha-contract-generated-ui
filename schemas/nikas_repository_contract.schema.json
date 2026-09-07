@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/NikaSir/ha-contract-generated-ui/schemas/nikas_repository_contract.schema.json",
+  "title": "NikaS factual repository contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository", "source_revision", "kind", "artifacts", "standards", "publication", "evidence", "findings"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repository": {"type": "string", "pattern": "^NikaSir/(?:\\.github|[A-Za-z0-9][A-Za-z0-9._-]*)$"},
+    "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "kind": {"enum": ["ha_integration", "service", "standards"]},
+    "domain": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+    "manifest_path": {"$ref": "#/$defs/path"},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+    "standards": {
+      "type": "object", "additionalProperties": false,
+      "required": ["applicable", "reason", "evidence_paths"],
+      "properties": {
+        "applicable": {"type": "boolean"},
+        "declaration_path": {"$ref": "#/$defs/path"},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence_paths": {"$ref": "#/$defs/paths"},
+        "observed_version": {"type": ["string", "null"]},
+        "required_version": {"const": "2.2"}
+      }
+    },
+    "publication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["default_branch", "github_releases", "automatic_tags"],
+      "properties": {
+        "default_branch": {"type": "string", "minLength": 1},
+        "github_releases": {"type": "boolean"},
+        "automatic_tags": {"type": "boolean"}
+      }
+    },
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "findings": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "requirement", "status", "note"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "requirement": {"type": "string", "minLength": 1},
+        "status": {"enum": ["open", "fixed_pending_verification"]},
+        "note": {"type": "string", "minLength": 1}
+      }
+    }},
+    "existing_required_checks": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "observed_workflow_paths": {"$ref": "#/$defs/paths"}
+  },
+  "allOf": [{"if": {"properties": {"kind": {"const": "ha_integration"}}}, "then": {"required": ["domain", "manifest_path"]}}],
+  "$defs": {
+    "path": {"type": "string", "minLength": 1, "maxLength": 1024, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*[\\r\\n\\u0000]).+$"},
+    "paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/path"}},
+    "binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["role", "path", "pattern", "expected"],
+      "properties": {
+        "role": {"enum": ["entrypoint", "ui_version", "cache_key", "registration", "integration_version"]},
+        "path": {"$ref": "#/$defs/path"},
+        "pattern": {"type": "string", "minLength": 1, "maxLength": 2048},
+        "expected": {"type": "string", "minLength": 1},
+        "path_mode": {"enum": ["basename", "relative"]}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "ui_version", "bindings", "registration_evidence_paths", "binding_limitations"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "path": {"$ref": "#/$defs/path"},
+        "ui_version": {"type": "string", "minLength": 1},
+        "bindings": {"type": "array", "items": {"$ref": "#/$defs/binding"}},
+        "registration_evidence_paths": {"$ref": "#/$defs/paths"},
+        "binding_limitations": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requirement", "status", "paths", "note"],
+      "properties": {
+        "requirement": {"enum": ["data_quality", "command_safety", "lifecycle", "repository_checks", "device_acceptance"]},
+        "status": {"enum": ["pending", "recorded", "not_applicable"]},
+        "paths": {"$ref": "#/$defs/paths"},
+        "note": {"type": "string", "minLength": 1},
+        "report_path": {"$ref": "#/$defs/path"}
+      }
+    }
+  }
+}

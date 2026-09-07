@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-keenetic-hero-4g",
+  "source_revision": "d2a35c9aba36a1021834ecb481ecb71e76d23879",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
+      "ui_version": "1.0.7",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/keenetic_hero_4g/panel_runtime.py",
+          "pattern": "f[\\\"\\x27]\\{_panel\\.PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)\\?v=\\{FRONTEND_CACHE_KEY\\}",
+          "expected": "keenetic-panel-bundle.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?K100_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.0.7"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/keenetic_hero_4g/panel_runtime.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?FRONTEND_CACHE_KEY\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.0.7"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/keenetic_hero_4g/__init__.py",
+        "custom_components/keenetic_hero_4g/panel_runtime.py",
+        "custom_components/keenetic_hero_4g/panel.py"
+      ],
+      "binding_limitations": [
+        "panel_runtime._select_frontend overrides legacy panel.PANEL_MODULE. Static binding inventories the override; behavioral proof of the selector and effective UI is pending."
+      ]
+    }
+  ],
+  "domain": "keenetic_hero_4g",
+  "manifest_path": "custom_components/keenetic_hero_4g/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/keenetic_hero_4g/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/frontend-bundle.yml",
+    ".github/workflows/integration-validation.yml",
+    ".github/workflows/release-tag.yml",
+    ".github/workflows/repository-checks.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A15: WAN resolution and LTE duration use stale state; verify switchovers and restart boundaries."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/frontend-bundle.yml",
+        ".github/workflows/integration-validation.yml",
+        ".github/workflows/release-tag.yml",
+        ".github/workflows/repository-checks.yml",
+        "tests/shell_v2_harness.mjs",
+        "tests/test_module_bindings.py",
+        "tests/test_panel_b054_overview_fit_system.py",
+        "tests/test_panel_bottom_safe_area.py",
+        "tests/test_panel_channel_status_fills_v105.py",
+        "tests/test_panel_clean_rebuild.py",
+        "tests/test_panel_composition_v078.py",
+        "tests/test_panel_failover_idempotence.py",
+        "tests/test_panel_fixed_chrome_v089.py",
+        "tests/test_panel_full_height_header_zoom_v104.py",
+        "tests/test_panel_header_return_v081.py",
+        "tests/test_panel_header_safe_area.py",
+        "tests/test_panel_overview_readability_v090.py",
+        "tests/test_panel_overview_v082.py",
+        "tests/test_panel_router_baseline_v086.py",
+        "tests/test_panel_rules_117_rebuild.py",
+        "tests/test_panel_safe_zoom.py",
+        "tests/test_panel_shell_v22.py",
+        "tests/test_panel_stability_mode.py",
+        "tests/test_panel_stable_dom.py",
+        "tests/test_panel_startup_wiring.py",
+        "tests/test_panel_tab_transition.py",
+        "tests/test_panel_tabs_viewport_v100.py",
+        "tests/test_panel_target_composition_v088.py",
+        "tests/test_panel_topology_layering.py",
+        "tests/test_panel_ui_standard_v16.py",
+        "tests/test_panel_zoom_contract.py",
+        "tests/test_release_tag_contract.py",
+        "tests/test_startup_lifecycle_contract.py",
+        "tests/test_traffic_accounting.py",
+        "tests/test_traffic_contract.py",
+        "tests/test_wan_contract.py",
+        "scripts/check_nikas_ui_standard.py"
+      ],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A15",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "WAN detection and LTE duration accept stale state."
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-nikas-climate",
+  "source_revision": "1c556be8ba908834a108e20f685222e88118600b",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_climate/frontend/nikas-climate-entry-153.js",
+      "ui_version": "1.4.13",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_climate/panel.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "nikas-climate-entry-153.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_climate/frontend/nikas-climate-entry-153.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?PATCH_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.4.13"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_climate/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "0.1.41"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_climate/__init__.py",
+        "custom_components/nikas_climate/panel.py",
+        "custom_components/nikas_climate/const.py"
+      ],
+      "binding_limitations": [
+        "Registered cache key uses integration VERSION; UI label uses PATCH_UI_VERSION. Historical import chain and final displayed behavior require migration and runtime acceptance."
+      ]
+    }
+  ],
+  "domain": "nikas_climate",
+  "manifest_path": "custom_components/nikas_climate/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Active NikaS panel UI.",
+    "evidence_paths": [
+      "custom_components/nikas_climate/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [],
+      "note": "A11: unknown feature and swing values can be displayed as definite states."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [],
+      "note": "A12: hass updates recreate working DOM; verify focus, draft values, scroll and reconnection on the complete entry-153 chain."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [],
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A07",
+      "requirement": "artifact_autonomy",
+      "status": "open",
+      "note": "Registered entry-153 executes a historical import chain; old declaration versions differ from runtime."
+    },
+    {
+      "id": "A11",
+      "requirement": "data_quality",
+      "status": "open",
+      "note": "Unknown feature/swing can become definite on/off state."
+    },
+    {
+      "id": "A12",
+      "requirement": "lifecycle",
+      "status": "open",
+      "note": "hass updates rebuild working DOM."
+    },
+    {
+      "id": "A20-CI",
+      "requirement": "repository_checks",
+      "status": "open",
+      "note": "No workflow files are present at this pinned revision."
+    }
+  ]
+}
