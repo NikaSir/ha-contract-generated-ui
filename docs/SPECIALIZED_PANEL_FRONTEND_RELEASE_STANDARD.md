@@ -1,7 +1,8 @@
-# NikaS Specialized Panel Frontend Delivery Standard v1.7
+# NikaS Specialized Panel Frontend Delivery Standard v1.8
 
 **Status:** required for every integration-owned Home Assistant specialized panel
 **UI authority:** [`NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md`](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md) v2.2
+**HACS publication companion:** [`NIKAS_HACS_PUBLICATION_CONTRACT.md`](NIKAS_HACS_PUBLICATION_CONTRACT.md) v1.0
 
 ## Production artifact
 
@@ -39,4 +40,22 @@ Before merge, verify:
 
 ## Publication workflow
 
-Changes receive an explicit UI/integration version where applicable, a changelog entry and automated checks. NikaS work is published through commits, branches, pull requests and the accepted `main` state. GitHub Releases and automatic release tags are not created.
+Changes receive an explicit UI/integration version where applicable, a changelog entry and automated checks. NikaS work is reviewed and accepted through commits, branches, pull requests and the authoritative `main` state.
+
+`main` is the code authority, but **it is not automatically the HACS delivery boundary**. For every integration distributed through HACS, the repository declares and tests its actual delivery mechanism.
+
+For a release-driven HACS integration:
+
+1. merge only after required PR checks pass;
+2. read the integration version only from `custom_components/<domain>/manifest.json`;
+3. after merge, create an exact matching GitHub Release/tag if one does not already exist;
+4. the release targets the merged `main` commit containing that manifest version;
+5. publication is idempotent and uses no custom release assets unless the repository explicitly requires them;
+6. verify HACS validation and confirm that repository refresh exposes the same version as installable;
+7. after installation/restart, verify the Home Assistant integration version and matching visible panel UI version.
+
+A merged version without its required HACS-visible Release is **accepted code but not delivered software**. Do not report it to the user as available for update.
+
+If HACS rejects a branch/commit installation path such as `version: main`, that path is considered unsupported for that repository until separately verified; repair the supported publication mechanism instead of asking the user to repeat the failed action.
+
+The exact required behavior, failure modes, permissions and regression cases are defined by [NikaS HACS Publication Contract v1.0](NIKAS_HACS_PUBLICATION_CONTRACT.md), which supersedes the older blanket rule that GitHub Releases are never used for HACS-delivered integrations.
