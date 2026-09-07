@@ -59,6 +59,21 @@ restart Home Assistant, then add **Contract Generated UI** under
 For a manual installation, copy `custom_components/contract_generated_ui` to
 `/config/custom_components/contract_generated_ui` and restart Home Assistant.
 
+## Canonical NikaS UI knowledge base
+
+[NikaS UI Standard v2.2](docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md) defines the
+mandatory shell and data-truth baseline. The [Engineering Knowledge Base](docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md)
+records the associated experience and failure modes.
+
+The [Refresh Action Contract v1.0](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
+**required companion** to v2.2 for panels with a refresh button: immediate busy
+feedback for at least 900 ms and throughout the request, no duplicate dispatch,
+visible failure, preserved view/editor context and accessible reduced-motion
+feedback. Its digest and required production regression cases are recorded in
+`.nikas-ui-standard.json` and guarded by `tests/test_refresh_action_contract.py`.
+This registry check does not certify another panel's runtime; each owning
+repository must provide production-test and browser/phone acceptance evidence.
+
 ## Development validation
 
 The shared [NikaS Repository Contract v1.0](docs/NIKAS_REPOSITORY_CONTRACT.md)
