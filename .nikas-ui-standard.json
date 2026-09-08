@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "c66e68915907281abb49418590542c75c6226165ca181a32ee0d9701c5d2addd",
+  "standard_sha256": "4d2edb4e2114b1317e668423850dbec0e2d9604550433fcbb2990e93ad00cbe0",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
   "role": "registry",
@@ -100,11 +100,11 @@
     "accessible_status_required": true
   },
   "refresh_action_feedback": {
-    "version": "1.0",
+    "version": "1.1",
     "status": "required",
     "applies_when": "refresh_action_present",
     "path": "docs/NIKAS_REFRESH_ACTION_CONTRACT.md",
-    "sha256": "2860491ee4b1911f153e055fd1e1cd47eb15c9a24dab185ede43fbdb2a3d38b0",
+    "sha256": "69f73e9d5949a2564f2bcef3059039cc339c12c9e8dfe71cfa9f24a45b78d2a8",
     "busy_animation": "rotate",
     "minimum_visible_ms": 900,
     "busy_until": "request_settled_and_minimum_elapsed",
@@ -135,9 +135,29 @@
       "render_stability",
       "context_preservation",
       "reduced_motion",
-      "truthful_freshness"
+      "truthful_freshness",
+      "result_presentation",
+      "retry_during_result",
+      "partial_failure",
+      "disconnect_cleanup"
     ],
-    "browser_acceptance_required": true
+    "browser_acceptance_required": true,
+    "completion_feedback": {
+      "visible_ms": 1400,
+      "success_icon": "mdi:check",
+      "success_color": "#43a047",
+      "error_icon": "mdi:alert-circle-outline",
+      "error_color": "#e53935",
+      "idle_icon": "mdi:refresh",
+      "idle_color": "var(--primary-color)",
+      "success_semantics": "all_required_requests_explicitly_succeeded",
+      "retry_during_result": true,
+      "cancel_previous_timer_on_retry": true,
+      "preserve_result_deadline_on_render": true,
+      "disconnect_cleanup": true,
+      "geometry_unchanged": true,
+      "accessible_result_name": true
+    }
   },
   "hacs_publication": {
     "version": "1.0",
