@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "4d2edb4e2114b1317e668423850dbec0e2d9604550433fcbb2990e93ad00cbe0",
+  "standard_sha256": "e5f032665fc7b9f50c06fa44c954469d94e5fe5904fee6e12a81f9e776c8fb6b",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
   "role": "registry",
@@ -64,7 +64,6 @@
   "connection_plaque_reference": {
     "implementation": "S8 OMNI",
     "implementation_source": "NikaSir/ha-s8-omni",
-    "min_height_px": 58,
     "padding_px": "12 14",
     "radius_px": 18,
     "lamp_px": 10,
@@ -76,7 +75,19 @@
     "neutral_background_mix_percent": 8,
     "status_border_mix_percent": 30,
     "neutral_border_mix_percent": 28,
-    "shadow": "0 4px 14px rgba(0,0,0,.055)"
+    "shadow": "0 4px 14px rgba(0,0,0,.055)",
+    "contract_version": "1.0",
+    "width_px": 200,
+    "height_px": 60,
+    "box_sizing": "border-box",
+    "top_px": 16,
+    "right_px": 16,
+    "coordinate_origin": "card_inner_border_edge",
+    "font_family": "-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif",
+    "main_line_height_px": 17,
+    "freshness_line_height_px": 14,
+    "text_gap_px": 3,
+    "geometry_overrides_allowed": false
   },
   "peer_device_status_lamp_reference": {
     "implementation": "Stark SolarPower",
@@ -211,5 +222,31 @@
       "unload_ownership",
       "generated_manifest_ownership"
     ]
+  },
+  "connection_decoration_contract": {
+    "version": "1.0",
+    "status": "required_when_present",
+    "path": "docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md",
+    "sha256": "7a6c24a3488a37626cca4d6f844d1f9080c8f572e1e7e23ce6a89a466cdabae8",
+    "production_browser_acceptance_required": true,
+    "state_layout_delta_px": 0,
+    "measurement_noise_px": 0.1,
+    "geometry_tolerance_px": 1
+  },
+  "blue_corner_reference": {
+    "width_px": 205,
+    "height_px": 205,
+    "top_px": -92,
+    "right_px": -70,
+    "base_color": "#03A9D9",
+    "background": "rgba(3,169,217,0.07)",
+    "opacity": 1,
+    "radius": "50%",
+    "coordinate_origin": "card_inner_border_edge",
+    "clip": "persistent_card_decoration_layer",
+    "theme_primary_dependent": false,
+    "geometry_overrides_allowed": false,
+    "pointer_events": "none",
+    "aria_hidden": true
   }
 }

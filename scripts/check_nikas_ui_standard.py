@@ -40,8 +40,43 @@ def main() -> None:
         baseline = f"Normative baseline:** NikaS Specialized Panel UI Standard v{config['version']}"
         require(baseline in knowledge_base, "engineering knowledge base baseline does not match the canonical standard")
         require("### 2.10 Peer status and selection are different facts" in knowledge_base, "knowledge base is missing the v2.2 peer-status lesson")
+        require("### 2.13 Connection plaque and blue corner must use locked tokens" in knowledge_base, "knowledge base is missing the locked connection/decoration lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
+    # Registry integrity only: production layout needs the companion's browser evidence.
+    geometry = config.get("connection_decoration_contract", {})
+    require(geometry.get("version") == "1.0", "connection/decoration contract must be v1.0")
+    require(geometry.get("status") == "required_when_present", "connection/decoration applicability drift")
+    require(geometry.get("production_browser_acceptance_required") is True, "production geometry evidence is required")
+    require(geometry.get("state_layout_delta_px") == 0, "state changes must not move connection/decoration")
+    require(geometry.get("measurement_noise_px") == 0.1, "state geometry measurement noise drift")
+    require(geometry.get("geometry_tolerance_px") == 1, "card geometry tolerance must be 1px")
+    geometry_doc = read_relative(geometry.get("path", "docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md"))
+    require(hashlib.sha256(geometry_doc.encode("utf-8")).hexdigest() == geometry.get("sha256"), "connection/decoration contract hash drift")
+    require("NIKAS_CONNECTION_DECORATION_CONTRACT.md" in standard, "UI standard must bind the locked geometry contract")
+    plaque = config.get("connection_plaque_reference", {})
+    expected_plaque = {
+        "contract_version": "1.0", "width_px": 200, "height_px": 60,
+        "box_sizing": "border-box", "top_px": 16, "right_px": 16,
+        "coordinate_origin": "card_inner_border_edge", "padding_px": "12 14",
+        "radius_px": 18, "lamp_px": 10, "column_gap_px": 11, "text_gap_px": 3,
+        "font_family": '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif',
+        "main_font": "16px/700", "freshness_font": "13px/600",
+        "main_line_height_px": 17, "freshness_line_height_px": 14,
+        "geometry_overrides_allowed": False,
+        "shadow": "0 4px 14px rgba(0,0,0,.055)",
+    }
+    for key, value in expected_plaque.items():
+        require(plaque.get(key) == value, f"connection plaque token drift: {key}")
+    require("min_height_px" not in plaque, "retire the minimum-only connection height")
+    expected_corner = {
+        "width_px": 205, "height_px": 205, "top_px": -92, "right_px": -70,
+        "base_color": "#03A9D9", "background": "rgba(3,169,217,0.07)",
+        "opacity": 1, "radius": "50%", "coordinate_origin": "card_inner_border_edge",
+        "clip": "persistent_card_decoration_layer", "theme_primary_dependent": False,
+        "geometry_overrides_allowed": False, "pointer_events": "none", "aria_hidden": True,
+    }
+    require(config.get("blue_corner_reference") == expected_corner, "blue corner token drift")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(
