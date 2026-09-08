@@ -87,6 +87,8 @@ def main() -> None:
         "Unchanged lamp state produces no DOM write.",
         "icon no larger than `26px`",
         "canonical glyph size is `26px`",
+        "Panel lifecycle and availability",
+        "NIKAS_PANEL_LIFECYCLE_CONTRACT.md",
     ):
         require(clause in standard, f"canonical Header-return clause missing: {clause}")
 
@@ -146,6 +148,45 @@ def main() -> None:
     require(lamp.get("selection_is_independent") is True, "selection and device health must remain independent")
     require(lamp.get("update_mode") == "point-patch", "status lamps must use point-only DOM updates")
     require(lamp.get("accessible_status_required") is True, "status lamps require accessible text")
+
+    lifecycle = config.get("panel_lifecycle", {})
+    require(lifecycle.get("version") == "1.0", "NikaS panel lifecycle contract version must be 1.0")
+    require(lifecycle.get("status") == "required", "panel lifecycle contract must be required")
+    require(lifecycle.get("registration_before_device_io") is True, "panel route must precede fallible device I/O")
+    require(lifecycle.get("initial_failure") == "panel_remains_registered", "initial failure must preserve the panel route")
+    require(lifecycle.get("unavailable_rendering") == "fail_closed", "offline panel content must fail closed")
+    require(lifecycle.get("recovery") == "coordinator_or_config_entry_retry", "panel recovery must use the backend retry lifecycle")
+    lifecycle_contract = read_relative(lifecycle["path"])
+    lifecycle_digest = hashlib.sha256(lifecycle_contract.encode("utf-8")).hexdigest()
+    require(lifecycle_digest == lifecycle.get("sha256"), "local NikaS panel lifecycle contract hash drift")
+    required_lifecycle_cases = [
+        "registration_before_refresh",
+        "initial_failure_preserves_route",
+        "offline_bootstrap",
+        "retry_recovery",
+        "route_collision",
+        "unload_ownership",
+        "generated_manifest_ownership",
+    ]
+    require(lifecycle.get("required_cases") == required_lifecycle_cases, "panel lifecycle regression cases drift")
+    for clause in (
+        "LIFECYCLE-01",
+        "LIFECYCLE-02",
+        "LIFECYCLE-03",
+        "LIFECYCLE-04",
+        "LIFECYCLE-05",
+        "LIFECYCLE-06",
+        "LIFECYCLE-07",
+        "LIFECYCLE-08",
+        "async_config_entry_first_refresh()",
+        "Hardware evidence is required only",
+    ):
+        require(clause in lifecycle_contract, f"canonical panel lifecycle clause missing: {clause}")
+    require(
+        "NIKAS_PANEL_LIFECYCLE_CONTRACT.md" in standard
+        and "configured panel route is application infrastructure" in standard,
+        "UI standard must require the panel lifecycle companion",
+    )
 
     role = config.get("role")
     require(role in {"registry", "base", "specialized", "readiness"}, f"unsupported NikaS UI role: {role}")

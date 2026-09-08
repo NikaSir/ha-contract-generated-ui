@@ -156,6 +156,15 @@ For polled integrations:
 - expensive work is not duplicated by each entity or panel subscriber;
 - listeners receive already-normalized domain state.
 
+### 3.3.1 Panel existence is application infrastructure
+
+A configured panel route is registered before fallible device or cloud I/O. Device
+reachability changes the panel's content to an explicit unavailable/no-data state; it
+does not remove the application surface. First-refresh helpers may still govern
+entity setup or config-entry retry, but never route existence. Registration,
+collision handling, retries and unload ownership follow
+`NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
+
 ### 3.4 Unknown and unavailable are first-class states
 
 Never convert missing input to zero, false, normal or green. Distinguish:

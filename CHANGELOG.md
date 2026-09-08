@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.40.1 — 2026-09-08
+
+- Add the required NikaS Panel Lifecycle Contract v1.0: configured routes are
+  application infrastructure and cannot depend on device/cloud reachability.
+- Add machine-readable lifecycle requirements, CI guards and a fleet baseline
+  covering every current integration-owned panel.
+- Record Stark SolarPower and StarLine Telemetry as the two startup-order gaps
+  requiring owner-repository fixes.
+
 ## 0.40.0 — 2026-09-08
 
 - Enforce the repository boundary: this project now ships only the shared route

@@ -76,6 +76,10 @@ The [Refresh Action Contract v1.0](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
 required companion for panels with a refresh action. Each owning repository must
 provide its own production tests and browser/device acceptance evidence.
 
+The [Panel Lifecycle Contract v1.0](docs/NIKAS_PANEL_LIFECYCLE_CONTRACT.md) is
+required for every owned panel route. Device or cloud availability may change panel
+content, but never determines whether the route exists.
+
 The [NikaS Repository Contract v1.0](docs/NIKAS_REPOSITORY_CONTRACT.md) defines
 factual delivery, data-quality, command-confirmation, lifecycle and publication
 evidence across the repository fleet. Its schema, inspector and pinned profiles are
