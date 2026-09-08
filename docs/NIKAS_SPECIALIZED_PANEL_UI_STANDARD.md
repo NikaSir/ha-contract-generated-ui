@@ -93,12 +93,32 @@ The complete upper application menu copies the S8 OMNI Header, not merely its ti
 - Primary title: `23px`, weight `800`, one line; `21px` on very narrow phones.
 - Secondary/version line: `14px`, weight approximately `560`, `var(--secondary-text-color)`; `13px` on very narrow phones.
 - The permanent left action is only Home Assistant system menu `mdi:menu`; it dispatches bubbling/composed `hass-toggle-menu`.
-- At most one panel-global action occupies the right rail. Refresh uses `mdi:refresh`.
+- At most one panel-global action occupies the right rail. Refresh uses `mdi:refresh` in idle/busy state and the completion glyphs defined below.
 - Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph.
-- Menu glyph uses `var(--primary-text-color)`; refresh uses `var(--primary-color)`.
+- Menu glyph uses `var(--primary-text-color)`; refresh uses `var(--primary-color)` in idle/busy state.
 - Disabled global action may reduce opacity, but its plaque geometry and reserved rail remain unchanged so title centering never moves.
 - A transparent refresh rail, a borderless side action, a locally selected integration color or mismatched menu/refresh geometry is non-conforming.
 - Back, an integration drawer, a device command or a decorative brand icon is prohibited in the permanent left rail.
+
+### Refresh — busy, success and error
+
+[NikaS Refresh Action Contract v1.1](NIKAS_REFRESH_ACTION_CONTRACT.md) is required
+when a refresh action is present. The same mounted button has four states:
+idle arrow → busy rotation → success check or error glyph → idle arrow.
+
+- Start the permitted read-only refresh immediately; rotate for at least 900 ms
+  and until the request settles, with duplicate activation blocked throughout.
+- After explicit success, stop rotation and show green `mdi:check` (`#43a047`)
+  for 1400 ms. After failure, show red `mdi:alert-circle-outline` (`#e53935`)
+  for 1400 ms with a visible error message. Then restore the idle arrow/color.
+- Keep the `44px × 44px` plaque, `25px` glyph and Header coordinates unchanged.
+  Update accessible names for busy/success/error; color alone is insufficient.
+- A deliberate retry is available during the result interval. Cancel the previous
+  timer; neither it nor a late callback may overwrite the new request.
+- Telemetry and tab changes preserve the button, result and original deadline.
+  Reduced motion removes rotation but retains visible busy and result states.
+- The check confirms the declared HA/API request result only. It never fabricates
+  a device acknowledgement, sample timestamp, healthy state or fresh telemetry.
 
 ### Center title plaque — return to the source NikaS base panel
 
@@ -319,6 +339,7 @@ Repository tests or static checks must verify:
 27. the non-passive touch boundary guard blocks Home Assistant pull-to-refresh and outer scrolling at both work-viewport edges without replacing native interior scrolling or two-finger zoom.
 28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
 29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
+30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.1, including the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -387,4 +408,3 @@ required companion to this standard.
   existing panel.
 - Generated panel existence follows enabled manifest/configuration state; entity
   availability affects content only.
-

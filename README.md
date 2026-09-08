@@ -72,7 +72,7 @@ mandatory shell and data-truth baseline. The
 [Engineering Knowledge Base](docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md) records the
 associated experience and failure modes.
 
-The [Refresh Action Contract v1.0](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
+The [Refresh Action Contract v1.1](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
 required companion for panels with a refresh action. Each owning repository must
 provide its own production tests and browser/device acceptance evidence.
 

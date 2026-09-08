@@ -126,6 +126,37 @@ More than two peers may use another explicitly approved adaptive composition onl
 
 ---
 
+### 2.12 Refresh needs a visible completion result
+
+The user accepted the green completion check in Climate UI 1.4.17, then reported
+its absence in the vacuum and irrigation panels. Rotation alone shows that a
+request is running; an immediate return to the arrow makes its outcome unclear.
+Another S8 failure showed that a generic loading CSS class could distort the
+Header button. Use a button-specific state class and preserve plaque geometry.
+
+**Correct model:** one mounted button, four states:
+`idle → busy → success/error → idle`. Follow
+[Refresh Action Contract v1.1](NIKAS_REFRESH_ACTION_CONTRACT.md):
+
+- busy begins immediately, lasts at least 900 ms and until the request settles;
+- explicit success shows green `mdi:check` for 1400 ms;
+- failure shows red `mdi:alert-circle-outline` for 1400 ms and an error message;
+- the result interval ends by restoring the arrow, with no layout shift;
+- duplicate requests are blocked while busy; retry during a result clears its old
+  timer so it cannot overwrite the new request;
+- HA updates and tab changes preserve the result and its original deadline;
+- accessible names and static reduced-motion states explain progress/outcome;
+- only an accepted factual sample changes telemetry freshness. A resolved promise
+  carrying `false`, a swallowed exception or partial failure is not success.
+
+Completion presentation was added in
+[S8 OMNI 1.0.4, PR #129](https://github.com/NikaSir/ha-s8-omni/pull/129) and
+[HO-SC-8W 1.0.1, PR #175](https://github.com/NikaSir/ha-ho-sc-8w/pull/175).
+Product tests and browser checks are evidence for the tested cases only; these
+references do not certify the entire contract or replace physical acceptance.
+
+---
+
 ## 3. Integration architecture
 
 ### 3.1 Backend owns truth; frontend owns presentation
@@ -481,6 +512,7 @@ Automate where practical:
 - period history calls are single-flight/cached;
 - max history concurrency is enforced;
 - command duplicate submission is blocked;
+- refresh success/error glyphs last 1400 ms, survive telemetry patches and cannot be reset by an old timer during a newer request;
 - unknown/unavailable data does not become healthy;
 - the two-peer selector keeps the StarLine reference geometry (52px row, 44px independent buttons, 8px gap) and patches status lamps independently of selection.
 
@@ -539,6 +571,8 @@ The following patterns are considered known regressions unless a new design prov
 - meaningful operational text below 12 px;
 - generic “Online” when transport/freshness distinction is required;
 - status represented by color only;
+- refresh silently returning to the arrow without showing its result, or displaying a green check after a failed/partial request;
+- a generic page-loading CSS class applied to a Header action and changing its geometry;
 - a shared outer pill around peer-device buttons, or selection styling driven by device health;
 - missing/unavailable rendered green or as zero;
 - guessed entity IDs;
