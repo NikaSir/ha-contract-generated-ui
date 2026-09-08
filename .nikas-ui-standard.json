@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "4d2edb4e2114b1317e668423850dbec0e2d9604550433fcbb2990e93ad00cbe0",
+  "standard_sha256": "e81beb107ddc99571125c962e0975563ea7e63abce01a8085190c26ff5e627eb",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
   "role": "registry",
@@ -64,11 +64,10 @@
   "connection_plaque_reference": {
     "implementation": "S8 OMNI",
     "implementation_source": "NikaSir/ha-s8-omni",
-    "min_height_px": 58,
-    "padding_px": "12 14",
+    "padding_px": "10 11",
     "radius_px": 18,
     "lamp_px": 10,
-    "column_gap_px": 11,
+    "column_gap_px": 8,
     "main_font": "16px/700",
     "freshness_font": "13px/600",
     "success_background_mix_percent": 11,
@@ -76,7 +75,13 @@
     "neutral_background_mix_percent": 8,
     "status_border_mix_percent": 30,
     "neutral_border_mix_percent": 28,
-    "shadow": "0 4px 14px rgba(0,0,0,.055)"
+    "shadow": "0 4px 14px rgba(0,0,0,.055)",
+    "width_px": 168,
+    "height_px": 58,
+    "main_line_height_px": 18,
+    "freshness_line_height_px": 15,
+    "row_gap_px": 3,
+    "text_width_px": 126
   },
   "peer_device_status_lamp_reference": {
     "implementation": "Stark SolarPower",
@@ -210,6 +215,43 @@
       "route_collision",
       "unload_ownership",
       "generated_manifest_ownership"
+    ]
+  },
+  "hero_header_contract": {
+    "version": "1.0",
+    "status": "required",
+    "applies_when": "operational_hero_card_present",
+    "path": "docs/NIKAS_HERO_HEADER_CONTRACT.md",
+    "sha256": "bea8393101d809c0bb73d271040547cb87cc35c18392b1a091ea0b9a442059ef",
+    "implementation_status": "specification_only_panel_acceptance_required",
+    "geometry": {
+      "card_border_px": 1,
+      "card_radius_px": 22,
+      "outer_inset_px": 14,
+      "column_gap_px": 12,
+      "card_breakpoint_px": 400,
+      "state_block_height_px": 96,
+      "title_slot_height_px": 56,
+      "hint_slot_height_px": 36,
+      "title_hint_gap_px": 4,
+      "mode_icon_px": 24,
+      "icon_text_gap_px": 8,
+      "image_origin_wide_px": 124,
+      "image_origin_narrow_px": 194,
+      "coordinate_tolerance_px": 1
+    },
+    "decoration": {
+      "diameter_px": 205,
+      "top_px": -92,
+      "right_px": -70,
+      "color": "rgba(3,169,217,0.07)",
+      "anchor": "card_inner_border_edge",
+      "state_independent": true
+    },
+    "acceptance": "production_geometry_state_transitions_and_device_review",
+    "plaque_exclusions": [
+      "Дом сейчас",
+      "StarLine"
     ]
   }
 }
