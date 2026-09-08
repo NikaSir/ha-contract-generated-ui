@@ -318,6 +318,7 @@ Repository tests or static checks must verify:
 26. every Bottom Tab Bar label is fully visible, including Cyrillic descenders, with the sidebar expanded and collapsed and in every mandatory viewport.
 27. the non-passive touch boundary guard blocks Home Assistant pull-to-refresh and outer scrolling at both work-viewport edges without replacing native interior scrolling or two-finger zoom.
 28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
+29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -369,3 +370,21 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - GitHub Releases are not used.
 - Automatic release tags are not used as a publication gate or update channel. An internal integration/UI version does not require a Git tag.
 - A pull request remains draft until automated checks pass and the complete viewport matrix above is ready for user verification.
+
+## 16. Panel lifecycle and availability
+
+[NikaS Panel Lifecycle Contract v1.0](NIKAS_PANEL_LIFECYCLE_CONTRACT.md) is a
+required companion to this standard.
+
+- A configured panel route is application infrastructure, not telemetry state.
+- The owner registers its route before fallible first device/cloud/coordinator I/O,
+  or uses integration-wide registration when the route is not entry-specific.
+- `async_config_entry_first_refresh()` and successful device discovery must never
+  be prerequisites for route existence.
+- Initial failure mounts explicit unavailable/no-data content and preserves Header,
+  navigation and sidebar entry.
+- Recovery uses the normal coordinator/config-entry retry lifecycle and patches the
+  existing panel.
+- Generated panel existence follows enabled manifest/configuration state; entity
+  availability affects content only.
+

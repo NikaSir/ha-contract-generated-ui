@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.2",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "3b6cc750b08aa0d2a375d1430ea04ac68c90525a527d197b014abd96728d23d1",
+  "standard_sha256": "c66e68915907281abb49418590542c75c6226165ca181a32ee0d9701c5d2addd",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
   "role": "registry",
@@ -115,12 +115,27 @@
     "execution_scope": "read_only_telemetry",
     "freshness": "accepted_sample_only",
     "update_mode": "point-patch",
-    "preserve": ["header", "active_tab", "peer", "work_viewport", "scroll", "zoom", "editor_draft"],
+    "preserve": [
+      "header",
+      "active_tab",
+      "peer",
+      "work_viewport",
+      "scroll",
+      "zoom",
+      "editor_draft"
+    ],
     "test_source": "production_entrypoint",
     "required_cases": [
-      "activation", "fast_success", "slow_success", "duplicate_activation",
-      "failure_cleanup", "unavailable_targets", "render_stability",
-      "context_preservation", "reduced_motion", "truthful_freshness"
+      "activation",
+      "fast_success",
+      "slow_success",
+      "duplicate_activation",
+      "failure_cleanup",
+      "unavailable_targets",
+      "render_stability",
+      "context_preservation",
+      "reduced_motion",
+      "truthful_freshness"
     ],
     "browser_acceptance_required": true
   },
@@ -146,11 +161,35 @@
       "device_acceptance": "accepted_in_operation"
     },
     "required_cases": [
-      "manifest_version", "release_exact_match", "release_target",
-      "idempotent_publish", "hacs_validation", "no_release_assets_by_default",
+      "manifest_version",
+      "release_exact_match",
+      "release_target",
+      "idempotent_publish",
+      "hacs_validation",
+      "no_release_assets_by_default",
       "delivery_acceptance"
     ]
   },
   "knowledge_base_path": "docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md",
-  "frontend_delivery_path": "docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md"
+  "frontend_delivery_path": "docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md",
+  "panel_lifecycle": {
+    "version": "1.0",
+    "status": "required",
+    "path": "docs/NIKAS_PANEL_LIFECYCLE_CONTRACT.md",
+    "sha256": "939b58f7451d0819ad155975466162383e74c99c78040107f88cf667673ea32a",
+    "route_owner": "installed_configuration",
+    "registration_before_device_io": true,
+    "initial_failure": "panel_remains_registered",
+    "unavailable_rendering": "fail_closed",
+    "recovery": "coordinator_or_config_entry_retry",
+    "required_cases": [
+      "registration_before_refresh",
+      "initial_failure_preserves_route",
+      "offline_bootstrap",
+      "retry_recovery",
+      "route_collision",
+      "unload_ownership",
+      "generated_manifest_ownership"
+    ]
+  }
 }
