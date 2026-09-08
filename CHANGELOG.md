@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.39.2 — 2026-09-08
+
+- Correct the shared Water Accounting registry entry to the owner route
+  `/dashboard-water` with safe return to `/dashboard-house-v13/home`.
+- Keep the Water implementation in its dedicated repository; this release changes
+  only the common route contract and its validation.
+
 - Consolidate CI into uniquely named validation jobs and one `validate` gate
   that requires every job to succeed. Preserve the existing required context
   and keep manual strict fleet inspection separate from tooling validation.

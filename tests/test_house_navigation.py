@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
+
 from custom_components.contract_generated_ui.house_navigation import (
     compile_navigation_registry,
 )
@@ -50,3 +52,12 @@ def test_navigation_source_is_packaged_byte_for_byte() -> None:
         / "navigation"
         / "main.yaml"
     ).read_bytes()
+
+
+def test_water_route_matches_the_owner_contract() -> None:
+    navigation = yaml.safe_load((ROOT / "navigation" / "main.yaml").read_text(encoding="utf-8"))
+    assert navigation["metadata"]["version"] == "2.1.1"
+    assert navigation["spec"]["specialized_routes"]["water_accounting"] == {
+        "path": "/dashboard-water",
+        "safe_return_route": "/dashboard-house-v13/home",
+    }
