@@ -1,13 +1,10 @@
-"""Contract Generated UI registry and shared-asset service."""
+"""Contract Generated UI registry and common contract service."""
 
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
-
-import yaml
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -22,18 +19,11 @@ async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
-    """Set up registry snapshots, diagnostics and shared static assets."""
-    from homeassistant.components.http import StaticPathConfig
+    """Set up common source validation, registry snapshots and diagnostics."""
     from homeassistant.const import Platform
     from homeassistant.helpers import entity_registry as er
 
-    from .const import (
-        DOMAIN,
-        FRONTEND_DIRECTORY,
-        FRONTEND_STATIC_REGISTERED,
-        HOUSE_HERO_ASSETS_STATIC_PATH,
-        SOURCE_DIRECTORY,
-    )
+    from .const import DOMAIN, SOURCE_DIRECTORY
     from .coordinator import ContractGeneratedUICoordinator
     from .runtime_source_sync import sync_bundled_public_sources
     from .snapshot_download import async_register_snapshot_download_view
@@ -41,23 +31,10 @@ async def async_setup_entry(
     source_root = Path(hass.config.path(SOURCE_DIRECTORY))
     try:
         await hass.async_add_executor_job(sync_bundled_public_sources, source_root)
-    except (OSError, ValueError, RuntimeError, json.JSONDecodeError, yaml.YAMLError) as err:
-        _LOGGER.warning("Cannot synchronize preserved NikaS sources during setup: %s", err)
+    except OSError as err:
+        _LOGGER.warning("Cannot synchronize common NikaS sources during setup: %s", err)
 
     async_register_snapshot_download_view(hass)
-    domain_data = hass.data.setdefault(DOMAIN, {})
-    if not domain_data.get(FRONTEND_STATIC_REGISTERED):
-        frontend_root = Path(__file__).parent / FRONTEND_DIRECTORY
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    HOUSE_HERO_ASSETS_STATIC_PATH,
-                    str(frontend_root / "assets"),
-                    False,
-                ),
-            ]
-        )
-        domain_data[FRONTEND_STATIC_REGISTERED] = True
 
     entity_registry = er.async_get(hass)
     legacy_generate_entity_id = entity_registry.async_get_entity_id(
@@ -82,11 +59,10 @@ async def async_unload_entry(
     hass: HomeAssistant,
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
-    """Unload registry service entities."""
+    """Unload common service entities."""
     from homeassistant.const import Platform
 
-    unloaded = await hass.config_entries.async_unload_platforms(
+    return await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
-    return unloaded

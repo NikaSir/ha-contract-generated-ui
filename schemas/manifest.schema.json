@@ -132,10 +132,9 @@
           ],
           "properties": {
             "template": {
-              "enum": [
-                "house_overview_v1",
-                "infrastructure_overview_v1"
-              ]
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_]*$"
             }
           }
         },
@@ -318,13 +317,8 @@
           "minimum": 0
         },
         "renderer": {
-          "enum": [
-            "operational_v1",
-            "house_home_v1",
-            "actions_home_v1",
-            "infrastructure_summary_v1",
-            "subpanel_placeholder_v1"
-          ]
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
         },
         "placeholder": {
           "type": "string",

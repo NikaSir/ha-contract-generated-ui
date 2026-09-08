@@ -1,14 +1,21 @@
 {
   "domain": "contract_generated_ui",
   "name": "NikaS Contract Generated UI",
-  "codeowners": ["@NikaSir"],
+  "codeowners": [
+    "@NikaSir"
+  ],
   "config_flow": true,
-  "dependencies": ["http"],
+  "dependencies": [
+    "http"
+  ],
   "documentation": "https://github.com/NikaSir/ha-contract-generated-ui",
   "integration_type": "service",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/NikaSir/ha-contract-generated-ui/issues",
-  "requirements": ["jsonschema==4.26.0", "PyYAML==6.0.3"],
+  "requirements": [
+    "jsonschema==4.26.0",
+    "PyYAML==6.0.3"
+  ],
   "single_config_entry": true,
-  "version": "0.39.2"
+  "version": "0.40.0"
 }

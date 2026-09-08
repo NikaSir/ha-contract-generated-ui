@@ -1,8 +1,8 @@
-# House generator
+# Common generator toolkit
 
-This package validates and deterministically renders the main House overview from its
-public contract, private verified inventory and single panel manifest.
+This package validates Architecture-as-Code sources, builds verified semantic
+inventory, renders the panel-neutral reference Lovelace layout, computes semantic
+diffs and applies fail-closed release gates.
 
-It does not render Rooms, Actions, Infrastructure or integration-specific detailed
-panels. Generated output remains review-only and suitable for semantic comparison
-before deployment.
+Panel-specific renderers live in their owning repositories. Generated output is
+review-only until the owner repository's tests and delivery checks pass.

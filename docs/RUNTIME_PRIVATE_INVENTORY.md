@@ -1,50 +1,36 @@
 # Private runtime inventory
 
-Production Home Assistant bindings are intentionally separated from the public repository.
+Production Home Assistant bindings are intentionally separated from public
+repositories.
 
-## Public repository
+## Public repositories
 
-The public repository may contain:
+Public repositories may contain UI contracts, panel manifests, schemas, generator and
+validation code, and synthetic examples. Contracts, manifests and navigation sources
+must not contain concrete `entity_id`, `device_id` or `area_id` values.
 
-- UI contracts;
-- panel manifests;
-- schemas;
-- generator and validation code;
-- synthetic examples and tests.
-
-Contracts and manifests must not contain concrete `entity_id`, `device_id` or `area_id` values.
+Panel-specific public sources belong to the repository that owns the panel. The
+central `ha-contract-generated-ui` repository contains common schemas, standards,
+tools and the route registry only.
 
 ## Home Assistant runtime
 
-Real bindings live under:
+Real bindings may live under:
 
 `/config/contract_generated_ui/inventory/`
 
-A production `SemanticInventory` is generated only from a captured `RegistrySnapshot` and explicit verified bindings. It may contain real Home Assistant `entity_id` values and therefore is treated as private runtime configuration.
+A production `SemanticInventory` is generated only from a captured
+`RegistrySnapshot` and explicit verified bindings. It may contain real Home
+Assistant entity IDs and is therefore private runtime configuration.
 
-Do not publish production inventory files to the public GitHub repository.
+Do not publish production inventory files. Do not copy another panel owner's private
+bindings into the central repository or into unrelated panel repositories.
 
-The public House manifest references semantic keys only, for example:
+## Ownership and migration
 
-`house.home.power_a`
+Semantic keys are resolved only within the owning panel's reviewed workflow. Shared
+navigation records routes, not entity bindings. Moving a panel between repositories
+must not create a runtime import or inventory dependency on the previous owner.
 
-The private inventory resolves that semantic key to the actual Home Assistant entity.
-
-## House production scope
-
-The runtime inventory for this repository binds only semantic roles consumed by the
-main House overview, including safety, openings, motion, lighting, climate, cameras,
-weather, utilities, heating, vehicles and access.
-
-Detailed-panel bindings are owned by their separate repositories and must not be copied
-into this source tree.
-
-## Three-phase power policy
-
-The House roles `house.home.power_a/b/c` must be bound to the three verified incoming
-phase-voltage entities. If a separate Infrastructure inventory exposes the trusted
-source as `infrastructure.power.voltage_a/b/c`, that fact may guide the private rebind,
-but it does not create a runtime dependency between repositories.
-
-Concrete Home Assistant entity ids remain exclusively in private inventory. They are
-not recorded in the public contract, manifest, documentation or tests.
+The common integration preserves existing user-owned inventory, snapshots and
+generated history during upgrades.

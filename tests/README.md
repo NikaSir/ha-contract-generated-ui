@@ -1,7 +1,8 @@
 # Tests
 
-Regression coverage for the House panel includes contract validation, navigation,
-runtime source synchronization, route ownership and deterministic bundle generation.
+Regression coverage in this repository is limited to the common integration service,
+route registry, schemas, snapshot pipeline, panel-neutral generator, semantic release
+gates, shared standards and repository-inspection toolkit.
 
-Fixtures must use synthetic or scrubbed data. Real credentials, `.storage` content
-and private diagnostic exports are prohibited.
+Runtime panel behavior and visual acceptance tests belong to each panel's owning
+repository.
