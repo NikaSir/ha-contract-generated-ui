@@ -157,6 +157,36 @@ references do not certify the entire contract or replace physical acceptance.
 
 ---
 
+### 2.13 The complete operational-card header needs one numeric contract
+
+The owner reported repeated movement of the connection plaque, blue corner
+decoration and state block in Climate, Irrigation and Vacuum reviews. A reference
+screenshot and an approximate `minmax(168px,44%)` plaque width did not fix the
+whole composition. The old 58px minimum also conflicted with its vertical padding
+and line metrics when interpreted as an exact height. Broad connection CSS once
+matched and damaged the inner lamp.
+
+**Required model:** [Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md),
+08.09.2026. Fix the complete region above the image: state/icon/explanation on
+the left, 168×58px plaque on the right, 205px blue circle behind it. The image
+starts at y=124px, or y=194px for a card below 400px. Breakpoints use unscaled
+card width; state text never triggers a different layout. A 24px icon slot and
+fixed two-line text slots preserve geometry. Exact plaque padding is 10px 11px.
+
+Transport, sample freshness and device operating state are separate. OFF is
+neutral even with a saved active mode. A warning/error overrides the active
+mode tone. A stale sample is never presented as current operation. A confirmed
+channel with unproven sample age uses explicit waiting/response evidence; the
+short plaque label `Ответ получен` is not a freshness claim. Green channel text
+can coexist with a warning surface for stale telemetry. The circle stays blue.
+
+**Evidence boundary:** the owner's Vacuum UI v1.0.4 screenshot supplies visual
+lineage; the mode icon and fixed whole-region dimensions are newly specified.
+Contract publication does not certify any existing panel. Implementations record
+GAP until production rectangle/state tests and device acceptance are complete.
+
+---
+
 ## 3. Integration architecture
 
 ### 3.1 Backend owns truth; frontend owns presentation
@@ -329,6 +359,15 @@ For devices with materially different states (car security, vacuum cleaning/char
 ### 5.6 Controls must match semantics
 
 Do not mix “start now” and “automatic setting enabled” in one control group. If a vendor exposes only Stop for a running station function, represent that factual capability rather than inventing a Start action.
+
+---
+
+### 5.7 Operational-card upper zone
+
+Follow `NIKAS_HERO_HEADER_CONTRACT.md` for the complete state/icon/connection/decor
+composition above an image or other content. Shared fixed dimensions, state
+vocabulary and colors are mandatory; independent per-panel approximations are
+not. Scope exclusions and unimplemented behavior remain explicit.
 
 ---
 
@@ -513,6 +552,7 @@ Automate where practical:
 - max history concurrency is enforced;
 - command duplicate submission is blocked;
 - refresh success/error glyphs last 1400 ms, survive telemetry patches and cannot be reset by an old timer during a newer request;
+- operational-card state transitions preserve plaque, icon and decoration geometry and the image origin; narrow-card breakpoints depend only on width, and full labels fit both standard and fallback fonts;
 - unknown/unavailable data does not become healthy;
 - the two-peer selector keeps the StarLine reference geometry (52px row, 44px independent buttons, 8px gap) and patches status lamps independently of selection.
 
@@ -572,6 +612,7 @@ The following patterns are considered known regressions unless a new design prov
 - generic “Online” when transport/freshness distinction is required;
 - status represented by color only;
 - refresh silently returning to the arrow without showing its result, or displaying a green check after a failed/partial request;
+- an intrinsic/percentage connection-plaque width, an auto-height operational header, mode-dependent decoration, or broad CSS matching inner connection elements;
 - a generic page-loading CSS class applied to a Header action and changing its geometry;
 - a shared outer pill around peer-device buttons, or selection styling driven by device health;
 - missing/unavailable rendered green or as zero;

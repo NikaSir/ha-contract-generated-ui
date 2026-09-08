@@ -42,6 +42,23 @@ def main() -> None:
         require("### 2.10 Peer status and selection are different facts" in knowledge_base, "knowledge base is missing the v2.2 peer-status lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
+    # The registry verifies the normative companion, not consumer runtime compliance.
+    if config.get("role") == "registry" or "hero_header_contract" in config:
+        hero = config.get("hero_header_contract", {})
+        require(hero.get("version") == "1.0", "Hero Header Contract version must be 1.0")
+        require(hero.get("status") == "required", "Hero Header Contract must be required")
+        hero_path = hero.get("path")
+        require(hero_path == "docs/NIKAS_HERO_HEADER_CONTRACT.md", "Hero Header Contract path drift")
+        hero_text = read_relative(hero_path)
+        require(hashlib.sha256(hero_text.encode("utf-8")).hexdigest() == hero.get("sha256"), "Hero Header Contract hash drift")
+        require("NIKAS_HERO_HEADER_CONTRACT.md" in standard, "UI standard must bind the Hero Header Contract")
+        plaque = config.get("connection_plaque_reference", {})
+        require((plaque.get("width_px"), plaque.get("height_px"), plaque.get("padding_px"), plaque.get("column_gap_px")) == (168, 58, "10 11", 8), "exact connection plaque geometry drift")
+        geometry = hero.get("geometry", {})
+        require((geometry.get("card_breakpoint_px"), geometry.get("image_origin_wide_px"), geometry.get("image_origin_narrow_px")) == (400, 124, 194), "operational header geometry drift")
+        decoration = hero.get("decoration", {})
+        require((decoration.get("diameter_px"), decoration.get("top_px"), decoration.get("right_px"), decoration.get("color")) == (205, -92, -70, "rgba(3,169,217,0.07)"), "blue decoration geometry/color drift")
+
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(

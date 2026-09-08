@@ -10,6 +10,7 @@
 **Reference peer-device status lamps:** Stark SolarPower / StarLine lineage
 **Reference typography and domain status treatment:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.2
+**Required operational-card companion:** `docs/NIKAS_HERO_HEADER_CONTRACT.md` v1.0 (08.09.2026)
 **Canonical build-time source kit:** `templates/shell_v2/nikas-specialized-shell.js`
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.2 keeps the v2 geometry and adds the proven peer-device selector status-lamp contract. It retains the vendored build-time shell source and current four-panel base route topology.
@@ -228,30 +229,60 @@ The two-level indicator is introduced only by an explicit product request. It is
 - Tuya Local and Zigbee delivered through local MQTT are `Локально`; Tuya cloud and other remote cloud APIs are `Облако`.
 - Local transport also includes a local LAN/API, local MQTT, Modbus and SNMP path that does not require an external vendor service.
 - `Резерв` means a known fallback path is actively supplying data, not merely that fallback capability exists.
-- The second line describes freshness only: `Данные актуальны`, `Данные устарели` or `Нет данных`.
+- The second line describes freshness: `Данные актуальны`, `Данные устарели` or `Нет данных`. The Hero Header Contract v1.0 additionally permits `Ожидание данных` and `Ответ получен` when freshness is not established. Neither label asserts current telemetry; a handshake alone cannot justify `Ответ получен`.
 - Transport and freshness are independent. For example, `Облако · Данные устарели` is valid; stale data must not be relabelled as a transport outage without evidence.
 - A failed current poll makes preserved telemetry `Данные устарели`. Unless a domain documents another justified threshold, a sample also becomes stale after three normal polling intervals; it becomes current again only after a new successful sample is accepted.
 
 ### Placement and geometry
 
-- The canonical placement copies S8 OMNI: upper-right of the first operational Hero/card, in the same heading row as the current-state title. The plaque belongs to the work viewport, not the fixed Header, and therefore scales with work content.
-- Use a two-column heading row with the state/title in `minmax(0,1fr)` and the plaque in an intrinsic right column. On normal phone widths the plaque receives enough room for its longest label; the S8 OMNI reference reserves approximately `minmax(168px,44%)`.
-- At extremely narrow widths where the title and plaque cannot remain readable, stack the row and align the plaque to the start. Shrinking required text below the typography envelope or allowing overlap is non-conforming.
-- Surface layout: `display:grid`, columns `10px minmax(0,1fr)`, vertically centered, `11px` column gap.
-- Minimum height: `58px`; padding: `12px 14px`; radius: `18px`; `white-space:nowrap`; `max-width:100%`.
-- Default surface before state coloring: `var(--card-background-color)` background, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border and `0 4px 14px rgba(0,0,0,.055)` shadow.
-- Status lamp: `10px × 10px`, fully inside the plaque, circular, never moved outside the rounded surface.
-- Text block is a stable vertical flex column with `3px` gap. Main line: `16px/700`, line-height approximately `1.05`. Freshness line: `13px/600`, line-height approximately `1.05`.
-- The plaque is sized from the longest permitted transport/freshness pair. It must not change width, height or alignment when state changes.
+[NikaS Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) governs the
+complete zone above the first operational card's image, diagram or other content:
+state, mode icon, explanation, connection plaque and blue decoration. It replaces
+the former intrinsic/percentage width, minimum-height and unspecified narrow-row
+rules in this section. Introducing the plaque remains a product decision; the
+`Дом сейчас` and StarLine exclusions above remain in force.
+
+- The plaque belongs to the work viewport and scales with the complete card.
+- Exact border-box: `168px × 58px`; padding `10px 11px`; border `1px`; radius
+  `18px`; lamp `10px`; column gap `8px`; text width `126px`; row gap `3px`.
+- Main line: `16px/700`, line-height `18px`. Secondary line: `13px/600`,
+  line-height `15px`. Both are single-line; no shrinking or ellipsis.
+- The plaque stays at the upper right, `14px` from the card's outer top/right
+  edges. At card width below `400px`, the state block moves below it; the plaque
+  does not move left. The variant depends on unscaled card width, not label length.
+- The image/content starts at exactly `y=124px` for card width at least `400px`,
+  or `y=194px` below `400px`, measured from the card's outer top edge.
+- Exact decoration: `205px` circle, `top:-92px`, `right:-70px` from the inner
+  border edge, `rgba(3,169,217,0.07)`, clipped by the card and behind its content.
+- State and icon use the common typography, finite copy dictionary, state priority
+  and light/dark palettes in the companion. Existing panels require recorded
+  runtime acceptance; publication of the document does not certify them.
 
 ### State surfaces and colors
 
-- `Локально` and `Облако`: lamp and main line use `var(--success-color,#43a047)`; background is an `11%` success-color mix with `var(--card-background-color)`; border is a `30%` success-color mix with `var(--divider-color)`.
-- `Резерв`: lamp and main line use `var(--warning-color,#f6a623)`; background is a `10%` warning-color mix with `var(--card-background-color)`; border is a `30%` warning-color mix with `var(--divider-color)`.
-- `Нет связи`: lamp and main line use `var(--error-color,#db4437)`; background is a `10%` error-color mix with `var(--card-background-color)`; border is a `30%` error-color mix with `var(--divider-color)`.
-- `Нет данных`: lamp and main line use `var(--disabled-text-color,var(--secondary-text-color))`; background is an `8%` secondary-text-color mix with `var(--card-background-color)`; border is a `28%` secondary-text-color mix with `var(--divider-color)`.
-- A current freshness line uses `var(--secondary-text-color)`. `Данные устарели` uses `var(--warning-color,#f6a623)` at weight `600`. `Нет данных` uses `var(--secondary-text-color)`.
-- Color is always accompanied by text. Saturated full fills, arbitrary product colors and a green surface for `unknown`, `unavailable`, stale or untrusted data are prohibited.
+The companion defines transport, freshness and device state independently.
+Lamp and first-line colors report the confirmed transport; the surface also reflects
+freshness. Use the exact shared palette, not integration-local theme overrides.
+
+- Lamps: confirmed local/cloud `#43a047`; reserve `#f6a623`; confirmed offline
+  `#db4437`; unknown: secondary theme text color. First-line light/dark text:
+  local/cloud `#2e7d32` / `#81c784`; reserve `#a86200` / `#ffc166`; offline
+  `#b3261e` / `#ff8a80`; unknown: secondary theme text color.
+- Surface priority: confirmed offline → error; stale or reserve → warning;
+  missing/unproven freshness → neutral; local/cloud with current telemetry → good.
+- Good surface: `11%` success mix with card background, `30%` with divider.
+  Warning/error: `10%` background and `30%` border. Neutral: `8%` secondary-text
+  background and `28%` secondary-text border.
+- The secondary line is normally secondary theme text. Stale text uses
+  `#a86200` in the light theme and `#ffc166` in the dark theme, weight `600`.
+- `Локально / Данные устарели` retains green channel text/lamp but uses a warning
+  surface and stale line. Staleness alone must not manufacture `Нет связи`.
+- `Ответ получен` is explicit response evidence without proven sample age; use a
+  neutral surface, never an invented current timestamp or green freshness claim.
+- Device faults color the main device status independently. A healthy transport
+  may carry a factual fault. The decorative circle never changes color.
+- Color always has a textual meaning. Saturated fills and green surfaces for
+  unknown, unavailable, stale or untrusted data are prohibited.
 
 ### Rendering behavior
 
@@ -341,6 +372,8 @@ Repository tests or static checks must verify:
 29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
 30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.1, including the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
 
+31. an applicable operational card satisfies `NIKAS_HERO_HEADER_CONTRACT.md` v1.0: fixed upper-zone geometry, exact plaque and blue decoration, persistent mode icon, finite complete labels, truthful state colors and no movement of the image boundary during state changes.
+
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
 ## 14. Mandatory viewport acceptance
@@ -370,7 +403,8 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
-- a requested connection indicator visually matches S8 OMNI: `58px` minimum height, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
+- a requested connection indicator visually matches S8 OMNI: `168px × 58px` exact border-box, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
+- the complete operational-card top zone passes the companion geometry/state matrix, including card widths `399/400/401px`, host width `320px`, fallback fonts and unchanged image origin;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
 - pulling downward at the top of any tab never displays the Home Assistant refresh spinner or splash screen; dragging upward at the bottom never moves the complete panel or leaves a blank field below it;
