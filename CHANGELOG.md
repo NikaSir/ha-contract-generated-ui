@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 0.40.0 — 2026-09-08
+
+- Enforce the repository boundary: this project now ships only the shared route
+  registry, schemas, snapshot service, validation and offline common tooling.
+- Remove the historical House contract, manifest, renderers, frontend bundle,
+  asset, build script and panel-specific regression suite. The House runtime
+  remains owned exclusively by `NikaSir/ha-nikas-house`.
+- Stop synchronizing bundled House sources into Home Assistant. Existing
+  user-owned files under `/config/contract_generated_ui/` are preserved.
+- Generalize manifest renderer/template schema fields so owner repositories can
+  define their own implementations without central panel-specific enums.
+
 ## 0.39.2 — 2026-09-08
 
 - Correct the shared Water Accounting registry entry to the owner route

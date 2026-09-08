@@ -1,4 +1,4 @@
-"""Synchronize bundled public contracts/manifests/navigation into the runtime source tree."""
+"""Synchronize bundled common sources into the runtime source tree."""
 
 from __future__ import annotations
 
@@ -6,11 +6,12 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-PUBLIC_SOURCE_DIRECTORIES = ("contracts", "manifests", "navigation")
+PUBLIC_SOURCE_DIRECTORIES = ("navigation",)
 
-# Public Architecture-as-Code files that were previously shipped by this integration
-# but are not part of the House overview. They are managed public runtime sources,
-# not legacy Lovelace YAML dashboards, private inventory, or user data.
+# Public Architecture-as-Code files retired before the repository split. This
+# compatibility cleanup is intentionally limited to the historical managed names
+# below. User-owned inventory, snapshots, generated history and other files remain
+# untouched.
 RETIRED_PUBLIC_SOURCE_FILES = (
     Path("contracts") / "actions_home.yaml",
     Path("contracts") / "house_irrigation_controller.yaml",
@@ -29,7 +30,7 @@ RETIRED_PUBLIC_SOURCE_FILES = (
 
 @dataclass(frozen=True, slots=True)
 class SourceSyncResult:
-    """Result of synchronizing packaged public sources."""
+    """Result of synchronizing packaged common sources."""
 
     changed_files: int
     checked_files: int
@@ -59,7 +60,7 @@ def _remove_retired_public_sources(source_root: Path) -> int:
 
 
 def sync_bundled_public_sources(source_root: Path) -> SourceSyncResult:
-    """Sync bundled public Architecture-as-Code sources and retire managed legacy files."""
+    """Sync the common route registry without overwriting panel-owned sources."""
     bundled_root = Path(__file__).with_name("bundled_sources")
     changed = _remove_retired_public_sources(source_root)
     checked = 0

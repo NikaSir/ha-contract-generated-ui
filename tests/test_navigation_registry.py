@@ -4,39 +4,51 @@ from pathlib import Path
 
 import yaml
 
-from custom_components.contract_generated_ui.house_navigation import (
-    compile_navigation_registry,
-)
-
 
 ROOT = Path(__file__).parents[1]
 
 
-def test_house_navigation_keeps_external_route_ownership() -> None:
-    registry = compile_navigation_registry(ROOT)
-    assert registry["subpanels"] == []
-    assert registry["global_tabs"] == [
+def _navigation() -> dict:
+    return yaml.safe_load(
+        (ROOT / "navigation" / "main.yaml").read_text(encoding="utf-8")
+    )
+
+
+def test_common_navigation_resolves_base_tabs() -> None:
+    navigation = _navigation()
+    routes = navigation["spec"]["routes"]
+    tabs = navigation["spec"]["global_tabs"]
+
+    assert [
+        {
+            "id": tab["id"],
+            "title": tab["title"],
+            "icon": tab["icon"],
+            "path": routes[tab["route"]]["path"],
+        }
+        for tab in tabs
+    ] == [
         {
             "id": "home",
-            "label": "Дом",
+            "title": "Дом",
             "icon": "mdi:home-outline",
             "path": "/dashboard-house-v13/home",
         },
         {
             "id": "rooms",
-            "label": "Помещения",
+            "title": "Помещения",
             "icon": "mdi:floor-plan",
             "path": "/dashboard-rooms-v11/rooms",
         },
         {
             "id": "actions",
-            "label": "Действия",
+            "title": "Действия",
             "icon": "mdi:lightning-bolt-outline",
             "path": "/dashboard-actions/home",
         },
         {
             "id": "infrastructure",
-            "label": "Инфра",
+            "title": "Инфра",
             "icon": "mdi:server-network",
             "path": "/dashboard-infrastructure/overview",
         },
@@ -55,7 +67,7 @@ def test_navigation_source_is_packaged_byte_for_byte() -> None:
 
 
 def test_water_route_matches_the_owner_contract() -> None:
-    navigation = yaml.safe_load((ROOT / "navigation" / "main.yaml").read_text(encoding="utf-8"))
+    navigation = _navigation()
     assert navigation["metadata"]["version"] == "2.1.1"
     assert navigation["spec"]["specialized_routes"]["water_accounting"] == {
         "path": "/dashboard-water",

@@ -1,5 +1,7 @@
 # Contracts
 
-Formal UI and subsystem contracts live here.
+This directory is intentionally free of panel-specific contracts.
 
-A contract defines semantics before rendering: source roles, normal/event/unreliable states, visibility, actions, safety constraints, navigation and presentation requirements. Contracts must not invent Home Assistant entity IDs; concrete bindings come from verified inventory.
+Shared contract structure is defined by `schemas/contract.schema.json`. Each runtime
+panel keeps its concrete public contracts in the repository that owns, tests and
+releases that panel. Concrete Home Assistant bindings remain private inventory.

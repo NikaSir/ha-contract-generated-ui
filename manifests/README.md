@@ -1,5 +1,7 @@
-# Panel manifests
+# Manifests
 
-Short declarative files describing dashboard/view composition.
+This directory is intentionally free of panel-specific manifests.
 
-Manifests select contract modules, layout order, navigation targets and panel-level options. They should remain concise; reusable behavior and semantic rules belong in contracts or generator components rather than being duplicated in each panel manifest.
+Shared manifest structure is defined by `schemas/manifest.schema.json`. Each runtime
+panel keeps its manifests beside its renderer, frontend bundle and acceptance tests in
+the owning repository.

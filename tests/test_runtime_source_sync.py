@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 PACKAGE_PATH = ROOT / "custom_components" / "contract_generated_ui"
-EXPECTED_PUBLIC_SOURCE_FILES = 3
+EXPECTED_PUBLIC_SOURCE_FILES = 1
 
 
 def _module():
@@ -32,21 +32,19 @@ def _module():
     return module
 
 
-def test_bundled_sync_keeps_private_and_legacy_yaml_data_untouched(tmp_path: Path) -> None:
+def test_common_sync_preserves_user_and_previous_owner_sources(tmp_path: Path) -> None:
     module = _module()
     root = tmp_path / "contract_generated_ui"
-    (root / "inventory").mkdir(parents=True)
-    (root / "snapshots").mkdir(parents=True)
-    (root / "generated").mkdir(parents=True)
-    (root / "manifests").mkdir(parents=True)
 
-    private_files = {
+    preserved_files = {
         root / "inventory" / "home.yaml": "PRIVATE-INVENTORY\n",
         root / "snapshots" / "current.json": "PRIVATE-SNAPSHOT\n",
         root / "generated" / "legacy-house.yaml": "GENERATED-HISTORY\n",
         root / "manifests" / "private_runtime.yaml": "PRIVATE-RUNTIME-MANIFEST\n",
+        root / "contracts" / "house_home.yaml": "PREVIOUS-OWNER-CONTRACT\n",
+        root / "manifests" / "house_v11_preview.yaml": "PREVIOUS-OWNER-MANIFEST\n",
     }
-    for path, content in private_files.items():
+    for path, content in preserved_files.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
@@ -61,13 +59,11 @@ def test_bundled_sync_keeps_private_and_legacy_yaml_data_untouched(tmp_path: Pat
         EXPECTED_PUBLIC_SOURCE_FILES + len(module.RETIRED_PUBLIC_SOURCE_FILES)
     )
 
-    for path, content in private_files.items():
+    for path, content in preserved_files.items():
         assert path.read_text(encoding="utf-8") == content
     for relative in module.RETIRED_PUBLIC_SOURCE_FILES:
         assert not (root / relative).exists()
 
-    assert (root / "contracts" / "house_home.yaml").exists()
-    assert (root / "manifests" / "house_v11_preview.yaml").exists()
     assert (root / "navigation" / "main.yaml").exists()
     assert not (root / "contracts" / "actions_home.yaml").exists()
     assert not (root / "manifests" / "infrastructure.yaml").exists()
