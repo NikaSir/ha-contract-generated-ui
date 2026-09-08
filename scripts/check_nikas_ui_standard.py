@@ -45,7 +45,7 @@ def main() -> None:
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
     # Registry integrity only: production layout needs the companion's browser evidence.
     geometry = config.get("connection_decoration_contract", {})
-    require(geometry.get("version") == "1.0", "connection/decoration contract must be v1.0")
+    require(geometry.get("version") == "1.1", "connection/decoration contract must be v1.1")
     require(geometry.get("status") == "required_when_present", "connection/decoration applicability drift")
     require(geometry.get("production_browser_acceptance_required") is True, "production geometry evidence is required")
     require(geometry.get("state_layout_delta_px") == 0, "state changes must not move connection/decoration")
@@ -56,10 +56,10 @@ def main() -> None:
     require("NIKAS_CONNECTION_DECORATION_CONTRACT.md" in standard, "UI standard must bind the locked geometry contract")
     plaque = config.get("connection_plaque_reference", {})
     expected_plaque = {
-        "contract_version": "1.0", "width_px": 200, "height_px": 60,
-        "box_sizing": "border-box", "top_px": 16, "right_px": 16,
-        "coordinate_origin": "card_inner_border_edge", "padding_px": "12 14",
-        "radius_px": 18, "lamp_px": 10, "column_gap_px": 11, "text_gap_px": 3,
+        "contract_version": "1.1", "width_px": 168, "height_px": 58,
+        "box_sizing": "border-box", "top_px": 13, "right_px": 13,
+        "coordinate_origin": "card_inner_border_edge", "padding_px": "11 12",
+        "radius_px": 18, "lamp_px": 10, "column_gap_px": 9, "text_gap_px": 3,
         "font_family": '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif',
         "main_font": "16px/700", "freshness_font": "13px/600",
         "main_line_height_px": 17, "freshness_line_height_px": 14,

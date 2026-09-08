@@ -174,10 +174,17 @@ already required about 60.45px. “Use the S8 reference” therefore did not uni
 specify the result. CSS appended to historical classes could also miss the
 current production DOM, while a wildcard connection selector deformed the lamp.
 
-**Required model:** [Connection Plaque and Blue Corner Contract v1.0](NIKAS_CONNECTION_DECORATION_CONTRACT.md).
+The subsequent user comparison selected the compact S8 phone appearance.
+Revision 1.1 restores `168px` width and the phone layout's `13px` top/right
+inset (`14px` from the outer card edge with its `1px` border). The agreed
+`58px` compact height is fixed explicitly, not represented as a measured
+height of the old runtime. Its smaller inner padding reconciles that height
+with the unchanged type sizes; the blue corner tokens remain unchanged.
 
-- «Связь»: exactly 200×60px border-box; top/right 16px from the card's inner
-  border edge; radius18; padding12/14; lamp10; column gap11; text gap3.
+**Required model:** [Connection Plaque and Blue Corner Contract v1.1](NIKAS_CONNECTION_DECORATION_CONTRACT.md).
+
+- «Связь»: exactly 168×58px border-box; top/right 13px from the card's inner
+  border edge; radius18; padding11/12; lamp10; column gap9; text gap3.
 - One font stack everywhere; main16px/700 with 17px line-height;
   freshness13px/600 with 14px line-height. No product font inheritance.
 - Blue decoration: circle205px; top−92/right−70; fixed `rgba(3,169,217,0.07)`;
