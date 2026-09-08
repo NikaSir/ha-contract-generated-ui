@@ -157,6 +157,45 @@ references do not certify the entire contract or replace physical acceptance.
 
 ---
 
+### 2.13 Connection plaque and blue corner must use locked tokens
+
+On 2026-09-08 the user again reported that «Связь» changes position, size and
+font, and requested the same strict treatment for the upper-right blue element.
+The source comparison found concrete drift:
+
+| Source inspected | Plaque drift | Blue circle drift |
+|---|---|---|
+| [S8 OMNI `2ed8bac`](https://github.com/NikaSir/ha-s8-omni/tree/2ed8bacb5d3def6141aa118bd6994b036c9f2610) | Proportional width; `min-height:58px`; mobile stacking; text gap 4px | 205px; top −92px / right −70px; theme-dependent blue |
+| [HO-SC-8W `dc4afe2`](https://github.com/NikaSir/ha-ho-sc-8w/tree/dc4afe23ddb14850c289c3145526043d0894441c) | Width 168px; minimum height only; vertical centering against controller image; another font stack | 200px; top −90px / right −65px; another blue |
+| [Climate `b5fae6c`](https://github.com/NikaSir/ha-nikas-climate/tree/b5fae6ce16b905d1e9c1d42d98d49324ece40772) | Proportional width; 58/64px minimum heights; implicit line-height; another font stack | 220px desktop / 188px mobile; different offsets |
+
+A minimum height is not an exact height: the old S8 text, gap, padding and border
+already required about 60.45px. “Use the S8 reference” therefore did not uniquely
+specify the result. CSS appended to historical classes could also miss the
+current production DOM, while a wildcard connection selector deformed the lamp.
+
+**Required model:** [Connection Plaque and Blue Corner Contract v1.0](NIKAS_CONNECTION_DECORATION_CONTRACT.md).
+
+- «Связь»: exactly 200×60px border-box; top/right 16px from the card's inner
+  border edge; radius18; padding12/14; lamp10; column gap11; text gap3.
+- One font stack everywhere; main16px/700 with 17px line-height;
+  freshness13px/600 with 14px line-height. No product font inheritance.
+- Blue decoration: circle205px; top−92/right−70; fixed `rgba(3,169,217,0.07)`;
+  no theme-primary input, responsive alternative or status meaning.
+- Preserve both DOM nodes and the anchors through every state update. On narrow
+  cards the title moves below the plaque; the plaque remains at the top right.
+- Replace conflicting CSS at its source. Do not append another patch, shrink
+  text, center the plaque against the image or use wildcard internal selectors.
+- Production acceptance measures rectangles/computed styles for all label
+  lengths, state transitions, peer/tab changes, width boundaries, zoom and themes.
+
+These are intentionally fixed new tokens within UI Standard v2.2. Updating the
+knowledge base does not update the three installed panels. Their conformance
+remains unverified until individual production changes and acceptance evidence
+are recorded; a documentation/hash check is not runtime evidence.
+
+---
+
 ## 3. Integration architecture
 
 ### 3.1 Backend owns truth; frontend owns presentation

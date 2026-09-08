@@ -232,17 +232,29 @@ The two-level indicator is introduced only by an explicit product request. It is
 - Transport and freshness are independent. For example, `Облако · Данные устарели` is valid; stale data must not be relabelled as a transport outage without evidence.
 - A failed current poll makes preserved telemetry `Данные устарели`. Unless a domain documents another justified threshold, a sample also becomes stale after three normal polling intervals; it becomes current again only after a new successful sample is accepted.
 
-### Placement and geometry
+### Placement and geometry — locked contract
 
-- The canonical placement copies S8 OMNI: upper-right of the first operational Hero/card, in the same heading row as the current-state title. The plaque belongs to the work viewport, not the fixed Header, and therefore scales with work content.
-- Use a two-column heading row with the state/title in `minmax(0,1fr)` and the plaque in an intrinsic right column. On normal phone widths the plaque receives enough room for its longest label; the S8 OMNI reference reserves approximately `minmax(168px,44%)`.
-- At extremely narrow widths where the title and plaque cannot remain readable, stack the row and align the plaque to the start. Shrinking required text below the typography envelope or allowing overlap is non-conforming.
-- Surface layout: `display:grid`, columns `10px minmax(0,1fr)`, vertically centered, `11px` column gap.
-- Minimum height: `58px`; padding: `12px 14px`; radius: `18px`; `white-space:nowrap`; `max-width:100%`.
-- Default surface before state coloring: `var(--card-background-color)` background, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border and `0 4px 14px rgba(0,0,0,.055)` shadow.
-- Status lamp: `10px × 10px`, fully inside the plaque, circular, never moved outside the rounded surface.
-- Text block is a stable vertical flex column with `3px` gap. Main line: `16px/700`, line-height approximately `1.05`. Freshness line: `13px/600`, line-height approximately `1.05`.
-- The plaque is sized from the longest permitted transport/freshness pair. It must not change width, height or alignment when state changes.
+The mandatory companion is [NikaS Connection Plaque and Blue Corner Contract
+v1.0](NIKAS_CONNECTION_DECORATION_CONTRACT.md). It supersedes the former
+intrinsic width, `58px` minimum height and approximate positioning rules.
+
+- The plaque is exactly `200px × 60px` border-box, radius `18px`, at `top:16px;
+  right:16px` from the operational card's inner border edge.
+- Use `12px 14px` padding, a `1px` border, internal columns `10px minmax(0,1fr)`,
+  `11px` column gap and a circular `10px × 10px` lamp.
+- Main text is `16px/700`, line-height `17px`; freshness is `13px/600`, line-height
+  `14px`; text gap is `3px`. Both use the companion's exact shared font stack.
+- The title occupies its own reserved area. Below `360px` outer card width it
+  moves below the plaque; the plaque retains its top/right position and size.
+- Both elements belong to the work viewport and scale with it. Status text,
+  image size/loading, peer switches and telemetry must not move their anchors.
+- The separate upper-right background circle is exactly `205px × 205px`,
+  `top:-92px; right:-70px`, radius `50%`, fill `rgba(3,169,217,0.07)`.
+  It is clipped by a persistent card decoration layer and never recolored by
+  `--primary-color`, state or device mode. It does not represent Refresh.
+- No per-panel or responsive override may change these tokens. Validate actual
+  production computed styles and rectangles using the companion's scenarios;
+  merely copying the latest S8 CSS is not evidence of conformance.
 
 ### State surfaces and colors
 
@@ -321,7 +333,7 @@ Repository tests or static checks must verify:
 9. brand `icon.png` exists in the shipped integration package;
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
-12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary, S8 OMNI geometry and exact state-tinted surface percentages;
+12. a requested connection indicator and enabled blue corner satisfy `NIKAS_CONNECTION_DECORATION_CONTRACT.md` v1.0, including exact tokens, all label lengths, stable DOM and zero state-caused geometry movement; transport/freshness vocabulary and state-tinted surface percentages remain canonical;
 13. the center title is a two-line, exactly `52px` high semantic button, contains no arrow or separate Back label and retains geometric centering;
 14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
 15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the four canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
@@ -370,7 +382,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
-- a requested connection indicator visually matches S8 OMNI: `58px` minimum height, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
+- a requested connection indicator has the exact `200px × 60px` box, `16px` top/right inset, `18px` radius, internal `10px` lamp and fixed `16/700` + `13/600` text; an enabled blue corner has the exact `205px` circle and fixed fill/anchor from `NIKAS_CONNECTION_DECORATION_CONTRACT.md`;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
 - pulling downward at the top of any tab never displays the Home Assistant refresh spinner or splash screen; dragging upward at the bottom never moves the complete panel or leaves a blank field below it;
