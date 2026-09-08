@@ -124,6 +124,33 @@
     ],
     "browser_acceptance_required": true
   },
+  "hacs_publication": {
+    "version": "1.0",
+    "status": "required",
+    "applies_when": "hacs_distributed_integration",
+    "path": "docs/NIKAS_HACS_PUBLICATION_CONTRACT.md",
+    "sha256": "d9d42be0fa3fab5915cb76399a0a451a4fcf740ec6da6137ee560c7ec5f3774a",
+    "version_source": "custom_components/<domain>/manifest.json",
+    "delivery_boundary": "hacs_visible_release_when_release_driven",
+    "main_is_delivery": false,
+    "release_version": "exact_manifest_version",
+    "release_target": "merged_main_commit_with_manifest_version",
+    "idempotent_publish": true,
+    "default_custom_assets": false,
+    "publication_permission": "contents_write_publication_workflow_only",
+    "unsupported_branch_install_after_rejection": true,
+    "states": {
+      "merged_main": "code_accepted",
+      "matching_release": "published_to_hacs_channel",
+      "hacs_installable": "delivered",
+      "device_acceptance": "accepted_in_operation"
+    },
+    "required_cases": [
+      "manifest_version", "release_exact_match", "release_target",
+      "idempotent_publish", "hacs_validation", "no_release_assets_by_default",
+      "delivery_acceptance"
+    ]
+  },
   "knowledge_base_path": "docs/NIKAS_ENGINEERING_KNOWLEDGE_BASE.md",
   "frontend_delivery_path": "docs/SPECIALIZED_PANEL_FRONTEND_RELEASE_STANDARD.md"
 }
