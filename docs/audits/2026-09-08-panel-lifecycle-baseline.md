@@ -11,8 +11,8 @@ default-branch heads; a passing source audit is not hardware acceptance.
 | `ha-keenetic-hero-4g` | `1ae8e9d` | Entry runtime and route before non-fatal RCI refresh | PASS |
 | `ha-s8-omni` | `0305060` | Route and platforms before non-fatal local refresh | PASS |
 | `ha-ho-sc-8w` | `0eb09ac` | Integration-wide panel setup before config-entry transport activation | PASS |
-| `ha-stark-solarpower` | `c652e61` | First coordinator refresh before route registration | GAP — owner fix required |
-| `ha-starline-telemetry` | `f768c15` | Telemetry mode authenticates, discovers and refreshes before route registration | GAP — owner fix required |
+| `ha-stark-solarpower` | `dbd3ad4` | Route ownership before first cloud refresh ([owner PR #72](https://github.com/NikaSir/ha-stark-solarpower/pull/72)) | PASS |
+| `ha-starline-telemetry` | `08c4c4b` | Route before bridge dependency, cloud authentication, discovery and first refresh ([owner PR #56](https://github.com/NikaSir/ha-starline-telemetry/pull/56)) | PASS |
 | `ha-nikas-house` | `1a4b6cd` | Route before source-validation refresh | PASS |
 | `ha-lider-voltage-control` | `504829e` | Panel-only entry; no device refresh | PASS |
 | `ha-nikas-access` | `90ae754` | Panel-only entry; registry-backed content | PASS |
@@ -23,13 +23,16 @@ default-branch heads; a passing source audit is not hardware acceptance.
 | `ha-zont` | `e8f64b8` | Route registered directly during entry setup | PASS |
 | `ha-hikvision-next` | `12abd40` | No integration-owned panel | NOT APPLICABLE |
 
-## Acceptance
+## Completion
 
-The two GAP repositories require separate owner PRs with:
+The two initial gaps were corrected in their owner repositories:
 
-- route registration before fallible device/cloud/coordinator I/O;
-- explicit startup-order regression coverage;
-- no protocol, command or UI behavior change;
-- HACS, Hassfest and repository CI success.
+- Stark SolarPower registers runtime ownership and `/dashboard-ups` before its
+  first fallible cloud refresh; its owner CI passed before PR #72 was merged.
+- StarLine registers `/starline` before the bridge dependency check and before
+  authentication, discovery and first refresh; its owner CI passed before PR #56
+  was merged.
 
-Hardware access is not required for these startup-order corrections.
+Both owner fixes add startup-order regression coverage and leave protocol,
+commands and frontend behavior unchanged. Hardware access was not required for
+these lifecycle corrections.
