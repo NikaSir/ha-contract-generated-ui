@@ -235,13 +235,14 @@ The two-level indicator is introduced only by an explicit product request. It is
 ### Placement and geometry — locked contract
 
 The mandatory companion is [NikaS Connection Plaque and Blue Corner Contract
-v1.0](NIKAS_CONNECTION_DECORATION_CONTRACT.md). It supersedes the former
-intrinsic width, `58px` minimum height and approximate positioning rules.
+v1.1](NIKAS_CONNECTION_DECORATION_CONTRACT.md). It restores the compact S8
+width and phone insets, with an exact `58px` height instead of the former
+minimum-only height. It supersedes v1.0's larger `200px × 60px` plaque.
 
-- The plaque is exactly `200px × 60px` border-box, radius `18px`, at `top:16px;
-  right:16px` from the operational card's inner border edge.
-- Use `12px 14px` padding, a `1px` border, internal columns `10px minmax(0,1fr)`,
-  `11px` column gap and a circular `10px × 10px` lamp.
+- The plaque is exactly `168px × 58px` border-box, radius `18px`, at `top:13px;
+  right:13px` from the operational card's inner border edge.
+- Use `11px 12px` padding, a `1px` border, internal columns `10px minmax(0,1fr)`,
+  `9px` column gap and a circular `10px × 10px` lamp.
 - Main text is `16px/700`, line-height `17px`; freshness is `13px/600`, line-height
   `14px`; text gap is `3px`. Both use the companion's exact shared font stack.
 - The title occupies its own reserved area. Below `360px` outer card width it
@@ -333,7 +334,7 @@ Repository tests or static checks must verify:
 9. brand `icon.png` exists in the shipped integration package;
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
-12. a requested connection indicator and enabled blue corner satisfy `NIKAS_CONNECTION_DECORATION_CONTRACT.md` v1.0, including exact tokens, all label lengths, stable DOM and zero state-caused geometry movement; transport/freshness vocabulary and state-tinted surface percentages remain canonical;
+12. a requested connection indicator and enabled blue corner satisfy `NIKAS_CONNECTION_DECORATION_CONTRACT.md` v1.1, including exact tokens, all label lengths, stable DOM and zero state-caused geometry movement; transport/freshness vocabulary and state-tinted surface percentages remain canonical;
 13. the center title is a two-line, exactly `52px` high semantic button, contains no arrow or separate Back label and retains geometric centering;
 14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
 15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the four canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
@@ -382,7 +383,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
-- a requested connection indicator has the exact `200px × 60px` box, `16px` top/right inset, `18px` radius, internal `10px` lamp and fixed `16/700` + `13/600` text; an enabled blue corner has the exact `205px` circle and fixed fill/anchor from `NIKAS_CONNECTION_DECORATION_CONTRACT.md`;
+- a requested connection indicator has the exact `168px × 58px` box, `13px` top/right inset, `18px` radius, internal `10px` lamp and fixed `16/700` + `13/600` text; an enabled blue corner has the exact `205px` circle and fixed fill/anchor from `NIKAS_CONNECTION_DECORATION_CONTRACT.md`;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
 - pulling downward at the top of any tab never displays the Home Assistant refresh spinner or splash screen; dragging upward at the bottom never moves the complete panel or leaves a blank field below it;

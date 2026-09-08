@@ -1,4 +1,4 @@
-# NikaS Connection Plaque and Blue Corner Contract v1.0
+# NikaS Connection Plaque and Blue Corner Contract v1.1
 
 **Status:** REQUIRED where the respective element is enabled.
 
@@ -6,8 +6,12 @@
 
 **Decision date:** 2026-09-08.
 
-**Visual lineage:** S8 OMNI. The numbers below are the normative geometry;
-copying a moving product implementation is no longer an acceptance criterion.
+**Visual lineage:** S8 OMNI UI v1.0.4, compact phone layout. Revision 1.1 restores
+its `168px` width and `13px` top/right inset at the user's request. The `58px`
+height is now an exact compact specification; the source used only
+`min-height:58px` and its full text stack could make the box about `60.45px` high.
+The numbers below are normative across all supported widths; copying a moving
+product implementation is not an acceptance criterion.
 
 ## 1. Scope and ownership
 
@@ -40,8 +44,8 @@ At 100%, with the required 1px card border:
 
 | Element | Exact rectangle / anchor |
 |---|---|
-| Connection plaque | width `200px`, height `60px`, top `16px`, right `16px` |
-| Plaque outer coordinates | top `C.top + 17px`; right `C.right − 17px` |
+| Connection plaque | width `168px`, height `58px`, top `13px`, right `13px` |
+| Plaque outer coordinates | top `C.top + 14px`; right `C.right − 14px` |
 | Blue circle, before clipping | width `205px`, height `205px`, top `−92px`, right `−70px` |
 | Circle outer coordinates | top `C.top + 1px − 92px`; right `C.right − 1px + 70px` |
 
@@ -52,11 +56,14 @@ messages appear below its reserved heading area, without shifting the card.
 Different shell rows (for example an enabled peer selector) naturally change
 the screen coordinate; compare the same host, route, scroll and work scale.
 
-Reserve `212px` on the right of the state-heading area (`200px + 12px` gap)
-and at least `60px` heading height. The state/title may wrap in its own column.
+Reserve `177px` on the right of the state-heading area and at least `58px`
+heading height. The card keeps its `16px` internal padding, while the plaque
+uses a `13px` inset: `168 + 12 + 13 − 16 = 177px` leaves exactly `12px`
+between the title column and the plaque. The state/title may wrap in its own column.
 If the card's outer width is below `360px`, keep the plaque at the **same
-top/right anchor**, reserve `72px` above the title and let the title span the
-width below it. This one breakpoint depends on card width, never on status or
+top/right anchor**, reserve `67px` above the title and let the title span the
+width below it. Relative to the padded content, `13 + 58 + 12 − 16 = 67px`
+leaves exactly `12px` below the plaque. This one breakpoint depends on card width, never on status or
 text length. It moves the title only; the plaque does not move, shrink or grow.
 Keep a `12px` gap from the complete heading area to the separate image block.
 Operational text and the plaque must not overlay the device image.
@@ -65,10 +72,10 @@ Operational text and the plaque must not overlay the device image.
 
 | Property | Required value |
 |---|---|
-| Box model | `border-box`; width/min-width/max-width `200px`; height/min-height/max-height `60px` |
-| Placement | absolute; top `16px`; right `16px`; margin `0`; `z-index:2` |
-| Padding / border / radius | `12px 14px` / `1px solid` / `18px` |
-| Internal grid | `10px minmax(0,1fr)`; column gap `11px`; `align-items:center` |
+| Box model | `border-box`; width/min-width/max-width `168px`; height/min-height/max-height `58px` |
+| Placement | absolute; top `13px`; right `13px`; margin `0`; `z-index:2` |
+| Padding / border / radius | `11px 12px` / `1px solid` / `18px` |
+| Internal grid | `10px minmax(0,1fr)`; column gap `9px`; `align-items:center` |
 | Lamp | `10px × 10px`; circle; no flex shrink; no extra halo |
 | Text stack | vertical flex; gap `3px`; left aligned; no wrapping |
 | Shared font stack | `-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif` |
@@ -78,16 +85,19 @@ Operational text and the plaque must not overlay the device image.
 | Shadow | `0 4px 14px rgba(0,0,0,.055)` |
 
 The text stack is exactly `34px` high (`17 + 3 + 14`); padding and border add
-`26px`, producing the explicit `60px` border box. The text column is `149px`
+`24px`, producing the explicit `58px` border box. The text column is `123px`
 wide. All canonical Russian labels must fit in full; ellipsis, clipping and
 font shrinking are failures. Use the same font stack in every panel, without
 domain-specific or HA-theme font overrides. Platform font selection is allowed
 only through this common stack; physical glyph rasterization may vary by OS.
 
-The former `min-height:58px`, intrinsic/proportional width, approximate line
-height and left-stacked narrow-screen variants are superseded. The new
-`200px × 60px` box is an intentional hard specification, not a claim that the
-previous S8 runtime already had these exact dimensions.
+Revision 1.1 supersedes the v1.0 `200px × 60px` box and `16px` top/right
+inset. It retains fixed sizing instead of restoring the source's proportional
+width, minimum-only height or left-stacked narrow-screen variants. Horizontal
+padding `12px` and column gap `9px` follow the compact S8 source; vertical
+padding `11px` makes the exact `58px` height fit the unchanged `17px`/`14px`
+line heights and `3px` text gap. Do not restore `12px` vertical padding inside
+this smaller box: it would require `60px` and conflict with the fixed height.
 
 Transport/freshness semantics and state surface colors remain those of
 UI Standard v2.2 §8, including no false green for unknown/untrusted data.
@@ -166,31 +176,31 @@ inline-size container on the card. CSS content width is outer width minus
 }
 .nikas-status-heading {
   box-sizing: border-box;
-  min-height: 60px;
-  padding-right: 212px;
+  min-height: 58px;
+  padding-right: 177px;
 }
 .nikas-status-image {
   margin-top: 12px;
 }
 .nikas-connection-plaque {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 13px;
+  right: 13px;
   z-index: 2;
   box-sizing: border-box;
-  width: 200px;
-  min-width: 200px;
-  max-width: 200px;
-  height: 60px;
-  min-height: 60px;
-  max-height: 60px;
+  width: 168px;
+  min-width: 168px;
+  max-width: 168px;
+  height: 58px;
+  min-height: 58px;
+  max-height: 58px;
   margin: 0;
-  padding: 12px 14px;
+  padding: 11px 12px;
   border: 1px solid var(--nikas-connection-border);
   border-radius: 18px;
   display: grid;
   grid-template-columns: 10px minmax(0,1fr);
-  column-gap: 11px;
+  column-gap: 9px;
   align-items: center;
   background: var(--nikas-connection-background);
   box-shadow: 0 4px 14px rgba(0,0,0,.055);
@@ -230,7 +240,7 @@ inline-size container on the card. CSS content width is outer width minus
 @container nikas-card (width < 326px) {
   .nikas-status-heading {
     padding-right: 0;
-    padding-top: 72px;
+    padding-top: 67px;
   }
 }
 ```
