@@ -2,7 +2,7 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 2.1.0
+  version: 2.1.1
   description: Canonical NikaS base and specialized route registry; every runtime remains independently owned.
 spec:
   routes:
@@ -61,5 +61,5 @@ spec:
       path: /dashboard-lider
       safe_return_route: /dashboard-infrastructure/overview
     water_accounting:
-      path: /dashboard-water-accounting
-      safe_return_route: /dashboard-infrastructure/overview
+      path: /dashboard-water
+      safe_return_route: /dashboard-house-v13/home

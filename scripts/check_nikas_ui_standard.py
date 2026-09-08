@@ -215,7 +215,7 @@ def main() -> None:
             "/dashboard-actions/home",
             "/dashboard-infrastructure/overview",
             "/dashboard-access-v1/home",
-            "/dashboard-water-accounting",
+            "/dashboard-water",
         ):
             require(route in route_registry_text, f"canonical route missing from registry: {route}")
         return
