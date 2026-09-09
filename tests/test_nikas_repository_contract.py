@@ -153,9 +153,10 @@ const pattern = /import\\('fake'\\)/;
     def test_changing_only_standard_version_does_not_hide_old_content(self):
         self.write("docs/ui.md", "Old standard")
         self.write("docs/nav.md", "Old nav")
+        baseline = contract.load_standard_baseline()
         declaration = {"version": "2.2", "navigation_contract_version": "1.2", "standard_path": "docs/ui.md",
-                       "standard_sha256": contract.UI_HASH, "navigation_contract_path": "docs/nav.md",
-                       "navigation_contract_sha256": contract.NAV_HASH}
+                       "standard_sha256": baseline["ui_sha256"], "navigation_contract_path": "docs/nav.md",
+                       "navigation_contract_sha256": baseline["navigation_sha256"]}
         self.write(".nikas-ui-standard.json", json.dumps(declaration))
         checks = contract.check_standards(self.profile, self.root)
         self.assertEqual(sum(item["status"] == "fail" for item in checks), 2)

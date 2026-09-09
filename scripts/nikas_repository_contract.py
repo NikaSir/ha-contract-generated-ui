@@ -26,11 +26,7 @@ import yaml
 
 TOOL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = TOOL_ROOT / "schemas/nikas_repository_contract.schema.json"
-UI_VERSION = "2.2"
-NAV_VERSION = "1.2"
-UI_HASH = "3b6cc750b08aa0d2a375d1430ea04ac68c90525a527d197b014abd96728d23d1"
-NAV_HASH = "d495eca80345b96976c168029a96146803f3d8195b6f6fc723827b601ffb578e"
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.0.1"
 MAX_BYTES = 16 * 1024 * 1024
 MAX_GRAPH_FILES = 512
 REQUIREMENTS = {
@@ -69,6 +65,53 @@ def digest(path: Path) -> str:
     if path.stat().st_size > MAX_BYTES:
         raise InvalidInput(f"Input too large: {path.name}")
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_standard_baseline() -> dict[str, Any]:
+    """Read the reviewed authority checkout, never the inspected consumer.
+
+    The inspector, declaration and normative documents travel together at a
+    pinned Git revision. A new document/hash pair is a reviewed baseline update;
+    stale or malformed pairs must not certify a consumer or toolkit/schema run.
+    """
+    declaration_path = ".nikas-ui-standard.json"
+    try:
+        declaration = json.loads(read_text(TOOL_ROOT, declaration_path))
+        if not isinstance(declaration, dict) or declaration.get("role") != "registry":
+            raise InvalidInput("Canonical declaration must have role registry")
+        if ("standard_version" in declaration
+                and declaration["standard_version"] != declaration.get("version")):
+            raise InvalidInput("Conflicting canonical UI versions")
+        baseline: dict[str, Any] = {
+            "contract_version": 1,
+            "canonical_repository": "NikaSir/ha-contract-generated-ui",
+            "canonical_revision": git_value(TOOL_ROOT, "rev-parse", "HEAD"),
+            "declaration_sha256": digest(local_path(TOOL_ROOT, declaration_path)),
+        }
+        for version_key, path_key, hash_key, prefix, title in (
+            ("version", "standard_path", "standard_sha256", "ui",
+             "# NikaS Specialized Panel UI Standard v"),
+            ("navigation_contract_version", "navigation_contract_path", "navigation_contract_sha256", "navigation",
+             "# NikaS Panel Navigation and Return Contract v"),
+        ):
+            version = declaration.get(version_key)
+            if not isinstance(version, str) or not re.fullmatch(r"[0-9]+(?:\.[0-9]+)+", version):
+                raise InvalidInput(f"Invalid canonical {version_key}")
+            path = local_path(TOOL_ROOT, declaration.get(path_key))
+            declared_hash = declaration.get(hash_key)
+            if not isinstance(declared_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", declared_hash):
+                raise InvalidInput(f"Invalid canonical {hash_key}")
+            actual_hash = digest(path)
+            if actual_hash != declared_hash:
+                raise InvalidInput(f"Canonical document hash mismatch: {path_key}")
+            document = read_text(TOOL_ROOT, declaration[path_key])
+            if not document.splitlines() or document.splitlines()[0] != title + version:
+                raise InvalidInput(f"Canonical document version mismatch: {path_key}")
+            baseline[prefix + "_version"] = version
+            baseline[prefix + "_sha256"] = actual_hash
+        return baseline
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise InvalidInput(f"Cannot read canonical standard baseline: {exc}") from exc
 
 
 def load_profile(path: Path) -> dict[str, Any]:
@@ -457,7 +500,10 @@ def check_artifact(artifact: dict[str, Any], root: Path) -> tuple[list[dict[str,
     return results, graph
 
 
-def check_standards(profile: dict[str, Any], root: Path) -> list[dict[str, Any]]:
+def check_standards(profile: dict[str, Any], root: Path,
+                    baseline: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    if baseline is None:
+        baseline = load_standard_baseline()
     standard = profile["standards"]
     if not standard["applicable"]:
         if profile["artifacts"]:
@@ -477,14 +523,15 @@ def check_standards(profile: dict[str, Any], root: Path) -> list[dict[str, Any]]
     if not isinstance(declaration, dict):
         return [_result("ui_standard", "fail", "UI declaration must be a JSON object")]
     results = []
-    for field, target in (("version", UI_VERSION), ("navigation_contract_version", NAV_VERSION)):
+    for field, target in (("version", baseline["ui_version"]),
+                          ("navigation_contract_version", baseline["navigation_version"])):
         observed = declaration.get(field, declaration.get("standard_version") if field == "version" else None)
         conflict = field == "version" and "version" in declaration and "standard_version" in declaration and declaration["version"] != declaration["standard_version"]
         status = "fail" if conflict else "not_verified" if observed is None else "pass" if observed == target else "fail"
         results.append(_result("ui_standard", status, "Normative version compared with canonical target",
                                field=field, observed=observed, required=target))
-    for path_key, hash_key, target in (("standard_path", "standard_sha256", UI_HASH),
-                                      ("navigation_contract_path", "navigation_contract_sha256", NAV_HASH)):
+    for path_key, hash_key, target in (("standard_path", "standard_sha256", baseline["ui_sha256"]),
+                                      ("navigation_contract_path", "navigation_contract_sha256", baseline["navigation_sha256"])):
         declared_path = declaration.get(path_key)
         if not isinstance(declared_path, str):
             results.append(_result("ui_standard", "not_verified", f"Missing {path_key}"))
@@ -637,10 +684,13 @@ def aggregate(results: list[dict[str, Any]]) -> str:
     return "fail" if "fail" in statuses else "not_verified" if "not_verified" in statuses else "pass"
 
 
-def validate_repository(profile: dict[str, Any], root: Path) -> dict[str, Any]:
+def validate_repository(profile: dict[str, Any], root: Path,
+                        baseline: dict[str, Any] | None = None) -> dict[str, Any]:
+    if baseline is None:
+        baseline = load_standard_baseline()
     root = root.resolve()
     if not root.is_dir():
-        return {"repository": profile["repository"], "source_revision": profile["source_revision"], "status": "not_verified",
+        return {"repository": profile["repository"], "source_revision": profile["source_revision"], "status": "not_verified", "policy": baseline,
                 "requirements": [_result("repository_available", "not_verified", "Repository checkout is missing")], "artifacts": []}
     results = check_identity(profile, root)
     graphs, hashes = [], {}
@@ -662,7 +712,7 @@ def validate_repository(profile: dict[str, Any], root: Path) -> dict[str, Any]:
                                paths=untracked_subjects))
     if not profile["artifacts"]:
         results.append(_result("runtime_applicability", "not_verified", "Empty frontend inventory requires capability/setup verification; kind alone is not proof"))
-    results.extend(check_standards(profile, root))
+    results.extend(check_standards(profile, root, baseline))
     results.extend(check_publication(profile, root))
     results.extend(check_evidence(profile, root, hashes))
     for finding in profile["findings"]:
@@ -670,8 +720,7 @@ def validate_repository(profile: dict[str, Any], root: Path) -> dict[str, Any]:
                                finding["note"], finding=finding["id"]))
     return {"repository": profile["repository"], "source_revision": profile["source_revision"],
             "observed_revision": git_value(root, "rev-parse", "HEAD"),
-            "policy": {"contract_version": 1, "ui_version": UI_VERSION, "navigation_version": NAV_VERSION,
-                       "ui_sha256": UI_HASH, "navigation_sha256": NAV_HASH},
+            "policy": baseline,
             "status": aggregate(results), "requirements": results, "artifacts": graphs}
 
 
@@ -717,9 +766,10 @@ def main(argv: list[str] | None = None) -> int:
             child.add_argument("--repos-root", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        baseline = load_standard_baseline()
         if args.command == "validate":
             profile = load_profile(args.profile)
-            report = validate_repository(profile, args.root)
+            report = validate_repository(profile, args.root, baseline)
         else:
             paths = sorted(args.registry.glob("*.json"))
             if not paths:
@@ -729,11 +779,12 @@ def main(argv: list[str] | None = None) -> int:
             if len(identities) != len(set(identities)):
                 raise InvalidInput("Registry contains duplicate repositories")
             if args.command == "schema":
-                report = {"schema_version": 1, "status": "pass", "scope": "profile schema only; no product compliance asserted",
+                report = {"schema_version": 1, "status": "pass", "scope": "profile schema and canonical baseline only; no product compliance asserted",
                           "profiles": identities}
             else:
-                reports = [validate_repository(profile, args.repos_root / profile["repository"].split("/")[1]) for profile in profiles]
+                reports = [validate_repository(profile, args.repos_root / profile["repository"].split("/")[1], baseline) for profile in profiles]
                 report = {"schema_version": 1, "status": aggregate(reports), "repositories": reports}
+        report.setdefault("policy", baseline)
         write_outputs(report, args)
         print(json.dumps({"status": report["status"], "scope": report.get("scope", "strict compliance")}, ensure_ascii=False))
         return 0 if report["status"] == "pass" else 1
