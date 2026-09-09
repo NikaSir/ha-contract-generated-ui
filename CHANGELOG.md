@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- A19: repository contract inspector 1.0.1 uses the validated declaration and
+  normative documents from its own pinned canonical checkout instead of stale
+  hard-coded UI/navigation hashes. Consumers cannot supply the target baseline.
+- Validate the authority baseline in schema/toolkit CI as well as strict
+  inspection, retain its provenance in JSON reports, and add regressions for
+  canonical updates, stale copies and consumer self-consistency.
+- Keep product behaviour unverified until separate acceptance evidence exists;
+  this tooling change does not renumber integrations or migrate consumer panels.
+
 ## 0.40.1 — 2026-09-08
 
 - Add the required NikaS Panel Lifecycle Contract v1.0: configured routes are
