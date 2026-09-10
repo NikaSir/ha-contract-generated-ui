@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-hikvision-next",
-  "source_revision": "12abd40a3b5ad226198eb9cb0dcc5f0bb103a997",
+  "source_revision": "1af73fcc4e715542d7dc78f1e86b96b22c1bb6ea",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "hikvision_next",
@@ -27,20 +27,30 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A13: total polling failure may be exposed as successful empty data; A14: preserve disabled entity choices."
+      "paths": [
+        "custom_components/hikvision_next/coordinator.py",
+        "tests/test_coordinator.py",
+        "tests/test_diagnostics.py"
+      ],
+      "note": "A13 production handling and executable regression coverage are present at the pinned main revision; controlled live polling-failure and recovery acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
-      "paths": [],
-      "note": "A02: HTTP event sender verification is unresolved; existing notification tests do not demonstrate rejection of foreign senders."
+      "paths": [
+        "custom_components/hikvision_next/notifications.py",
+        "tests/test_notifications.py"
+      ],
+      "note": "A02 validates incoming event source addresses before accepting notification data and has regression coverage; live notification-path acceptance remains pending."
     },
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "Backend setup/unload/reconnect and disabled entity persistence require acceptance."
+      "paths": [
+        "custom_components/hikvision_next/__init__.py",
+        "tests/test_init.py"
+      ],
+      "note": "A14 preserves USER/DEVICE disabled ownership and only clears integration-owned disables; complete setup/unload/reconnect acceptance remains pending."
     },
     {
       "requirement": "repository_checks",
@@ -51,6 +61,7 @@
         ".github/workflows/testing.yml",
         "tests/test_camera.py",
         "tests/test_config_flow.py",
+        "tests/test_coordinator.py",
         "tests/test_diagnostics.py",
         "tests/test_init.py",
         "tests/test_isapi.py",
@@ -60,33 +71,33 @@
         "tests/test_services.py",
         "tests/test_switch.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Repository tests cover the merged A02/A13/A14 changes, but this profile does not elevate ordinary CI inventory to formal production-runtime acceptance evidence."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant or target Hikvision hardware is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A02",
       "requirement": "command_safety",
-      "status": "open",
-      "note": "Incoming HTTP event sender is not reliably authenticated."
+      "status": "fixed_pending_verification",
+      "note": "PR #1 verifies notification source addresses before event routing; live device notification acceptance remains pending."
     },
     {
       "id": "A13",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Total polling failure returns empty successful data."
+      "status": "fixed_pending_verification",
+      "note": "PR #2 raises UpdateFailed on total supported polling failure and tracks partial sample quality; live failure/recovery acceptance remains pending."
     },
     {
       "id": "A14",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "Setup can override previously disabled entities."
+      "status": "fixed_pending_verification",
+      "note": "PR #3 preserves USER/DEVICE disabled entities and only re-enables integration-owned disables; live setup/reload acceptance remains pending."
     }
   ]
 }
