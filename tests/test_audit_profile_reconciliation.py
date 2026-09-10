@@ -121,17 +121,18 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
     assert "tests/test_zont_dhw_truth.cjs" in data_quality["paths"]
 
 
-def test_canonical_profile_tracks_stage1_main_but_keeps_a21_open() -> None:
+def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "fa92d057f1cea8d87c1ca5e25c4061e16daa470a"
+    assert profile["source_revision"] == "ade2d1197e9b795d435ac1b57f8393d5fde4b40c"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
     ]
-    assert finding(profile, "A21")["status"] == "open"
+    assert finding(profile, "A21")["status"] == "fixed_pending_verification"
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/test_ci_gate.py" in repository_checks["paths"]
-    assert "tests/test_house_navigation.py" not in repository_checks["paths"]
+    assert "nikas-required-gate" in repository_checks["note"]
+    assert "validate" not in finding(profile, "A21")["note"]
 
 
 def test_organization_mirror_profile_tracks_current_main_without_inventing_findings() -> None:
