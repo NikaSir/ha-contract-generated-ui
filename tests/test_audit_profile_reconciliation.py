@@ -205,7 +205,7 @@ def test_access_profile_tracks_merged_a08_and_a19() -> None:
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "80f2e34c392198ed1efff9ea29b20f262af9efda"
+    assert profile["source_revision"] == "4d0c8e1faf4a8829dca1d0d9e561323b347734ba"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "11.0.15"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -217,6 +217,20 @@ def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
     assert "tests/registry_loader_harness.js" in data_quality["paths"]
     assert "tests/test_frontend_contract.py" in lifecycle["paths"]
+
+
+def test_rooms_profile_records_required_python_syntax_without_device_acceptance() -> None:
+    profile = load("ha-nikas-rooms.json")
+    assert "A31" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A31")["requirement"] == "repository_checks"
+    assert finding(profile, "A31")["status"] == "fixed_pending_verification"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    for path in (".github/workflows/validate.yml", "scripts/check_repository.py",
+                 "tests/test_python_syntax_validation.py"):
+        assert path in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> None:
