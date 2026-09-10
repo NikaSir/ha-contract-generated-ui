@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-access",
-  "source_revision": "90ae7549af3010487676a03c86f579fcd938bb89",
+  "source_revision": "2a5cfb7ce8716ec79bbbf01427e62d89e790313d",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
-      "ui_version": "0.1.7",
+      "ui_version": "0.1.8",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.7"
+          "expected": "0.1.8"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_access/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.7"
+          "expected": "0.1.8"
         }
       ],
       "registration_evidence_paths": [
@@ -72,8 +72,12 @@
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "A08: detach/attach during registry load or command-lock timeout may leave permanent busy flags."
+      "paths": [
+        "tests/test_lifecycle_reconnect.py",
+        "custom_components/nikas_access/frontend/src/nikas-access-panel.js",
+        "custom_components/nikas_access/frontend/nikas-access-panel.js"
+      ],
+      "note": "A08 reconnect lifecycle reset and source/generated-bundle regression coverage are present at the pinned merged revision; live detach/reconnect acceptance remains open."
     },
     {
       "requirement": "repository_checks",
@@ -84,6 +88,7 @@
         "tests/shell_v2_harness.mjs",
         "tests/test_command_safety.py",
         "tests/test_frontend_contract.py",
+        "tests/test_lifecycle_reconnect.py",
         "tests/test_panel_registration.py",
         "tests/test_perimeter_safety.py",
         "scripts/check-panel.mjs",
@@ -102,14 +107,14 @@
     {
       "id": "A08",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "Reconnect can leave loading/command locks set."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #11 resets interrupted registry loading, transient command locks and canceled handles while preserving command cooldown; live reconnect acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
       "status": "open",
-      "note": "Observed declaration remains 2.1; required baseline is 2.2. No version-only migration or waiver."
+      "note": "Observed declaration remains 2.1; required baseline is 2.2. Behavioral migration is proposed separately in PR #12 and is not yet on production main."
     }
   ]
 }
