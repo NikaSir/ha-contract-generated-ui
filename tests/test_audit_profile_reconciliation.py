@@ -78,3 +78,29 @@ def test_s8_profile_tracks_a05_fix_without_hiding_runtime_imports() -> None:
     limitation = " ".join(artifact["binding_limitations"])
     assert "four runtime modules" in limitation
     assert "runtime_imports:false" in limitation
+
+
+def test_access_profile_tracks_merged_a08_but_keeps_a19_open() -> None:
+    profile = load("ha-nikas-access.json")
+    assert profile["source_revision"] == "2a5cfb7ce8716ec79bbbf01427e62d89e790313d"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "0.1.8"
+    assert finding(profile, "A08")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A19")["status"] == "open"
+    lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
+    assert "tests/test_lifecycle_reconnect.py" in lifecycle["paths"]
+
+
+def test_rooms_profile_tracks_merged_a08_a09_a10_but_keeps_a19_open() -> None:
+    profile = load("ha-nikas-rooms.json")
+    assert profile["source_revision"] == "34e9d8b2e0f36617a7d33cafc05154e724d9ca4e"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "11.0.14"
+    assert finding(profile, "A08")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A09")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A10")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A19")["status"] == "open"
+    data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
+    lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
+    assert "tests/registry_loader_harness.js" in data_quality["paths"]
+    assert "tests/test_frontend_contract.py" in lifecycle["paths"]
