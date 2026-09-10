@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "34e9d8b2e0f36617a7d33cafc05154e724d9ca4e",
+  "source_revision": "80f2e34c392198ed1efff9ea29b20f262af9efda",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
-      "ui_version": "11.0.14",
+      "ui_version": "11.0.15",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.14"
+          "expected": "11.0.15"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_rooms/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.14"
+          "expected": "11.0.15"
         }
       ],
       "registration_evidence_paths": [
@@ -45,7 +45,7 @@
       "custom_components/nikas_rooms/__init__.py"
     ],
     "declaration_path": ".nikas-ui-standard.json",
-    "observed_version": "1.9",
+    "observed_version": "2.2",
     "required_version": "2.2"
   },
   "publication": {
@@ -65,7 +65,7 @@
         "tests/test_frontend_contract.py",
         "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
       ],
-      "note": "A10 explicit entity-area override handling and backing-device metadata regression coverage are present at the pinned merged revision; live registry acceptance remains open."
+      "note": "A10 explicit entity-area override handling and backing-device metadata regression coverage remain present at the pinned merged revision; live registry acceptance remains open."
     },
     {
       "requirement": "command_safety",
@@ -81,7 +81,7 @@
         "tests/test_frontend_contract.py",
         "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
       ],
-      "note": "A08 canceled-frame reset and A09 House v13 navigation compatibility are covered at the pinned merged revision; live detach/reconnect and navigation acceptance remain open."
+      "note": "A08 canceled-frame reset, A09 House v13 navigation, and A19 canonical Shell/refresh lifecycle are covered at the pinned merged revision; live detach/reconnect and navigation acceptance remain open."
     },
     {
       "requirement": "repository_checks",
@@ -92,9 +92,10 @@
         "tests/test_frontend_contract.py",
         "tests/test_reference_baseline.py",
         "tests/test_route_ownership.py",
+        "scripts/build_frontend.py",
         "scripts/check_repository.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate."
     },
     {
       "requirement": "device_acceptance",
@@ -125,8 +126,8 @@
     {
       "id": "A19",
       "requirement": "standards",
-      "status": "open",
-      "note": "Observed declaration remains 1.9; required baseline is 2.2. Behavioral migration is proposed separately in PR #4 and is not yet on production main."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #4 performs behavioral migration to NikaS UI Standard 2.2 / Navigation 1.2 with canonical Shell v2.1, Refresh Action Contract v1.1 and deterministic frontend build; live panel acceptance remains pending."
     }
   ]
 }
