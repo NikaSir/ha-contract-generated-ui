@@ -121,6 +121,17 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
     assert "tests/test_zont_dhw_truth.cjs" in data_quality["paths"]
 
 
+def test_stark_profile_tracks_required_frontend_delivery_gate() -> None:
+    profile = load("ha-stark-solarpower.json")
+    assert profile["source_revision"] == "4e931954e39a6bd5c61e0c1b52571b67d68233bd"
+    assert finding(profile, "A17")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A19")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A23")["status"] == "fixed_pending_verification"
+    repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert "scripts/check_frontend_delivery.py" in repository_checks["paths"]
+    assert "tests/test_required_frontend_delivery_gate.py" in repository_checks["paths"]
+
+
 def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
     assert profile["source_revision"] == "ade2d1197e9b795d435ac1b57f8393d5fde4b40c"

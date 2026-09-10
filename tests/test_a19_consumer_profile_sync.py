@@ -21,7 +21,7 @@ EXPECTED = {
         "entrypoint": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
     },
     "ha-stark-solarpower": {
-        "revision": "4059a5b67743e3b8f05a441ace61da32e1e4094d",
+        "revision": "4e931954e39a6bd5c61e0c1b52571b67d68233bd",
         "ui_version": "0.9.6",
         "entrypoint": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
     },

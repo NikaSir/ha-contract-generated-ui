@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-stark-solarpower",
-  "source_revision": "4059a5b67743e3b8f05a441ace61da32e1e4094d",
+  "source_revision": "4e931954e39a6bd5c61e0c1b52571b67d68233bd",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -106,9 +106,11 @@
         "tests/test_panel_status_ui_v066.py",
         "tests/test_panel_ui_standard_v16.py",
         "tests/test_panel_ui_standard_v22.py",
+        "tests/test_required_frontend_delivery_gate.py",
+        "scripts/check_frontend_delivery.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "PR #76 moves deterministic production-bundle verification and the shared frontend delivery contract into the ruleset-required `validate` job. The path-filtered frontend-bundle workflow reuses the same checker for self-contained delivery, production registration and manifest consistency. Repository CI evidence remains distinct from runtime/device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -129,6 +131,12 @@
       "requirement": "standards",
       "status": "fixed_pending_verification",
       "note": "PR #74 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
+    },
+    {
+      "id": "A23",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #76 moves deterministic bundle and frontend delivery validation into the required `validate` gate and reuses the same checker from the path-filtered bundle workflow; ongoing repository-governance observation remains pending."
     }
   ]
 }
