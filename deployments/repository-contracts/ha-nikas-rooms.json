@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "0d5366bf1dbc34e0b449b79c7f06f7d8b520b4d3",
+  "source_revision": "34e9d8b2e0f36617a7d33cafc05154e724d9ca4e",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
-      "ui_version": "11.0.13",
+      "ui_version": "11.0.14",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.13"
+          "expected": "11.0.14"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_rooms/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.13"
+          "expected": "11.0.14"
         }
       ],
       "registration_evidence_paths": [
@@ -60,8 +60,12 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A10: explicit entity area overrides must be preserved by registry filtering."
+      "paths": [
+        "tests/registry_loader_harness.js",
+        "tests/test_frontend_contract.py",
+        "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+      ],
+      "note": "A10 explicit entity-area override handling and backing-device metadata regression coverage are present at the pinned merged revision; live registry acceptance remains open."
     },
     {
       "requirement": "command_safety",
@@ -72,8 +76,12 @@
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "A08: canceled animation frame handle may block subsequent updates; A09: v13 return route validation remains open."
+      "paths": [
+        "tests/registry_loader_harness.js",
+        "tests/test_frontend_contract.py",
+        "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+      ],
+      "note": "A08 canceled-frame reset and A09 House v13 navigation compatibility are covered at the pinned merged revision; live detach/reconnect and navigation acceptance remain open."
     },
     {
       "requirement": "repository_checks",
@@ -99,26 +107,26 @@
     {
       "id": "A08",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "Canceled frame is not reset for reconnect."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 resets the canceled frame handle so reconnect can schedule state patches again; live reconnect acceptance remains pending."
     },
     {
       "id": "A09",
       "requirement": "navigation",
-      "status": "open",
-      "note": "New House v13 return route is rejected."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 accepts and prefers House v13 while retaining v11/v12 compatibility; live navigation acceptance remains pending."
     },
     {
       "id": "A10",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Explicit entity area override can be lost."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 honors explicit entity.area_id over device.area_id and retains backing-device metadata without sibling leakage; live registry acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
       "status": "open",
-      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+      "note": "Observed declaration remains 1.9; required baseline is 2.2. Behavioral migration is proposed separately in PR #4 and is not yet on production main."
     }
   ]
 }
