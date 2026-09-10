@@ -119,8 +119,8 @@ jobs:
           echo 'Toolkit/schema and canonical baseline validation only. This job does not certify the registered repositories as compliant.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Run NikaS fleet inspection for strict results against the pinned revisions.' >> "$GITHUB_STEP_SUMMARY"
 
-  validate:
-    name: validate
+  nikas-required-gate:
+    name: nikas-required-gate
     if: ${{ always() }}
     needs: [repository-checks, hacs, hassfest, nikas-contract-toolkit]
     runs-on: ubuntu-latest
@@ -145,3 +145,20 @@ jobs:
               sys.exit(f"Required CI jobs did not succeed: {failed}")
           print("All required CI jobs succeeded; product compliance is a separate result.")
           PYGATE
+
+  validate:
+    name: validate
+    if: ${{ always() }}
+    needs: [nikas-required-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve legacy required-check context during A21 migration
+        shell: bash
+        env:
+          NIKAS_REQUIRED_GATE_RESULT: ${{ needs.nikas-required-gate.result }}
+        run: |
+          if [ "$NIKAS_REQUIRED_GATE_RESULT" != "success" ]; then
+            echo "nikas-required-gate did not succeed: $NIKAS_REQUIRED_GATE_RESULT" >&2
+            exit 1
+          fi
+          echo "Legacy validate context mirrors successful nikas-required-gate."
