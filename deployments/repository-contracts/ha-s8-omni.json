@@ -1,41 +1,39 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-s8-omni",
-  "source_revision": "2ed8bacb5d3def6141aa118bd6994b036c9f2610",
+  "source_revision": "7f61c129ca52e963d91b78f7c1f42960bf694446",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
-      "path": "custom_components/s8_omni/frontend/s8-omni-panel-bootstrap.js",
-      "ui_version": "v1.0.4",
+      "path": "custom_components/s8_omni/frontend/s8-omni-production.js",
+      "ui_version": "v1.0.5",
       "bindings": [
         {
           "role": "entrypoint",
           "path": "custom_components/s8_omni/__init__.py",
           "pattern": "(?m)^PANEL_MODULE\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)\\?v=",
-          "expected": "s8-omni-panel-bootstrap.js",
+          "expected": "s8-omni-production.js",
           "path_mode": "basename"
         },
         {
           "role": "ui_version",
           "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.4"
+          "expected": "v1.0.5"
         },
         {
           "role": "cache_key",
           "path": "custom_components/s8_omni/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?DASHBOARD_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.4"
+          "expected": "v1.0.5"
         }
       ],
       "registration_evidence_paths": [
         "custom_components/s8_omni/__init__.py",
         "custom_components/s8_omni/const.py"
       ],
-      "binding_limitations": [
-        "Home Assistant still registers s8-omni-panel-bootstrap.js. That bootstrap imports four runtime modules even though .nikas-ui-standard.json declares production_entrypoint=s8-omni-panel.js and runtime_imports:false. The central profile intentionally records the factual registered entrypoint; REG-S8-IMPORTS remains open."
-      ]
+      "binding_limitations": []
     }
   ],
   "domain": "s8_omni",
@@ -67,7 +65,7 @@
         "custom_components/s8_omni/frontend/s8-omni-service-settings.js",
         "tests/test_command_readback_b096.py"
       ],
-      "note": "A05 production behavior is present at the pinned main revision: missing/unavailable/malformed control values stay unknown rather than being coerced to 0/false, and confirmation requires valid target readback. Hardware/Home Assistant acceptance remains pending."
+      "note": "A05 production behavior remains present at the pinned main revision: missing/unavailable/malformed control values stay unknown rather than being coerced to 0/false, and confirmation requires valid target readback. Hardware/Home Assistant acceptance remains pending."
     },
     {
       "requirement": "command_safety",
@@ -91,6 +89,8 @@
       "status": "pending",
       "paths": [
         ".github/workflows/repository-checks.yml",
+        "scripts/build_s8_production.py",
+        "tests/test_autonomous_production_bundle.py",
         "tests/test_command_readback_b096.py",
         "tests/test_diagnostic_protocol_fixes_v0734.py",
         "tests/test_mode_write_guard_b079.py",
@@ -112,7 +112,7 @@
         "tests/test_verified_drying_stop_v0739.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "PR #123 reported 96 regression tests plus passing repository/browser CI. This confirms code-side A05 coverage but does not satisfy hardware acceptance or the separate artifact-autonomy finding."
+      "note": "Merged PR #130 adds deterministic autonomous production-bundle generation and executable import rejection while retaining existing A05 regression coverage. Hardware/Home Assistant/iPhone acceptance remains separate."
     },
     {
       "requirement": "device_acceptance",
@@ -131,8 +131,8 @@
     {
       "id": "REG-S8-IMPORTS",
       "requirement": "artifact_autonomy",
-      "status": "open",
-      "note": "Actual Home Assistant registration still points to s8-omni-panel-bootstrap.js, which imports four executable runtime modules. This contradicts the repository declaration runtime_imports:false; a single factual autonomous registered output is still required."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #130 changes Home Assistant registration to deterministic autonomous s8-omni-production.js and rejects runtime JS import chains; field acceptance remains pending."
     }
   ]
 }
