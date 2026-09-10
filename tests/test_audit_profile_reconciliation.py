@@ -67,39 +67,43 @@ def test_starline_profile_tracks_a04_fix() -> None:
     assert "tests/test_binary_quality.py" in data_quality["paths"]
 
 
-def test_s8_profile_tracks_a05_fix_without_hiding_runtime_imports() -> None:
+def test_s8_profile_tracks_autonomous_production_main() -> None:
     profile = load("ha-s8-omni.json")
-    assert profile["source_revision"] == "2ed8bacb5d3def6141aa118bd6994b036c9f2610"
+    assert profile["source_revision"] == "7f61c129ca52e963d91b78f7c1f42960bf694446"
     artifact = profile["artifacts"][0]
-    assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-panel-bootstrap.js"
-    assert artifact["ui_version"] == "v1.0.4"
+    assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-production.js"
+    assert artifact["ui_version"] == "v1.0.5"
     assert finding(profile, "A05")["status"] == "fixed_pending_verification"
-    assert finding(profile, "REG-S8-IMPORTS")["status"] == "open"
-    limitation = " ".join(artifact["binding_limitations"])
-    assert "four runtime modules" in limitation
-    assert "runtime_imports:false" in limitation
+    assert finding(profile, "REG-S8-IMPORTS")["status"] == "fixed_pending_verification"
+    assert artifact["binding_limitations"] == []
+    repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert "tests/test_autonomous_production_bundle.py" in repository_checks["paths"]
 
 
-def test_access_profile_tracks_merged_a08_but_keeps_a19_open() -> None:
+def test_access_profile_tracks_merged_a08_and_a19() -> None:
     profile = load("ha-nikas-access.json")
-    assert profile["source_revision"] == "2a5cfb7ce8716ec79bbbf01427e62d89e790313d"
+    assert profile["source_revision"] == "afdb7d2999d06a96540c4700c116546f43994855"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.1.8"
+    assert artifact["ui_version"] == "0.1.9"
+    assert profile["standards"]["observed_version"] == "2.2"
     assert finding(profile, "A08")["status"] == "fixed_pending_verification"
-    assert finding(profile, "A19")["status"] == "open"
+    assert finding(profile, "A19")["status"] == "fixed_pending_verification"
     lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
     assert "tests/test_lifecycle_reconnect.py" in lifecycle["paths"]
+    repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert "tests/test_refresh_contract.py" in repository_checks["paths"]
 
 
-def test_rooms_profile_tracks_merged_a08_a09_a10_but_keeps_a19_open() -> None:
+def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "34e9d8b2e0f36617a7d33cafc05154e724d9ca4e"
+    assert profile["source_revision"] == "80f2e34c392198ed1efff9ea29b20f262af9efda"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "11.0.14"
+    assert artifact["ui_version"] == "11.0.15"
+    assert profile["standards"]["observed_version"] == "2.2"
     assert finding(profile, "A08")["status"] == "fixed_pending_verification"
     assert finding(profile, "A09")["status"] == "fixed_pending_verification"
     assert finding(profile, "A10")["status"] == "fixed_pending_verification"
-    assert finding(profile, "A19")["status"] == "open"
+    assert finding(profile, "A19")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
     assert "tests/registry_loader_harness.js" in data_quality["paths"]
@@ -117,9 +121,9 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
     assert "tests/test_zont_dhw_truth.cjs" in data_quality["paths"]
 
 
-def test_canonical_profile_tracks_current_main_inventory_but_keeps_a21_open() -> None:
+def test_canonical_profile_tracks_stage1_main_but_keeps_a21_open() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "5d20cdbfe7e3113167b880ea507bc7a4aeb0fe5b"
+    assert profile["source_revision"] == "fa92d057f1cea8d87c1ca5e25c4061e16daa470a"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
