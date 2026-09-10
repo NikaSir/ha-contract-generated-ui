@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-water-accounting",
-  "source_revision": "8f73632eedc1eb2bb103fdc1cc22ae9ca39dc208",
+  "source_revision": "9f9bffd3db845374e8211baea9dbe843acc7332b",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/water_accounting/frontend/water-accounting-panel.js",
-      "ui_version": "0.1.2",
+      "ui_version": "0.1.5",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/water_accounting/frontend/water-accounting-panel.js",
           "pattern": "(?m)^\\s*uiVersion\\s*:\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.2"
+          "expected": "0.1.5"
         },
         {
           "role": "cache_key",
           "path": "custom_components/water_accounting/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.2"
+          "expected": "0.1.5"
         }
       ],
       "registration_evidence_paths": [
@@ -45,7 +45,7 @@
       "custom_components/water_accounting/__init__.py"
     ],
     "declaration_path": ".nikas-ui-standard.json",
-    "observed_version": "1.9",
+    "observed_version": "2.2",
     "required_version": "2.2"
   },
   "publication": {
@@ -62,7 +62,7 @@
       "requirement": "data_quality",
       "status": "pending",
       "paths": [],
-      "note": "A18: partial meter coverage must not be displayed as a complete sum."
+      "note": "A18 complete-coverage semantics and executable production regression scenarios are present at the pinned revision; live Recorder/device acceptance remains open."
     },
     {
       "requirement": "command_safety",
@@ -83,6 +83,9 @@
         ".github/workflows/integration-validation.yml",
         ".github/workflows/repository-checks.yml",
         "tests/test_contract.py",
+        "tests/test_panel_ui_standard_v22.py",
+        "tests/water_ui_v22_harness.mjs",
+        "scripts/check_nikas_ui_standard.py",
         "scripts/check-panel.mjs"
       ],
       "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
@@ -98,14 +101,14 @@
     {
       "id": "A18",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Partial meter sums appear complete."
+      "status": "fixed_pending_verification",
+      "note": "PR #4 requires complete coverage of both meter series and the neighboring source hour before presenting a total; live Recorder acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
-      "status": "open",
-      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+      "status": "fixed_pending_verification",
+      "note": "PR #5 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
     }
   ]
 }
