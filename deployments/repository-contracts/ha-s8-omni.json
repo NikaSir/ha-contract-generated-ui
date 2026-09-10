@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-s8-omni",
-  "source_revision": "7f61c129ca52e963d91b78f7c1f42960bf694446",
+  "source_revision": "1cfa4f58d7977e9bc99ced2442a5690b02691ff9",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -91,6 +91,7 @@
         ".github/workflows/repository-checks.yml",
         "scripts/build_s8_production.py",
         "tests/test_autonomous_production_bundle.py",
+        "tests/test_required_hacs_gate.py",
         "tests/test_command_readback_b096.py",
         "tests/test_diagnostic_protocol_fixes_v0734.py",
         "tests/test_mode_write_guard_b079.py",
@@ -112,7 +113,7 @@
         "tests/test_verified_drying_stop_v0739.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Merged PR #130 adds deterministic autonomous production-bundle generation and executable import rejection while retaining existing A05 regression coverage. Hardware/Home Assistant/iPhone acceptance remains separate."
+      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate."
     },
     {
       "requirement": "device_acceptance",
@@ -133,6 +134,12 @@
       "requirement": "artifact_autonomy",
       "status": "fixed_pending_verification",
       "note": "Merged PR #130 changes Home Assistant registration to deterministic autonomous s8-omni-production.js and rejects runtime JS import chains; field acceptance remains pending."
+    },
+    {
+      "id": "A24",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "HACS previously ran outside the required validate context. Merged PR #131 makes validate depend on repository-checks and hacs-validation and fail unless both succeed, including failure, cancelled, skipped and missing-result cases. The ruleset retains validate + browser-regression. Post-merge CI passed at the pinned production SHA; ongoing governance verification and device acceptance remain pending. UI/runtime/version 1.0.5 are unchanged."
     }
   ]
 }
