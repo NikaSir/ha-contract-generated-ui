@@ -219,7 +219,7 @@ def test_access_profile_records_required_python_syntax_without_device_acceptance
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "4d0c8e1faf4a8829dca1d0d9e561323b347734ba"
+    assert profile["source_revision"] == "4665cb3a5f94e3267e45914c262ba08ab5f5a726"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "11.0.15"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -231,6 +231,20 @@ def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
     assert "tests/registry_loader_harness.js" in data_quality["paths"]
     assert "tests/test_frontend_contract.py" in lifecycle["paths"]
+
+
+def test_rooms_registration_version_fix_preserves_pending_acceptance() -> None:
+    profile = load("ha-nikas-rooms.json")
+    assert "A33" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A33")["status"] == "fixed_pending_verification"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "11.0.15"
+    bindings = {item["role"]: item for item in artifact["bindings"]}
+    assert bindings["cache_key"]["expected"] == "11.0.15"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "tests/test_registration_version.py" in evidence["repository_checks"]["paths"]
+    assert all(item["status"] == "pending" for item in profile["evidence"])
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_rooms_profile_records_required_python_syntax_without_device_acceptance() -> None:

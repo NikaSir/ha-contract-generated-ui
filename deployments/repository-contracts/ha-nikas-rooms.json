@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "4d0c8e1faf4a8829dca1d0d9e561323b347734ba",
+  "source_revision": "4665cb3a5f94e3267e45914c262ba08ab5f5a726",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -94,9 +94,10 @@
         "tests/test_route_ownership.py",
         "scripts/build_frontend.py",
         "scripts/check_repository.py",
-        "tests/test_python_syntax_validation.py"
+        "tests/test_python_syntax_validation.py",
+        "tests/test_registration_version.py"
       ],
-      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending."
+      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -135,6 +136,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "Merged PR #5 prevents invalid integration Python from passing required validate by compiling every integration Python source without execution. Mutation regressions cover config_flow.py and nested modules; UI 11.0.15 and integration 0.1.16 are unchanged. Repository CI passed before and after merge; live/device acceptance remains pending."
+    },
+    {
+      "id": "A33",
+      "requirement": "version_coherence",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #6 corrects PANEL_UI_VERSION from 11.0.14 to the shipped UI 11.0.15, aligning registration metadata and module_url cache key. Regression tests execute real registration with isolated Home Assistant boundary stubs and compare emitted metadata and URL against the production bundle and manifest. Frontend and integration 0.1.16 are unchanged; live browser cache/device acceptance remains pending."
     }
   ]
 }
