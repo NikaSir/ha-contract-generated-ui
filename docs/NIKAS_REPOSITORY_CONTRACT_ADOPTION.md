@@ -75,7 +75,7 @@ In particular, exit 0 from `schema` means only that profiles conform to the
 profile format and the inspector's canonical baseline is internally consistent.
 Read the report scope and per-requirement results; this is not product compliance.
 
-## Canonical baseline (inspector 1.0.1)
+## Canonical baseline (inspector 1.0.2)
 
 The inspector reads `.nikas-ui-standard.json` from **its own canonical checkout**,
 resolved relative to the inspector file. UI/navigation versions and SHA-256 values
@@ -111,8 +111,8 @@ behaviour remain open A19 work.
 
 ## Evidence discipline
 
-These initial profiles preserve observed standards, including old 1.9/2.1
-declarations, and open audit IDs. The required baseline is recorded separately.
+Profiles not yet refreshed preserve their observed standards, including old
+1.9/2.1 declarations, and open audit IDs. The required baseline is recorded separately.
 A `pending` entry is not an exception or acceptance. Existing test/workflow
 paths are inventory only; they do not prove those tests cover the active product.
 
@@ -125,8 +125,13 @@ and relevant runtime artifacts.
 The retained House files inside `ha-contract-generated-ui` are not active panel
 artifacts: its current setup registers the registry service and static assets.
 The standalone House repository is the panel owner. The HO profile includes
-the newly merged Zone 7 verification revision, UI 0.7.06; its additional syntax
-checks do not establish autonomy or complete coverage of its historical imports.
+the reviewed UI 1.0.2 autonomous production bundle and owner-approved stable
+Release policy; its static checks do not establish live HACS/device acceptance.
+
+The A19 consumer profiles pin HO-SC-8W, House, Stark and Water to their reviewed
+UI Standard 2.2 `main` revisions. Findings fixed in code remain
+`fixed_pending_verification` until the required HA/browser/iPhone or device
+acceptance is recorded. Profile synchronization is not product certification.
 
 ## Subsequent consumer migration
 

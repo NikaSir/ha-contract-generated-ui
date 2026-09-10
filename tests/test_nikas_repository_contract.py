@@ -267,6 +267,33 @@ jobs:
         checks = contract.check_publication(self.profile, self.root)
         self.assertEqual(next(item for item in checks if item["requirement"] == "publication_workflows")["status"], "fail")
 
+    def test_release_driven_hacs_policy_allows_a_release_workflow_without_certifying_it(self):
+        self.profile["publication"] = {
+            "default_branch": "main",
+            "github_releases": True,
+            "automatic_tags": True,
+        }
+        self.write(".github/workflows/release.yml", '''on: [push]
+jobs:
+  release:
+    steps:
+      - run: gh release create "$VERSION"
+''')
+        checks = contract.check_publication(self.profile, self.root)
+        self.assertEqual(next(item for item in checks if item["requirement"] == "publication_policy")["status"], "pass")
+        result = next(item for item in checks if item["requirement"] == "publication_workflows")
+        self.assertEqual(result["status"], "not_verified")
+        self.assertEqual(result["findings"][0]["command"], "gh release create")
+
+    def test_unsupported_publication_policy_fails_closed(self):
+        self.profile["publication"] = {
+            "default_branch": "main",
+            "github_releases": True,
+            "automatic_tags": False,
+        }
+        checks = contract.check_publication(self.profile, self.root)
+        self.assertEqual(next(item for item in checks if item["requirement"] == "publication_policy")["status"], "fail")
+
     def test_publication_wrapper_is_unknown_and_continuation_detected(self):
         self.write(".github/workflows/check.yml", 'jobs:\n  check:\n    steps:\n      - run: ./scripts/publish.sh\n')
         checks = contract.check_publication(self.profile, self.root)

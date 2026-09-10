@@ -26,7 +26,7 @@ import yaml
 
 TOOL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = TOOL_ROOT / "schemas/nikas_repository_contract.schema.json"
-TOOL_VERSION = "1.0.1"
+TOOL_VERSION = "1.0.2"
 MAX_BYTES = 16 * 1024 * 1024
 MAX_GRAPH_FILES = 512
 REQUIREMENTS = {
@@ -585,8 +585,16 @@ def forbidden_shell_commands(script: str) -> list[str]:
 
 def check_publication(profile: dict[str, Any], root: Path) -> list[dict[str, Any]]:
     policy = profile["publication"]
-    valid = policy == {"default_branch": "main", "github_releases": False, "automatic_tags": False}
-    results = [_result("publication_policy", "pass" if valid else "fail", "Declared publication policy compared with main/no-Releases target")]
+    supported_policies = (
+        {"default_branch": "main", "github_releases": False, "automatic_tags": False},
+        {"default_branch": "main", "github_releases": True, "automatic_tags": True},
+    )
+    valid = policy in supported_policies
+    results = [_result(
+        "publication_policy",
+        "pass" if valid else "fail",
+        "Declared publication policy compared with supported main-only and release-driven HACS models",
+    )]
     paths = sorted(set((root / ".github/workflows").glob("*.yml")) | set((root / ".github/workflows").glob("*.yaml")))
     findings, parse_errors, jobs = [], [], []
     for path in paths:
@@ -616,8 +624,11 @@ def check_publication(profile: dict[str, Any], root: Path) -> list[dict[str, Any
                 run = step.get("run")
                 if isinstance(run, str):
                     findings.extend({"path": relative, "command": item} for item in forbidden_shell_commands(run))
-    status = "fail" if findings or parse_errors else "not_verified"
-    results.append(_result("publication_workflows", status, "Recognized release/tag commands inspected; indirect scripts/actions need further evidence",
+    release_mutation_forbidden = bool(findings) and not (
+        policy.get("github_releases") and policy.get("automatic_tags")
+    )
+    status = "fail" if parse_errors or release_mutation_forbidden else "not_verified"
+    results.append(_result("publication_workflows", status, "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
                            findings=findings, invalid_workflows=parse_errors))
     names = [item["name"] for item in jobs if isinstance(item["name"], str)]
     duplicates = sorted({name for name in names if names.count(name) > 1})

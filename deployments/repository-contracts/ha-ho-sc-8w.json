@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-ho-sc-8w",
-  "source_revision": "9b8cac6dc3a9bf88535dddff2c5de46a10c7c5a4",
+  "source_revision": "fee88c1b86a996281b7c684fed2cd041e1b32dfc",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
-      "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel-v0706.mjs",
-      "ui_version": "0.7.06",
+      "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
+      "ui_version": "1.0.2",
       "bindings": [
         {
           "role": "entrypoint",
           "path": "custom_components/nikas_ho_sc_8w/const.py",
           "pattern": "(?m)^PANEL_JS_URL\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)[\\\"\\x27]",
-          "expected": "irrigation-panel-v0706.mjs",
+          "expected": "irrigation-panel.js",
           "path_mode": "basename"
         },
         {
           "role": "ui_version",
-          "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel-v0706.mjs",
-          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.7.06"
+          "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?NIKAS_HO_SC_8W_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.0.2"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_ho_sc_8w/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.7.06"
+          "expected": "1.0.2"
         }
       ],
       "registration_evidence_paths": [
@@ -46,16 +46,16 @@
       "custom_components/nikas_ho_sc_8w/__init__.py"
     ],
     "declaration_path": ".nikas-ui-standard.json",
-    "observed_version": "1.9",
+    "observed_version": "2.2",
     "required_version": "2.2"
   },
   "publication": {
     "default_branch": "main",
-    "github_releases": false,
-    "automatic_tags": false
+    "github_releases": true,
+    "automatic_tags": true
   },
   "observed_workflow_paths": [
-    ".github/workflows/publish-release.yml",
+    ".github/workflows/publish-hacs-release.yml",
     ".github/workflows/repository-checks.yml"
   ],
   "evidence": [
@@ -63,13 +63,13 @@
       "requirement": "data_quality",
       "status": "pending",
       "paths": [],
-      "note": "A06: TinyTuya Error/Err and heartbeat failure acceptance remains open; api/coordinator code paths were not corrected by the parity update."
+      "note": "A06 code and executable recovery scenarios are present at the pinned revision; controlled live transport acceptance remains open."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
       "paths": [],
-      "note": "A01: ownership and current Manual session validation for skip remains open; parity-specific checks are not acceptance of the full command surface."
+      "note": "A01 current Manual-session ownership checks are present at the pinned revision; complete device command acceptance remains open."
     },
     {
       "requirement": "lifecycle",
@@ -81,11 +81,13 @@
       "requirement": "repository_checks",
       "status": "pending",
       "paths": [
-        ".github/workflows/publish-release.yml",
+        ".github/workflows/publish-hacs-release.yml",
         ".github/workflows/repository-checks.yml",
         "scripts/check-control-contract-b00587.py",
         "scripts/check-control-contract.py",
+        "scripts/check-manual-session-adapters.py",
         "scripts/check-manual-skip-contract.py",
+        "scripts/check-local-transport-recovery.py",
         "scripts/check-panel-ui-v16.mjs",
         "scripts/check-zone7-anchor-date-probe.py",
         "scripts/check-zone7-parity-probe.py",
@@ -106,32 +108,32 @@
     {
       "id": "A01",
       "requirement": "command_safety",
-      "status": "open",
-      "note": "Stale Manual queue may be sent during Auto."
+      "status": "fixed_pending_verification",
+      "note": "PR #168 binds skip to the confirmed current Manual session; live device acceptance remains pending."
     },
     {
       "id": "A06",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "TinyTuya Error/Err path leaves local/online state."
+      "status": "fixed_pending_verification",
+      "note": "PR #176 closes the local socket and publishes offline after repeated TinyTuya Error/Err responses; live transport acceptance remains pending."
     },
     {
       "id": "A07",
       "requirement": "artifact_autonomy",
-      "status": "open",
-      "note": "Actual v0706 imports historical modules. Main bundle/autonomy check still targets irrigation-panel.js; v0706 syntax and parity checks were added at this revision."
+      "status": "fixed_pending_verification",
+      "note": "PR #173 makes irrigation-panel.js the autonomous production bundle and checks that it has no historical runtime imports; browser acceptance remains pending."
     },
     {
       "id": "A22",
       "requirement": "publication",
-      "status": "open",
-      "note": "publish-release.yml automatically creates GitHub Releases despite required main publication policy."
+      "status": "fixed_pending_verification",
+      "note": "Owner-approved policy publishes stable manifest versions through an idempotent HACS Release workflow and skips prereleases; end-to-end HACS delivery acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
-      "status": "open",
-      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+      "status": "fixed_pending_verification",
+      "note": "PR #177 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
     }
   ]
 }
