@@ -69,7 +69,7 @@ def test_starline_profile_tracks_a04_fix() -> None:
 
 def test_s8_profile_tracks_autonomous_production_main() -> None:
     profile = load("ha-s8-omni.json")
-    assert profile["source_revision"] == "7f61c129ca52e963d91b78f7c1f42960bf694446"
+    assert profile["source_revision"] == "1cfa4f58d7977e9bc99ced2442a5690b02691ff9"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-production.js"
     assert artifact["ui_version"] == "v1.0.5"
@@ -78,6 +78,22 @@ def test_s8_profile_tracks_autonomous_production_main() -> None:
     assert artifact["binding_limitations"] == []
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/test_autonomous_production_bundle.py" in repository_checks["paths"]
+
+
+def test_s8_governance_reconciliation_keeps_acceptance_pending() -> None:
+    profile = load("ha-s8-omni.json")
+    assert "A24" in {item["id"] for item in profile["findings"]}
+    governance = finding(profile, "A24")
+    assert governance["requirement"] == "repository_checks"
+    assert governance["status"] == "fixed_pending_verification"
+    assert profile["observed_workflow_paths"] == [".github/workflows/repository-checks.yml"]
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "tests/test_required_hacs_gate.py" in evidence["repository_checks"]["paths"]
+    assert ".github/workflows/repository-checks.yml" in evidence["repository_checks"]["paths"]
+    for requirement in ("repository_checks", "device_acceptance", "data_quality",
+                        "command_safety", "lifecycle"):
+        assert evidence[requirement]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_access_profile_tracks_merged_a08_and_a19() -> None:
