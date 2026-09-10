@@ -94,7 +94,7 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
 
 def test_lider_profile_tracks_a03_fix() -> None:
     profile = load("ha-lider-voltage-control.json")
-    assert profile["source_revision"] == "7e62320cf08daa53dd8d890e5bef4b7586ad19e5"
+    assert profile["source_revision"] == "40e0d51efe4a45fa472776e007e89d0317308899"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.8.7"
     assert finding(profile, "A03")["status"] == "fixed_pending_verification"
@@ -110,6 +110,19 @@ def test_starline_profile_tracks_a04_fix() -> None:
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_binary_quality.py" in data_quality["paths"]
+
+
+def test_lider_profile_records_full_hacs_validation_without_device_acceptance() -> None:
+    profile = load("ha-lider-voltage-control.json")
+    assert "A29" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A29")["requirement"] == "repository_checks"
+    assert finding(profile, "A29")["status"] == "fixed_pending_verification"
+    assert profile["artifacts"][0]["ui_version"] == "0.8.7"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "scripts/check-hacs-validation.py" in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_s8_profile_tracks_autonomous_production_main() -> None:
