@@ -26,7 +26,7 @@ EXPECTED = {
         "entrypoint": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
     },
     "ha-water-accounting": {
-        "revision": "9f9bffd3db845374e8211baea9dbe843acc7332b",
+        "revision": "7251a44aceeda16bc23c41ff111c241a643c0961",
         "ui_version": "0.1.5",
         "entrypoint": "custom_components/water_accounting/frontend/water-accounting-panel.js",
     },
