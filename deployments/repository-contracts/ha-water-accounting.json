@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-water-accounting",
-  "source_revision": "9f9bffd3db845374e8211baea9dbe843acc7332b",
+  "source_revision": "7251a44aceeda16bc23c41ff111c241a643c0961",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -82,13 +82,14 @@
       "paths": [
         ".github/workflows/integration-validation.yml",
         ".github/workflows/repository-checks.yml",
+        "tests/test_hacs_validation_contract.py",
         "tests/test_contract.py",
         "tests/test_panel_ui_standard_v22.py",
         "tests/water_ui_v22_harness.mjs",
         "scripts/check_nikas_ui_standard.py",
         "scripts/check-panel.mjs"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #6 removes the obsolete HACS topics exemption after 9 repository topics were verified. The existing required contexts remain validate + hacs + hassfest; HACS now runs full publication validation. The dependency-free regression protects the HACS action inputs. PR CI passed, including 15 Python tests, 29 statistics scenarios and production UI checks. Repository checks remain separate from live Recorder/Home Assistant/device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -109,6 +110,12 @@
       "requirement": "standards",
       "status": "fixed_pending_verification",
       "note": "PR #5 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
+    },
+    {
+      "id": "A27",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #6 restores HACS topics validation by removing ignore: topics. Required contexts validate + hacs + hassfest are unchanged. Ongoing governance verification and live Recorder/Home Assistant/device acceptance remain pending. UI/runtime/version 0.1.5 are unchanged."
     }
   ]
 }
