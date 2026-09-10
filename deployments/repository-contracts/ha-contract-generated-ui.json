@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-contract-generated-ui",
-  "source_revision": "5d20cdbfe7e3113167b880ea507bc7a4aeb0fe5b",
+  "source_revision": "fa92d057f1cea8d87c1ca5e25c4061e16daa470a",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "contract_generated_ui",
@@ -75,7 +75,7 @@
         "scripts/checkout_nikas_contract_snapshots.py",
         "scripts/nikas_repository_contract.py"
       ],
-      "note": "Current main exposes one repository validation workflow with unique internal job names plus a separate fleet-inspection workflow. Existing paths are observed CI/toolkit inventory; production acceptance remains separate."
+      "note": "Stage 1 of A21 is merged: repository-checks now publishes a unique fail-closed `nikas-required-gate` followed by legacy `validate` compatibility. The active ruleset still requires `validate`, so required-context migration is not complete."
     },
     {
       "requirement": "device_acceptance",
@@ -89,7 +89,7 @@
       "id": "A21",
       "requirement": "repository_checks",
       "status": "open",
-      "note": "The active main ruleset still requires the generic status context `validate`; required-check context migration remains pending."
+      "note": "Stage 1 is merged and publishes `nikas-required-gate`, but the active Protect main ruleset still requires legacy `validate`. Switch the required context, verify gating, then remove the compatibility alias before closing A21."
     }
   ]
 }
