@@ -191,7 +191,7 @@ def test_s8_governance_reconciliation_keeps_acceptance_pending() -> None:
 
 def test_access_profile_tracks_merged_a08_and_a19() -> None:
     profile = load("ha-nikas-access.json")
-    assert profile["source_revision"] == "afdb7d2999d06a96540c4700c116546f43994855"
+    assert profile["source_revision"] == "e7ce2a63b628cfb854ed056d848c7c93101da2f1"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.1.9"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -201,6 +201,20 @@ def test_access_profile_tracks_merged_a08_and_a19() -> None:
     assert "tests/test_lifecycle_reconnect.py" in lifecycle["paths"]
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/test_refresh_contract.py" in repository_checks["paths"]
+
+
+def test_access_profile_records_required_python_syntax_without_device_acceptance() -> None:
+    profile = load("ha-nikas-access.json")
+    assert "A32" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A32")["requirement"] == "repository_checks"
+    assert finding(profile, "A32")["status"] == "fixed_pending_verification"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    for path in (".github/workflows/validate.yml", "scripts/check_repository.py",
+                 "tests/test_python_syntax_validation.py"):
+        assert path in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:

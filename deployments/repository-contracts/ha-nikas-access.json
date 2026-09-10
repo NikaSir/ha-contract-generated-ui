@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-access",
-  "source_revision": "afdb7d2999d06a96540c4700c116546f43994855",
+  "source_revision": "e7ce2a63b628cfb854ed056d848c7c93101da2f1",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -93,9 +93,10 @@
         "tests/test_perimeter_safety.py",
         "tests/test_refresh_contract.py",
         "scripts/check-panel.mjs",
-        "scripts/check_repository.py"
+        "scripts/check_repository.py",
+        "tests/test_python_syntax_validation.py"
       ],
-      "note": "Merged PR #12 adds behavioral NikaS v2.2 and Refresh Action Contract regression coverage. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate."
+      "note": "Merged PR #12 adds behavioral NikaS v2.2 and Refresh Action Contract regression coverage. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A32 merged PR #13 adds recursive Python syntax validation to the required repository checker, with mutation regressions for config_flow.py and nested modules. Post-merge validate passed; live/device acceptance remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -116,6 +117,12 @@
       "requirement": "standards",
       "status": "fixed_pending_verification",
       "note": "Merged PR #12 performs behavioral migration to NikaS UI Standard 2.2 / Navigation 1.2, including canonical Shell delivery and Refresh Action Contract v1.1; live panel acceptance remains pending."
+    },
+    {
+      "id": "A32",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #13 prevents invalid integration Python from passing required validate by compiling every integration Python source without execution. Mutation regressions cover config_flow.py and nested modules. UI/integration 0.1.9 and runtime are unchanged; repository CI passed before and after merge, while live/device acceptance remains pending."
     }
   ]
 }
