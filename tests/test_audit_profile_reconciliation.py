@@ -45,3 +45,23 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
     assert ".github/workflows/repository-checks.yml" in profile["observed_workflow_paths"]
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/dom_stability.test.cjs" in repository_checks["paths"]
+
+
+def test_lider_profile_tracks_a03_fix() -> None:
+    profile = load("ha-lider-voltage-control.json")
+    assert profile["source_revision"] == "7e62320cf08daa53dd8d890e5bef4b7586ad19e5"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "0.8.7"
+    assert finding(profile, "A03")["status"] == "fixed_pending_verification"
+    data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
+    assert "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel-core.js" in data_quality["paths"]
+
+
+def test_starline_profile_tracks_a04_fix() -> None:
+    profile = load("ha-starline-telemetry.json")
+    assert profile["source_revision"] == "63df0b166ce2c38998084bce57be7230caa21493"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "0.6.9"
+    assert finding(profile, "A04")["status"] == "fixed_pending_verification"
+    data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
+    assert "tests/test_binary_quality.py" in data_quality["paths"]
