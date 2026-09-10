@@ -16,7 +16,7 @@ EXPECTED = {
         "entrypoint": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
     },
     "ha-nikas-house": {
-        "revision": "27c00b6783a7b6b8e325421db3d45c918bb1c57e",
+        "revision": "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7",
         "ui_version": "1.0.2",
         "entrypoint": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
     },

@@ -32,6 +32,20 @@ def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     assert "tests/test_wan_contract.py" in data_quality["paths"]
 
 
+def test_house_profile_records_full_hacs_validation_without_device_acceptance() -> None:
+    profile = load("ha-nikas-house.json")
+    assert profile["source_revision"] == "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7"
+    assert "A30" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A30")["requirement"] == "repository_checks"
+    assert finding(profile, "A30")["status"] == "fixed_pending_verification"
+    assert profile["artifacts"][0]["ui_version"] == "1.0.2"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "tests/test_hacs_validation_contract.py" in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
+
+
 def test_keenetic_profile_records_required_delivery_without_device_acceptance() -> None:
     profile = load("ha-keenetic-hero-4g.json")
     assert "A28" in {item["id"] for item in profile["findings"]}

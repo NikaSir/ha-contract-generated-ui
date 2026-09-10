@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-house",
-  "source_revision": "27c00b6783a7b6b8e325421db3d45c918bb1c57e",
+  "source_revision": "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -159,9 +159,10 @@
         "tests/test_validation.py",
         "scripts/check_house_ui_v22.mjs",
         "scripts/check_navigation.mjs",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "tests/test_hacs_validation_contract.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #11 removes the obsolete HACS topics exemption after 8 repository topics were verified. A regression checks the actual HACS action inputs and its dependency in the required validate aggregate. PR CI passed with 91 tests. The required validate context and pinned HACS action are unchanged; repository CI does not replace live Home Assistant/device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -176,6 +177,12 @@
       "requirement": "standards",
       "status": "fixed_pending_verification",
       "note": "PR #10 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
+    },
+    {
+      "id": "A30",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #11 restores full HACS topics validation within the existing required validate chain. Ongoing governance verification and live Home Assistant/device acceptance remain pending. UI/runtime/version 1.0.2 and recorded artifact-binding limitations are unchanged."
     }
   ]
 }
