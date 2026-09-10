@@ -17,7 +17,7 @@ def finding(profile: dict, finding_id: str) -> dict:
 
 def test_hikvision_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-hikvision-next.json")
-    assert profile["source_revision"] == "1af73fcc4e715542d7dc78f1e86b96b22c1bb6ea"
+    assert profile["source_revision"] == "c234fd523e440bfaef77698d98a9f379d6b74363"
     assert finding(profile, "A02")["status"] == "fixed_pending_verification"
     assert finding(profile, "A13")["status"] == "fixed_pending_verification"
     assert finding(profile, "A14")["status"] == "fixed_pending_verification"
@@ -30,6 +30,22 @@ def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
+
+
+def test_hikvision_profile_records_required_regressions_without_device_acceptance() -> None:
+    profile = load("ha-hikvision-next.json")
+    assert "A26" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A26")["requirement"] == "repository_checks"
+    assert finding(profile, "A26")["status"] == "fixed_pending_verification"
+    assert profile["observed_workflow_paths"] == [
+        ".github/workflows/hacs.yml", ".github/workflows/testing.yml",
+    ]
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "tests/test_required_ci_gate.py" in evidence["repository_checks"]["paths"]
+    assert ".github/workflows/hassfest.yml" not in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_climate_profile_tracks_fixed_main_findings() -> None:
