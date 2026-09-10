@@ -128,3 +128,24 @@ def test_canonical_profile_tracks_current_main_inventory_but_keeps_a21_open() ->
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/test_ci_gate.py" in repository_checks["paths"]
     assert "tests/test_house_navigation.py" not in repository_checks["paths"]
+
+
+def test_organization_mirror_profile_tracks_current_main_without_inventing_findings() -> None:
+    profile = load("nikasir-github.json")
+    assert profile["source_revision"] == "4c3fe20c2ee2aaa2ce82e3255930656be4a22ea7"
+    assert profile["findings"] == []
+    assert profile["standards"]["observed_version"] == "2.2"
+
+
+def test_ha_vless_profile_tracks_dependency_only_main_drift_without_inventing_findings() -> None:
+    profile = load("ha-vless-gateway.json")
+    assert profile["source_revision"] == "06eb754c06997c3181c2a94c9fdcb5966cb26f14"
+    assert profile["findings"] == []
+    assert profile["artifacts"][0]["ui_version"] == "0.1.1"
+
+
+def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventing_findings() -> None:
+    profile = load("vless-gateway.json")
+    assert profile["source_revision"] == "aa4a0a9f04d084043cabe7b5d0aef3157ca39940"
+    assert profile["findings"] == []
+    assert profile["standards"]["applicable"] is False
