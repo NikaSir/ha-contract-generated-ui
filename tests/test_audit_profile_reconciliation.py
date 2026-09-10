@@ -104,3 +104,14 @@ def test_rooms_profile_tracks_merged_a08_a09_a10_but_keeps_a19_open() -> None:
     lifecycle = next(item for item in profile["evidence"] if item["requirement"] == "lifecycle")
     assert "tests/registry_loader_harness.js" in data_quality["paths"]
     assert "tests/test_frontend_contract.py" in lifecycle["paths"]
+
+
+def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> None:
+    profile = load("ha-zont.json")
+    assert profile["source_revision"] == "a96d8169d9be9a96617f186cfabd1fe2abad0efb"
+    artifact = profile["artifacts"][0]
+    assert artifact["ui_version"] == "0.9.6"
+    assert finding(profile, "A16")["status"] == "fixed_pending_verification"
+    data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
+    assert data_quality["status"] == "pending"
+    assert "tests/test_zont_dhw_truth.cjs" in data_quality["paths"]
