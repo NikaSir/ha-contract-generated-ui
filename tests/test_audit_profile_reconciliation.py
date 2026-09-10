@@ -115,3 +115,16 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert data_quality["status"] == "pending"
     assert "tests/test_zont_dhw_truth.cjs" in data_quality["paths"]
+
+
+def test_canonical_profile_tracks_current_main_inventory_but_keeps_a21_open() -> None:
+    profile = load("ha-contract-generated-ui.json")
+    assert profile["source_revision"] == "5d20cdbfe7e3113167b880ea507bc7a4aeb0fe5b"
+    assert profile["observed_workflow_paths"] == [
+        ".github/workflows/nikas-fleet-inspection.yml",
+        ".github/workflows/repository-checks.yml",
+    ]
+    assert finding(profile, "A21")["status"] == "open"
+    repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert "tests/test_ci_gate.py" in repository_checks["paths"]
+    assert "tests/test_house_navigation.py" not in repository_checks["paths"]
