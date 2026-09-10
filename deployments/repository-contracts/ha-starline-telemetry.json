@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-starline-telemetry",
-  "source_revision": "63df0b166ce2c38998084bce57be7230caa21493",
+  "source_revision": "d079f0843a083b94d13e6dd1552fd2d1b7464ba9",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -55,9 +55,7 @@
     "automatic_tags": false
   },
   "observed_workflow_paths": [
-    ".github/workflows/hacs.yaml",
-    ".github/workflows/hassfest.yaml",
-    ".github/workflows/syntax.yaml"
+    ".github/workflows/repository-checks.yml"
   ],
   "evidence": [
     {
@@ -90,15 +88,14 @@
       "requirement": "repository_checks",
       "status": "pending",
       "paths": [
-        ".github/workflows/hacs.yaml",
-        ".github/workflows/hassfest.yaml",
-        ".github/workflows/syntax.yaml",
+        ".github/workflows/repository-checks.yml",
+        "tests/test_hacs_validation_contract.py",
         "tests/test_binary_quality.py",
         "tests/test_frontend_bundle.cjs",
         "tests/test_startup_lifecycle_contract.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Repository checks cover the merged A04 change, but automated checks are not promoted to production device acceptance."
+      "note": "Merged PR #58 removes the obsolete HACS topics exemption after 10 repository topics were verified. HACS now runs full publication validation within the existing required validate aggregate alongside repository-checks and hassfest. The dependency-free regression protects the HACS action inputs. PR and post-merge main CI passed. Workflow evidence now references the current repository-checks.yml; A04 coverage remains present. Automated checks are not promoted to production device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -113,6 +110,12 @@
       "requirement": "data_quality",
       "status": "fixed_pending_verification",
       "note": "PR #57 makes current Home Assistant security telemetry authoritative, expires bootstrap snapshots after 60 seconds and preserves true/false/unknown binary states; live vehicle acceptance remains pending."
+    },
+    {
+      "id": "A25",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #58 restores HACS topics validation by removing ignore: topics. The existing required validate context and aggregate dependencies are unchanged. PR CI passed; post-merge CI passed at the pinned production SHA. Ongoing governance verification and vehicle/Home Assistant acceptance remain pending. UI/runtime/version 0.6.9 are unchanged."
     }
   ]
 }
