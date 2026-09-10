@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-keenetic-hero-4g",
-  "source_revision": "d2a35c9aba36a1021834ecb481ecb71e76d23879",
+  "source_revision": "b47abe85e7c1ecd9c26219f39f897c1493a6d048",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -66,8 +66,12 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A15: WAN resolution and LTE duration use stale state; verify switchovers and restart boundaries."
+      "paths": [
+        "custom_components/keenetic_hero_4g/coordinator.py",
+        "custom_components/keenetic_hero_4g/wan.py",
+        "tests/test_wan_contract.py"
+      ],
+      "note": "A15 production logic and executable WAN regression coverage are present at the pinned main revision; controlled live Ethernet/LTE switchover, unknown-gap and restart-boundary acceptance remains pending."
     },
     {
       "requirement": "command_safety",
@@ -123,7 +127,7 @@
         "tests/test_wan_contract.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Repository tests cover the merged A15 WAN-tracking change, but ordinary CI inventory is not treated as complete production-runtime acceptance evidence."
     },
     {
       "requirement": "device_acceptance",
@@ -136,8 +140,8 @@
     {
       "id": "A15",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "WAN detection and LTE duration accept stale state."
+      "status": "fixed_pending_verification",
+      "note": "PR #93 selects WAN from factual route evidence, excludes explicitly down interfaces and keeps unknown intervals out of LTE duration; live failover/restart acceptance remains pending."
     }
   ]
 }
