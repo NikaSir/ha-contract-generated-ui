@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-zont",
-  "source_revision": "e8f64b86e35c0f95c19c3bf8d14f4ae8b4fee426",
+  "source_revision": "a96d8169d9be9a96617f186cfabd1fe2abad0efb",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/zont_local/frontend/zont-ui.js",
-      "ui_version": "0.9.5",
+      "ui_version": "0.9.6",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/zont_local/frontend/zont-ui.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.9.5"
+          "expected": "0.9.6"
         },
         {
           "role": "cache_key",
           "path": "custom_components/zont_local/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.9.5"
+          "expected": "0.9.6"
         }
       ],
       "registration_evidence_paths": [
@@ -60,8 +60,12 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A16: missing DHW status and online transport must not imply heating or a confirmed local channel."
+      "paths": [
+        "custom_components/zont_local/frontend/zont-app.js",
+        "tests/test_zont_dhw_truth.cjs",
+        "tests/test_zont_ui_semantics.cjs"
+      ],
+      "note": "A16 truth-preserving DHW and transport semantics plus executable runtime scenarios are present at the pinned revision; live ZONT/device acceptance remains open."
     },
     {
       "requirement": "command_safety",
@@ -82,11 +86,12 @@
         ".github/workflows/integration-validation.yml",
         "tests/shell_v2_harness.mjs",
         "tests/test_panel_registration.py",
+        "tests/test_zont_dhw_truth.cjs",
         "tests/test_zont_shell_v22.py",
         "tests/test_zont_ui_semantics.cjs",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "PR #32 CI covered full-runtime DHW semantics, shell checks, HACS and Hassfest at the merged lineage; running Home Assistant and target-device acceptance remain separate evidence."
     },
     {
       "requirement": "device_acceptance",
@@ -99,8 +104,8 @@
     {
       "id": "A16",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Missing DHW and transport channel infer unwarranted states."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #32 preserves missing numeric/transport truth, separates DHW readiness, permission and actual heating, and adds full-runtime regression coverage; live device acceptance remains pending."
     }
   ]
 }

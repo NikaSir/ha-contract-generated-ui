@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-vless-gateway",
-  "source_revision": "7a96036ddf02a7ca95086785d3dfa504f01ef366",
+  "source_revision": "06eb754c06997c3181c2a94c9fdcb5966cb26f14",
   "kind": "ha_integration",
   "artifacts": [
     {

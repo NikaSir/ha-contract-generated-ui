@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-starline-telemetry",
-  "source_revision": "94b36c32e145c7357582bada413c632f46af180e",
+  "source_revision": "63df0b166ce2c38998084bce57be7230caa21493",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/starline_telemetry/frontend/starline-app.js",
-      "ui_version": "0.6.8",
+      "ui_version": "0.6.9",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/starline_telemetry/frontend/starline-app.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.6.8"
+          "expected": "0.6.9"
         },
         {
           "role": "cache_key",
           "path": "custom_components/starline_telemetry/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.6.8-ui-standard-v2.2"
+          "expected": "0.6.9-ui-standard-v2.2"
         }
       ],
       "registration_evidence_paths": [
@@ -63,20 +63,28 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A04: stale bootstrap security and missing discrete fields require tri-state and source freshness acceptance."
+      "paths": [
+        "custom_components/starline_telemetry/binary_sensor.py",
+        "custom_components/starline_telemetry/data_quality.py",
+        "custom_components/starline_telemetry/frontend/starline-app.js",
+        "tests/test_binary_quality.py",
+        "tests/test_frontend_bundle.cjs"
+      ],
+      "note": "A04 production logic and executable regression coverage are present: explicit true/false/unknown is preserved, current reliable Home Assistant security state is authoritative and bootstrap data expires after 60 seconds. Live vehicle loss/recovery acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "note": "The integration/panel remain read-only; no complete field acceptance evidence for the pinned production runtime is recorded."
     },
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "paths": [
+        "tests/test_startup_lifecycle_contract.py"
+      ],
+      "note": "Startup lifecycle regression coverage exists, but complete running Home Assistant reconnect acceptance remains pending."
     },
     {
       "requirement": "repository_checks",
@@ -85,24 +93,26 @@
         ".github/workflows/hacs.yaml",
         ".github/workflows/hassfest.yaml",
         ".github/workflows/syntax.yaml",
+        "tests/test_binary_quality.py",
         "tests/test_frontend_bundle.cjs",
+        "tests/test_startup_lifecycle_contract.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Repository checks cover the merged A04 change, but automated checks are not promoted to production device acceptance."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or both target StarLine vehicles is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A04",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Old bootstrap and missing binary values distort security status."
+      "status": "fixed_pending_verification",
+      "note": "PR #57 makes current Home Assistant security telemetry authoritative, expires bootstrap snapshots after 60 seconds and preserves true/false/unknown binary states; live vehicle acceptance remains pending."
     }
   ]
 }

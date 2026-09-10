@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-lider-voltage-control",
-  "source_revision": "504829eff79c2bf83308faaab96ae44247d13b3d",
+  "source_revision": "7e62320cf08daa53dd8d890e5bef4b7586ad19e5",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
-      "ui_version": "0.8.5",
+      "ui_version": "0.8.7",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?LIDER_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.8.5"
+          "expected": "0.8.7"
         },
         {
           "role": "cache_key",
           "path": "custom_components/lider_voltage_control/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.8.5"
+          "expected": "0.8.7"
         }
       ],
       "registration_evidence_paths": [
@@ -61,20 +61,25 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A03: cached stale phase voltage can appear normal and fresh. Require per-value quality and incomplete-phase scenarios."
+      "paths": [
+        "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel-core.js",
+        "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+        "contracts/lider_voltage_control.yaml",
+        "scripts/check-stable-dom.mjs"
+      ],
+      "note": "A03 production handling is present at the pinned main revision: telemetry value, quality and measurement timestamp are preserved; cached/old readings become stale and aggregate freshness requires all three input-voltage phases. Live phase-loss/recovery acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing checks are not treated as field acceptance."
     },
     {
       "requirement": "lifecycle",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing checks are not treated as field acceptance."
     },
     {
       "requirement": "repository_checks",
@@ -85,21 +90,21 @@
         "scripts/check-nikas-ui-standard.py",
         "scripts/check-stable-dom.mjs"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Repository checks cover the merged A03 data-quality behavior and subsequent NikaS 2.2 alignment, but automated checks do not replace live Home Assistant acceptance."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target LIDER/power-monitor hardware is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A03",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Stale cached phase may be shown normal and current."
+      "status": "fixed_pending_verification",
+      "note": "PR #42 preserves value/quality/timestamp, marks cached or old phase telemetry stale and computes freshness across all required phases; live phase-loss/recovery acceptance remains pending."
     }
   ]
 }

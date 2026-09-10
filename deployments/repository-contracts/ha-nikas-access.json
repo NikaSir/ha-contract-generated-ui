@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-access",
-  "source_revision": "90ae7549af3010487676a03c86f579fcd938bb89",
+  "source_revision": "afdb7d2999d06a96540c4700c116546f43994855",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
-      "ui_version": "0.1.7",
+      "ui_version": "0.1.9",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_access/frontend/nikas-access-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.7"
+          "expected": "0.1.9"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_access/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.7"
+          "expected": "0.1.9"
         }
       ],
       "registration_evidence_paths": [
@@ -45,7 +45,7 @@
       "custom_components/nikas_access/__init__.py"
     ],
     "declaration_path": ".nikas-ui-standard.json",
-    "observed_version": "2.1",
+    "observed_version": "2.2",
     "required_version": "2.2"
   },
   "publication": {
@@ -72,8 +72,12 @@
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "A08: detach/attach during registry load or command-lock timeout may leave permanent busy flags."
+      "paths": [
+        "tests/test_lifecycle_reconnect.py",
+        "custom_components/nikas_access/frontend/src/nikas-access-panel.js",
+        "custom_components/nikas_access/frontend/nikas-access-panel.js"
+      ],
+      "note": "A08 reconnect lifecycle reset plus A19 refresh/disconnect cleanup are covered at the pinned merged revision; live detach/reconnect acceptance remains open."
     },
     {
       "requirement": "repository_checks",
@@ -84,12 +88,14 @@
         "tests/shell_v2_harness.mjs",
         "tests/test_command_safety.py",
         "tests/test_frontend_contract.py",
+        "tests/test_lifecycle_reconnect.py",
         "tests/test_panel_registration.py",
         "tests/test_perimeter_safety.py",
+        "tests/test_refresh_contract.py",
         "scripts/check-panel.mjs",
         "scripts/check_repository.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #12 adds behavioral NikaS v2.2 and Refresh Action Contract regression coverage. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate."
     },
     {
       "requirement": "device_acceptance",
@@ -102,14 +108,14 @@
     {
       "id": "A08",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "Reconnect can leave loading/command locks set."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #11 resets interrupted registry loading, transient command locks and canceled handles while preserving command cooldown; live reconnect acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
-      "status": "open",
-      "note": "Observed declaration remains 2.1; required baseline is 2.2. No version-only migration or waiver."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #12 performs behavioral migration to NikaS UI Standard 2.2 / Navigation 1.2, including canonical Shell delivery and Refresh Action Contract v1.1; live panel acceptance remains pending."
     }
   ]
 }

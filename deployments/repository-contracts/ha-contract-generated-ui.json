@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-contract-generated-ui",
-  "source_revision": "956123093a488deda1ea65746f06f03929c61d45",
+  "source_revision": "fa92d057f1cea8d87c1ca5e25c4061e16daa470a",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "contract_generated_ui",
@@ -22,8 +22,7 @@
     "automatic_tags": false
   },
   "observed_workflow_paths": [
-    ".github/workflows/hacs-validation.yml",
-    ".github/workflows/hassfest.yml",
+    ".github/workflows/nikas-fleet-inspection.yml",
     ".github/workflows/repository-checks.yml"
   ],
   "evidence": [
@@ -49,32 +48,34 @@
       "requirement": "repository_checks",
       "status": "pending",
       "paths": [
-        ".github/workflows/hacs-validation.yml",
-        ".github/workflows/hassfest.yml",
+        ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
         "tests/shell_v2_harness.mjs",
+        "tests/test_a19_consumer_profile_sync.py",
+        "tests/test_ci_gate.py",
+        "tests/test_contract_snapshot_checkout.py",
         "tests/test_ha_validation.py",
-        "tests/test_house_navigation.py",
-        "tests/test_house_release.py",
-        "tests/test_house_renderer.py",
-        "tests/test_house_runtime_parity.py",
-        "tests/test_house_specialized_panel.py",
-        "tests/test_house_visual_state_scene.py",
-        "tests/test_main_house_v11_staging.py",
+        "tests/test_hacs_publication_contract.py",
         "tests/test_native_diagnostics_download.py",
-        "tests/test_panel_route_ownership.py",
-        "tests/test_private_house_power_policy.py",
+        "tests/test_navigation_registry.py",
+        "tests/test_nikas_repository_contract.py",
+        "tests/test_nikas_repository_registry.py",
+        "tests/test_nikas_standard_baseline.py",
+        "tests/test_panel_lifecycle_contract.py",
+        "tests/test_refresh_action_contract.py",
         "tests/test_registry_snapshot_topology.py",
         "tests/test_release_gate.py",
         "tests/test_renderer.py",
-        "tests/test_runtime_registration.py",
+        "tests/test_repository_scope.py",
         "tests/test_runtime_source_sync.py",
         "tests/test_snapshot_disabled_binding.py",
         "tests/test_snapshot_pipeline.py",
         "tests/test_validation.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/checkout_nikas_contract_snapshots.py",
+        "scripts/nikas_repository_contract.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Stage 1 of A21 is merged: repository-checks now publishes a unique fail-closed `nikas-required-gate` followed by legacy `validate` compatibility. The active ruleset still requires `validate`, so required-context migration is not complete."
     },
     {
       "requirement": "device_acceptance",
@@ -88,7 +89,7 @@
       "id": "A21",
       "requirement": "repository_checks",
       "status": "open",
-      "note": "Legacy workflows publish ambiguous validate job contexts; required check migration pending."
+      "note": "Stage 1 is merged and publishes `nikas-required-gate`, but the active Protect main ruleset still requires legacy `validate`. Switch the required context, verify gating, then remove the compatibility alias before closing A21."
     }
   ]
 }

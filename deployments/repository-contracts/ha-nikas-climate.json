@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-climate",
-  "source_revision": "1c556be8ba908834a108e20f685222e88118600b",
+  "source_revision": "8ed775d4cf9bd8a90fcecbeea63ea018f419fa7d",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
-      "path": "custom_components/nikas_climate/frontend/nikas-climate-entry-153.js",
-      "ui_version": "1.4.13",
+      "path": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
+      "ui_version": "1.4.26",
       "bindings": [
         {
           "role": "entrypoint",
           "path": "custom_components/nikas_climate/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_BUNDLE\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "nikas-climate-entry-153.js",
+          "expected": "nikas-climate-production.js",
           "path_mode": "basename"
         },
         {
           "role": "ui_version",
-          "path": "custom_components/nikas_climate/frontend/nikas-climate-entry-153.js",
-          "pattern": "(?m)^\\s*(?:const\\s+)?PATCH_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.4.13"
+          "path": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI161\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
+          "expected": "1.4.26"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_climate/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.41"
+          "expected": "0.1.55"
         }
       ],
       "registration_evidence_paths": [
@@ -35,7 +35,7 @@
         "custom_components/nikas_climate/const.py"
       ],
       "binding_limitations": [
-        "Registered cache key uses integration VERSION; UI label uses PATCH_UI_VERSION. Historical import chain and final displayed behavior require migration and runtime acceptance."
+        "The autonomous production bundle contains historical source version constants by design; the final UI overlay is UI161=1.4.26 and Home Assistant registers nikas-climate-production.js. Live client cache/display acceptance remains separate."
       ]
     }
   ],
@@ -56,63 +56,80 @@
     "github_releases": false,
     "automatic_tags": false
   },
-  "observed_workflow_paths": [],
+  "observed_workflow_paths": [
+    ".github/workflows/repository-checks.yml"
+  ],
   "evidence": [
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A11: unknown feature and swing values can be displayed as definite states."
+      "paths": [
+        "custom_components/nikas_climate/frontend/nikas-climate-production.js",
+        "tests/summary.test.cjs",
+        "tests/ui_158.test.cjs"
+      ],
+      "note": "A11 production logic and tri-state regression coverage are present: Syncleo registry/platform evidence gates the local channel state and freshness stays fail-closed when Syncleo exposes no sample timestamp. Live loss/recovery acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are not treated as field acceptance."
     },
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "A12: hass updates recreate working DOM; verify focus, draft values, scroll and reconnection on the complete entry-153 chain."
+      "paths": [
+        "custom_components/nikas_climate/frontend/nikas-climate-production.js",
+        "tests/dom_stability.test.cjs"
+      ],
+      "note": "A12 stable-DOM production behavior and regression coverage are present: compatible live nodes, focus/scroll/history slots and gesture-deferred updates are preserved. Complete browser/device acceptance remains pending."
     },
     {
       "requirement": "repository_checks",
       "status": "pending",
-      "paths": [],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "paths": [
+        ".github/workflows/repository-checks.yml",
+        "tests/dom_stability.test.cjs",
+        "tests/summary-fit.browser.cjs",
+        "tests/summary.test.cjs",
+        "tests/ui_158.test.cjs",
+        "scripts/build-frontend.py",
+        "scripts/check-production-contract.py"
+      ],
+      "note": "A07/A20-CI are implemented by the registered autonomous deterministic production bundle and repository-check workflow. CI evidence does not replace live Home Assistant/browser acceptance."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target Syncleo/Ballu devices is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A07",
       "requirement": "artifact_autonomy",
-      "status": "open",
-      "note": "Registered entry-153 executes a historical import chain; old declaration versions differ from runtime."
+      "status": "fixed_pending_verification",
+      "note": "PR #9 replaced the registered historical import chain with deterministic autonomous nikas-climate-production.js; live installed-bundle acceptance remains pending."
     },
     {
       "id": "A11",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Unknown feature/swing can become definite on/off state."
+      "status": "fixed_pending_verification",
+      "note": "PR #11 made channel status evidence-based and tri-state/fail-closed; live Syncleo loss/recovery acceptance remains pending."
     },
     {
       "id": "A12",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "hass updates rebuild working DOM."
+      "status": "fixed_pending_verification",
+      "note": "PR #13 updates compatible DOM nodes in place and preserves focus, scroll, history slots and gesture deferral; complete browser acceptance remains pending."
     },
     {
       "id": "A20-CI",
       "requirement": "repository_checks",
-      "status": "open",
-      "note": "No workflow files are present at this pinned revision."
+      "status": "fixed_pending_verification",
+      "note": "PR #9 added repository checks for the autonomous production bundle and behavioral tests; production-client acceptance remains separate."
     }
   ]
 }
