@@ -65,3 +65,16 @@ def test_starline_profile_tracks_a04_fix() -> None:
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_binary_quality.py" in data_quality["paths"]
+
+
+def test_s8_profile_tracks_a05_fix_without_hiding_runtime_imports() -> None:
+    profile = load("ha-s8-omni.json")
+    assert profile["source_revision"] == "2ed8bacb5d3def6141aa118bd6994b036c9f2610"
+    artifact = profile["artifacts"][0]
+    assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-panel-bootstrap.js"
+    assert artifact["ui_version"] == "v1.0.4"
+    assert finding(profile, "A05")["status"] == "fixed_pending_verification"
+    assert finding(profile, "REG-S8-IMPORTS")["status"] == "open"
+    limitation = " ".join(artifact["binding_limitations"])
+    assert "four runtime modules" in limitation
+    assert "runtime_imports:false" in limitation
