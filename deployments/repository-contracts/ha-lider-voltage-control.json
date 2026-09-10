@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-lider-voltage-control",
-  "source_revision": "7e62320cf08daa53dd8d890e5bef4b7586ad19e5",
+  "source_revision": "40e0d51efe4a45fa472776e007e89d0317308899",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -88,9 +88,10 @@
         ".github/workflows/integration-validation.yml",
         ".github/workflows/repository-checks.yml",
         "scripts/check-nikas-ui-standard.py",
-        "scripts/check-stable-dom.mjs"
+        "scripts/check-stable-dom.mjs",
+        "scripts/check-hacs-validation.py"
       ],
-      "note": "Repository checks cover the merged A03 data-quality behavior and subsequent NikaS 2.2 alignment, but automated checks do not replace live Home Assistant acceptance."
+      "note": "Merged PR #44 removes the obsolete HACS topics exemption after 10 repository topics were verified and runs a dependency-free HACS contract regression in required validate. Required contexts remain validate + Hassfest + HACS. Existing A03 and NikaS 2.2 checks remain present; repository CI does not replace live Home Assistant/device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -105,6 +106,12 @@
       "requirement": "data_quality",
       "status": "fixed_pending_verification",
       "note": "PR #42 preserves value/quality/timestamp, marks cached or old phase telemetry stale and computes freshness across all required phases; live phase-loss/recovery acceptance remains pending."
+    },
+    {
+      "id": "A29",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #44 restores full HACS topics validation and protects it through required validate. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 0.8.7 and integration version 0.8.8 are unchanged."
     }
   ]
 }
