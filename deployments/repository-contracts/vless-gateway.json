@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/vless-gateway",
-  "source_revision": "75f0e8d55f0b9d2388555adb18f1e663bc241620",
+  "source_revision": "aa4a0a9f04d084043cabe7b5d0aef3157ca39940",
   "kind": "service",
   "artifacts": [],
   "standards": {
