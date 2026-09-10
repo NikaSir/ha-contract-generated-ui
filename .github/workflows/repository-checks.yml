@@ -145,20 +145,3 @@ jobs:
               sys.exit(f"Required CI jobs did not succeed: {failed}")
           print("All required CI jobs succeeded; product compliance is a separate result.")
           PYGATE
-
-  validate:
-    name: validate
-    if: ${{ always() }}
-    needs: [nikas-required-gate]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Preserve legacy required-check context during A21 migration
-        shell: bash
-        env:
-          NIKAS_REQUIRED_GATE_RESULT: ${{ needs.nikas-required-gate.result }}
-        run: |
-          if [ "$NIKAS_REQUIRED_GATE_RESULT" != "success" ]; then
-            echo "nikas-required-gate did not succeed: $NIKAS_REQUIRED_GATE_RESULT" >&2
-            exit 1
-          fi
-          echo "Legacy validate context mirrors successful nikas-required-gate."

@@ -1,7 +1,7 @@
-"""Exercise the real aggregate gate and its temporary A21 compatibility alias.
+"""Exercise the final A21 aggregate required gate without a legacy alias.
 
 Set NIKAS_CI_WORKFLOW_PATH to inspect the same contract in another workflow.
-The subprocess executes only the aggregate/compatibility gate scripts, never dependency jobs.
+The subprocess executes only the aggregate gate script, never dependency jobs.
 """
 
 import json
@@ -27,8 +27,6 @@ class CIGateTests(unittest.TestCase):
         cls.gate = cls.jobs["nikas-required-gate"]
         cls.required = cls.gate["needs"]
         cls.step = cls.gate["steps"][0]
-        cls.compat = cls.jobs["validate"]
-        cls.compat_step = cls.compat["steps"][0]
 
     def results(self):
         return {name: {"result": "success", "outputs": {}}
@@ -43,20 +41,12 @@ class CIGateTests(unittest.TestCase):
             env=env, text=True, capture_output=True, timeout=5,
         )
 
-    def run_compat(self, result):
-        env = os.environ.copy()
-        env["NIKAS_REQUIRED_GATE_RESULT"] = result
-        return subprocess.run(
-            ["bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c",
-             self.compat_step["run"]],
-            env=env, text=True, capture_output=True, timeout=5,
-        )
-
     def test_unique_gate_covers_every_validation_job_and_cannot_be_skipped(self):
+        self.assertNotIn("validate", self.jobs)
         self.assertIsInstance(self.required, list)
         self.assertEqual(
             set(self.required),
-            set(self.jobs) - {"nikas-required-gate", "validate"},
+            set(self.jobs) - {"nikas-required-gate"},
         )
         self.assertEqual(len(self.required), len(set(self.required)))
         self.assertEqual(self.gate["if"], "${{ always() }}")
@@ -68,22 +58,6 @@ class CIGateTests(unittest.TestCase):
         self.assertEqual(self.step["env"]["NIKAS_JOB_RESULTS"], "${{ toJSON(needs) }}")
         for name in self.required:
             self.assertFalse(self.jobs[name].get("continue-on-error", False))
-
-    def test_legacy_validate_context_is_a_fail_closed_compatibility_alias(self):
-        self.assertEqual(self.compat.get("name"), "validate")
-        self.assertEqual(self.compat["if"], "${{ always() }}")
-        self.assertEqual(self.compat["needs"], ["nikas-required-gate"])
-        self.assertEqual(len(self.compat["steps"]), 1)
-        self.assertFalse(self.compat.get("continue-on-error", False))
-        self.assertFalse(self.compat_step.get("continue-on-error", False))
-        self.assertEqual(
-            self.compat_step["env"]["NIKAS_REQUIRED_GATE_RESULT"],
-            "${{ needs.nikas-required-gate.result }}",
-        )
-        self.assertEqual(self.run_compat("success").returncode, 0)
-        for result in ("failure", "cancelled", "skipped", "neutral", "", "unknown"):
-            with self.subTest(result=result):
-                self.assertNotEqual(self.run_compat(result).returncode, 0)
 
     def test_job_contexts_are_unique_across_workflows(self):
         names = []
