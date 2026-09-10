@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-hikvision-next",
-  "source_revision": "1af73fcc4e715542d7dc78f1e86b96b22c1bb6ea",
+  "source_revision": "c234fd523e440bfaef77698d98a9f379d6b74363",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "hikvision_next",
@@ -20,7 +20,6 @@
   },
   "observed_workflow_paths": [
     ".github/workflows/hacs.yml",
-    ".github/workflows/hassfest.yml",
     ".github/workflows/testing.yml"
   ],
   "evidence": [
@@ -57,8 +56,8 @@
       "status": "pending",
       "paths": [
         ".github/workflows/hacs.yml",
-        ".github/workflows/hassfest.yml",
         ".github/workflows/testing.yml",
+        "tests/test_required_ci_gate.py",
         "tests/test_camera.py",
         "tests/test_config_flow.py",
         "tests/test_coordinator.py",
@@ -71,7 +70,7 @@
         "tests/test_services.py",
         "tests/test_switch.py"
       ],
-      "note": "Repository tests cover the merged A02/A13/A14 changes, but this profile does not elevate ordinary CI inventory to formal production-runtime acceptance evidence."
+      "note": "Merged PR #4 makes validate an always-running, fail-closed aggregate of repository-checks (pytest) and hassfest in testing.yml. The old standalone Hassfest workflow is removed to keep validate unique; HACS Action remains independently required. Pytest now runs on pushes, PRs, the preserved daily schedule and manual dispatch. The dependency-free regression executes the actual gate and rejects unsuccessful or incomplete results. PR CI passed with 108 tests passed and 1 skipped. Existing A02/A13/A14 coverage remains present; CI is not promoted to production-runtime or device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -98,6 +97,12 @@
       "requirement": "lifecycle",
       "status": "fixed_pending_verification",
       "note": "PR #3 preserves USER/DEVICE disabled entities and only re-enables integration-owned disables; live setup/reload acceptance remains pending."
+    },
+    {
+      "id": "A26",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Pytest previously ran only on PRs and was outside the ruleset-required validate context. Merged PR #4 makes validate depend on repository-checks and hassfest, accepting only successful results, and adds post-merge test coverage on push. Required contexts remain HACS Action + validate. Ongoing governance verification and live Hikvision/Home Assistant acceptance remain pending; runtime/version 1.1.7 are unchanged."
     }
   ]
 }
