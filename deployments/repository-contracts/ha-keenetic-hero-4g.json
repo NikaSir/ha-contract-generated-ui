@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-keenetic-hero-4g",
-  "source_revision": "b47abe85e7c1ecd9c26219f39f897c1493a6d048",
+  "source_revision": "f9ac6cb382c175df1f3c07a60cf4172954babd02",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -93,6 +93,8 @@
         ".github/workflows/integration-validation.yml",
         ".github/workflows/release-tag.yml",
         ".github/workflows/repository-checks.yml",
+        "scripts/build_frontend_bundle.py",
+        "tests/test_required_frontend_delivery.py",
         "tests/shell_v2_harness.mjs",
         "tests/test_module_bindings.py",
         "tests/test_panel_b054_overview_fit_system.py",
@@ -127,7 +129,7 @@
         "tests/test_wan_contract.py",
         "scripts/check_nikas_ui_standard.py"
       ],
-      "note": "Repository tests cover the merged A15 WAN-tracking change, but ordinary CI inventory is not treated as complete production-runtime acceptance evidence."
+      "note": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance."
     },
     {
       "requirement": "device_acceptance",
@@ -142,6 +144,12 @@
       "requirement": "data_quality",
       "status": "fixed_pending_verification",
       "note": "PR #93 selects WAN from factual route evidence, excludes explicitly down interfaces and keeps unknown intervals out of LTE duration; live failover/restart acceptance remains pending."
+    },
+    {
+      "id": "A28",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #94 makes deterministic frontend delivery and NikaS standard validation part of the unfiltered required validate job. Required contexts remain validate + Hassfest + HACS. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 1.0.7 and integration version 1.0.0-b061 are unchanged."
     }
   ]
 }

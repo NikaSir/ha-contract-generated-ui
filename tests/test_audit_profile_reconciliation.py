@@ -26,10 +26,25 @@ def test_hikvision_profile_tracks_fixed_main_findings() -> None:
 
 def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     profile = load("ha-keenetic-hero-4g.json")
-    assert profile["source_revision"] == "b47abe85e7c1ecd9c26219f39f897c1493a6d048"
+    assert profile["source_revision"] == "f9ac6cb382c175df1f3c07a60cf4172954babd02"
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
+
+
+def test_keenetic_profile_records_required_delivery_without_device_acceptance() -> None:
+    profile = load("ha-keenetic-hero-4g.json")
+    assert "A28" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A28")["requirement"] == "repository_checks"
+    assert finding(profile, "A28")["status"] == "fixed_pending_verification"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    for path in (".github/workflows/repository-checks.yml",
+                 "scripts/build_frontend_bundle.py", "scripts/check_nikas_ui_standard.py",
+                 "tests/test_required_frontend_delivery.py"):
+        assert path in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
 
 
 def test_water_profile_records_full_hacs_validation_without_device_acceptance() -> None:
