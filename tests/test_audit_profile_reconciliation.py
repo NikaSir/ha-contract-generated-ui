@@ -59,7 +59,7 @@ def test_lider_profile_tracks_a03_fix() -> None:
 
 def test_starline_profile_tracks_a04_fix() -> None:
     profile = load("ha-starline-telemetry.json")
-    assert profile["source_revision"] == "63df0b166ce2c38998084bce57be7230caa21493"
+    assert profile["source_revision"] == "d079f0843a083b94d13e6dd1552fd2d1b7464ba9"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.6.9"
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
@@ -78,6 +78,27 @@ def test_s8_profile_tracks_autonomous_production_main() -> None:
     assert artifact["binding_limitations"] == []
     repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
     assert "tests/test_autonomous_production_bundle.py" in repository_checks["paths"]
+
+
+def test_starline_profile_records_full_hacs_validation_without_field_acceptance() -> None:
+    profile = load("ha-starline-telemetry.json")
+    assert "A25" in {item["id"] for item in profile["findings"]}
+    assert finding(profile, "A25")["requirement"] == "repository_checks"
+    assert finding(profile, "A25")["status"] == "fixed_pending_verification"
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert "tests/test_hacs_validation_contract.py" in evidence["repository_checks"]["paths"]
+    assert evidence["repository_checks"]["status"] == "pending"
+    assert evidence["device_acceptance"]["status"] == "pending"
+    assert evidence["device_acceptance"]["paths"] == []
+
+
+def test_starline_profile_references_current_workflow_evidence() -> None:
+    profile = load("ha-starline-telemetry.json")
+    assert profile["observed_workflow_paths"] == [".github/workflows/repository-checks.yml"]
+    checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert {path for path in checks["paths"] if path.startswith(".github/workflows/")} == {
+        ".github/workflows/repository-checks.yml"
+    }
 
 
 def test_s8_governance_reconciliation_keeps_acceptance_pending() -> None:
