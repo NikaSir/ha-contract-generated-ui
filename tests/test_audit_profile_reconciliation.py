@@ -30,3 +30,18 @@ def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
+
+
+def test_climate_profile_tracks_fixed_main_findings() -> None:
+    profile = load("ha-nikas-climate.json")
+    assert profile["source_revision"] == "8ed775d4cf9bd8a90fcecbeea63ea018f419fa7d"
+    artifact = profile["artifacts"][0]
+    assert artifact["path"] == "custom_components/nikas_climate/frontend/nikas-climate-production.js"
+    assert artifact["ui_version"] == "1.4.26"
+    assert finding(profile, "A07")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A11")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A12")["status"] == "fixed_pending_verification"
+    assert finding(profile, "A20-CI")["status"] == "fixed_pending_verification"
+    assert ".github/workflows/repository-checks.yml" in profile["observed_workflow_paths"]
+    repository_checks = next(item for item in profile["evidence"] if item["requirement"] == "repository_checks")
+    assert "tests/dom_stability.test.cjs" in repository_checks["paths"]
