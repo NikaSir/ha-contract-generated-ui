@@ -11,8 +11,8 @@ REGISTRY = ROOT / "deployments" / "repository-contracts"
 
 EXPECTED = {
     "ha-ho-sc-8w": {
-        "revision": "fee88c1b86a996281b7c684fed2cd041e1b32dfc",
-        "ui_version": "1.0.2",
+        "revision": "4cacd889a9d981d34f6e025135f81467baf01617",
+        "ui_version": "1.0.3",
         "entrypoint": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
     },
     "ha-nikas-house": {
@@ -60,3 +60,15 @@ def test_ho_profile_records_owner_approved_release_driven_hacs_policy() -> None:
         "automatic_tags": True,
     }
     assert ".github/workflows/publish-hacs-release.yml" in current["observed_workflow_paths"]
+
+
+def test_ho_schedule_summary_reconciliation_keeps_acceptance_pending() -> None:
+    current = profile("ha-ho-sc-8w")
+    panel = current["artifacts"][0]
+    bindings = {item["role"]: item for item in panel["bindings"]}
+    assert bindings["ui_version"]["expected"] == "1.0.3"
+    assert bindings["cache_key"]["expected"] == "1.0.3"
+    evidence = {item["requirement"]: item for item in current["evidence"]}
+    assert "scripts/check-zone-schedule-summary-ui.mjs" in evidence["repository_checks"]["paths"]
+    assert all(item["status"] == "pending" for item in current["evidence"])
+    assert evidence["device_acceptance"]["paths"] == []

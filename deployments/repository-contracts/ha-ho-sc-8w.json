@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-ho-sc-8w",
-  "source_revision": "fee88c1b86a996281b7c684fed2cd041e1b32dfc",
+  "source_revision": "4cacd889a9d981d34f6e025135f81467baf01617",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
-      "ui_version": "1.0.2",
+      "ui_version": "1.0.3",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?NIKAS_HO_SC_8W_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.2"
+          "expected": "1.0.3"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_ho_sc_8w/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.2"
+          "expected": "1.0.3"
         }
       ],
       "registration_evidence_paths": [
@@ -93,9 +93,10 @@
         "scripts/check-zone7-parity-probe.py",
         "scripts/check-zone7-parity-ui.mjs",
         "scripts/check-zone8-dp38-contract.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check-zone-schedule-summary-ui.mjs"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #178 adds zone schedule summary rendering regressions to required validate at the pinned production revision (integration 1.0.4 / UI 1.0.3). Post-merge validate, HACS, Hassfest and publication succeeded; GitHub Release 1.0.4 targets this revision. These are code/publication observations only, not proof of HACS installation or live/device acceptance."
     },
     {
       "requirement": "device_acceptance",
