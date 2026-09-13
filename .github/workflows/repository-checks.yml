@@ -52,6 +52,9 @@ jobs:
       - name: Enforce NikaS UI standard v2.2
         run: python scripts/check_nikas_ui_standard.py
 
+      - name: Validate hierarchical title parents
+        run: python scripts/check_navigation_parents.py
+
       - name: Test Shell v2 scroll boundary
         run: node tests/shell_v2_harness.mjs
 

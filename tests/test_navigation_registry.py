@@ -68,8 +68,9 @@ def test_navigation_source_is_packaged_byte_for_byte() -> None:
 
 def test_water_route_matches_the_owner_contract() -> None:
     navigation = _navigation()
-    assert navigation["metadata"]["version"] == "2.1.1"
+    assert navigation["metadata"]["version"] == "2.2.0"
     assert navigation["spec"]["specialized_routes"]["water_accounting"] == {
         "path": "/dashboard-water",
-        "safe_return_route": "/dashboard-house-v13/home",
+        "safe_return_route": "/home/overview",
+        "parent_route": "/home/overview",
     }

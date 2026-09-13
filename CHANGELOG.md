@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.40.3 — 2026-09-13
+
+- Navigation Contract 1.3 makes titles open the immediate declared parent, with every main panel returning to the native `/home/overview`.
+- Retire query, source hand-off, saved-route and referrer authority for title navigation; preserve internal page hierarchy.
+- Package the updated route registry and add executable resolver and parent-graph regression checks.
+- Consumer runtime rollout and live acceptance remain separately verified; no central dashboard runtime is introduced.
+
 ## 0.40.2 — 2026-09-10
 
 - A19: repository contract inspector 1.0.2 uses the validated declaration and
