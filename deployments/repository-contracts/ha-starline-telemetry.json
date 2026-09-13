@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-starline-telemetry",
-  "source_revision": "d079f0843a083b94d13e6dd1552fd2d1b7464ba9",
+  "source_revision": "5f4496280d8a23b8761972ddc60ffb08cd056062",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -93,9 +93,11 @@
         "tests/test_binary_quality.py",
         "tests/test_frontend_bundle.cjs",
         "tests/test_startup_lifecycle_contract.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Merged PR #58 removes the obsolete HACS topics exemption after 10 repository topics were verified. HACS now runs full publication validation within the existing required validate aggregate alongside repository-checks and hassfest. The dependency-free regression protects the HACS action inputs. PR and post-merge main CI passed. Workflow evidence now references the current repository-checks.yml; A04 coverage remains present. Automated checks are not promoted to production device acceptance."
+      "note": "Merged PR #58 removes the obsolete HACS topics exemption after 10 repository topics were verified. HACS now runs full publication validation within the existing required validate aggregate alongside repository-checks and hassfest. The dependency-free regression protects the HACS action inputs. PR and post-merge main CI passed. Workflow evidence now references the current repository-checks.yml; A04 coverage remains present. Automated checks are not promoted to production device acceptance. PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     },
     {
       "requirement": "device_acceptance",
@@ -116,6 +118,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "Merged PR #58 restores HACS topics validation by removing ignore: topics. The existing required validate context and aggregate dependencies are unchanged. PR CI passed; post-merge CI passed at the pinned production SHA. Ongoing governance verification and vehicle/Home Assistant acceptance remain pending. UI/runtime/version 0.6.9 are unchanged."
+    },
+    {
+      "id": "A43",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     }
   ]
 }

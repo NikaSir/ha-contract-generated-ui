@@ -26,7 +26,7 @@ def test_hikvision_profile_tracks_fixed_main_findings() -> None:
 
 def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     profile = load("ha-keenetic-hero-4g.json")
-    assert profile["source_revision"] == "f9ac6cb382c175df1f3c07a60cf4172954babd02"
+    assert profile["source_revision"] == "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d"
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
@@ -108,7 +108,7 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
 
 def test_lider_profile_tracks_a03_fix() -> None:
     profile = load("ha-lider-voltage-control.json")
-    assert profile["source_revision"] == "40e0d51efe4a45fa472776e007e89d0317308899"
+    assert profile["source_revision"] == "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.8.7"
     assert finding(profile, "A03")["status"] == "fixed_pending_verification"
@@ -118,7 +118,7 @@ def test_lider_profile_tracks_a03_fix() -> None:
 
 def test_starline_profile_tracks_a04_fix() -> None:
     profile = load("ha-starline-telemetry.json")
-    assert profile["source_revision"] == "d079f0843a083b94d13e6dd1552fd2d1b7464ba9"
+    assert profile["source_revision"] == "5f4496280d8a23b8761972ddc60ffb08cd056062"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.6.9"
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
@@ -141,10 +141,10 @@ def test_lider_profile_records_full_hacs_validation_without_device_acceptance() 
 
 def test_s8_profile_tracks_autonomous_production_main() -> None:
     profile = load("ha-s8-omni.json")
-    assert profile["source_revision"] == "1cfa4f58d7977e9bc99ced2442a5690b02691ff9"
+    assert profile["source_revision"] == "32ca842494fc467e71e6bb613e423f2188bfc5f2"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-production.js"
-    assert artifact["ui_version"] == "v1.0.5"
+    assert artifact["ui_version"] == "v1.0.6"
     assert finding(profile, "A05")["status"] == "fixed_pending_verification"
     assert finding(profile, "REG-S8-IMPORTS")["status"] == "fixed_pending_verification"
     assert artifact["binding_limitations"] == []
@@ -219,7 +219,7 @@ def test_access_profile_records_required_python_syntax_without_device_acceptance
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "4665cb3a5f94e3267e45914c262ba08ab5f5a726"
+    assert profile["source_revision"] == "03ee44f56459e2356f7680e5498858d0973000c5"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "11.0.15"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -263,7 +263,7 @@ def test_rooms_profile_records_required_python_syntax_without_device_acceptance(
 
 def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> None:
     profile = load("ha-zont.json")
-    assert profile["source_revision"] == "a96d8169d9be9a96617f186cfabd1fe2abad0efb"
+    assert profile["source_revision"] == "012d1841b7aeee0c6bf40079e61dddabd5840e12"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.9.6"
     assert finding(profile, "A16")["status"] == "fixed_pending_verification"
@@ -304,10 +304,10 @@ def test_organization_mirror_profile_tracks_current_main_without_inventing_findi
     assert profile["standards"]["observed_version"] == "2.2"
 
 
-def test_ha_vless_profile_tracks_dependency_only_main_drift_without_inventing_findings() -> None:
+def test_ha_vless_profile_tracks_document_governance_fix() -> None:
     profile = load("ha-vless-gateway.json")
-    assert profile["source_revision"] == "06eb754c06997c3181c2a94c9fdcb5966cb26f14"
-    assert profile["findings"] == []
+    assert profile["source_revision"] == "4b78e29157da9f89cc6f3a816fb9f69a9aee757e"
+    assert {item["id"] for item in profile["findings"]} == {"A44"}
     assert profile["artifacts"][0]["ui_version"] == "0.1.1"
 
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-keenetic-hero-4g",
-  "source_revision": "f9ac6cb382c175df1f3c07a60cf4172954babd02",
+  "source_revision": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -127,9 +127,11 @@
         "tests/test_traffic_accounting.py",
         "tests/test_traffic_contract.py",
         "tests/test_wan_contract.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance."
+      "note": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance. PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     },
     {
       "requirement": "device_acceptance",
@@ -150,6 +152,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "Merged PR #94 makes deterministic frontend delivery and NikaS standard validation part of the unfiltered required validate job. Required contexts remain validate + Hassfest + HACS. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 1.0.7 and integration version 1.0.0-b061 are unchanged."
+    },
+    {
+      "id": "A41",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     }
   ]
 }

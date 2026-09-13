@@ -1,0 +1,1990 @@
+{
+  "schema_version": 1,
+  "status": "not_verified",
+  "repositories": [
+    {
+      "repository": "NikaSir/ha-nikas-rooms",
+      "source_revision": "03ee44f56459e2356f7680e5498858d0973000c5",
+      "observed_revision": "03ee44f56459e2356f7680e5498858d0973000c5",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "03ee44f56459e2356f7680e5498858d0973000c5",
+          "declared": "03ee44f56459e2356f7680e5498858d0973000c5",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "nikas_rooms",
+          "integration_version": "0.1.16"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/nikas_rooms/panel.py",
+          "observed": "nikas-rooms-panel.js",
+          "expected": "nikas-rooms-panel.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
+          "observed": "11.0.15",
+          "expected": "11.0.15"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/nikas_rooms/panel.py",
+          "observed": "11.0.15",
+          "expected": "11.0.15"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/nikas_rooms/__init__.py",
+            "custom_components/nikas_rooms/panel.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/validate.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A10 explicit entity-area override handling and backing-device metadata regression coverage remain present at the pinned merged revision; live registry acceptance remains open.",
+          "evidence_paths": [
+            "tests/registry_loader_harness.js",
+            "tests/test_frontend_contract.py",
+            "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "A08 canceled-frame reset, A09 House v13 navigation, and A19 canonical Shell/refresh lifecycle are covered at the pinned merged revision; live detach/reconnect and navigation acceptance remain open.",
+          "evidence_paths": [
+            "tests/registry_loader_harness.js",
+            "tests/test_frontend_contract.py",
+            "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+          ]
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/validate.yml",
+            "tests/registry_loader_harness.js",
+            "tests/test_frontend_contract.py",
+            "tests/test_reference_baseline.py",
+            "tests/test_route_ownership.py",
+            "scripts/build_frontend.py",
+            "scripts/check_repository.py",
+            "tests/test_python_syntax_validation.py",
+            "tests/test_registration_version.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "Merged PR #3 resets the canceled frame handle so reconnect can schedule state patches again; live reconnect acceptance remains pending.",
+          "finding": "A08"
+        },
+        {
+          "requirement": "navigation",
+          "status": "not_verified",
+          "detail": "Merged PR #3 accepts and prefers House v13 while retaining v11/v12 compatibility; live navigation acceptance remains pending.",
+          "finding": "A09"
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "Merged PR #3 honors explicit entity.area_id over device.area_id and retains backing-device metadata without sibling leakage; live registry acceptance remains pending.",
+          "finding": "A10"
+        },
+        {
+          "requirement": "standards",
+          "status": "not_verified",
+          "detail": "Merged PR #4 performs behavioral migration to NikaS UI Standard 2.2 / Navigation 1.2 with canonical Shell v2.1, Refresh Action Contract v1.1 and deterministic frontend build; live panel acceptance remains pending.",
+          "finding": "A19"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #5 prevents invalid integration Python from passing required validate by compiling every integration Python source without execution. Mutation regressions cover config_flow.py and nested modules; UI 11.0.15 and integration 0.1.16 are unchanged. Repository CI passed before and after merge; live/device acceptance remains pending.",
+          "finding": "A31"
+        },
+        {
+          "requirement": "version_coherence",
+          "status": "not_verified",
+          "detail": "Merged PR #6 corrects PANEL_UI_VERSION from 11.0.14 to the shipped UI 11.0.15, aligning registration metadata and module_url cache key. Regression tests execute real registration with isolated Home Assistant boundary stubs and compare emitted metadata and URL against the production bundle and manifest. Frontend and integration 0.1.16 are unchanged; live browser cache/device acceptance remains pending.",
+          "finding": "A33"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A40"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
+          "files": {
+            "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js": "d20b2dd7408b72aeaef20591ecaf1d0565a05643587bf9d39f21cffbd0f396c8"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:42.494700+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-keenetic-hero-4g",
+      "source_revision": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
+      "observed_revision": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
+          "declared": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "keenetic_hero_4g",
+          "integration_version": "1.0.0-b061"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/keenetic_hero_4g/panel_runtime.py",
+          "observed": "keenetic-panel-bundle.js",
+          "expected": "keenetic-panel-bundle.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
+          "observed": "1.0.7",
+          "expected": "1.0.7"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/keenetic_hero_4g/panel_runtime.py",
+          "observed": "1.0.7",
+          "expected": "1.0.7"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/keenetic_hero_4g/__init__.py",
+            "custom_components/keenetic_hero_4g/panel_runtime.py",
+            "custom_components/keenetic_hero_4g/panel.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_coherence",
+          "status": "not_verified",
+          "detail": "Declared static-resolution limitations remain",
+          "artifact": "panel",
+          "limitations": [
+            "panel_runtime._select_frontend overrides legacy panel.PANEL_MODULE. Static binding inventories the override; behavioral proof of the selector and effective UI is pending."
+          ]
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/frontend-bundle.yml",
+              "job": "bundle",
+              "name": "bundle"
+            },
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hassfest",
+              "name": "Hassfest"
+            },
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hacs",
+              "name": "HACS"
+            },
+            {
+              "workflow": ".github/workflows/release-tag.yml",
+              "job": "policy",
+              "name": "policy"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A15 production logic and executable WAN regression coverage are present at the pinned main revision; controlled live Ethernet/LTE switchover, unknown-gap and restart-boundary acceptance remains pending.",
+          "evidence_paths": [
+            "custom_components/keenetic_hero_4g/coordinator.py",
+            "custom_components/keenetic_hero_4g/wan.py",
+            "tests/test_wan_contract.py"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance. PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/frontend-bundle.yml",
+            ".github/workflows/integration-validation.yml",
+            ".github/workflows/release-tag.yml",
+            ".github/workflows/repository-checks.yml",
+            "scripts/build_frontend_bundle.py",
+            "tests/test_required_frontend_delivery.py",
+            "tests/shell_v2_harness.mjs",
+            "tests/test_module_bindings.py",
+            "tests/test_panel_b054_overview_fit_system.py",
+            "tests/test_panel_bottom_safe_area.py",
+            "tests/test_panel_channel_status_fills_v105.py",
+            "tests/test_panel_clean_rebuild.py",
+            "tests/test_panel_composition_v078.py",
+            "tests/test_panel_failover_idempotence.py",
+            "tests/test_panel_fixed_chrome_v089.py",
+            "tests/test_panel_full_height_header_zoom_v104.py",
+            "tests/test_panel_header_return_v081.py",
+            "tests/test_panel_header_safe_area.py",
+            "tests/test_panel_overview_readability_v090.py",
+            "tests/test_panel_overview_v082.py",
+            "tests/test_panel_router_baseline_v086.py",
+            "tests/test_panel_rules_117_rebuild.py",
+            "tests/test_panel_safe_zoom.py",
+            "tests/test_panel_shell_v22.py",
+            "tests/test_panel_stability_mode.py",
+            "tests/test_panel_stable_dom.py",
+            "tests/test_panel_startup_wiring.py",
+            "tests/test_panel_tab_transition.py",
+            "tests/test_panel_tabs_viewport_v100.py",
+            "tests/test_panel_target_composition_v088.py",
+            "tests/test_panel_topology_layering.py",
+            "tests/test_panel_ui_standard_v16.py",
+            "tests/test_panel_zoom_contract.py",
+            "tests/test_release_tag_contract.py",
+            "tests/test_startup_lifecycle_contract.py",
+            "tests/test_traffic_accounting.py",
+            "tests/test_traffic_contract.py",
+            "tests/test_wan_contract.py",
+            "scripts/check_nikas_ui_standard.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "PR #93 selects WAN from factual route evidence, excludes explicitly down interfaces and keeps unknown intervals out of LTE duration; live failover/restart acceptance remains pending.",
+          "finding": "A15"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #94 makes deterministic frontend delivery and NikaS standard validation part of the unfiltered required validate job. Required contexts remain validate + Hassfest + HACS. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 1.0.7 and integration version 1.0.0-b061 are unchanged.",
+          "finding": "A28"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A41"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
+          "files": {
+            "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js": "a072f2e9dbc28836eac04af4da540212af7c1962e3cf8cb376d7ec36671ca755"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:49.372613+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-s8-omni",
+      "source_revision": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
+      "observed_revision": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
+          "declared": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "s8_omni",
+          "integration_version": "1.0.6"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/s8_omni/__init__.py",
+          "observed": "s8-omni-production.js",
+          "expected": "s8-omni-production.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
+          "observed": "v1.0.6",
+          "expected": "v1.0.6"
+        },
+        {
+          "requirement": "version_coherence",
+          "status": "not_verified",
+          "detail": "UI version source is outside inspected runtime graph",
+          "artifact": "panel",
+          "path": "custom_components/s8_omni/frontend/s8-omni-panel.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/s8_omni/const.py",
+          "observed": "v1.0.6",
+          "expected": "v1.0.6"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/s8_omni/__init__.py",
+            "custom_components/s8_omni/const.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "repository-checks",
+              "name": "repository-checks"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "browser-regression",
+              "name": "browser-regression"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "hacs-validation",
+              "name": "HACS validation"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A05 production behavior remains present at the pinned main revision: missing/unavailable/malformed control values stay unknown rather than being coerced to 0/false, and confirmation requires valid target readback. Hardware/Home Assistant acceptance remains pending.",
+          "evidence_paths": [
+            "custom_components/s8_omni/frontend/s8-omni-panel.js",
+            "custom_components/s8_omni/frontend/s8-omni-service-settings.js",
+            "tests/test_command_readback_b096.py"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "PR #123 requires valid available target evidence, matching same-target readback and advancing target telemetry before confirming a setting; zero/off drafts are no longer falsely acknowledged. Device acceptance remains pending.",
+          "evidence_paths": [
+            "custom_components/s8_omni/frontend/s8-omni-panel.js",
+            "custom_components/s8_omni/frontend/s8-omni-service-settings.js",
+            "tests/test_command_readback_b096.py",
+            "tests/test_mode_write_guard_b079.py"
+          ]
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate. PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. Production 1.0.6 from PR #132 is preserved; the document-only PR #133 does not certify its desktop indicator behavior.",
+          "evidence_paths": [
+            ".github/workflows/repository-checks.yml",
+            "scripts/build_s8_production.py",
+            "tests/test_autonomous_production_bundle.py",
+            "tests/test_required_hacs_gate.py",
+            "tests/test_command_readback_b096.py",
+            "tests/test_diagnostic_protocol_fixes_v0734.py",
+            "tests/test_mode_write_guard_b079.py",
+            "tests/test_panel_cleaning_ui_v0732.py",
+            "tests/test_panel_current_rules_ui_v0733.py",
+            "tests/test_panel_dynamic_actions_ui_v0723.py",
+            "tests/test_panel_mobile_audit_ui_v0729.py",
+            "tests/test_panel_mobile_shell_ui_v0721.py",
+            "tests/test_panel_overview_ui_v0727.py",
+            "tests/test_panel_stable_dom_ui_v0720.py",
+            "tests/test_panel_state_transition_grid_ui_v0728.py",
+            "tests/test_panel_ui_standard_v16_v0722.py",
+            "tests/test_panel_ui_standard_v17_v0730.py",
+            "tests/test_pause_dp2_only_b083.py",
+            "tests/test_protocol_capture_v0737.py",
+            "tests/test_return_via_pause_release_b084.py",
+            "tests/test_return_wait_for_standby_b080.py",
+            "tests/test_station_stop_b081.py",
+            "tests/test_verified_drying_stop_v0739.py",
+            "scripts/check_nikas_ui_standard.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target S8 OMNI hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "PR #123 preserves unknown/missing control values and requires valid same-target readback before command confirmation; hardware/Home Assistant acceptance remains pending.",
+          "finding": "A05"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Merged PR #130 changes Home Assistant registration to deterministic autonomous s8-omni-production.js and rejects runtime JS import chains; field acceptance remains pending.",
+          "finding": "REG-S8-IMPORTS"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "HACS previously ran outside the required validate context. Merged PR #131 makes validate depend on repository-checks and hacs-validation and fail unless both succeed, including failure, cancelled, skipped and missing-result cases. The ruleset retains validate + browser-regression. Post-merge CI passed at the pinned production SHA; ongoing governance verification and device acceptance remain pending. UI/runtime/version 1.0.5 are unchanged.",
+          "finding": "A24"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A42"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/s8_omni/frontend/s8-omni-production.js",
+          "files": {
+            "custom_components/s8_omni/frontend/s8-omni-production.js": "4344b824efb9a01cfc5a89aee1bca244b62af3e5c1ea158e1d4d14a3c8183d4a"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:52.691309+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-starline-telemetry",
+      "source_revision": "5f4496280d8a23b8761972ddc60ffb08cd056062",
+      "observed_revision": "5f4496280d8a23b8761972ddc60ffb08cd056062",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "5f4496280d8a23b8761972ddc60ffb08cd056062",
+          "declared": "5f4496280d8a23b8761972ddc60ffb08cd056062",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "starline_telemetry",
+          "integration_version": "0.6.10"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/starline_telemetry/panel.py",
+          "observed": "starline-app.js",
+          "expected": "starline-app.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/starline_telemetry/frontend/starline-app.js",
+          "observed": "0.6.9",
+          "expected": "0.6.9"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/starline_telemetry/const.py",
+          "observed": "0.6.9-ui-standard-v2.2",
+          "expected": "0.6.9-ui-standard-v2.2"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/starline_telemetry/__init__.py",
+            "custom_components/starline_telemetry/panel.py",
+            "custom_components/starline_telemetry/const.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "hacs",
+              "name": "hacs"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "hassfest",
+              "name": "hassfest"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "repository-checks",
+              "name": "repository-checks"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A04 production logic and executable regression coverage are present: explicit true/false/unknown is preserved, current reliable Home Assistant security state is authoritative and bootstrap data expires after 60 seconds. Live vehicle loss/recovery acceptance remains pending.",
+          "evidence_paths": [
+            "custom_components/starline_telemetry/binary_sensor.py",
+            "custom_components/starline_telemetry/data_quality.py",
+            "custom_components/starline_telemetry/frontend/starline-app.js",
+            "tests/test_binary_quality.py",
+            "tests/test_frontend_bundle.cjs"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "The integration/panel remain read-only; no complete field acceptance evidence for the pinned production runtime is recorded.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "Startup lifecycle regression coverage exists, but complete running Home Assistant reconnect acceptance remains pending.",
+          "evidence_paths": [
+            "tests/test_startup_lifecycle_contract.py"
+          ]
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #58 removes the obsolete HACS topics exemption after 10 repository topics were verified. HACS now runs full publication validation within the existing required validate aggregate alongside repository-checks and hassfest. The dependency-free regression protects the HACS action inputs. PR and post-merge main CI passed. Workflow evidence now references the current repository-checks.yml; A04 coverage remains present. Automated checks are not promoted to production device acceptance. PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/repository-checks.yml",
+            "tests/test_hacs_validation_contract.py",
+            "tests/test_binary_quality.py",
+            "tests/test_frontend_bundle.cjs",
+            "tests/test_startup_lifecycle_contract.py",
+            "scripts/check_nikas_ui_standard.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or both target StarLine vehicles is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "PR #57 makes current Home Assistant security telemetry authoritative, expires bootstrap snapshots after 60 seconds and preserves true/false/unknown binary states; live vehicle acceptance remains pending.",
+          "finding": "A04"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #58 restores HACS topics validation by removing ignore: topics. The existing required validate context and aggregate dependencies are unchanged. PR CI passed; post-merge CI passed at the pinned production SHA. Ongoing governance verification and vehicle/Home Assistant acceptance remain pending. UI/runtime/version 0.6.9 are unchanged.",
+          "finding": "A25"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A43"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/starline_telemetry/frontend/starline-app.js",
+          "files": {
+            "custom_components/starline_telemetry/frontend/starline-app.js": "b5116372ecbd82364bb10dfae900874c883ac56829ffb2950d1c2edbade2f8a1"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:55.320946+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-vless-gateway",
+      "source_revision": "4b78e29157da9f89cc6f3a816fb9f69a9aee757e",
+      "observed_revision": "4b78e29157da9f89cc6f3a816fb9f69a9aee757e",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "4b78e29157da9f89cc6f3a816fb9f69a9aee757e",
+          "declared": "4b78e29157da9f89cc6f3a816fb9f69a9aee757e",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "vless_gateway",
+          "integration_version": "0.1.2"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/vless_gateway/panel.py",
+          "observed": "vless-gateway-panel.js",
+          "expected": "vless-gateway-panel.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/vless_gateway/frontend/vless-gateway-panel.js",
+          "observed": "0.1.1",
+          "expected": "0.1.1"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/vless_gateway/const.py",
+          "observed": "0.1.1",
+          "expected": "0.1.1"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/vless_gateway/__init__.py",
+            "custom_components/vless_gateway/panel.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile. PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/repository-checks.yml",
+            "tests/shell_v2_harness.mjs",
+            "tests/test_frontend_contract.py",
+            "tests/test_integration_contract.py",
+            "tests/test_specialized_panel_readiness.py",
+            "scripts/check_nikas_ui_standard.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A44"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/vless_gateway/frontend/vless-gateway-panel.js",
+          "files": {
+            "custom_components/vless_gateway/frontend/vless-gateway-panel.js": "ff1b6c343159dc338e7acf17114929b914e6ce0bd45c79dd22ae4c6b5622bbff"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:57.116796+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-zont",
+      "source_revision": "012d1841b7aeee0c6bf40079e61dddabd5840e12",
+      "observed_revision": "012d1841b7aeee0c6bf40079e61dddabd5840e12",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "012d1841b7aeee0c6bf40079e61dddabd5840e12",
+          "declared": "012d1841b7aeee0c6bf40079e61dddabd5840e12",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "zont_local",
+          "integration_version": "0.9.6"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/zont_local/const.py",
+          "observed": "zont-ui.js",
+          "expected": "zont-ui.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/zont_local/frontend/zont-ui.js",
+          "observed": "0.9.6",
+          "expected": "0.9.6"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/zont_local/const.py",
+          "observed": "0.9.6",
+          "expected": "0.9.6"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/zont_local/__init__.py",
+            "custom_components/zont_local/const.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "ui",
+              "name": "UI syntax and version"
+            },
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hassfest",
+              "name": "Hassfest"
+            },
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hacs",
+              "name": "HACS"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A16 truth-preserving DHW and transport semantics plus executable runtime scenarios are present at the pinned revision; live ZONT/device acceptance remains open.",
+          "evidence_paths": [
+            "custom_components/zont_local/frontend/zont-app.js",
+            "tests/test_zont_dhw_truth.cjs",
+            "tests/test_zont_ui_semantics.cjs"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #32 CI covered full-runtime DHW semantics, shell checks, HACS and Hassfest at the merged lineage; running Home Assistant and target-device acceptance remain separate evidence. PR #33 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/integration-validation.yml",
+            "tests/shell_v2_harness.mjs",
+            "tests/test_panel_registration.py",
+            "tests/test_zont_dhw_truth.cjs",
+            "tests/test_zont_shell_v22.py",
+            "tests/test_zont_ui_semantics.cjs",
+            "scripts/check_nikas_ui_standard.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "Merged PR #32 preserves missing numeric/transport truth, separates DHW readiness, permission and actual heating, and adds full-runtime regression coverage; live device acceptance remains pending.",
+          "finding": "A16"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #33 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A45"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/zont_local/frontend/zont-ui.js",
+          "files": {
+            "custom_components/zont_local/frontend/zont-ui.js": "d135ba804a5cfe3d48553f8256f50e6adc975e8756dd26a82d3d3775a90e28a7"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:45:58.814092+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    },
+    {
+      "repository": "NikaSir/ha-lider-voltage-control",
+      "source_revision": "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9",
+      "observed_revision": "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9",
+      "policy": {
+        "contract_version": 1,
+        "canonical_repository": "NikaSir/ha-contract-generated-ui",
+        "canonical_revision": "000afbcec2ed16e5b9611a7a96d8d845e307e5d9",
+        "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+        "ui_version": "2.2",
+        "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+        "navigation_version": "1.2",
+        "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+      },
+      "status": "not_verified",
+      "requirements": [
+        {
+          "requirement": "source_identity",
+          "status": "pass",
+          "detail": "Observed revision compared with pinned inventory",
+          "observed": "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9",
+          "declared": "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9",
+          "tracked_worktree_modified": false
+        },
+        {
+          "requirement": "repository_identity",
+          "status": "pass",
+          "detail": "Origin repository matches declared identity"
+        },
+        {
+          "requirement": "manifest_identity",
+          "status": "pass",
+          "detail": "Manifest domain/path/version checked",
+          "observed_domain": "lider_voltage_control",
+          "integration_version": "0.8.8"
+        },
+        {
+          "requirement": "artifact_integrity",
+          "status": "pass",
+          "detail": "Declared runtime files exist",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_autonomy",
+          "status": "not_verified",
+          "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+          "artifact": "panel",
+          "imports": [],
+          "unresolved": []
+        },
+        {
+          "requirement": "artifact_syntax",
+          "status": "not_verified",
+          "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "reproducible_build",
+          "status": "not_verified",
+          "detail": "No deterministic build execution evidence; profile commands are never executed",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "entrypoint",
+          "path": "custom_components/lider_voltage_control/panel.py",
+          "observed": "lider-voltage-control-panel.js",
+          "expected": "lider-voltage-control-panel.js"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "ui_version",
+          "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+          "observed": "0.8.7",
+          "expected": "0.8.7"
+        },
+        {
+          "requirement": "artifact_bindings",
+          "status": "pass",
+          "detail": "Static binding compared to declared artifact",
+          "artifact": "panel",
+          "role": "cache_key",
+          "path": "custom_components/lider_voltage_control/panel.py",
+          "observed": "0.8.7",
+          "expected": "0.8.7"
+        },
+        {
+          "requirement": "registration_reachability",
+          "status": "not_verified",
+          "detail": "Active setup-to-registration chain needs verification",
+          "artifact": "panel",
+          "evidence_paths": [
+            "custom_components/lider_voltage_control/__init__.py",
+            "custom_components/lider_voltage_control/panel.py"
+          ],
+          "missing": []
+        },
+        {
+          "requirement": "version_change_policy",
+          "status": "not_verified",
+          "detail": "Previous-publication version/cache comparison has no execution evidence",
+          "artifact": "panel"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "version",
+          "observed": "2.2",
+          "required": "2.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Normative version compared with canonical target",
+          "field": "navigation_contract_version",
+          "observed": "1.2",
+          "required": "1.2"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+          "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+          "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+        },
+        {
+          "requirement": "ui_standard",
+          "status": "pass",
+          "detail": "Actual document and declared hash compared with canonical target",
+          "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+          "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+          "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+        },
+        {
+          "requirement": "ui_behavior",
+          "status": "not_verified",
+          "detail": "Document parity does not prove shell behavior"
+        },
+        {
+          "requirement": "publication_policy",
+          "status": "pass",
+          "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+        },
+        {
+          "requirement": "publication_workflows",
+          "status": "not_verified",
+          "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+          "findings": [],
+          "invalid_workflows": []
+        },
+        {
+          "requirement": "ci_job_identity",
+          "status": "pass",
+          "detail": "Job names must be unique across workflows",
+          "duplicates": [],
+          "jobs": [
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hassfest",
+              "name": "Hassfest"
+            },
+            {
+              "workflow": ".github/workflows/integration-validation.yml",
+              "job": "hacs",
+              "name": "HACS"
+            },
+            {
+              "workflow": ".github/workflows/repository-checks.yml",
+              "job": "validate",
+              "name": "validate"
+            }
+          ]
+        },
+        {
+          "requirement": "required_ci",
+          "status": "not_verified",
+          "detail": "Effective GitHub branch protection and required contexts need live evidence",
+          "observed_required_checks": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "A03 production handling is present at the pinned main revision: telemetry value, quality and measurement timestamp are preserved; cached/old readings become stale and aggregate freshness requires all three input-voltage phases. Live phase-loss/recovery acceptance remains pending.",
+          "evidence_paths": [
+            "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel-core.js",
+            "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+            "contracts/lider_voltage_control.yaml",
+            "scripts/check-stable-dom.mjs"
+          ]
+        },
+        {
+          "requirement": "command_safety",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing checks are not treated as field acceptance.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "lifecycle",
+          "status": "not_verified",
+          "detail": "No complete acceptance evidence for the pinned production runtime is recorded. Existing checks are not treated as field acceptance.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #44 removes the obsolete HACS topics exemption after 10 repository topics were verified and runs a dependency-free HACS contract regression in required validate. Required contexts remain validate + Hassfest + HACS. Existing A03 and NikaS 2.2 checks remain present; repository CI does not replace live Home Assistant/device acceptance. PR #45 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "evidence_paths": [
+            ".github/workflows/integration-validation.yml",
+            ".github/workflows/repository-checks.yml",
+            "scripts/check-nikas-ui-standard.py",
+            "scripts/check-stable-dom.mjs",
+            "scripts/check-hacs-validation.py",
+            "scripts/check_standard_documents.py",
+            "tests/test_standard_document_sync.py"
+          ]
+        },
+        {
+          "requirement": "device_acceptance",
+          "status": "not_verified",
+          "detail": "No complete acceptance on the running user Home Assistant, iPhone, or target LIDER/power-monitor hardware is recorded for this pinned revision.",
+          "evidence_paths": []
+        },
+        {
+          "requirement": "data_quality",
+          "status": "not_verified",
+          "detail": "PR #42 preserves value/quality/timestamp, marks cached or old phase telemetry stale and computes freshness across all required phases; live phase-loss/recovery acceptance remains pending.",
+          "finding": "A03"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "Merged PR #44 restores full HACS topics validation and protects it through required validate. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 0.8.7 and integration version 0.8.8 are unchanged.",
+          "finding": "A29"
+        },
+        {
+          "requirement": "repository_checks",
+          "status": "not_verified",
+          "detail": "PR #45 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending.",
+          "finding": "A46"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "panel",
+          "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
+          "files": {
+            "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js": "9852930d18dc6b8e4006c79d0b3ba83d0b5ded32193886e7f8442e4ce71c6754"
+          },
+          "edges": [],
+          "unresolved": [],
+          "missing": []
+        }
+      ],
+      "checked_at": "2026-09-13T15:46:00.709912+00:00",
+      "tool": {
+        "version": "1.0.2",
+        "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+        "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+      }
+    }
+  ]
+}
