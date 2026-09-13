@@ -4,37 +4,74 @@
   "title": "NikaS navigation contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["api_version", "kind", "metadata", "spec"],
+  "required": [
+    "api_version",
+    "kind",
+    "metadata",
+    "spec"
+  ],
   "properties": {
-    "api_version": {"const": "nikas.home-assistant/navigation/v1"},
-    "kind": {"const": "NavigationContract"},
+    "api_version": {
+      "const": "nikas.home-assistant/navigation/v1"
+    },
+    "kind": {
+      "const": "NavigationContract"
+    },
     "metadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version"],
+      "required": [
+        "id",
+        "version"
+      ],
       "properties": {
-        "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
-        "version": {"type": "string", "pattern": "^v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"},
-        "description": {"type": "string"}
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^v?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"
+        },
+        "description": {
+          "type": "string"
+        }
       }
     },
     "spec": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["routes", "global_tabs"],
+      "required": [
+        "routes",
+        "global_tabs"
+      ],
       "properties": {
         "routes": {
           "type": "object",
           "minProperties": 1,
-          "propertyNames": {"pattern": "^[a-z][a-z0-9._-]*$"},
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9._-]*$"
+          },
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["title", "path"],
+            "required": [
+              "title",
+              "path"
+            ],
             "properties": {
-              "title": {"type": "string", "minLength": 1},
-              "path": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"},
-              "parent": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"}
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+              },
+              "parent": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9._-]*$"
+              }
             }
           }
         },
@@ -45,26 +82,58 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "route", "title", "icon"],
+            "required": [
+              "id",
+              "route",
+              "title",
+              "icon"
+            ],
             "properties": {
-              "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
-              "route": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
-              "title": {"type": "string", "minLength": 1},
-              "icon": {"type": "string", "pattern": "^mdi:[a-z0-9-]+$"}
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]*$"
+              },
+              "route": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9._-]*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "icon": {
+                "type": "string",
+                "pattern": "^mdi:[a-z0-9-]+$"
+              }
             }
           }
         },
         "specialized_routes": {
           "type": "object",
           "minProperties": 1,
-          "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
           "additionalProperties": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "safe_return_route"],
+            "required": [
+              "path",
+              "safe_return_route"
+            ],
             "properties": {
-              "path": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"},
-              "safe_return_route": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"}
+              "path": {
+                "type": "string",
+                "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+              },
+              "safe_return_route": {
+                "type": "string",
+                "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+              },
+              "parent_route": {
+                "type": "string",
+                "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+              }
             }
           }
         },
@@ -73,12 +142,30 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "title", "dashboard_path", "parent", "tabs"],
+            "required": [
+              "id",
+              "title",
+              "dashboard_path",
+              "parent",
+              "tabs"
+            ],
             "properties": {
-              "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
-              "title": {"type": "string", "minLength": 1},
-              "dashboard_path": {"type": "string", "pattern": "^/[a-z0-9][a-z0-9/_-]*$"},
-              "parent": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]*$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "dashboard_path": {
+                "type": "string",
+                "pattern": "^/[a-z0-9][a-z0-9/_-]*$"
+              },
+              "parent": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9._-]*$"
+              },
               "tabs": {
                 "type": "array",
                 "minItems": 2,
@@ -86,11 +173,24 @@
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["view", "title", "icon"],
+                  "required": [
+                    "view",
+                    "title",
+                    "icon"
+                  ],
                   "properties": {
-                    "view": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
-                    "title": {"type": "string", "minLength": 1},
-                    "icon": {"type": "string", "pattern": "^mdi:[a-z0-9-]+$"}
+                    "view": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_-]*$"
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "icon": {
+                      "type": "string",
+                      "pattern": "^mdi:[a-z0-9-]+$"
+                    }
                   }
                 }
               }
