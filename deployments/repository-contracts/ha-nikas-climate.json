@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-climate",
-  "source_revision": "8ed775d4cf9bd8a90fcecbeea63ea018f419fa7d",
+  "source_revision": "824b95fd129a953c6d6de8f7a12efd83911c2961",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
-      "ui_version": "1.4.26",
+      "ui_version": "1.4.28",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_climate/frontend/nikas-climate-production.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI161\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.4.26"
+          "expected": "1.4.28"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_climate/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.1.55"
+          "expected": "0.1.57"
         }
       ],
       "registration_evidence_paths": [
@@ -95,9 +95,10 @@
         "tests/summary.test.cjs",
         "tests/ui_158.test.cjs",
         "scripts/build-frontend.py",
-        "scripts/check-production-contract.py"
+        "scripts/check-production-contract.py",
+        "tests/title_navigation.test.mjs"
       ],
-      "note": "A07/A20-CI are implemented by the registered autonomous deterministic production bundle and repository-check workflow. CI evidence does not replace live Home Assistant/browser acceptance."
+      "note": "A07/A20-CI are implemented by the registered autonomous deterministic production bundle and repository-check workflow. CI evidence does not replace live Home Assistant/browser acceptance. PR #20 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -130,6 +131,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "PR #9 added repository checks for the autonomous production bundle and behavioral tests; production-client acceptance remains separate."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #20 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

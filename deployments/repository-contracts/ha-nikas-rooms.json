@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "03ee44f56459e2356f7680e5498858d0973000c5",
+  "source_revision": "aa0d5e211bb38cd95b52263e8391e55f99327090",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
-      "ui_version": "11.0.15",
+      "ui_version": "11.0.16",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.15"
+          "expected": "11.0.16"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_rooms/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.15"
+          "expected": "11.0.16"
         }
       ],
       "registration_evidence_paths": [
@@ -99,7 +99,7 @@
         "scripts/check_standard_documents.py",
         "tests/test_standard_document_sync.py"
       ],
-      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -150,6 +150,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

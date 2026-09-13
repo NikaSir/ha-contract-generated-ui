@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = {'ha-nikas-rooms': {'sha': '03ee44f56459e2356f7680e5498858d0973000c5', 'id': 'A40', 'pr': 7}, 'ha-keenetic-hero-4g': {'sha': 'f5c2cb7a74d58559004c5056b51974eb2c5a1c2d', 'id': 'A41', 'pr': 95}, 'ha-s8-omni': {'sha': '32ca842494fc467e71e6bb613e423f2188bfc5f2', 'id': 'A42', 'pr': 133}, 'ha-starline-telemetry': {'sha': '5f4496280d8a23b8761972ddc60ffb08cd056062', 'id': 'A43', 'pr': 59}, 'ha-vless-gateway': {'sha': '4b78e29157da9f89cc6f3a816fb9f69a9aee757e', 'id': 'A44', 'pr': 23}, 'ha-zont': {'sha': '012d1841b7aeee0c6bf40079e61dddabd5840e12', 'id': 'A45', 'pr': 33}, 'ha-lider-voltage-control': {'sha': '81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9', 'id': 'A46', 'pr': 45}}
+EXPECTED = {'ha-nikas-rooms': {'sha': 'aa0d5e211bb38cd95b52263e8391e55f99327090', 'id': 'A40', 'pr': 7}, 'ha-keenetic-hero-4g': {'sha': 'a7549e4dc1429a84849defbdf69d936cc8dc5195', 'id': 'A41', 'pr': 95}, 'ha-s8-omni': {'sha': '53b609d23183b86f5d016da80fcbdf6beb4c396b', 'id': 'A42', 'pr': 133}, 'ha-starline-telemetry': {'sha': '1b7e819833d210f95b5f1bb40f29c3d20693344f', 'id': 'A43', 'pr': 59}, 'ha-vless-gateway': {'sha': '5aa7c3b1090cf322c3321ee7446388a25915b229', 'id': 'A44', 'pr': 23}, 'ha-zont': {'sha': '508f4f3db76bc60be42fb644eba23b5737cfd62d', 'id': 'A45', 'pr': 33}, 'ha-lider-voltage-control': {'sha': '1d5bb0dbe233f3d62b0049236768609850c923f6', 'id': 'A46', 'pr': 45}}
 
 @pytest.mark.parametrize('repo', EXPECTED)
 def test_standard_governance_reconciliation_preserves_acceptance_boundary(repo):
@@ -21,5 +21,5 @@ def test_standard_governance_reconciliation_preserves_acceptance_boundary(repo):
     assert evidence['device_acceptance']['paths'] == []
     if repo == 'ha-s8-omni':
         artifact = profile['artifacts'][0]
-        assert artifact['ui_version'] == 'v1.0.6'
-        assert all(b['expected'] == 'v1.0.6' for b in artifact['bindings'] if b['role'] in ('ui_version', 'cache_key'))
+        assert artifact['ui_version'] == 'v1.0.8'
+        assert all(b['expected'] == 'v1.0.8' for b in artifact['bindings'] if b['role'] in ('ui_version', 'cache_key'))

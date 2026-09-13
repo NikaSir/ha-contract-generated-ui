@@ -9,28 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "deployments" / "repository-contracts"
 
-EXPECTED = {
-    "ha-ho-sc-8w": {
-        "revision": "4cacd889a9d981d34f6e025135f81467baf01617",
-        "ui_version": "1.0.3",
-        "entrypoint": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
-    },
-    "ha-nikas-house": {
-        "revision": "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7",
-        "ui_version": "1.0.2",
-        "entrypoint": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
-    },
-    "ha-stark-solarpower": {
-        "revision": "4e931954e39a6bd5c61e0c1b52571b67d68233bd",
-        "ui_version": "0.9.6",
-        "entrypoint": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
-    },
-    "ha-water-accounting": {
-        "revision": "7251a44aceeda16bc23c41ff111c241a643c0961",
-        "ui_version": "0.1.5",
-        "entrypoint": "custom_components/water_accounting/frontend/water-accounting-panel.js",
-    },
-}
+EXPECTED = {'ha-ho-sc-8w': {'revision': '8e4e1bf755105a3bef88ca6bfa04175bc5c5d4c6', 'ui_version': '1.1.1', 'entrypoint': 'custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js'}, 'ha-nikas-house': {'revision': '97f7d137f54c891a6acea69d84aa2da9de2ae453', 'ui_version': '1.0.3', 'entrypoint': 'custom_components/nikas_house/frontend/dist/nikas-house-overview.js'}, 'ha-stark-solarpower': {'revision': '92ad94231556862e0f491ab6a880c9a1c8765d7e', 'ui_version': '0.9.7', 'entrypoint': 'custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js'}, 'ha-water-accounting': {'revision': 'bece25db3f73f2a4b2b9a116c69a20baf9f20b05', 'ui_version': '0.1.6', 'entrypoint': 'custom_components/water_accounting/frontend/water-accounting-panel.js'}}
 
 
 def profile(name: str) -> dict:
@@ -66,8 +45,8 @@ def test_ho_schedule_summary_reconciliation_keeps_acceptance_pending() -> None:
     current = profile("ha-ho-sc-8w")
     panel = current["artifacts"][0]
     bindings = {item["role"]: item for item in panel["bindings"]}
-    assert bindings["ui_version"]["expected"] == "1.0.3"
-    assert bindings["cache_key"]["expected"] == "1.0.3"
+    assert bindings["ui_version"]["expected"] == "1.1.1"
+    assert bindings["cache_key"]["expected"] == "1.1.1"
     evidence = {item["requirement"]: item for item in current["evidence"]}
     assert "scripts/check-zone-schedule-summary-ui.mjs" in evidence["repository_checks"]["paths"]
     assert all(item["status"] == "pending" for item in current["evidence"])
