@@ -316,3 +316,23 @@ def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventi
     assert profile["source_revision"] == "aa4a0a9f04d084043cabe7b5d0aef3157ca39940"
     assert profile["findings"] == []
     assert profile["standards"]["applicable"] is False
+
+
+def test_dyson_profile_records_merged_specialized_panel_without_live_acceptance():
+    profile = load("ha-nikas-dyson.json")
+    assert profile["repository"] == "NikaSir/ha-nikas-dyson"
+    assert profile["source_revision"] == "b14fc882d6c21ee92099461a85e74f8972d58cca"
+    assert profile["existing_required_checks"] == ["validate"]
+    artifact = profile["artifacts"][0]
+    assert artifact["path"] == "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js"
+    assert artifact["ui_version"] == "1.0.2"
+    assert {b["role"] for b in artifact["bindings"]} >= {"entrypoint", "ui_version", "cache_key", "integration_version"}
+    assert {item["id"] for item in profile["findings"]} == {"A34", "A35", "A36", "A37", "A38", "A39"}
+    assert all(item["status"] == "fixed_pending_verification" for item in profile["findings"])
+    evidence = {item["requirement"]: item for item in profile["evidence"]}
+    assert all(item["status"] == "pending" for item in evidence.values())
+    assert evidence["device_acceptance"]["paths"] == []
+    assert "tests/frontend.cjs" in evidence["data_quality"]["paths"]
+    assert "tests/test_options.py" in evidence["data_quality"]["paths"]
+    assert "tests/test_ci_gate.py" in evidence["repository_checks"]["paths"]
+    assert "topics" in evidence["repository_checks"]["note"]
