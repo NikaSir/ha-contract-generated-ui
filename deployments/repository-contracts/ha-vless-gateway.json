@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-vless-gateway",
-  "source_revision": "06eb754c06997c3181c2a94c9fdcb5966cb26f14",
+  "source_revision": "4b78e29157da9f89cc6f3a816fb9f69a9aee757e",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -84,9 +84,11 @@
         "tests/test_frontend_contract.py",
         "tests/test_integration_contract.py",
         "tests/test_specialized_panel_readiness.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile. PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     },
     {
       "requirement": "device_acceptance",
@@ -95,5 +97,12 @@
       "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
     }
   ],
-  "findings": []
+  "findings": [
+    {
+      "id": "A44",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-lider-voltage-control",
-  "source_revision": "40e0d51efe4a45fa472776e007e89d0317308899",
+  "source_revision": "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -89,9 +89,11 @@
         ".github/workflows/repository-checks.yml",
         "scripts/check-nikas-ui-standard.py",
         "scripts/check-stable-dom.mjs",
-        "scripts/check-hacs-validation.py"
+        "scripts/check-hacs-validation.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Merged PR #44 removes the obsolete HACS topics exemption after 10 repository topics were verified and runs a dependency-free HACS contract regression in required validate. Required contexts remain validate + Hassfest + HACS. Existing A03 and NikaS 2.2 checks remain present; repository CI does not replace live Home Assistant/device acceptance."
+      "note": "Merged PR #44 removes the obsolete HACS topics exemption after 10 repository topics were verified and runs a dependency-free HACS contract regression in required validate. Required contexts remain validate + Hassfest + HACS. Existing A03 and NikaS 2.2 checks remain present; repository CI does not replace live Home Assistant/device acceptance. PR #45 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     },
     {
       "requirement": "device_acceptance",
@@ -112,6 +114,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "Merged PR #44 restores full HACS topics validation and protects it through required validate. Ongoing governance verification and live Home Assistant/device acceptance remain pending. Runtime, UI 0.8.7 and integration version 0.8.8 are unchanged."
+    },
+    {
+      "id": "A46",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #45 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     }
   ]
 }

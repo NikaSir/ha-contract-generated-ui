@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-s8-omni",
-  "source_revision": "1cfa4f58d7977e9bc99ced2442a5690b02691ff9",
+  "source_revision": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/s8_omni/frontend/s8-omni-production.js",
-      "ui_version": "v1.0.5",
+      "ui_version": "v1.0.6",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.5"
+          "expected": "v1.0.6"
         },
         {
           "role": "cache_key",
           "path": "custom_components/s8_omni/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?DASHBOARD_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.5"
+          "expected": "v1.0.6"
         }
       ],
       "registration_evidence_paths": [
@@ -111,9 +111,11 @@
         "tests/test_return_wait_for_standby_b080.py",
         "tests/test_station_stop_b081.py",
         "tests/test_verified_drying_stop_v0739.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate."
+      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate. PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. Production 1.0.6 from PR #132 is preserved; the document-only PR #133 does not certify its desktop indicator behavior."
     },
     {
       "requirement": "device_acceptance",
@@ -140,6 +142,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "HACS previously ran outside the required validate context. Merged PR #131 makes validate depend on repository-checks and hacs-validation and fail unless both succeed, including failure, cancelled, skipped and missing-result cases. The ruleset retains validate + browser-regression. Post-merge CI passed at the pinned production SHA; ongoing governance verification and device acceptance remain pending. UI/runtime/version 1.0.5 are unchanged."
+    },
+    {
+      "id": "A42",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     }
   ]
 }

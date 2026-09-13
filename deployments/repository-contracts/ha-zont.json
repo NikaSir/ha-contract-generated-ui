@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-zont",
-  "source_revision": "a96d8169d9be9a96617f186cfabd1fe2abad0efb",
+  "source_revision": "012d1841b7aeee0c6bf40079e61dddabd5840e12",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -89,9 +89,11 @@
         "tests/test_zont_dhw_truth.cjs",
         "tests/test_zont_shell_v22.py",
         "tests/test_zont_ui_semantics.cjs",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "PR #32 CI covered full-runtime DHW semantics, shell checks, HACS and Hassfest at the merged lineage; running Home Assistant and target-device acceptance remain separate evidence."
+      "note": "PR #32 CI covered full-runtime DHW semantics, shell checks, HACS and Hassfest at the merged lineage; running Home Assistant and target-device acceptance remain separate evidence. PR #33 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     },
     {
       "requirement": "device_acceptance",
@@ -106,6 +108,12 @@
       "requirement": "data_quality",
       "status": "fixed_pending_verification",
       "note": "Merged PR #32 preserves missing numeric/transport truth, separates DHW readiness, permission and actual heating, and adds full-runtime regression coverage; live device acceptance remains pending."
+    },
+    {
+      "id": "A45",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #33 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
     }
   ]
 }
