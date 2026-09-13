@@ -26,7 +26,7 @@ def test_hikvision_profile_tracks_fixed_main_findings() -> None:
 
 def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     profile = load("ha-keenetic-hero-4g.json")
-    assert profile["source_revision"] == "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d"
+    assert profile["source_revision"] == "a7549e4dc1429a84849defbdf69d936cc8dc5195"
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
@@ -34,11 +34,11 @@ def test_keenetic_profile_tracks_fixed_main_finding() -> None:
 
 def test_house_profile_records_full_hacs_validation_without_device_acceptance() -> None:
     profile = load("ha-nikas-house.json")
-    assert profile["source_revision"] == "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7"
+    assert profile["source_revision"] == "97f7d137f54c891a6acea69d84aa2da9de2ae453"
     assert "A30" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A30")["requirement"] == "repository_checks"
     assert finding(profile, "A30")["status"] == "fixed_pending_verification"
-    assert profile["artifacts"][0]["ui_version"] == "1.0.2"
+    assert profile["artifacts"][0]["ui_version"] == "1.0.3"
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert "tests/test_hacs_validation_contract.py" in evidence["repository_checks"]["paths"]
     assert evidence["repository_checks"]["status"] == "pending"
@@ -63,11 +63,11 @@ def test_keenetic_profile_records_required_delivery_without_device_acceptance() 
 
 def test_water_profile_records_full_hacs_validation_without_device_acceptance() -> None:
     profile = load("ha-water-accounting.json")
-    assert profile["source_revision"] == "7251a44aceeda16bc23c41ff111c241a643c0961"
+    assert profile["source_revision"] == "bece25db3f73f2a4b2b9a116c69a20baf9f20b05"
     assert "A27" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A27")["requirement"] == "repository_checks"
     assert finding(profile, "A27")["status"] == "fixed_pending_verification"
-    assert profile["artifacts"][0]["ui_version"] == "0.1.5"
+    assert profile["artifacts"][0]["ui_version"] == "0.1.6"
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert "tests/test_hacs_validation_contract.py" in evidence["repository_checks"]["paths"]
     assert evidence["repository_checks"]["status"] == "pending"
@@ -93,10 +93,10 @@ def test_hikvision_profile_records_required_regressions_without_device_acceptanc
 
 def test_climate_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-nikas-climate.json")
-    assert profile["source_revision"] == "8ed775d4cf9bd8a90fcecbeea63ea018f419fa7d"
+    assert profile["source_revision"] == "824b95fd129a953c6d6de8f7a12efd83911c2961"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_climate/frontend/nikas-climate-production.js"
-    assert artifact["ui_version"] == "1.4.26"
+    assert artifact["ui_version"] == "1.4.28"
     assert finding(profile, "A07")["status"] == "fixed_pending_verification"
     assert finding(profile, "A11")["status"] == "fixed_pending_verification"
     assert finding(profile, "A12")["status"] == "fixed_pending_verification"
@@ -108,9 +108,9 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
 
 def test_lider_profile_tracks_a03_fix() -> None:
     profile = load("ha-lider-voltage-control.json")
-    assert profile["source_revision"] == "81ac8734ca55c5aaea29cd513b8da7e15ac8d3b9"
+    assert profile["source_revision"] == "1d5bb0dbe233f3d62b0049236768609850c923f6"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.8.7"
+    assert artifact["ui_version"] == "0.8.8"
     assert finding(profile, "A03")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel-core.js" in data_quality["paths"]
@@ -118,9 +118,9 @@ def test_lider_profile_tracks_a03_fix() -> None:
 
 def test_starline_profile_tracks_a04_fix() -> None:
     profile = load("ha-starline-telemetry.json")
-    assert profile["source_revision"] == "5f4496280d8a23b8761972ddc60ffb08cd056062"
+    assert profile["source_revision"] == "1b7e819833d210f95b5f1bb40f29c3d20693344f"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.6.9"
+    assert artifact["ui_version"] == "0.6.10"
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_binary_quality.py" in data_quality["paths"]
@@ -131,7 +131,7 @@ def test_lider_profile_records_full_hacs_validation_without_device_acceptance() 
     assert "A29" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A29")["requirement"] == "repository_checks"
     assert finding(profile, "A29")["status"] == "fixed_pending_verification"
-    assert profile["artifacts"][0]["ui_version"] == "0.8.7"
+    assert profile["artifacts"][0]["ui_version"] == "0.8.8"
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert "scripts/check-hacs-validation.py" in evidence["repository_checks"]["paths"]
     assert evidence["repository_checks"]["status"] == "pending"
@@ -141,10 +141,10 @@ def test_lider_profile_records_full_hacs_validation_without_device_acceptance() 
 
 def test_s8_profile_tracks_autonomous_production_main() -> None:
     profile = load("ha-s8-omni.json")
-    assert profile["source_revision"] == "32ca842494fc467e71e6bb613e423f2188bfc5f2"
+    assert profile["source_revision"] == "53b609d23183b86f5d016da80fcbdf6beb4c396b"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-production.js"
-    assert artifact["ui_version"] == "v1.0.6"
+    assert artifact["ui_version"] == "v1.0.8"
     assert finding(profile, "A05")["status"] == "fixed_pending_verification"
     assert finding(profile, "REG-S8-IMPORTS")["status"] == "fixed_pending_verification"
     assert artifact["binding_limitations"] == []
@@ -191,9 +191,9 @@ def test_s8_governance_reconciliation_keeps_acceptance_pending() -> None:
 
 def test_access_profile_tracks_merged_a08_and_a19() -> None:
     profile = load("ha-nikas-access.json")
-    assert profile["source_revision"] == "e7ce2a63b628cfb854ed056d848c7c93101da2f1"
+    assert profile["source_revision"] == "a3406417212e3f4de90d68d577174d53f81c9f8e"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.1.9"
+    assert artifact["ui_version"] == "0.1.10"
     assert profile["standards"]["observed_version"] == "2.2"
     assert finding(profile, "A08")["status"] == "fixed_pending_verification"
     assert finding(profile, "A19")["status"] == "fixed_pending_verification"
@@ -219,9 +219,9 @@ def test_access_profile_records_required_python_syntax_without_device_acceptance
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "03ee44f56459e2356f7680e5498858d0973000c5"
+    assert profile["source_revision"] == "aa0d5e211bb38cd95b52263e8391e55f99327090"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "11.0.15"
+    assert artifact["ui_version"] == "11.0.16"
     assert profile["standards"]["observed_version"] == "2.2"
     assert finding(profile, "A08")["status"] == "fixed_pending_verification"
     assert finding(profile, "A09")["status"] == "fixed_pending_verification"
@@ -238,9 +238,9 @@ def test_rooms_registration_version_fix_preserves_pending_acceptance() -> None:
     assert "A33" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A33")["status"] == "fixed_pending_verification"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "11.0.15"
+    assert artifact["ui_version"] == "11.0.16"
     bindings = {item["role"]: item for item in artifact["bindings"]}
-    assert bindings["cache_key"]["expected"] == "11.0.15"
+    assert bindings["cache_key"]["expected"] == "11.0.16"
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert "tests/test_registration_version.py" in evidence["repository_checks"]["paths"]
     assert all(item["status"] == "pending" for item in profile["evidence"])
@@ -263,9 +263,9 @@ def test_rooms_profile_records_required_python_syntax_without_device_acceptance(
 
 def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> None:
     profile = load("ha-zont.json")
-    assert profile["source_revision"] == "012d1841b7aeee0c6bf40079e61dddabd5840e12"
+    assert profile["source_revision"] == "508f4f3db76bc60be42fb644eba23b5737cfd62d"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.9.6"
+    assert artifact["ui_version"] == "0.9.7"
     assert finding(profile, "A16")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert data_quality["status"] == "pending"
@@ -274,7 +274,7 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
 
 def test_stark_profile_tracks_required_frontend_delivery_gate() -> None:
     profile = load("ha-stark-solarpower.json")
-    assert profile["source_revision"] == "4e931954e39a6bd5c61e0c1b52571b67d68233bd"
+    assert profile["source_revision"] == "92ad94231556862e0f491ab6a880c9a1c8765d7e"
     assert finding(profile, "A17")["status"] == "fixed_pending_verification"
     assert finding(profile, "A19")["status"] == "fixed_pending_verification"
     assert finding(profile, "A23")["status"] == "fixed_pending_verification"
@@ -285,7 +285,7 @@ def test_stark_profile_tracks_required_frontend_delivery_gate() -> None:
 
 def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "ade2d1197e9b795d435ac1b57f8393d5fde4b40c"
+    assert profile["source_revision"] == "3a503d86d4d317bf15a6d0bc22fdad13c1800f7b"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
@@ -306,9 +306,9 @@ def test_organization_mirror_profile_tracks_current_main_without_inventing_findi
 
 def test_ha_vless_profile_tracks_document_governance_fix() -> None:
     profile = load("ha-vless-gateway.json")
-    assert profile["source_revision"] == "4b78e29157da9f89cc6f3a816fb9f69a9aee757e"
-    assert {item["id"] for item in profile["findings"]} == {"A44"}
-    assert profile["artifacts"][0]["ui_version"] == "0.1.1"
+    assert profile["source_revision"] == "5aa7c3b1090cf322c3321ee7446388a25915b229"
+    assert {item["id"] for item in profile["findings"]} == {"A44", "NAV-1"}
+    assert profile["artifacts"][0]["ui_version"] == "0.1.2"
 
 
 def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventing_findings() -> None:
@@ -321,13 +321,13 @@ def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventi
 def test_dyson_profile_records_merged_specialized_panel_without_live_acceptance():
     profile = load("ha-nikas-dyson.json")
     assert profile["repository"] == "NikaSir/ha-nikas-dyson"
-    assert profile["source_revision"] == "b14fc882d6c21ee92099461a85e74f8972d58cca"
+    assert profile["source_revision"] == "6585c81f230ec471219e65c57394fb7b683b8504"
     assert profile["existing_required_checks"] == ["validate"]
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js"
-    assert artifact["ui_version"] == "1.0.2"
+    assert artifact["ui_version"] == "1.0.3"
     assert {b["role"] for b in artifact["bindings"]} >= {"entrypoint", "ui_version", "cache_key", "integration_version"}
-    assert {item["id"] for item in profile["findings"]} == {"A34", "A35", "A36", "A37", "A38", "A39"}
+    assert {item["id"] for item in profile["findings"]} == {"A34", "A35", "A36", "A37", "A38", "A39", "NAV-1"}
     assert all(item["status"] == "fixed_pending_verification" for item in profile["findings"])
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert all(item["status"] == "pending" for item in evidence.values())

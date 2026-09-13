@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-keenetic-hero-4g",
-  "source_revision": "f5c2cb7a74d58559004c5056b51974eb2c5a1c2d",
+  "source_revision": "a7549e4dc1429a84849defbdf69d936cc8dc5195",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
-      "ui_version": "1.0.7",
+      "ui_version": "1.0.10",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/keenetic_hero_4g/frontend/keenetic-panel-bundle.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?K100_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.7"
+          "expected": "1.0.10"
         },
         {
           "role": "cache_key",
           "path": "custom_components/keenetic_hero_4g/panel_runtime.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?FRONTEND_CACHE_KEY\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.7"
+          "expected": "1.0.10"
         }
       ],
       "registration_evidence_paths": [
@@ -129,9 +129,10 @@
         "tests/test_wan_contract.py",
         "scripts/check_nikas_ui_standard.py",
         "scripts/check_standard_documents.py",
-        "tests/test_standard_document_sync.py"
+        "tests/test_standard_document_sync.py",
+        "tests/header_parent_navigation.mjs"
       ],
-      "note": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance. PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+      "note": "Merged PR #94 adds the existing deterministic autonomous bundle checker and NikaS standard checker to required validate. They previously ran only in the optional path-filtered frontend-bundle workflow, which retains the same commands. The builder checks exact source/bundle synchronization, runtime module statements, embedded CSS and Base64 image exclusions. The dependency-free regression exercises current, stale, missing and non-autonomous delivery. PR CI passed with 155 Python tests. A15 coverage remains present; repository CI is not promoted to live runtime/device acceptance. PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #96 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -158,6 +159,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "PR #95 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #96 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

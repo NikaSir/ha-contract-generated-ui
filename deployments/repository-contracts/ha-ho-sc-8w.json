@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-ho-sc-8w",
-  "source_revision": "4cacd889a9d981d34f6e025135f81467baf01617",
+  "source_revision": "8e4e1bf755105a3bef88ca6bfa04175bc5c5d4c6",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
-      "ui_version": "1.0.3",
+      "ui_version": "1.1.1",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?NIKAS_HO_SC_8W_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.3"
+          "expected": "1.1.1"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_ho_sc_8w/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.3"
+          "expected": "1.1.1"
         }
       ],
       "registration_evidence_paths": [
@@ -94,9 +94,10 @@
         "scripts/check-zone7-parity-ui.mjs",
         "scripts/check-zone8-dp38-contract.py",
         "scripts/check_nikas_ui_standard.py",
-        "scripts/check-zone-schedule-summary-ui.mjs"
+        "scripts/check-zone-schedule-summary-ui.mjs",
+        "tests/test_title_parent.cjs"
       ],
-      "note": "Merged PR #178 adds zone schedule summary rendering regressions to required validate at the pinned production revision (integration 1.0.4 / UI 1.0.3). Post-merge validate, HACS, Hassfest and publication succeeded; GitHub Release 1.0.4 targets this revision. These are code/publication observations only, not proof of HACS installation or live/device acceptance."
+      "note": "Merged PR #178 adds zone schedule summary rendering regressions to required validate at the pinned production revision (integration 1.0.4 / UI 1.0.3). Post-merge validate, HACS, Hassfest and publication succeeded; GitHub Release 1.0.4 targets this revision. These are code/publication observations only, not proof of HACS installation or live/device acceptance. PR #182 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -135,6 +136,12 @@
       "requirement": "standards",
       "status": "fixed_pending_verification",
       "note": "PR #177 aligns the declaration, canonical documents and production bundle with UI Standard 2.2; live HA/browser/iPhone behavior acceptance remains pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #182 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

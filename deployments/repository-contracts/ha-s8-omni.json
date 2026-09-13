@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-s8-omni",
-  "source_revision": "32ca842494fc467e71e6bb613e423f2188bfc5f2",
+  "source_revision": "53b609d23183b86f5d016da80fcbdf6beb4c396b",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/s8_omni/frontend/s8-omni-production.js",
-      "ui_version": "v1.0.6",
+      "ui_version": "v1.0.8",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.6"
+          "expected": "v1.0.8"
         },
         {
           "role": "cache_key",
           "path": "custom_components/s8_omni/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?DASHBOARD_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1.0.6"
+          "expected": "v1.0.8"
         }
       ],
       "registration_evidence_paths": [
@@ -113,9 +113,10 @@
         "tests/test_verified_drying_stop_v0739.py",
         "scripts/check_nikas_ui_standard.py",
         "scripts/check_standard_documents.py",
-        "tests/test_standard_document_sync.py"
+        "tests/test_standard_document_sync.py",
+        "tests/test_title_parent.cjs"
       ],
-      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate. PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. Production 1.0.6 from PR #132 is preserved; the document-only PR #133 does not certify its desktop indicator behavior."
+      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate. PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. Production 1.0.6 from PR #132 is preserved; the document-only PR #133 does not certify its desktop indicator behavior. PR #134 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -148,6 +149,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #134 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

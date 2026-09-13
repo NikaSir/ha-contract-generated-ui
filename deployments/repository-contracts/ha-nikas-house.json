@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-house",
-  "source_revision": "dc34ea6007c42ea19b4b5aa210ee97fd7d9551d7",
+  "source_revision": "97f7d137f54c891a6acea69d84aa2da9de2ae453",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
-      "ui_version": "1.0.2",
+      "ui_version": "1.0.3",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_house/frontend/dist/nikas-house-overview.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "1.0.2"
+          "expected": "1.0.3"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_house/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?HOUSE_PANEL_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1_0_2_b001"
+          "expected": "v1_0_3_b001"
         }
       ],
       "registration_evidence_paths": [
@@ -54,7 +54,7 @@
           "role": "cache_key",
           "path": "custom_components/nikas_house/const.py",
           "pattern": "(?m)^UI_BUNDLE_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1_0_2_b001"
+          "expected": "v1_0_3_b001"
         }
       ],
       "registration_evidence_paths": [
@@ -81,7 +81,7 @@
           "role": "cache_key",
           "path": "custom_components/nikas_house/const.py",
           "pattern": "(?m)^HOUSE_HERO_BUILD\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v1_0_2_b001"
+          "expected": "v1_0_3_b001"
         }
       ],
       "registration_evidence_paths": [
@@ -160,9 +160,10 @@
         "scripts/check_house_ui_v22.mjs",
         "scripts/check_navigation.mjs",
         "scripts/check_nikas_ui_standard.py",
-        "tests/test_hacs_validation_contract.py"
+        "tests/test_hacs_validation_contract.py",
+        "tests/title-navigation.browser.cjs"
       ],
-      "note": "Merged PR #11 removes the obsolete HACS topics exemption after 8 repository topics were verified. A regression checks the actual HACS action inputs and its dependency in the required validate aggregate. PR CI passed with 91 tests. The required validate context and pinned HACS action are unchanged; repository CI does not replace live Home Assistant/device acceptance."
+      "note": "Merged PR #11 removes the obsolete HACS topics exemption after 8 repository topics were verified. A regression checks the actual HACS action inputs and its dependency in the required validate aggregate. PR CI passed with 91 tests. The required validate context and pinned HACS action are unchanged; repository CI does not replace live Home Assistant/device acceptance. PR #12 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -183,6 +184,12 @@
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
       "note": "Merged PR #11 restores full HACS topics validation within the existing required validate chain. Ongoing governance verification and live Home Assistant/device acceptance remain pending. UI/runtime/version 1.0.2 and recorded artifact-binding limitations are unchanged."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #12 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }
