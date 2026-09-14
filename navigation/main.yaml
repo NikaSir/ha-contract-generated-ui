@@ -44,6 +44,10 @@ spec:
     title: Инфра
     icon: mdi:server-network
   specialized_routes:
+    device_availability:
+      path: /dashboard-device-availability
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     access:
       path: /dashboard-access-v1/home
       safe_return_route: /home/overview

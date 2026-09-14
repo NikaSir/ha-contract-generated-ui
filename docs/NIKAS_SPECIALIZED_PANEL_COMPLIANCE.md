@@ -1,11 +1,12 @@
 # Contract Generated UI shell registry compliance
 
-Scope: canonical route registry, UI rules and build-time Shell v2 source kit. This
-integration owns no runtime panel; the main House runtime belongs to `ha-nikas-house`.
+Scope: canonical route registry, UI rules, build-time Shell v2 source kit and the
+integration-owned device availability technical panel. The main House runtime belongs
+to `ha-nikas-house`.
 
 | Requirement | Status |
 |---|---|
-| No runtime dashboard registration | PASS |
+| Only `/dashboard-device-availability` is registered here | PASS |
 | Current House v13 and Rooms v11 base routes recorded | PASS |
 | Actions and Infrastructure base routes recorded | PASS |
 | Specialized routes and safe returns recorded | PASS |
@@ -14,4 +15,5 @@ integration owns no runtime panel; the main House runtime belongs to `ha-nikas-h
 | Autonomous per-panel bundles required | PASS |
 | Existing YAML routes preserved | PASS |
 
-Runtime visual acceptance remains the responsibility of each owning panel repository.
+Runtime visual acceptance remains the responsibility of each owning panel repository,
+including this repository for the availability route.

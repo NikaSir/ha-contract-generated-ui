@@ -5,6 +5,18 @@ from datetime import timedelta
 DOMAIN = "contract_generated_ui"
 NAME = "NikaS Contract Generated UI"
 
+FRONTEND_DIRECTORY = "frontend"
+FRONTEND_STATIC_PATH = f"/{DOMAIN}/frontend"
+FRONTEND_STATIC_REGISTERED = "frontend_static_registered"
+DEVICE_AVAILABILITY_PANEL_FILENAME = "device-availability-panel.js"
+DEVICE_AVAILABILITY_PANEL_BUILD = "b001"
+DEVICE_AVAILABILITY_PANEL_MODULE_URL = (
+    f"{FRONTEND_STATIC_PATH}/{DEVICE_AVAILABILITY_PANEL_FILENAME}"
+    f"?build={DEVICE_AVAILABILITY_PANEL_BUILD}"
+)
+DEVICE_AVAILABILITY_PANEL_URL_PATH = "dashboard-device-availability"
+DEVICE_AVAILABILITY_PANEL_PATH = "device_availability_panel_path"
+
 SOURCE_DIRECTORY = "contract_generated_ui"
 SOURCE_KINDS = ("contracts", "inventory", "manifests", "navigation")
 SOURCE_STATUSES = ("missing", "empty", "incomplete", "valid", "invalid")
