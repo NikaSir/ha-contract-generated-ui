@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-contract-generated-ui",
-  "source_revision": "0cf8e7c19f2db1b0eccbbf30465f167c15858c24",
+  "source_revision": "759d13f714380972e3b3219dff7cfa3a49f14a2a",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "contract_generated_ui",

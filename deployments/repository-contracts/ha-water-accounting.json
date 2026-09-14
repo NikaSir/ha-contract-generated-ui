@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-water-accounting",
-  "source_revision": "16638bb52262f0780fc7add44aba4a32a05e4bd9",
+  "source_revision": "889c22f44ce56559eede919099340c48ead1c386",
   "kind": "ha_integration",
   "artifacts": [
     {

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "fc668b80790973a57f9f701f2bb1aab6b5c99161",
+  "source_revision": "ed3f7e50b2c9756fddd9f2a79dc14f82f09e8fdc",
   "kind": "ha_integration",
   "artifacts": [
     {
