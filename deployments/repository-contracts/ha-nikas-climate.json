@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-climate",
-  "source_revision": "34e9bfadcc8fa47bb9298be784d86c280740d1ef",
+  "source_revision": "1c98b256df93a6793708a9462eef392ff1cdf858",
   "kind": "ha_integration",
   "artifacts": [
     {

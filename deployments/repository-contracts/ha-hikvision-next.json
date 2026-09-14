@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-hikvision-next",
-  "source_revision": "e16247b68202a44c37a01d16dbdcac555348c6d8",
+  "source_revision": "16f058095019bfbca571dc5e7e13fd1d7ded41d6",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "hikvision_next",
@@ -68,9 +68,11 @@
         "tests/test_pir.py",
         "tests/test_sensor.py",
         "tests/test_services.py",
-        "tests/test_switch.py"
+        "tests/test_switch.py",
+        "requirements.test.txt",
+        "tests/test_runtime_dependencies.py"
       ],
-      "note": "Merged PR #4 makes validate an always-running, fail-closed aggregate of repository-checks (pytest) and hassfest in testing.yml. The old standalone Hassfest workflow is removed to keep validate unique; HACS Action remains independently required. Pytest now runs on pushes, PRs, the preserved daily schedule and manual dispatch. The dependency-free regression executes the actual gate and rejects unsuccessful or incomplete results. PR CI passed with 108 tests passed and 1 skipped. Existing A02/A13/A14 coverage remains present; CI is not promoted to production-runtime or device acceptance."
+      "note": "Merged PR #4 makes validate an always-running, fail-closed aggregate of repository-checks (pytest) and hassfest in testing.yml. The old standalone Hassfest workflow is removed to keep validate unique; HACS Action remains independently required. Pytest now runs on pushes, PRs, the preserved daily schedule and manual dispatch. The dependency-free regression executes the actual gate and rejects unsuccessful or incomplete results. PR CI passed with 108 tests passed and 1 skipped. Existing A02/A13/A14 coverage remains present; CI is not promoted to production-runtime or device acceptance. Dependency maintenance PR #9 preserves Python 3.12 and adds a required Python 3.14/current Home Assistant matrix leg with compatible coverage and camera test dependencies; its source-filtering regression uses deterministic DNS without weakening rejection assertions. PR #10 updates runtime/test xmltodict to 1.0.4 and integration version to 1.1.8, with an executable installed-dependency/manifest parity check. Both matrix legs, Hassfest and HACS pass; device acceptance remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -102,7 +104,7 @@
       "id": "A26",
       "requirement": "repository_checks",
       "status": "fixed_pending_verification",
-      "note": "Pytest previously ran only on PRs and was outside the ruleset-required validate context. Merged PR #4 makes validate depend on repository-checks and hassfest, accepting only successful results, and adds post-merge test coverage on push. Required contexts remain HACS Action + validate. Ongoing governance verification and live Hikvision/Home Assistant acceptance remain pending; runtime/version 1.1.7 are unchanged."
+      "note": "Pytest previously ran only on PRs and was outside the ruleset-required validate context. Merged PR #4 makes validate depend on repository-checks and hassfest, accepting only successful results, and adds post-merge test coverage on push. Required contexts remain HACS Action + validate. Ongoing governance verification and live Hikvision/Home Assistant acceptance remain pending; the later dependency maintenance in PR #10 declares integration 1.1.8 with xmltodict 1.0.4, without claiming device acceptance."
     }
   ]
 }

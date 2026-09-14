@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "deployments" / "repository-contracts"
 
-EXPECTED = {'ha-ho-sc-8w': {'revision': '8e4e1bf755105a3bef88ca6bfa04175bc5c5d4c6', 'ui_version': '1.1.1', 'entrypoint': 'custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js'}, 'ha-nikas-house': {'revision': '97f7d137f54c891a6acea69d84aa2da9de2ae453', 'ui_version': '1.0.3', 'entrypoint': 'custom_components/nikas_house/frontend/dist/nikas-house-overview.js'}, 'ha-stark-solarpower': {'revision': '331a7dcad89cc8e85d9a4c93f200828175c022db', 'ui_version': '0.9.8', 'entrypoint': 'custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js'}, 'ha-water-accounting': {'revision': '16638bb52262f0780fc7add44aba4a32a05e4bd9', 'ui_version': '0.1.6', 'entrypoint': 'custom_components/water_accounting/frontend/water-accounting-panel.js'}}
+EXPECTED = {'ha-ho-sc-8w': {'revision': '8e4e1bf755105a3bef88ca6bfa04175bc5c5d4c6', 'ui_version': '1.1.1', 'entrypoint': 'custom_components/nikas_ho_sc_8w/frontend/irrigation-panel.js'}, 'ha-nikas-house': {'revision': '97f7d137f54c891a6acea69d84aa2da9de2ae453', 'ui_version': '1.0.3', 'entrypoint': 'custom_components/nikas_house/frontend/dist/nikas-house-overview.js'}, 'ha-stark-solarpower': {'revision': '331a7dcad89cc8e85d9a4c93f200828175c022db', 'ui_version': '0.9.8', 'entrypoint': 'custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js'}, 'ha-water-accounting': {'revision': '889c22f44ce56559eede919099340c48ead1c386', 'ui_version': '0.1.6', 'entrypoint': 'custom_components/water_accounting/frontend/water-accounting-panel.js'}}
 
 
 def profile(name: str) -> dict:

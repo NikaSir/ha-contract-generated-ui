@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-access",
-  "source_revision": "faa60f8f11262288a9cafe84271c7ee21354c7f5",
+  "source_revision": "29ad98ac191d210f36c75ed2fde24844637efaf4",
   "kind": "ha_integration",
   "artifacts": [
     {
