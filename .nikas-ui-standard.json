@@ -36,7 +36,7 @@
   },
   "route_registry": {
     "path": "navigation/main.yaml",
-    "sha256": "32d342f786ce4943e2923af5e90580c397866e75516ea4c402f0f4883a0a13ff"
+    "sha256": "814a4370aff9c9674f549640ad392a6ba60eba712934c5a77c92f2f41bc31b22"
   },
   "header_reference": {
     "implementation": "S8 OMNI",
