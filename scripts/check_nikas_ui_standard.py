@@ -289,6 +289,7 @@ def main() -> None:
             "/dashboard-rooms-v11/rooms",
             "/dashboard-actions/home",
             "/dashboard-infrastructure/overview",
+            "/dashboard-device-availability",
             "/dashboard-access-v1/home",
             "/dashboard-water",
         ):
