@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-hikvision-next",
-  "source_revision": "c234fd523e440bfaef77698d98a9f379d6b74363",
+  "source_revision": "e16247b68202a44c37a01d16dbdcac555348c6d8",
   "kind": "ha_integration",
   "artifacts": [],
   "domain": "hikvision_next",

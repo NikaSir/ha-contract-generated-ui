@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = {'ha-nikas-rooms': {'sha': 'aa0d5e211bb38cd95b52263e8391e55f99327090', 'id': 'A40', 'pr': 7}, 'ha-keenetic-hero-4g': {'sha': '40668e90b71484baba2dd2279aa1281e2be3cd8c', 'id': 'A41', 'pr': 95}, 'ha-s8-omni': {'sha': '53b609d23183b86f5d016da80fcbdf6beb4c396b', 'id': 'A42', 'pr': 133}, 'ha-starline-telemetry': {'sha': '1b7e819833d210f95b5f1bb40f29c3d20693344f', 'id': 'A43', 'pr': 59}, 'ha-vless-gateway': {'sha': '5aa7c3b1090cf322c3321ee7446388a25915b229', 'id': 'A44', 'pr': 23}, 'ha-zont': {'sha': '508f4f3db76bc60be42fb644eba23b5737cfd62d', 'id': 'A45', 'pr': 33}, 'ha-lider-voltage-control': {'sha': 'cea8d1c85bb371a5322a5579e6478d4186341b40', 'id': 'A46', 'pr': 45}}
+EXPECTED = {'ha-nikas-rooms': {'sha': 'fc668b80790973a57f9f701f2bb1aab6b5c99161', 'id': 'A40', 'pr': 7}, 'ha-keenetic-hero-4g': {'sha': '40668e90b71484baba2dd2279aa1281e2be3cd8c', 'id': 'A41', 'pr': 95}, 'ha-s8-omni': {'sha': '0780c62f793f95bd941d4b377dfcf2724168342e', 'id': 'A42', 'pr': 133}, 'ha-starline-telemetry': {'sha': '6fe4277404447e476f7ed7a95e376de0a8f5e26e', 'id': 'A43', 'pr': 59}, 'ha-vless-gateway': {'sha': '532d45fecd5cd7622be875437da02ff6060252f8', 'id': 'A44', 'pr': 23}, 'ha-zont': {'sha': 'c1cf209562850ccb9b42fec7fb2fafb6a7940016', 'id': 'A45', 'pr': 33}, 'ha-lider-voltage-control': {'sha': 'd7144749882cd008537b633a74b3e3eaeea8c871', 'id': 'A46', 'pr': 45}}
 
 @pytest.mark.parametrize('repo', EXPECTED)
 def test_standard_governance_reconciliation_preserves_acceptance_boundary(repo):

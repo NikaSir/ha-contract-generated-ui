@@ -18,7 +18,7 @@ def finding(profile: dict, finding_id: str) -> dict:
 
 def test_hikvision_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-hikvision-next.json")
-    assert profile["source_revision"] == "c234fd523e440bfaef77698d98a9f379d6b74363"
+    assert profile["source_revision"] == "e16247b68202a44c37a01d16dbdcac555348c6d8"
     assert finding(profile, "A02")["status"] == "fixed_pending_verification"
     assert finding(profile, "A13")["status"] == "fixed_pending_verification"
     assert finding(profile, "A14")["status"] == "fixed_pending_verification"
@@ -64,7 +64,7 @@ def test_keenetic_profile_records_required_delivery_without_device_acceptance() 
 
 def test_water_profile_records_full_hacs_validation_without_device_acceptance() -> None:
     profile = load("ha-water-accounting.json")
-    assert profile["source_revision"] == "bece25db3f73f2a4b2b9a116c69a20baf9f20b05"
+    assert profile["source_revision"] == "16638bb52262f0780fc7add44aba4a32a05e4bd9"
     assert "A27" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A27")["requirement"] == "repository_checks"
     assert finding(profile, "A27")["status"] == "fixed_pending_verification"
@@ -94,7 +94,7 @@ def test_hikvision_profile_records_required_regressions_without_device_acceptanc
 
 def test_climate_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-nikas-climate.json")
-    assert profile["source_revision"] == "4150da1f429c0b76ecf83201c459ec28697477a0"
+    assert profile["source_revision"] == "34e9bfadcc8fa47bb9298be784d86c280740d1ef"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_climate/frontend/nikas-climate-production.js"
     assert artifact["ui_version"] == "1.4.29"
@@ -109,7 +109,7 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
 
 def test_lider_profile_tracks_a03_fix() -> None:
     profile = load("ha-lider-voltage-control.json")
-    assert profile["source_revision"] == "cea8d1c85bb371a5322a5579e6478d4186341b40"
+    assert profile["source_revision"] == "d7144749882cd008537b633a74b3e3eaeea8c871"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.8.10"
     assert finding(profile, "A03")["status"] == "fixed_pending_verification"
@@ -119,7 +119,7 @@ def test_lider_profile_tracks_a03_fix() -> None:
 
 def test_starline_profile_tracks_a04_fix() -> None:
     profile = load("ha-starline-telemetry.json")
-    assert profile["source_revision"] == "1b7e819833d210f95b5f1bb40f29c3d20693344f"
+    assert profile["source_revision"] == "6fe4277404447e476f7ed7a95e376de0a8f5e26e"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.6.10"
     assert finding(profile, "A04")["status"] == "fixed_pending_verification"
@@ -142,7 +142,7 @@ def test_lider_profile_records_full_hacs_validation_without_device_acceptance() 
 
 def test_s8_profile_tracks_autonomous_production_main() -> None:
     profile = load("ha-s8-omni.json")
-    assert profile["source_revision"] == "53b609d23183b86f5d016da80fcbdf6beb4c396b"
+    assert profile["source_revision"] == "0780c62f793f95bd941d4b377dfcf2724168342e"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/s8_omni/frontend/s8-omni-production.js"
     assert artifact["ui_version"] == "v1.0.8"
@@ -192,7 +192,7 @@ def test_s8_governance_reconciliation_keeps_acceptance_pending() -> None:
 
 def test_access_profile_tracks_merged_a08_and_a19() -> None:
     profile = load("ha-nikas-access.json")
-    assert profile["source_revision"] == "a3406417212e3f4de90d68d577174d53f81c9f8e"
+    assert profile["source_revision"] == "faa60f8f11262288a9cafe84271c7ee21354c7f5"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.1.10"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -220,7 +220,7 @@ def test_access_profile_records_required_python_syntax_without_device_acceptance
 
 def test_rooms_profile_tracks_merged_a08_a09_a10_and_a19() -> None:
     profile = load("ha-nikas-rooms.json")
-    assert profile["source_revision"] == "aa0d5e211bb38cd95b52263e8391e55f99327090"
+    assert profile["source_revision"] == "fc668b80790973a57f9f701f2bb1aab6b5c99161"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "11.0.16"
     assert profile["standards"]["observed_version"] == "2.2"
@@ -264,7 +264,7 @@ def test_rooms_profile_records_required_python_syntax_without_device_acceptance(
 
 def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> None:
     profile = load("ha-zont.json")
-    assert profile["source_revision"] == "508f4f3db76bc60be42fb644eba23b5737cfd62d"
+    assert profile["source_revision"] == "c1cf209562850ccb9b42fec7fb2fafb6a7940016"
     artifact = profile["artifacts"][0]
     assert artifact["ui_version"] == "0.9.7"
     assert finding(profile, "A16")["status"] == "fixed_pending_verification"
@@ -302,7 +302,7 @@ if (Panel && !Panel.prototype.__starkUiV098) {
 
 def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "376023e266e5bbf8b47996ea5024a46a1bfe5304"
+    assert profile["source_revision"] == "0cf8e7c19f2db1b0eccbbf30465f167c15858c24"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
@@ -316,14 +316,14 @@ def test_canonical_profile_tracks_completed_a21_main() -> None:
 
 def test_organization_mirror_profile_tracks_current_main_without_inventing_findings() -> None:
     profile = load("nikasir-github.json")
-    assert profile["source_revision"] == "4c3fe20c2ee2aaa2ce82e3255930656be4a22ea7"
+    assert profile["source_revision"] == "e727728d3bda7d8d137627070ed611c0042684fc"
     assert profile["findings"] == []
     assert profile["standards"]["observed_version"] == "2.2"
 
 
 def test_ha_vless_profile_tracks_document_governance_fix() -> None:
     profile = load("ha-vless-gateway.json")
-    assert profile["source_revision"] == "5aa7c3b1090cf322c3321ee7446388a25915b229"
+    assert profile["source_revision"] == "532d45fecd5cd7622be875437da02ff6060252f8"
     assert {item["id"] for item in profile["findings"]} == {"A44", "NAV-1"}
     assert profile["artifacts"][0]["ui_version"] == "0.1.2"
 
@@ -338,7 +338,7 @@ def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventi
 def test_dyson_profile_records_merged_specialized_panel_without_live_acceptance():
     profile = load("ha-nikas-dyson.json")
     assert profile["repository"] == "NikaSir/ha-nikas-dyson"
-    assert profile["source_revision"] == "20763738b1c630e6303d769078e21d367745fbc4"
+    assert profile["source_revision"] == "2a246b263ad3fb0398a4ee662e0c1e7a0ffeaae9"
     assert profile["existing_required_checks"] == ["validate"]
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js"

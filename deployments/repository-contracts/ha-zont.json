@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-zont",
-  "source_revision": "508f4f3db76bc60be42fb644eba23b5737cfd62d",
+  "source_revision": "c1cf209562850ccb9b42fec7fb2fafb6a7940016",
   "kind": "ha_integration",
   "artifacts": [
     {

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-starline-telemetry",
-  "source_revision": "1b7e819833d210f95b5f1bb40f29c3d20693344f",
+  "source_revision": "6fe4277404447e476f7ed7a95e376de0a8f5e26e",
   "kind": "ha_integration",
   "artifacts": [
     {
