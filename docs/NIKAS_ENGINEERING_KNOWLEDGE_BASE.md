@@ -665,3 +665,7 @@ This is a living file. After each meaningful defect investigation or successful 
 - **Acceptance** — what must be verified on the real device.
 
 A lesson is not considered preserved until it changes either the design rule, the automated check, or the acceptance checklist.
+
+## Hero Header Contract consolidation — 2026-09-14
+
+[Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) completes operational-card composition without redefining the accepted Connection/Decoration v1.1 tokens. The earlier draft conflicted on padding, line heights, font stack and the 360px breakpoint. The accepted companion retains v1.1, product-owned image geometry, current Navigation v1.3 and explicit runtime acceptance. A green registry check never grants a panel PASS.

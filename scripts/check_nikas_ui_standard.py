@@ -77,6 +77,15 @@ def main() -> None:
         "geometry_overrides_allowed": False, "pointer_events": "none", "aria_hidden": True,
     }
     require(config.get("blue_corner_reference") == expected_corner, "blue corner token drift")
+    hero = config.get("hero_header_contract", {})
+    require(hero.get("version") == "1.0", "Hero Header Contract must be v1.0")
+    require(hero.get("status") == "required_when_present", "Hero applicability drift")
+    require(hero.get("geometry_authority") == "connection_decoration_contract", "Hero must preserve accepted geometry authority")
+    require(hero.get("path") == "docs/NIKAS_HERO_HEADER_CONTRACT.md", "Hero path drift")
+    require(hero.get("implementation_status") == "panel_acceptance_required", "Hero publication must not certify panel acceptance")
+    hero_text = read_relative(hero["path"])
+    require(hashlib.sha256(hero_text.encode("utf-8")).hexdigest() == hero.get("sha256"), "Hero contract hash drift")
+    require("NIKAS_HERO_HEADER_CONTRACT.md" in standard, "UI standard must bind Hero contract")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(

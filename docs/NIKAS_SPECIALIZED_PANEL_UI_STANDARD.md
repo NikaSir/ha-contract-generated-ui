@@ -10,6 +10,7 @@
 **Reference peer-device status lamps:** Stark SolarPower / StarLine lineage
 **Reference typography and domain status treatment:** LIDER
 **Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.3
+**Required operational-card companion:** `docs/NIKAS_HERO_HEADER_CONTRACT.md` v1.0; preserves Connection/Decoration v1.1 tokens.
 **Canonical build-time source kit:** `templates/shell_v2/nikas-specialized-shell.js`
 
 This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.2 keeps the v2 geometry and adds the proven peer-device selector status-lamp contract. It retains the vendored build-time shell source and hierarchical title navigation defined by Navigation Contract v1.3.
@@ -420,3 +421,10 @@ required companion to this standard.
   existing panel.
 - Generated panel existence follows enabled manifest/configuration state; entity
   availability affects content only.
+
+## Operational-card composition companion
+
+[NikaS Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) binds the state,
+explanation and image region to the existing Connection/Decoration v1.1 geometry.
+It preserves product-owned image proportions and radius, Navigation v1.3 and
+requested-element exclusions. Publication does not certify consumer runtime.
