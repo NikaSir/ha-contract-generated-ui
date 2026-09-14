@@ -1,9 +1,9 @@
 import {
   buildAvailabilitySnapshot,
   filterAvailabilityItems,
-} from "./device-availability-model.js?build=b001";
+} from "./device-availability-model.js?build=b002";
 
-export const UI_VERSION = "1.0.0-beta001";
+export const UI_VERSION = "1.0.0-beta002";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -86,13 +86,15 @@ function panelStyles() {
     .refresh{height:46px;min-width:148px;padding:0 18px;border:0;border-radius:16px;background:#111418;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin 1s linear infinite}.refresh.success ha-icon{color:#72d77d}.refresh.error ha-icon{color:#ff857d}@keyframes spin{to{transform:rotate(360deg)}}
     .ok{--status-color:#43a047}.bad{--status-color:#e05252}.warn{--status-color:#ef9f25}.muted{--status-color:#7b8792}
     .stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:12px 0}.stat{padding:14px 10px;border-radius:18px;background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#dfe3e8);text-align:center}.stat b{display:block;font-size:25px}.stat span{font-size:12px;color:var(--secondary-text-color,#68737d)}
+    .composition{padding:14px 16px;display:grid;gap:10px;margin-bottom:12px}.composition-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.composition-label{font-size:14px}.composition-label b{font-size:18px}.composition-detail{font-size:12px;color:var(--secondary-text-color,#68737d);text-align:right}.composition-row+.composition-row{padding-top:10px;border-top:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 70%,transparent)}
     .section-title{margin:18px 3px 9px;font-size:16px;font-weight:800}.groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.group{padding:15px}.group-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.group h3{margin:0;font-size:17px}.pill{padding:5px 9px;border-radius:999px;background:color-mix(in srgb,var(--status-color) 13%,transparent);color:var(--status-color);font-size:12px;font-weight:800}.group-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}.metric{padding:9px 5px;border-radius:13px;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 88%,transparent);text-align:center}.metric b{display:block;font-size:17px}.metric small{color:var(--secondary-text-color,#68737d)}
+    .group-reference{margin-top:10px;padding:9px 11px;border-radius:13px;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 88%,transparent);font-size:12px;color:var(--secondary-text-color,#68737d)}.group-reference b{color:var(--primary-text-color,#17191c)}
     .empty{padding:28px;text-align:center}.empty ha-icon{--mdc-icon-size:46px;color:var(--secondary-text-color,#68737d)}.empty h2{margin:10px 0 6px}.empty p{margin:0 auto;max-width:560px;color:var(--secondary-text-color,#68737d)}.empty button{margin-top:17px;border:0;border-radius:14px;padding:11px 16px;background:#111418;color:#fff;font-weight:750;cursor:pointer}
     .controls{padding:10px;display:grid;grid-template-columns:minmax(220px,1fr) 220px 220px;gap:8px;position:sticky;top:0;z-index:2}.controls input,.controls select{height:44px;border:1px solid var(--divider-color,#dfe3e8);border-radius:14px;background:var(--card-background-color,#fff);color:inherit;padding:0 13px;min-width:0}
     .device-list{display:grid;gap:8px;margin-top:10px}.device{width:100%;padding:13px 14px;border:1px solid var(--divider-color,#dfe3e8);border-radius:17px;background:var(--card-background-color,#fff);color:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;cursor:pointer}.device-main{min-width:0}.device-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-sub{margin-top:4px;color:var(--secondary-text-color,#68737d);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-side{text-align:right}.device-side .pill{display:inline-block}.health{margin-top:5px;font-size:12px;color:var(--secondary-text-color,#68737d)}
     .diag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.diag .card{padding:17px}.diag h3{margin:0 0 12px}.diag-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 65%,transparent)}.diag-row:last-child{border:0}.diag-row span{color:var(--secondary-text-color,#68737d)}code{word-break:break-all;font-size:12px}
     @media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr)}.groups{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.controls input{grid-column:1/-1}.diag{grid-template-columns:1fr}}
-    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.refresh{width:100%}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.title strong{font-size:19px}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
+    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.refresh{width:100%}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.title strong{font-size:19px}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
     @media(prefers-reduced-motion:reduce){.refresh.busy ha-icon{animation:none}}
   `;
 }
@@ -196,6 +198,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
       <section class="stats">
         ${this._stat("Всего",t.total)}${this._stat("Доступно",t.online)}${this._stat("Недоступно",t.offline)}${this._stat("Устарели",t.stale)}${this._stat("Батарея",t.low_battery)}${this._stat("Сигнал",t.poor_signal)}
       </section>
+      ${this._compositionCard(snapshot.composition)}
       <h2 class="section-title">Группы контроля</h2>
       <section class="groups">${snapshot.groups.map((group) => this._groupCard(group)).join("")}</section>`;
     content.querySelector("#refresh")?.addEventListener("click", () => this._refresh());
@@ -203,11 +206,24 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
 
   _stat(label, value) { return `<div class="stat"><b>${value}</b><span>${label}</span></div>`; }
 
+  _compositionCard(composition) {
+    const mainSuppressed = composition.suppressed
+      ? ` · ${composition.suppressed} исключено`
+      : "";
+    const referenceSuppressed = composition.non_essential_suppressed
+      ? ` · ${composition.non_essential_suppressed} исключено`
+      : "";
+    return `<section class="card composition"><div class="composition-row"><span class="composition-label"><b>${composition.essential}</b> основных</span><span class="composition-detail">${this._snapshot.totals.online} доступно · ${this._snapshot.totals.offline} недоступно${mainSuppressed}</span></div><div class="composition-row"><span class="composition-label"><b>${composition.non_essential}</b> не влияют на статус</span><span class="composition-detail">${composition.non_essential_online} доступно · ${composition.non_essential_offline} отключено${referenceSuppressed}</span></div></section>`;
+  }
+
   _groupCard(group) {
     const meta = group.condition === "healthy"
       ? ["Всё доступно", "ok"]
       : group.condition === "problem" ? ["Есть проблемы", "bad"] : ["Нет данных", "muted"];
-    return `<article class="card group ${meta[1]}"><div class="group-head"><h3>${escapeHtml(group.name)}</h3><span class="pill">${meta[0]}</span></div><div class="group-metrics"><div class="metric"><b>${group.online}</b><small>доступно</small></div><div class="metric"><b>${group.offline}</b><small>отключено</small></div><div class="metric"><b>${group.stale + group.lowBattery + group.poorSignal}</b><small>внимание</small></div></div></article>`;
+    const reference = group.nonEssential
+      ? `<div class="group-reference"><b>${group.nonEssential}</b> не влияют на статус · ${group.nonEssentialOnline} доступно · ${group.nonEssentialOffline} отключено${group.nonEssentialSuppressed ? ` · ${group.nonEssentialSuppressed} исключено` : ""}</div>`
+      : "";
+    return `<article class="card group ${meta[1]}"><div class="group-head"><h3>${escapeHtml(group.name)}</h3><span class="pill">${meta[0]}</span></div><div class="group-metrics"><div class="metric"><b>${group.online}</b><small>доступно</small></div><div class="metric"><b>${group.offline}</b><small>недоступно</small></div><div class="metric"><b>${group.stale + group.lowBattery + group.poorSignal}</b><small>внимание</small></div></div>${reference}</article>`;
   }
 
   _renderDevices(content) {
@@ -230,7 +246,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (item.signal) details.push(`Сигнал ${item.signal.value}${item.signal.unit ? ` ${escapeHtml(item.signal.unit)}` : ""}`);
     if (item.offlineSince) details.push(`с ${formatTimestamp(item.offlineSince)}`);
     else if (item.lastSeen) details.push(`данные ${formatTimestamp(item.lastSeen)}`);
-    if (item.nonEssential) details.push("необязательное");
+    if (item.nonEssential) details.push("не влияет на статус");
     return `<button class="device" data-entity="${escapeHtml(item.entityId)}"><span class="device-main"><span class="device-name">${escapeHtml(item.name)}</span><span class="device-sub">${escapeHtml(item.groupName)} · ${escapeHtml(item.entityId)}</span></span><span class="device-side ${tone}"><span class="pill">${label}</span><span class="health">${details.join(" · ") || " "}</span></span></button>`;
   }
 

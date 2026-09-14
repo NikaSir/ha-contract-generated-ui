@@ -84,6 +84,11 @@ function buildGroup(source) {
       sourceEntityId: source.entityId,
       condition: "no_data",
       total: 0,
+      essential: 0,
+      nonEssential: 0,
+      nonEssentialOnline: 0,
+      nonEssentialOffline: 0,
+      nonEssentialSuppressed: 0,
       online: 0,
       offline: 0,
       stale: 0,
@@ -132,6 +137,13 @@ function buildGroup(source) {
     sourceEntityId: source.entityId,
     condition: problemCount > 0 ? "problem" : "healthy",
     total: asNumber(attributes.total_entities ?? source.state),
+    essential: asNumber(attributes.essential ?? (
+      asNumber(attributes.total_entities ?? source.state) - asNumber(attributes.non_essential)
+    )),
+    nonEssential: asNumber(attributes.non_essential),
+    nonEssentialOnline: asNumber(attributes.non_essential_online),
+    nonEssentialOffline: asNumber(attributes.non_essential_offline),
+    nonEssentialSuppressed: asNumber(attributes.non_essential_suppressed),
     online: asNumber(attributes.online),
     offline: asNumber(attributes.offline),
     stale: asNumber(attributes.stale),
@@ -152,10 +164,19 @@ export function buildAvailabilitySnapshot(states = {}) {
     low_battery: 0,
     poor_signal: 0,
   };
+  const emptyComposition = {
+    essential: 0,
+    non_essential: 0,
+    suppressed: 0,
+    non_essential_online: 0,
+    non_essential_offline: 0,
+    non_essential_suppressed: 0,
+  };
   if (!sources.length) {
     return {
       status: "no_integration",
       totals: emptyTotals,
+      composition: emptyComposition,
       groups: [],
       items: [],
       diagnostics: { unavailableSources: [], missingOptionalData: [] },
@@ -176,6 +197,14 @@ export function buildAvailabilitySnapshot(states = {}) {
     low_battery: result.low_battery + group.lowBattery,
     poor_signal: result.poor_signal + group.poorSignal,
   }), { ...emptyTotals });
+  const composition = groups.reduce((result, group) => ({
+    essential: result.essential + group.essential,
+    non_essential: result.non_essential + group.nonEssential,
+    suppressed: result.suppressed + group.suppressed,
+    non_essential_online: result.non_essential_online + group.nonEssentialOnline,
+    non_essential_offline: result.non_essential_offline + group.nonEssentialOffline,
+    non_essential_suppressed: result.non_essential_suppressed + group.nonEssentialSuppressed,
+  }), { ...emptyComposition });
   const items = groups.flatMap((group) => group.items).sort((left, right) => (
     (CONDITION_WEIGHT[left.condition] ?? 99) - (CONDITION_WEIGHT[right.condition] ?? 99)
     || left.name.localeCompare(right.name, "ru")
@@ -187,6 +216,7 @@ export function buildAvailabilitySnapshot(states = {}) {
   return {
     status: unavailableSources.length ? "no_data" : problem ? "problem" : "healthy",
     totals,
+    composition,
     groups,
     items,
     diagnostics: { unavailableSources, missingOptionalData: [] },
