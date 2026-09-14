@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-starline-telemetry",
-  "source_revision": "94b36c32e145c7357582bada413c632f46af180e",
+  "source_revision": "1b7e819833d210f95b5f1bb40f29c3d20693344f",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/starline_telemetry/frontend/starline-app.js",
-      "ui_version": "0.6.8",
+      "ui_version": "0.6.10",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/starline_telemetry/frontend/starline-app.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.6.8"
+          "expected": "0.6.10"
         },
         {
           "role": "cache_key",
           "path": "custom_components/starline_telemetry/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.6.8-ui-standard-v2.2"
+          "expected": "0.6.10-ui-standard-v2.2"
         }
       ],
       "registration_evidence_paths": [
@@ -55,54 +55,82 @@
     "automatic_tags": false
   },
   "observed_workflow_paths": [
-    ".github/workflows/hacs.yaml",
-    ".github/workflows/hassfest.yaml",
-    ".github/workflows/syntax.yaml"
+    ".github/workflows/repository-checks.yml"
   ],
   "evidence": [
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A04: stale bootstrap security and missing discrete fields require tri-state and source freshness acceptance."
+      "paths": [
+        "custom_components/starline_telemetry/binary_sensor.py",
+        "custom_components/starline_telemetry/data_quality.py",
+        "custom_components/starline_telemetry/frontend/starline-app.js",
+        "tests/test_binary_quality.py",
+        "tests/test_frontend_bundle.cjs"
+      ],
+      "note": "A04 production logic and executable regression coverage are present: explicit true/false/unknown is preserved, current reliable Home Assistant security state is authoritative and bootstrap data expires after 60 seconds. Live vehicle loss/recovery acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "note": "The integration/panel remain read-only; no complete field acceptance evidence for the pinned production runtime is recorded."
     },
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "No complete acceptance evidence for the pinned production runtime is recorded. Existing tests are inventory only."
+      "paths": [
+        "tests/test_startup_lifecycle_contract.py"
+      ],
+      "note": "Startup lifecycle regression coverage exists, but complete running Home Assistant reconnect acceptance remains pending."
     },
     {
       "requirement": "repository_checks",
       "status": "pending",
       "paths": [
-        ".github/workflows/hacs.yaml",
-        ".github/workflows/hassfest.yaml",
-        ".github/workflows/syntax.yaml",
+        ".github/workflows/repository-checks.yml",
+        "tests/test_hacs_validation_contract.py",
+        "tests/test_binary_quality.py",
         "tests/test_frontend_bundle.cjs",
-        "scripts/check_nikas_ui_standard.py"
+        "tests/test_startup_lifecycle_contract.py",
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py",
+        "tests/test_title_parent.cjs"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #58 removes the obsolete HACS topics exemption after 10 repository topics were verified. HACS now runs full publication validation within the existing required validate aggregate alongside repository-checks and hassfest. The dependency-free regression protects the HACS action inputs. PR and post-merge main CI passed. Workflow evidence now references the current repository-checks.yml; A04 coverage remains present. Automated checks are not promoted to production device acceptance. PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #60 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or both target StarLine vehicles is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A04",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Old bootstrap and missing binary values distort security status."
+      "status": "fixed_pending_verification",
+      "note": "PR #57 makes current Home Assistant security telemetry authoritative, expires bootstrap snapshots after 60 seconds and preserves true/false/unknown binary states; live vehicle acceptance remains pending."
+    },
+    {
+      "id": "A25",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #58 restores HACS topics validation by removing ignore: topics. The existing required validate context and aggregate dependencies are unchanged. PR CI passed; post-merge CI passed at the pinned production SHA. Ongoing governance verification and vehicle/Home Assistant acceptance remain pending. UI/runtime/version 0.6.9 are unchanged."
+    },
+    {
+      "id": "A43",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #59 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #60 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

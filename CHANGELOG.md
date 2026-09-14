@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+## 0.40.3 — 2026-09-13
+
+- Navigation Contract 1.3 makes titles open the immediate declared parent, with every main panel returning to the native `/home/overview`.
+- Retire query, source hand-off, saved-route and referrer authority for title navigation; preserve internal page hierarchy.
+- Package the updated route registry and add executable resolver and parent-graph regression checks.
+- Consumer runtime rollout and live acceptance remain separately verified; no central dashboard runtime is introduced.
+
+## 0.40.2 — 2026-09-10
+
+- A19: repository contract inspector 1.0.2 uses the validated declaration and
+  normative documents from its own pinned canonical checkout instead of stale
+  hard-coded UI/navigation hashes. Consumers cannot supply the target baseline.
+- Validate the authority baseline in schema/toolkit CI as well as strict
+  inspection, retain its provenance in JSON reports, and add regressions for
+  canonical updates, stale copies and consumer self-consistency.
+- Keep product behaviour unverified until separate acceptance evidence exists;
+  this tooling change does not renumber or migrate consumer integrations.
+- Pin the HO-SC-8W, House, Stark and Water profiles to their reviewed UI 2.2
+  production revisions, entrypoints and UI versions while keeping live
+  HA/browser/iPhone acceptance explicitly unverified.
+- Support the owner-approved release-driven HACS publication model in factual
+  repository profiles without treating a detected release command as a failure
+  or as proof of delivery. Unsupported mixed policies still fail closed.
+
 ## 0.40.1 — 2026-09-08
 
 - Add the required NikaS Panel Lifecycle Contract v1.0: configured routes are

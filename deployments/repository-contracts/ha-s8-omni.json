@@ -1,41 +1,39 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-s8-omni",
-  "source_revision": "eff686b373e92e77f9efa11735143029891ad4fd",
+  "source_revision": "53b609d23183b86f5d016da80fcbdf6beb4c396b",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
-      "path": "custom_components/s8_omni/frontend/s8-omni-panel-bootstrap.js",
-      "ui_version": "v0.7.41",
+      "path": "custom_components/s8_omni/frontend/s8-omni-production.js",
+      "ui_version": "v1.0.8",
       "bindings": [
         {
           "role": "entrypoint",
           "path": "custom_components/s8_omni/__init__.py",
           "pattern": "(?m)^PANEL_MODULE\\s*=\\s*f[\\\"\\x27]\\{PANEL_STATIC_URL\\}/(?P<value>[^\\\"\\x27?\\r\\n]+)\\?v=",
-          "expected": "s8-omni-panel-bootstrap.js",
+          "expected": "s8-omni-production.js",
           "path_mode": "basename"
         },
         {
           "role": "ui_version",
           "path": "custom_components/s8_omni/frontend/s8-omni-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v0.7.41"
+          "expected": "v1.0.8"
         },
         {
           "role": "cache_key",
           "path": "custom_components/s8_omni/const.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?DASHBOARD_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "v0.7.41"
+          "expected": "v1.0.8"
         }
       ],
       "registration_evidence_paths": [
         "custom_components/s8_omni/__init__.py",
         "custom_components/s8_omni/const.py"
       ],
-      "binding_limitations": [
-        "Registered URL combines DASHBOARD_VERSION and VERSION; only its static components are captured. UI value is in a reachable imported module, not the bootstrap. Cache freshness and displayed UI require runtime acceptance."
-      ]
+      "binding_limitations": []
     }
   ],
   "domain": "s8_omni",
@@ -62,14 +60,23 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A05: missing/unavailable values must stay unknown rather than become 0/false."
+      "paths": [
+        "custom_components/s8_omni/frontend/s8-omni-panel.js",
+        "custom_components/s8_omni/frontend/s8-omni-service-settings.js",
+        "tests/test_command_readback_b096.py"
+      ],
+      "note": "A05 production behavior remains present at the pinned main revision: missing/unavailable/malformed control values stay unknown rather than being coerced to 0/false, and confirmation requires valid target readback. Hardware/Home Assistant acceptance remains pending."
     },
     {
       "requirement": "command_safety",
       "status": "pending",
-      "paths": [],
-      "note": "A05: require real available state confirmation for volume=0, DND=false and child_lock=false; preserve verified lighting and presets."
+      "paths": [
+        "custom_components/s8_omni/frontend/s8-omni-panel.js",
+        "custom_components/s8_omni/frontend/s8-omni-service-settings.js",
+        "tests/test_command_readback_b096.py",
+        "tests/test_mode_write_guard_b079.py"
+      ],
+      "note": "PR #123 requires valid available target evidence, matching same-target readback and advancing target telemetry before confirming a setting; zero/off drafts are no longer falsely acknowledged. Device acceptance remains pending."
     },
     {
       "requirement": "lifecycle",
@@ -82,6 +89,10 @@
       "status": "pending",
       "paths": [
         ".github/workflows/repository-checks.yml",
+        "scripts/build_s8_production.py",
+        "tests/test_autonomous_production_bundle.py",
+        "tests/test_required_hacs_gate.py",
+        "tests/test_command_readback_b096.py",
         "tests/test_diagnostic_protocol_fixes_v0734.py",
         "tests/test_mode_write_guard_b079.py",
         "tests/test_panel_cleaning_ui_v0732.py",
@@ -100,29 +111,50 @@
         "tests/test_return_wait_for_standby_b080.py",
         "tests/test_station_stop_b081.py",
         "tests/test_verified_drying_stop_v0739.py",
-        "scripts/check_nikas_ui_standard.py"
+        "scripts/check_nikas_ui_standard.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py",
+        "tests/test_title_parent.cjs"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #131 makes the ruleset-required validate context an always-running, fail-closed aggregate of repository-checks and hacs-validation. Required contexts remain validate + browser-regression; browser-regression stays independently required. The dependency-free gate regression executes the actual workflow script and rejects unsuccessful or incomplete results. PR and post-merge main CI passed. PR #130 autonomous production-bundle and A05 coverage remain present. Hardware/Home Assistant/iPhone acceptance remains separate. PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. Production 1.0.6 from PR #132 is preserved; the document-only PR #133 does not certify its desktop indicator behavior. PR #134 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
       "status": "pending",
       "paths": [],
-      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target gateway hardware is recorded for this pinned revision."
+      "note": "No complete acceptance on the running user Home Assistant, iPhone, or target S8 OMNI hardware is recorded for this pinned revision."
     }
   ],
   "findings": [
     {
       "id": "A05",
       "requirement": "command_safety",
-      "status": "open",
-      "note": "Unknown readback can falsely confirm 0/off commands."
+      "status": "fixed_pending_verification",
+      "note": "PR #123 preserves unknown/missing control values and requires valid same-target readback before command confirmation; hardware/Home Assistant acceptance remains pending."
     },
     {
       "id": "REG-S8-IMPORTS",
       "requirement": "artifact_autonomy",
-      "status": "open",
-      "note": "Registered bootstrap imports four executable runtime modules; a single autonomous output is pending."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #130 changes Home Assistant registration to deterministic autonomous s8-omni-production.js and rejects runtime JS import chains; field acceptance remains pending."
+    },
+    {
+      "id": "A24",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "HACS previously ran outside the required validate context. Merged PR #131 makes validate depend on repository-checks and hacs-validation and fail unless both succeed, including failure, cancelled, skipped and missing-result cases. The ruleset retains validate + browser-regression. Post-merge CI passed at the pinned production SHA; ongoing governance verification and device acceptance remain pending. UI/runtime/version 1.0.5 are unchanged."
+    },
+    {
+      "id": "A42",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #133 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #134 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

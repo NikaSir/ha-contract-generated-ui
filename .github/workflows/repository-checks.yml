@@ -52,6 +52,9 @@ jobs:
       - name: Enforce NikaS UI standard v2.2
         run: python scripts/check_nikas_ui_standard.py
 
+      - name: Validate hierarchical title parents
+        run: python scripts/check_navigation_parents.py
+
       - name: Test Shell v2 scroll boundary
         run: node tests/shell_v2_harness.mjs
 
@@ -111,16 +114,16 @@ jobs:
       - name: Install validation dependencies
         run: python -m pip install -e '.[test]'
       - name: Test inspector and snapshot boundaries
-        run: python -m pytest -q tests/test_nikas_repository_contract.py tests/test_contract_snapshot_checkout.py tests/test_nikas_repository_registry.py tests/test_ci_gate.py
-      - name: Validate factual profile schemas
+        run: python -m pytest -q tests/test_nikas_repository_contract.py tests/test_nikas_standard_baseline.py tests/test_contract_snapshot_checkout.py tests/test_nikas_repository_registry.py tests/test_ci_gate.py
+      - name: Validate canonical baseline and factual profile schemas
         run: python scripts/nikas_repository_contract.py schema --registry deployments/repository-contracts
       - name: Explain result scope
         run: |
-          echo 'Toolkit/schema validation only. This job does not certify the registered repositories as compliant.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Toolkit/schema and canonical baseline validation only. This job does not certify the registered repositories as compliant.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Run NikaS fleet inspection for strict results against the pinned revisions.' >> "$GITHUB_STEP_SUMMARY"
 
-  validate:
-    name: validate
+  nikas-required-gate:
+    name: nikas-required-gate
     if: ${{ always() }}
     needs: [repository-checks, hacs, hassfest, nikas-contract-toolkit]
     runs-on: ubuntu-latest

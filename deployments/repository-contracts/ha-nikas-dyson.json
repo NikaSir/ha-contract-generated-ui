@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "repository": "NikaSir/ha-nikas-dyson",
+  "source_revision": "6585c81f230ec471219e65c57394fb7b683b8504",
+  "kind": "ha_integration",
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js",
+      "ui_version": "1.0.3",
+      "bindings": [
+        {
+          "role": "entrypoint",
+          "path": "custom_components/nikas_dyson/__init__.py",
+          "pattern": "module_url=f\"/nikas_dyson_static/(?P<value>[^?\"\\r\\n]+)\\?v=\\{UI_VERSION\\}\"",
+          "expected": "nikas-dyson-panel.js",
+          "path_mode": "basename"
+        },
+        {
+          "role": "ui_version",
+          "path": "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\"\\x27](?P<value>[^\"\\x27\\r\\n]+)[\"\\x27]",
+          "expected": "1.0.3"
+        },
+        {
+          "role": "cache_key",
+          "path": "custom_components/nikas_dyson/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\"\\x27](?P<value>[^\"\\x27\\r\\n]+)[\"\\x27]",
+          "expected": "1.0.3"
+        },
+        {
+          "role": "integration_version",
+          "path": "custom_components/nikas_dyson/const.py",
+          "pattern": "(?m)^\\s*(?:const\\s+)?VERSION\\s*=\\s*[\"\\x27](?P<value>[^\"\\x27\\r\\n]+)[\"\\x27]",
+          "expected": "0.1.6"
+        }
+      ],
+      "registration_evidence_paths": [
+        "custom_components/nikas_dyson/__init__.py",
+        "custom_components/nikas_dyson/panel_manifest.json"
+      ],
+      "binding_limitations": []
+    }
+  ],
+  "domain": "nikas_dyson",
+  "manifest_path": "custom_components/nikas_dyson/manifest.json",
+  "standards": {
+    "applicable": true,
+    "reason": "Integration-owned specialized NikaS panel for read-only appliance telemetry.",
+    "evidence_paths": [
+      "custom_components/nikas_dyson/__init__.py"
+    ],
+    "declaration_path": ".nikas-ui-standard.json",
+    "observed_version": "2.2",
+    "required_version": "2.2"
+  },
+  "publication": {
+    "default_branch": "main",
+    "github_releases": false,
+    "automatic_tags": false
+  },
+  "observed_workflow_paths": [
+    ".github/workflows/validate.yml"
+  ],
+  "evidence": [
+    {
+      "requirement": "data_quality",
+      "status": "pending",
+      "paths": [
+        "tests/frontend.cjs",
+        "tests/test_options.py",
+        "custom_components/nikas_dyson/config_flow.py"
+      ],
+      "note": "Snapshot failure/recovery and explicit source/calibration options have regression coverage. Browser responses and Home Assistant boundaries are mocked; real telemetry and calibration remain pending."
+    },
+    {
+      "requirement": "command_safety",
+      "status": "pending",
+      "paths": [
+        "custom_components/nikas_dyson/__init__.py"
+      ],
+      "note": "Read-only snapshot registration and permission filtering were inspected. No live permission/device acceptance is recorded."
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "pending",
+      "paths": [
+        "tests/frontend.cjs",
+        "custom_components/nikas_dyson/frontend/src/nikas-dyson-panel.js",
+        "custom_components/nikas_dyson/frontend/src/zoom-controller.js"
+      ],
+      "note": "Browser tests cover stale pending responses after reconnect, stable DOM, refresh timing and pinch zoom. Live Home Assistant/iPhone navigation, gestures and lifecycle acceptance remain pending."
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "pending",
+      "paths": [
+        ".github/workflows/validate.yml",
+        "tests/test_ci_gate.py",
+        "tests/test_delivery.py",
+        "tests/test_options.py",
+        "tests/frontend.cjs",
+        "scripts/build_frontend.py",
+        "scripts/check_panel_contract.py",
+        "LICENSE",
+        "custom_components/nikas_dyson/brand/icon.png",
+        "tests/test_title_parent.cjs"
+      ],
+      "note": "PR #1 and post-merge push run 34744161836 passed repository-checks, HACS, Hassfest and validate. 25 Python tests and 7 browser scenarios; HACS explicitly excludes topics for this custom repository. Active ruleset 23096960 requires strict validate from GitHub Actions, PRs, blocks deletion/force pushes, and has no bypass actors. This is repository evidence, not full device acceptance. PR #3 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "pending",
+      "paths": [],
+      "note": "Running user Home Assistant, real appliances, calibrated thresholds and iPhone acceptance have not been verified."
+    }
+  ],
+  "findings": [
+    {
+      "id": "A34",
+      "requirement": "data_quality",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 marks cached data stale and clears current power/activity after snapshot failure, recovering on success; live network-loss acceptance remains pending."
+    },
+    {
+      "id": "A35",
+      "requirement": "artifact_autonomy",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 replaces the importing v101 patch entrypoint with one deterministically built module and verifies registration/delivery; live installation acceptance remains pending."
+    },
+    {
+      "id": "A36",
+      "requirement": "configuration",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 adds manual source selection, explicit calibration, numeric validation and persistent disable settings. Calibration resets on source changes; real thresholds remain unverified."
+    },
+    {
+      "id": "A37",
+      "requirement": "standards",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 adds canonical specialized shell sources, declarations, refresh timing, reconnect isolation and working pinch zoom. Central profile is now registered; full live specialized-panel acceptance remains pending."
+    },
+    {
+      "id": "A38",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 adds behavior/delivery tests and fail-closed validate over repository-checks, HACS and Hassfest. PR #2 publishes owner-selected MIT; description and icon are present. Active ruleset 23096960 protects main. HACS topics remains an explicit custom-repository exception; live acceptance is pending."
+    },
+    {
+      "id": "A39",
+      "requirement": "version_coherence",
+      "status": "fixed_pending_verification",
+      "note": "PR #1 synchronizes README, manifest and registration at integration 0.1.5 / UI 1.0.2, with regression coverage; live browser cache acceptance remains pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #3 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
+    }
+  ],
+  "existing_required_checks": [
+    "validate"
+  ]
+}

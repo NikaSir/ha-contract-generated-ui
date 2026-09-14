@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "0d5366bf1dbc34e0b449b79c7f06f7d8b520b4d3",
+  "source_revision": "aa0d5e211bb38cd95b52263e8391e55f99327090",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
-      "ui_version": "11.0.13",
+      "ui_version": "11.0.16",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.13"
+          "expected": "11.0.16"
         },
         {
           "role": "cache_key",
           "path": "custom_components/nikas_rooms/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "11.0.13"
+          "expected": "11.0.16"
         }
       ],
       "registration_evidence_paths": [
@@ -45,7 +45,7 @@
       "custom_components/nikas_rooms/__init__.py"
     ],
     "declaration_path": ".nikas-ui-standard.json",
-    "observed_version": "1.9",
+    "observed_version": "2.2",
     "required_version": "2.2"
   },
   "publication": {
@@ -60,8 +60,12 @@
     {
       "requirement": "data_quality",
       "status": "pending",
-      "paths": [],
-      "note": "A10: explicit entity area overrides must be preserved by registry filtering."
+      "paths": [
+        "tests/registry_loader_harness.js",
+        "tests/test_frontend_contract.py",
+        "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+      ],
+      "note": "A10 explicit entity-area override handling and backing-device metadata regression coverage remain present at the pinned merged revision; live registry acceptance remains open."
     },
     {
       "requirement": "command_safety",
@@ -72,8 +76,12 @@
     {
       "requirement": "lifecycle",
       "status": "pending",
-      "paths": [],
-      "note": "A08: canceled animation frame handle may block subsequent updates; A09: v13 return route validation remains open."
+      "paths": [
+        "tests/registry_loader_harness.js",
+        "tests/test_frontend_contract.py",
+        "custom_components/nikas_rooms/frontend/nikas-rooms-panel.js"
+      ],
+      "note": "A08 canceled-frame reset, A09 House v13 navigation, and A19 canonical Shell/refresh lifecycle are covered at the pinned merged revision; live detach/reconnect and navigation acceptance remain open."
     },
     {
       "requirement": "repository_checks",
@@ -84,9 +92,14 @@
         "tests/test_frontend_contract.py",
         "tests/test_reference_baseline.py",
         "tests/test_route_ownership.py",
-        "scripts/check_repository.py"
+        "scripts/build_frontend.py",
+        "scripts/check_repository.py",
+        "tests/test_python_syntax_validation.py",
+        "tests/test_registration_version.py",
+        "scripts/check_standard_documents.py",
+        "tests/test_standard_document_sync.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile."
+      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     },
     {
       "requirement": "device_acceptance",
@@ -99,26 +112,50 @@
     {
       "id": "A08",
       "requirement": "lifecycle",
-      "status": "open",
-      "note": "Canceled frame is not reset for reconnect."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 resets the canceled frame handle so reconnect can schedule state patches again; live reconnect acceptance remains pending."
     },
     {
       "id": "A09",
       "requirement": "navigation",
-      "status": "open",
-      "note": "New House v13 return route is rejected."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 accepts and prefers House v13 while retaining v11/v12 compatibility; live navigation acceptance remains pending."
     },
     {
       "id": "A10",
       "requirement": "data_quality",
-      "status": "open",
-      "note": "Explicit entity area override can be lost."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #3 honors explicit entity.area_id over device.area_id and retains backing-device metadata without sibling leakage; live registry acceptance remains pending."
     },
     {
       "id": "A19",
       "requirement": "standards",
-      "status": "open",
-      "note": "Observed declaration remains 1.9; required baseline is 2.2. No version-only migration or waiver."
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #4 performs behavioral migration to NikaS UI Standard 2.2 / Navigation 1.2 with canonical Shell v2.1, Refresh Action Contract v1.1 and deterministic frontend build; live panel acceptance remains pending."
+    },
+    {
+      "id": "A31",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #5 prevents invalid integration Python from passing required validate by compiling every integration Python source without execution. Mutation regressions cover config_flow.py and nested modules; UI 11.0.15 and integration 0.1.16 are unchanged. Repository CI passed before and after merge; live/device acceptance remains pending."
+    },
+    {
+      "id": "A33",
+      "requirement": "version_coherence",
+      "status": "fixed_pending_verification",
+      "note": "Merged PR #6 corrects PANEL_UI_VERSION from 11.0.14 to the shipped UI 11.0.15, aligning registration metadata and module_url cache key. Regression tests execute real registration with isolated Home Assistant boundary stubs and compare emitted metadata and URL against the production bundle and manifest. Frontend and integration 0.1.16 are unchanged; live browser cache/device acceptance remains pending."
+    },
+    {
+      "id": "A40",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending."
+    },
+    {
+      "id": "NAV-1",
+      "requirement": "repository_checks",
+      "status": "fixed_pending_verification",
+      "note": "PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
     }
   ]
 }

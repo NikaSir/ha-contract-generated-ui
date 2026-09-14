@@ -9,11 +9,11 @@
 **Reference connection/freshness plaque:** S8 OMNI
 **Reference peer-device status lamps:** Stark SolarPower / StarLine lineage
 **Reference typography and domain status treatment:** LIDER
-**Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.2
-**Required operational-card companion:** `docs/NIKAS_HERO_HEADER_CONTRACT.md` v1.0 (08.09.2026)
+**Required navigation companion:** `docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md` v1.3
+**Required operational-card companion:** `docs/NIKAS_HERO_HEADER_CONTRACT.md` v1.0; preserves Connection/Decoration v1.1 tokens.
 **Canonical build-time source kit:** `templates/shell_v2/nikas-specialized-shell.js`
 
-This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.2 keeps the v2 geometry and adds the proven peer-device selector status-lamp contract. It retains the vendored build-time shell source and current four-panel base route topology.
+This document supersedes every earlier shell, Header, zoom, scrolling and Bottom Tab Bar rule. Historical documents and named panel implementations remain useful only as visual lineage where they do not conflict with this standard. Version 2.2 keeps the v2 geometry and adds the proven peer-device selector status-lamp contract. It retains the vendored build-time shell source and hierarchical title navigation defined by Navigation Contract v1.3.
 
 ## 1. Ownership and topology
 
@@ -121,7 +121,7 @@ idle arrow → busy rotation → success check or error glyph → idle arrow.
 - The check confirms the declared HA/API request result only. It never fabricates
   a device acknowledgement, sample timestamp, healthy state or fresh telemetry.
 
-### Center title plaque — return to the source NikaS base panel
+### Center title plaque — open the immediate parent
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
 - The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
@@ -132,10 +132,9 @@ idle arrow → busy rotation → success check or error glyph → idle arrow.
 - The focus state and pressed response are mandatory and remain visibly distinct from the default state.
 - A transparent title, a plain text label without the S8 OMNI surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
 - An arrow, chevron, a separate `Назад` label and `history.back()` are prohibited.
-- When a specialized panel is opened from `/dashboard-house-v13/home`, `/dashboard-rooms-v11/rooms`, `/dashboard-actions/home` or `/dashboard-infrastructure/overview`, it returns to that same base panel. Permitted sub-routes are normalized according to the required navigation contract.
-- The base shell records the source route in the same click/keyboard handler, immediately before changing location to the specialized panel. Ambient shell synchronization and telemetry updates must not refresh the hand-off timestamp. The common one-shot hand-off key is `sessionStorage["nikas.specialized.source_route.v1"]`; `return_to` or `from` query parameters may be used as an explicit hand-off.
-- The specialized panel captures and validates the route once, persists its accepted route for that panel/client, and does not recalculate it during telemetry updates. Only same-origin routes rooted at `/dashboard-house-v13`, `/dashboard-rooms-v11`, `/dashboard-actions` and `/dashboard-infrastructure` are accepted.
-- Capture precedence is: explicit `return_to`/`from`, one-shot session hand-off, saved route for that specialized panel, safe same-origin referrer, configured `parent_route`, then the repository-defined safe base-panel fallback.
+- The title opens exactly one declared parent level. Every main panel returns to `/home/overview`; an internal detail page returns to its own section.
+- `parent_route` is the only title-route authority. Query parameters, source hand-off, saved routes, referrer and browser history cannot override it.
+- A missing, invalid or self-referencing parent falls back to `/home/overview`. The declared registry rejects parent cycles.
 - Navigation is explicit Home Assistant navigation: `history.pushState()` followed by a `location-changed` event. Browser history is never the routing contract.
 - The title plaque, its accepted route and its click handler are mounted with the fixed Header and survive tab switches, polling, loss/recovery and every state-only patch.
 
@@ -229,60 +228,43 @@ The two-level indicator is introduced only by an explicit product request. It is
 - Tuya Local and Zigbee delivered through local MQTT are `Локально`; Tuya cloud and other remote cloud APIs are `Облако`.
 - Local transport also includes a local LAN/API, local MQTT, Modbus and SNMP path that does not require an external vendor service.
 - `Резерв` means a known fallback path is actively supplying data, not merely that fallback capability exists.
-- The second line describes freshness: `Данные актуальны`, `Данные устарели` or `Нет данных`. The Hero Header Contract v1.0 additionally permits `Ожидание данных` and `Ответ получен` when freshness is not established. Neither label asserts current telemetry; a handshake alone cannot justify `Ответ получен`.
+- The second line describes freshness only: `Данные актуальны`, `Данные устарели` or `Нет данных`.
 - Transport and freshness are independent. For example, `Облако · Данные устарели` is valid; stale data must not be relabelled as a transport outage without evidence.
 - A failed current poll makes preserved telemetry `Данные устарели`. Unless a domain documents another justified threshold, a sample also becomes stale after three normal polling intervals; it becomes current again only after a new successful sample is accepted.
 
-### Placement and geometry
+### Placement and geometry — locked contract
 
-[NikaS Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) governs the
-complete zone above the first operational card's image, diagram or other content:
-state, mode icon, explanation, connection plaque and blue decoration. It replaces
-the former intrinsic/percentage width, minimum-height and unspecified narrow-row
-rules in this section. Introducing the plaque remains a product decision; the
-`Дом сейчас` and StarLine exclusions above remain in force.
+The mandatory companion is [NikaS Connection Plaque and Blue Corner Contract
+v1.1](NIKAS_CONNECTION_DECORATION_CONTRACT.md). It restores the compact S8
+width and phone insets, with an exact `58px` height instead of the former
+minimum-only height. It supersedes v1.0's larger `200px × 60px` plaque.
 
-- The plaque belongs to the work viewport and scales with the complete card.
-- Exact border-box: `168px × 58px`; padding `10px 11px`; border `1px`; radius
-  `18px`; lamp `10px`; column gap `8px`; text width `126px`; row gap `3px`.
-- Main line: `16px/700`, line-height `18px`. Secondary line: `13px/600`,
-  line-height `15px`. Both are single-line; no shrinking or ellipsis.
-- The plaque stays at the upper right, `14px` from the card's outer top/right
-  edges. At card width below `400px`, the state block moves below it; the plaque
-  does not move left. The variant depends on unscaled card width, not label length.
-- The image/content starts at exactly `y=124px` for card width at least `400px`,
-  or `y=194px` below `400px`, measured from the card's outer top edge.
-- Exact decoration: `205px` circle, `top:-92px`, `right:-70px` from the inner
-  border edge, `rgba(3,169,217,0.07)`, clipped by the card and behind its content.
-- State and icon use the common typography, finite copy dictionary, state priority
-  and light/dark palettes in the companion. Existing panels require recorded
-  runtime acceptance; publication of the document does not certify them.
+- The plaque is exactly `168px × 58px` border-box, radius `18px`, at `top:13px;
+  right:13px` from the operational card's inner border edge.
+- Use `11px 12px` padding, a `1px` border, internal columns `10px minmax(0,1fr)`,
+  `9px` column gap and a circular `10px × 10px` lamp.
+- Main text is `16px/700`, line-height `17px`; freshness is `13px/600`, line-height
+  `14px`; text gap is `3px`. Both use the companion's exact shared font stack.
+- The title occupies its own reserved area. Below `360px` outer card width it
+  moves below the plaque; the plaque retains its top/right position and size.
+- Both elements belong to the work viewport and scale with it. Status text,
+  image size/loading, peer switches and telemetry must not move their anchors.
+- The separate upper-right background circle is exactly `205px × 205px`,
+  `top:-92px; right:-70px`, radius `50%`, fill `rgba(3,169,217,0.07)`.
+  It is clipped by a persistent card decoration layer and never recolored by
+  `--primary-color`, state or device mode. It does not represent Refresh.
+- No per-panel or responsive override may change these tokens. Validate actual
+  production computed styles and rectangles using the companion's scenarios;
+  merely copying the latest S8 CSS is not evidence of conformance.
 
 ### State surfaces and colors
 
-The companion defines transport, freshness and device state independently.
-Lamp and first-line colors report the confirmed transport; the surface also reflects
-freshness. Use the exact shared palette, not integration-local theme overrides.
-
-- Lamps: confirmed local/cloud `#43a047`; reserve `#f6a623`; confirmed offline
-  `#db4437`; unknown: secondary theme text color. First-line light/dark text:
-  local/cloud `#2e7d32` / `#81c784`; reserve `#a86200` / `#ffc166`; offline
-  `#b3261e` / `#ff8a80`; unknown: secondary theme text color.
-- Surface priority: confirmed offline → error; stale or reserve → warning;
-  missing/unproven freshness → neutral; local/cloud with current telemetry → good.
-- Good surface: `11%` success mix with card background, `30%` with divider.
-  Warning/error: `10%` background and `30%` border. Neutral: `8%` secondary-text
-  background and `28%` secondary-text border.
-- The secondary line is normally secondary theme text. Stale text uses
-  `#a86200` in the light theme and `#ffc166` in the dark theme, weight `600`.
-- `Локально / Данные устарели` retains green channel text/lamp but uses a warning
-  surface and stale line. Staleness alone must not manufacture `Нет связи`.
-- `Ответ получен` is explicit response evidence without proven sample age; use a
-  neutral surface, never an invented current timestamp or green freshness claim.
-- Device faults color the main device status independently. A healthy transport
-  may carry a factual fault. The decorative circle never changes color.
-- Color always has a textual meaning. Saturated fills and green surfaces for
-  unknown, unavailable, stale or untrusted data are prohibited.
+- `Локально` and `Облако`: lamp and main line use `var(--success-color,#43a047)`; background is an `11%` success-color mix with `var(--card-background-color)`; border is a `30%` success-color mix with `var(--divider-color)`.
+- `Резерв`: lamp and main line use `var(--warning-color,#f6a623)`; background is a `10%` warning-color mix with `var(--card-background-color)`; border is a `30%` warning-color mix with `var(--divider-color)`.
+- `Нет связи`: lamp and main line use `var(--error-color,#db4437)`; background is a `10%` error-color mix with `var(--card-background-color)`; border is a `30%` error-color mix with `var(--divider-color)`.
+- `Нет данных`: lamp and main line use `var(--disabled-text-color,var(--secondary-text-color))`; background is an `8%` secondary-text-color mix with `var(--card-background-color)`; border is a `28%` secondary-text-color mix with `var(--divider-color)`.
+- A current freshness line uses `var(--secondary-text-color)`. `Данные устарели` uses `var(--warning-color,#f6a623)` at weight `600`. `Нет данных` uses `var(--secondary-text-color)`.
+- Color is always accompanied by text. Saturated full fills, arbitrary product colors and a green surface for `unknown`, `unavailable`, stale or untrusted data are prohibited.
 
 ### Rendering behavior
 
@@ -352,10 +334,10 @@ Repository tests or static checks must verify:
 9. brand `icon.png` exists in the shipped integration package;
 10. meaningful typography stays within `12–25px`, subject only to the documented schematic exception;
 11. routine telemetry cannot replace the shell, viewport, canvas, background or Bottom Tab Bar;
-12. an optional connection indicator, when requested, uses the canonical transport/freshness vocabulary, S8 OMNI geometry and exact state-tinted surface percentages;
+12. a requested connection indicator and enabled blue corner satisfy `NIKAS_CONNECTION_DECORATION_CONTRACT.md` v1.1, including exact tokens, all label lengths, stable DOM and zero state-caused geometry movement; transport/freshness vocabulary and state-tinted surface percentages remain canonical;
 13. the center title is a two-line, exactly `52px` high semantic button, contains no arrow or separate Back label and retains geometric centering;
 14. every reset path normalizes and persists `{scale:1,x:0,y:0}` and native scroll origin;
-15. source-route capture follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`, uses the four canonical base entry routes, writes the common session hand-off at outbound click/keyboard time, consumes it once, performs explicit HA navigation and contains no `history.back()`;
+15. title navigation follows `NIKAS_PANEL_NAVIGATION_CONTRACT.md`: immediate parent only, native overview at the top, explicit HA navigation, no ambient source authority or `history.back()`;
 16. the hand-off route and timestamp are a required pair, reject missing, invalid, expired and future timestamps, and are both removed before candidate selection;
 17. the production entrypoint is the only runtime file, is autonomous and is reproducible from its declared build inputs;
 18. UI version, manifest/contract, component registration and cache key stay coherent;
@@ -371,8 +353,6 @@ Repository tests or static checks must verify:
 28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
 29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
 30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.1, including the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
-
-31. an applicable operational card satisfies `NIKAS_HERO_HEADER_CONTRACT.md` v1.0: fixed upper-zone geometry, exact plaque and blue decoration, persistent mode icon, finite complete labels, truthful state colors and no movement of the image boundary during state changes.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
@@ -400,11 +380,10 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - every peer selector shows one correctly classified lamp per device; selected styling remains unchanged while green/orange/red/gray health states update independently and without geometry shift;
 - the upper menu visually matches S8 OMNI: persistent 97% primary-background strip, divider, blur and three aligned plaques below Dynamic Island;
 - both Header side buttons are visible matching `44px × 44px` plaques;
-- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, returns to each of the four originating NikaS base panels and uses the configured safe fallback after a direct open;
+- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, opens the immediate parent and reaches `/home/overview` from every main panel, including after direct opening;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
-- a requested connection indicator visually matches S8 OMNI: `168px × 58px` exact border-box, `18px` radius, internal `10px` lamp, stable two-line text and state-specific surface without geometry movement;
-- the complete operational-card top zone passes the companion geometry/state matrix, including card widths `399/400/401px`, host width `320px`, fallback fonts and unchanged image origin;
+- a requested connection indicator has the exact `168px × 58px` box, `13px` top/right inset, `18px` radius, internal `10px` lamp and fixed `16/700` + `13/600` text; an enabled blue corner has the exact `205px` circle and fixed fill/anchor from `NIKAS_CONNECTION_DECORATION_CONTRACT.md`;
 - repeated telemetry, indicator transitions, tab changes and upward/downward scroll produce no full-screen flash or white frame;
 - scrolling the work area never moves Header, peer selector or Bottom Tab Bar;
 - pulling downward at the top of any tab never displays the Home Assistant refresh spinner or splash screen; dragging upward at the bottom never moves the complete panel or leaves a blank field below it;
@@ -415,7 +394,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - `Дом сейчас` and StarLine contain no unrequested two-level connection indicator.
 - repeated telemetry and tab changes do not change the captured Header return destination or replace its click handler.
 - an unavailable target cannot be commanded and never flashes an optimistic success state;
-- a missing or stale hand-off timestamp falls back safely instead of reusing an old source route.
+- query, storage, hand-off and referrer cannot alter the hierarchical title destination.
 - expanding or collapsing the Home Assistant sidebar changes only the available host width; it does not overlap, offset twice or leave a blank sidebar reserve in the NikaS shell;
 - rotating between portrait and landscape preserves one shell, one work viewport, the selected tab and valid scroll/zoom bounds.
 
@@ -442,3 +421,10 @@ required companion to this standard.
   existing panel.
 - Generated panel existence follows enabled manifest/configuration state; entity
   availability affects content only.
+
+## Operational-card composition companion
+
+[NikaS Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) binds the state,
+explanation and image region to the existing Connection/Decoration v1.1 geometry.
+It preserves product-owned image proportions and radius, Navigation v1.3 and
+requested-element exclusions. Publication does not certify consumer runtime.

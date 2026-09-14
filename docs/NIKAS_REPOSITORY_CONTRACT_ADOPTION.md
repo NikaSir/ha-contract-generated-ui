@@ -10,7 +10,7 @@ changed by this package.
 | File | Responsibility |
 |---|---|
 | `schemas/nikas_repository_contract.schema.json` | Factual profile format |
-| `scripts/nikas_repository_contract.py` | Profile validation and strict inspection |
+| `scripts/nikas_repository_contract.py` | Canonical baseline validation, profile validation and strict inspection |
 | `deployments/repository-contracts/*.json` | Source revision, active delivery, observed standard and open evidence for each repository |
 | `scripts/checkout_nikas_contract_snapshots.py` | Public Git snapshots at the exact profile revisions |
 | `.github/workflows/repository-checks.yml` (`nikas-contract-toolkit` job) | Inspector regression tests and profile-schema checks |
@@ -72,12 +72,47 @@ Exit codes:
 - `2`: malformed profile/input or setup error.
 
 In particular, exit 0 from `schema` means only that profiles conform to the
-profile format. Read the report scope and per-requirement results.
+profile format and the inspector's canonical baseline is internally consistent.
+Read the report scope and per-requirement results; this is not product compliance.
+
+## Canonical baseline (inspector 1.0.2)
+
+The inspector reads `.nikas-ui-standard.json` from **its own canonical checkout**,
+resolved relative to the inspector file. UI/navigation versions and SHA-256 values
+come from this one declaration. Before inspecting any consumer, it verifies the
+declared hashes against the actual document bytes and the versions against the
+document headings. Missing, malformed, conflicting or inconsistent authority
+inputs produce exit 2 and an input-error report. The `schema`, `validate` and
+`fleet` commands all perform this check, including the toolkit CI job.
+
+This fixes A19's stale target in inspector 1.0.0: its hard-coded hashes could
+reject updated canonical documents and accept the older mirror even while both
+still declared UI 2.2 / Navigation 1.2. Updating the reviewed canonical documents
+and their declaration together now updates the inspection target; there is no
+second hash list in the inspector to synchronize.
+
+The consumer checkout, profile, document paths, matching local hashes and working
+directory cannot select the authority. There is no consumer-supplied baseline
+CLI option or network lookup of `main`. For consumer CI adoption, check out the
+**inspector, schema, canonical declaration and documents together at a reviewed
+full commit SHA**. Do not copy only the Python script into the consumer or fetch
+a floating implementation. The pinned canonical checkout is the trust boundary:
+an intentional document-and-declaration update in that checkout requires review.
+
+JSON reports record the canonical repository/revision, declaration hash, document
+hashes and required versions under `policy`, alongside inspector/schema hashes
+under `tool`. Historical reports retain the baseline they actually used; their
+hashes and pinned consumer profiles are not rewritten by a tool upgrade.
+
+Document parity still leaves applicable `ui_behavior` as `not_verified`. This
+fix does not migrate consumer shells, grant exceptions, update their standard
+versions or prove browser/HA acceptance. Consumer gate adoption and product
+behaviour remain open A19 work.
 
 ## Evidence discipline
 
-These initial profiles preserve observed standards, including old 1.9/2.1
-declarations, and open audit IDs. The required baseline is recorded separately.
+Profiles not yet refreshed preserve their observed standards, including old
+1.9/2.1 declarations, and open audit IDs. The required baseline is recorded separately.
 A `pending` entry is not an exception or acceptance. Existing test/workflow
 paths are inventory only; they do not prove those tests cover the active product.
 
@@ -90,8 +125,13 @@ and relevant runtime artifacts.
 The retained House files inside `ha-contract-generated-ui` are not active panel
 artifacts: its current setup registers the registry service and static assets.
 The standalone House repository is the panel owner. The HO profile includes
-the newly merged Zone 7 verification revision, UI 0.7.06; its additional syntax
-checks do not establish autonomy or complete coverage of its historical imports.
+the reviewed UI 1.0.2 autonomous production bundle and owner-approved stable
+Release policy; its static checks do not establish live HACS/device acceptance.
+
+The A19 consumer profiles pin HO-SC-8W, House, Stark and Water to their reviewed
+UI Standard 2.2 `main` revisions. Findings fixed in code remain
+`fixed_pending_verification` until the required HA/browser/iPhone or device
+acceptance is recorded. Profile synchronization is not product certification.
 
 ## Subsequent consumer migration
 

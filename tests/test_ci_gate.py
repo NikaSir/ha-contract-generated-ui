@@ -1,7 +1,7 @@
-"""Exercise the real aggregate gate with successful and incomplete job results.
+"""Exercise the final A21 aggregate required gate without a legacy alias.
 
-Set NIKAS_CI_WORKFLOW_PATH to inspect the same contract in a consumer workflow.
-The subprocess executes only the aggregate gate, never its dependency jobs.
+Set NIKAS_CI_WORKFLOW_PATH to inspect the same contract in another workflow.
+The subprocess executes only the aggregate gate script, never dependency jobs.
 """
 
 import json
@@ -24,7 +24,7 @@ class CIGateTests(unittest.TestCase):
     def setUpClass(cls):
         cls.workflow = yaml.safe_load(WORKFLOW.read_text())
         cls.jobs = cls.workflow["jobs"]
-        cls.gate = cls.jobs["validate"]
+        cls.gate = cls.jobs["nikas-required-gate"]
         cls.required = cls.gate["needs"]
         cls.step = cls.gate["steps"][0]
 
@@ -41,12 +41,16 @@ class CIGateTests(unittest.TestCase):
             env=env, text=True, capture_output=True, timeout=5,
         )
 
-    def test_gate_covers_every_validation_job_and_cannot_be_skipped(self):
+    def test_unique_gate_covers_every_validation_job_and_cannot_be_skipped(self):
+        self.assertNotIn("validate", self.jobs)
         self.assertIsInstance(self.required, list)
-        self.assertEqual(set(self.required), set(self.jobs) - {"validate"})
+        self.assertEqual(
+            set(self.required),
+            set(self.jobs) - {"nikas-required-gate"},
+        )
         self.assertEqual(len(self.required), len(set(self.required)))
         self.assertEqual(self.gate["if"], "${{ always() }}")
-        self.assertEqual(self.gate.get("name", "validate"), "validate")
+        self.assertEqual(self.gate.get("name"), "nikas-required-gate")
         self.assertFalse(self.gate.get("continue-on-error", False))
         self.assertEqual(len(self.gate["steps"]), 1)
         self.assertFalse(self.step.get("continue-on-error", False))

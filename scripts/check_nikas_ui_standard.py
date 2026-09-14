@@ -28,8 +28,8 @@ def main() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     require(config.get("version") == "2.2", "NikaS UI standard version must be 2.2")
     require(
-        config.get("navigation_contract_version") == "1.2",
-        "NikaS navigation contract version must be 1.2",
+        config.get("navigation_contract_version") == "1.3",
+        "NikaS navigation contract version must be 1.3",
     )
 
     standard_path = config.get("standard_path", "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md")
@@ -40,25 +40,52 @@ def main() -> None:
         baseline = f"Normative baseline:** NikaS Specialized Panel UI Standard v{config['version']}"
         require(baseline in knowledge_base, "engineering knowledge base baseline does not match the canonical standard")
         require("### 2.10 Peer status and selection are different facts" in knowledge_base, "knowledge base is missing the v2.2 peer-status lesson")
+        require("### 2.13 Connection plaque and blue corner must use locked tokens" in knowledge_base, "knowledge base is missing the locked connection/decoration lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
-    # The registry verifies the normative companion, not consumer runtime compliance.
-    if config.get("role") == "registry" or "hero_header_contract" in config:
-        hero = config.get("hero_header_contract", {})
-        require(hero.get("version") == "1.0", "Hero Header Contract version must be 1.0")
-        require(hero.get("status") == "required", "Hero Header Contract must be required")
-        hero_path = hero.get("path")
-        require(hero_path == "docs/NIKAS_HERO_HEADER_CONTRACT.md", "Hero Header Contract path drift")
-        hero_text = read_relative(hero_path)
-        require(hashlib.sha256(hero_text.encode("utf-8")).hexdigest() == hero.get("sha256"), "Hero Header Contract hash drift")
-        require("NIKAS_HERO_HEADER_CONTRACT.md" in standard, "UI standard must bind the Hero Header Contract")
-        plaque = config.get("connection_plaque_reference", {})
-        require((plaque.get("width_px"), plaque.get("height_px"), plaque.get("padding_px"), plaque.get("column_gap_px")) == (168, 58, "10 11", 8), "exact connection plaque geometry drift")
-        geometry = hero.get("geometry", {})
-        require((geometry.get("card_breakpoint_px"), geometry.get("image_origin_wide_px"), geometry.get("image_origin_narrow_px")) == (400, 124, 194), "operational header geometry drift")
-        decoration = hero.get("decoration", {})
-        require((decoration.get("diameter_px"), decoration.get("top_px"), decoration.get("right_px"), decoration.get("color")) == (205, -92, -70, "rgba(3,169,217,0.07)"), "blue decoration geometry/color drift")
-
+    # Registry integrity only: production layout needs the companion's browser evidence.
+    geometry = config.get("connection_decoration_contract", {})
+    require(geometry.get("version") == "1.1", "connection/decoration contract must be v1.1")
+    require(geometry.get("status") == "required_when_present", "connection/decoration applicability drift")
+    require(geometry.get("production_browser_acceptance_required") is True, "production geometry evidence is required")
+    require(geometry.get("state_layout_delta_px") == 0, "state changes must not move connection/decoration")
+    require(geometry.get("measurement_noise_px") == 0.1, "state geometry measurement noise drift")
+    require(geometry.get("geometry_tolerance_px") == 1, "card geometry tolerance must be 1px")
+    geometry_doc = read_relative(geometry.get("path", "docs/NIKAS_CONNECTION_DECORATION_CONTRACT.md"))
+    require(hashlib.sha256(geometry_doc.encode("utf-8")).hexdigest() == geometry.get("sha256"), "connection/decoration contract hash drift")
+    require("NIKAS_CONNECTION_DECORATION_CONTRACT.md" in standard, "UI standard must bind the locked geometry contract")
+    plaque = config.get("connection_plaque_reference", {})
+    expected_plaque = {
+        "contract_version": "1.1", "width_px": 168, "height_px": 58,
+        "box_sizing": "border-box", "top_px": 13, "right_px": 13,
+        "coordinate_origin": "card_inner_border_edge", "padding_px": "11 12",
+        "radius_px": 18, "lamp_px": 10, "column_gap_px": 9, "text_gap_px": 3,
+        "font_family": '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif',
+        "main_font": "16px/700", "freshness_font": "13px/600",
+        "main_line_height_px": 17, "freshness_line_height_px": 14,
+        "geometry_overrides_allowed": False,
+        "shadow": "0 4px 14px rgba(0,0,0,.055)",
+    }
+    for key, value in expected_plaque.items():
+        require(plaque.get(key) == value, f"connection plaque token drift: {key}")
+    require("min_height_px" not in plaque, "retire the minimum-only connection height")
+    expected_corner = {
+        "width_px": 205, "height_px": 205, "top_px": -92, "right_px": -70,
+        "base_color": "#03A9D9", "background": "rgba(3,169,217,0.07)",
+        "opacity": 1, "radius": "50%", "coordinate_origin": "card_inner_border_edge",
+        "clip": "persistent_card_decoration_layer", "theme_primary_dependent": False,
+        "geometry_overrides_allowed": False, "pointer_events": "none", "aria_hidden": True,
+    }
+    require(config.get("blue_corner_reference") == expected_corner, "blue corner token drift")
+    hero = config.get("hero_header_contract", {})
+    require(hero.get("version") == "1.0", "Hero Header Contract must be v1.0")
+    require(hero.get("status") == "required_when_present", "Hero applicability drift")
+    require(hero.get("geometry_authority") == "connection_decoration_contract", "Hero must preserve accepted geometry authority")
+    require(hero.get("path") == "docs/NIKAS_HERO_HEADER_CONTRACT.md", "Hero path drift")
+    require(hero.get("implementation_status") == "panel_acceptance_required", "Hero publication must not certify panel acceptance")
+    hero_text = read_relative(hero["path"])
+    require(hashlib.sha256(hero_text.encode("utf-8")).hexdigest() == hero.get("sha256"), "Hero contract hash drift")
+    require("NIKAS_HERO_HEADER_CONTRACT.md" in standard, "UI standard must bind Hero contract")
     navigation_contract = read_relative(config["navigation_contract_path"])
     navigation_digest = hashlib.sha256(navigation_contract.encode("utf-8")).hexdigest()
     require(
@@ -77,16 +104,13 @@ def main() -> None:
             "frontend delivery standard retains the superseded 28px icon rule",
         )
     for clause in (
-        "Center title plaque — return to the source NikaS base panel",
-        'sessionStorage["nikas.specialized.source_route.v1"]',
-        "return_to",
+        "Center title plaque — open the immediate parent",
+        "parent_route",
+        "/home/overview",
         "history.pushState()",
         "history.back()",
-        "Capture precedence is:",
         "exact form `UI vX.Y.Z`",
         "focus state and pressed response",
-        "same click/keyboard handler",
-        "Ambient shell synchronization",
         "Data truth and command safety",
         "Production bundle and version coherence",
         "Home Assistant host boundary",
@@ -97,8 +121,6 @@ def main() -> None:
         "never displays the Home Assistant refresh spinner",
         "Five destinations, as used by Keenetic, conform to this limit.",
         "Build-time shell source",
-        "/dashboard-house-v13/home",
-        "/dashboard-rooms-v11/rooms",
         "Peer-device status lamps — Stark SolarPower reference",
         "red overrides orange, orange overrides green",
         "Unchanged lamp state produces no DOM write.",
@@ -136,11 +158,6 @@ def main() -> None:
         "/dashboard-actions/home",
         "/dashboard-infrastructure/overview",
         "/starline",
-        "nikas.specialized.source_route_at.v1",
-        "same click/keyboard handler",
-        "Both hand-off values are required",
-        "timestamp from the future",
-        "partial storage write is rolled back",
         "A missing, orphaned or mismatched public route is a blocking defect.",
     ):
         require(clause in navigation_contract, f"canonical navigation clause missing: {clause}")
@@ -280,59 +297,12 @@ def main() -> None:
 
     require(runtime_files, f"{role} repository must declare checked runtime_files")
 
-    for token in (
-        "nikas.specialized.source_route.v1",
-        "nikas.specialized.source_route_at.v1",
-        "/dashboard-house-v13/home",
-        "/dashboard-rooms-v11/rooms",
-        "/dashboard-actions/home",
-        "/dashboard-infrastructure/overview",
-    ):
-        require(token in sources, f"runtime route contract missing token: {token}")
+    require("/home/overview" in sources, "native overview title destination missing")
     require('"/dashboard-house"' not in sources, "legacy /dashboard-house route is forbidden in runtime")
     require("'/dashboard-house'" not in sources, "legacy /dashboard-house route is forbidden in runtime")
     require("/dashboard-starline" not in sources, "invalid /dashboard-starline route is forbidden in runtime")
 
     if role == "base":
-        require("sessionStorage" in sources, "base shell must persist the source-route hand-off")
-        markers = config.get("source_handoff", {})
-        require(isinstance(markers, dict) and markers, "base shell must declare source_handoff markers")
-        for name in (
-            "storage_write_marker",
-            "timestamp_write_marker",
-            "rollback_marker",
-            "route_normalizer_marker",
-            "specialized_route_marker",
-            "capture_marker",
-            "navigation_marker",
-            "delegation_marker",
-            "contract_version_marker",
-        ):
-            marker = markers.get(name)
-            require(isinstance(marker, str) and marker, f"source_handoff.{name} must be configured")
-            require(marker in sources, f"base source-route hand-off marker missing: {marker}")
-        require(
-            "rememberSpecializedSourceRoute(window.location.pathname);" not in sources,
-            "ambient shell synchronization must not refresh the source hand-off",
-        )
-        delegated_files = config.get("delegated_navigation_files", [])
-        require(delegated_files, "base shell must list every delegated navigation source")
-        delegation_marker = markers["delegation_marker"]
-        for path in delegated_files:
-            require(
-                delegation_marker in read_relative(path),
-                f"base outbound navigation does not delegate to click-time hand-off: {path}",
-            )
-        for token in (
-            "/dashboard-zont",
-            "/starline",
-            "/dashboard-s8-omni",
-            "/dashboard-irrigation",
-            "/dashboard-ups",
-            "/dashboard-keenetic",
-            "/dashboard-lider",
-        ):
-            require(token in sources, f"canonical specialized-panel route missing from base registry: {token}")
         return
 
     header_return_runtime_path = config.get("header_return_runtime_path", production_entrypoint)
@@ -340,21 +310,8 @@ def main() -> None:
         read_relative(header_return_runtime_path) if header_return_runtime_path else sources
     )
 
-    for token in (
-        "return_to",
-        "from",
-        "history.pushState",
-        "location-changed",
-        "UI v",
-        "sessionStorage",
-        "removeItem(",
-        "window.location.origin",
-        "url.origin",
-        "url.pathname",
-        "document.referrer",
-        "parent_route",
-    ):
-        require(token in header_return_runtime, f"specialized Header-return runtime missing token: {token}")
+    for token in ("history.pushState", "location-changed", "UI v", "/home/overview"):
+        require(token in sources, f"hierarchical Header navigation missing token: {token}")
     require("history.back(" not in sources, "history.back() is forbidden by the NikaS routing contract")
     require(
         re.search(r"/dashboard-starline(?:[/'\"?#]|$)", sources) is None,
@@ -376,10 +333,6 @@ def main() -> None:
         "version_marker",
         "focus_marker",
         "pressed_marker",
-        "explicit_precedence_marker",
-        "capture_once_marker",
-        "timestamp_required_marker",
-        "future_timestamp_rejection_marker",
     ):
         marker = markers.get(name)
         require(isinstance(marker, str) and marker, f"header_return.{name} must be configured")

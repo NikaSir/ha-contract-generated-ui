@@ -157,33 +157,49 @@ references do not certify the entire contract or replace physical acceptance.
 
 ---
 
-### 2.13 The complete operational-card header needs one numeric contract
+### 2.13 Connection plaque and blue corner must use locked tokens
 
-The owner reported repeated movement of the connection plaque, blue corner
-decoration and state block in Climate, Irrigation and Vacuum reviews. A reference
-screenshot and an approximate `minmax(168px,44%)` plaque width did not fix the
-whole composition. The old 58px minimum also conflicted with its vertical padding
-and line metrics when interpreted as an exact height. Broad connection CSS once
-matched and damaged the inner lamp.
+On 2026-09-08 the user again reported that «Связь» changes position, size and
+font, and requested the same strict treatment for the upper-right blue element.
+The source comparison found concrete drift:
 
-**Required model:** [Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md),
-08.09.2026. Fix the complete region above the image: state/icon/explanation on
-the left, 168×58px plaque on the right, 205px blue circle behind it. The image
-starts at y=124px, or y=194px for a card below 400px. Breakpoints use unscaled
-card width; state text never triggers a different layout. A 24px icon slot and
-fixed two-line text slots preserve geometry. Exact plaque padding is 10px 11px.
+| Source inspected | Plaque drift | Blue circle drift |
+|---|---|---|
+| [S8 OMNI `2ed8bac`](https://github.com/NikaSir/ha-s8-omni/tree/2ed8bacb5d3def6141aa118bd6994b036c9f2610) | Proportional width; `min-height:58px`; mobile stacking; text gap 4px | 205px; top −92px / right −70px; theme-dependent blue |
+| [HO-SC-8W `dc4afe2`](https://github.com/NikaSir/ha-ho-sc-8w/tree/dc4afe23ddb14850c289c3145526043d0894441c) | Width 168px; minimum height only; vertical centering against controller image; another font stack | 200px; top −90px / right −65px; another blue |
+| [Climate `b5fae6c`](https://github.com/NikaSir/ha-nikas-climate/tree/b5fae6ce16b905d1e9c1d42d98d49324ece40772) | Proportional width; 58/64px minimum heights; implicit line-height; another font stack | 220px desktop / 188px mobile; different offsets |
 
-Transport, sample freshness and device operating state are separate. OFF is
-neutral even with a saved active mode. A warning/error overrides the active
-mode tone. A stale sample is never presented as current operation. A confirmed
-channel with unproven sample age uses explicit waiting/response evidence; the
-short plaque label `Ответ получен` is not a freshness claim. Green channel text
-can coexist with a warning surface for stale telemetry. The circle stays blue.
+A minimum height is not an exact height: the old S8 text, gap, padding and border
+already required about 60.45px. “Use the S8 reference” therefore did not uniquely
+specify the result. CSS appended to historical classes could also miss the
+current production DOM, while a wildcard connection selector deformed the lamp.
 
-**Evidence boundary:** the owner's Vacuum UI v1.0.4 screenshot supplies visual
-lineage; the mode icon and fixed whole-region dimensions are newly specified.
-Contract publication does not certify any existing panel. Implementations record
-GAP until production rectangle/state tests and device acceptance are complete.
+The subsequent user comparison selected the compact S8 phone appearance.
+Revision 1.1 restores `168px` width and the phone layout's `13px` top/right
+inset (`14px` from the outer card edge with its `1px` border). The agreed
+`58px` compact height is fixed explicitly, not represented as a measured
+height of the old runtime. Its smaller inner padding reconciles that height
+with the unchanged type sizes; the blue corner tokens remain unchanged.
+
+**Required model:** [Connection Plaque and Blue Corner Contract v1.1](NIKAS_CONNECTION_DECORATION_CONTRACT.md).
+
+- «Связь»: exactly 168×58px border-box; top/right 13px from the card's inner
+  border edge; radius18; padding11/12; lamp10; column gap9; text gap3.
+- One font stack everywhere; main16px/700 with 17px line-height;
+  freshness13px/600 with 14px line-height. No product font inheritance.
+- Blue decoration: circle205px; top−92/right−70; fixed `rgba(3,169,217,0.07)`;
+  no theme-primary input, responsive alternative or status meaning.
+- Preserve both DOM nodes and the anchors through every state update. On narrow
+  cards the title moves below the plaque; the plaque remains at the top right.
+- Replace conflicting CSS at its source. Do not append another patch, shrink
+  text, center the plaque against the image or use wildcard internal selectors.
+- Production acceptance measures rectangles/computed styles for all label
+  lengths, state transitions, peer/tab changes, width boundaries, zoom and themes.
+
+These are intentionally fixed new tokens within UI Standard v2.2. Updating the
+knowledge base does not update the three installed panels. Their conformance
+remains unverified until individual production changes and acceptance evidence
+are recorded; a documentation/hash check is not runtime evidence.
 
 ---
 
@@ -359,15 +375,6 @@ For devices with materially different states (car security, vacuum cleaning/char
 ### 5.6 Controls must match semantics
 
 Do not mix “start now” and “automatic setting enabled” in one control group. If a vendor exposes only Stop for a running station function, represent that factual capability rather than inventing a Start action.
-
----
-
-### 5.7 Operational-card upper zone
-
-Follow `NIKAS_HERO_HEADER_CONTRACT.md` for the complete state/icon/connection/decor
-composition above an image or other content. Shared fixed dimensions, state
-vocabulary and colors are mandatory; independent per-panel approximations are
-not. Scope exclusions and unimplemented behavior remain explicit.
 
 ---
 
@@ -552,7 +559,6 @@ Automate where practical:
 - max history concurrency is enforced;
 - command duplicate submission is blocked;
 - refresh success/error glyphs last 1400 ms, survive telemetry patches and cannot be reset by an old timer during a newer request;
-- operational-card state transitions preserve plaque, icon and decoration geometry and the image origin; narrow-card breakpoints depend only on width, and full labels fit both standard and fallback fonts;
 - unknown/unavailable data does not become healthy;
 - the two-peer selector keeps the StarLine reference geometry (52px row, 44px independent buttons, 8px gap) and patches status lamps independently of selection.
 
@@ -612,7 +618,6 @@ The following patterns are considered known regressions unless a new design prov
 - generic “Online” when transport/freshness distinction is required;
 - status represented by color only;
 - refresh silently returning to the arrow without showing its result, or displaying a green check after a failed/partial request;
-- an intrinsic/percentage connection-plaque width, an auto-height operational header, mode-dependent decoration, or broad CSS matching inner connection elements;
 - a generic page-loading CSS class applied to a Header action and changing its geometry;
 - a shared outer pill around peer-device buttons, or selection styling driven by device health;
 - missing/unavailable rendered green or as zero;
@@ -660,3 +665,7 @@ This is a living file. After each meaningful defect investigation or successful 
 - **Acceptance** — what must be verified on the real device.
 
 A lesson is not considered preserved until it changes either the design rule, the automated check, or the acceptance checklist.
+
+## Hero Header Contract consolidation — 2026-09-14
+
+[Hero Header Contract v1.0](NIKAS_HERO_HEADER_CONTRACT.md) completes operational-card composition without redefining the accepted Connection/Decoration v1.1 tokens. The earlier draft conflicted on padding, line heights, font stack and the 360px breakpoint. The accepted companion retains v1.1, product-owned image geometry, current Navigation v1.3 and explicit runtime acceptance. A green registry check never grants a panel PASS.

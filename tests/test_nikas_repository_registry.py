@@ -10,7 +10,7 @@ def test_initial_scope_contains_all_maintained_repositories():
     expected = {
         ".github", "ha-contract-generated-ui", "ha-hikvision-next", "ha-ho-sc-8w",
         "ha-keenetic-hero-4g", "ha-lider-voltage-control", "ha-nikas-access",
-        "ha-nikas-climate", "ha-nikas-house", "ha-nikas-rooms", "ha-s8-omni",
+        "ha-nikas-climate", "ha-nikas-dyson", "ha-nikas-house", "ha-nikas-rooms", "ha-s8-omni",
         "ha-stark-solarpower", "ha-starline-telemetry", "ha-vless-gateway",
         "ha-water-accounting", "ha-zont", "vless-gateway",
     }

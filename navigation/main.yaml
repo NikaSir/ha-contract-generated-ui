@@ -2,64 +2,93 @@ api_version: nikas.home-assistant/navigation/v1
 kind: NavigationContract
 metadata:
   id: main
-  version: 2.1.1
-  description: Canonical NikaS base and specialized route registry; every runtime remains independently owned.
+  version: 2.2.0
+  description: Canonical NikaS base and specialized route registry; every runtime
+    remains independently owned.
 spec:
   routes:
     home:
       title: Дом
       path: /dashboard-house-v13/home
+      parent: overview
     actions:
       title: Действия
       path: /dashboard-actions/home
+      parent: overview
     infrastructure:
       title: Инфраструктура
       path: /dashboard-infrastructure/overview
+      parent: overview
     rooms:
       title: Помещения
       path: /dashboard-rooms-v11/rooms
+      parent: overview
+    overview:
+      title: Home Assistant
+      path: /home/overview
   global_tabs:
-    - id: home
-      route: home
-      title: Дом
-      icon: mdi:home-outline
-    - id: rooms
-      route: rooms
-      title: Помещения
-      icon: mdi:floor-plan
-    - id: actions
-      route: actions
-      title: Действия
-      icon: mdi:lightning-bolt-outline
-    - id: infrastructure
-      route: infrastructure
-      title: Инфра
-      icon: mdi:server-network
+  - id: home
+    route: home
+    title: Дом
+    icon: mdi:home-outline
+  - id: rooms
+    route: rooms
+    title: Помещения
+    icon: mdi:floor-plan
+  - id: actions
+    route: actions
+    title: Действия
+    icon: mdi:lightning-bolt-outline
+  - id: infrastructure
+    route: infrastructure
+    title: Инфра
+    icon: mdi:server-network
   specialized_routes:
     access:
       path: /dashboard-access-v1/home
-      safe_return_route: /dashboard-house-v13/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     zont:
       path: /dashboard-zont
-      safe_return_route: /dashboard-house-v13/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     starline:
       path: /starline
-      safe_return_route: /dashboard-house-v13/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     s8_omni:
       path: /dashboard-s8-omni
-      safe_return_route: /dashboard-actions/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     irrigation:
       path: /dashboard-irrigation
-      safe_return_route: /dashboard-actions/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     stark_solarpower:
       path: /dashboard-ups
-      safe_return_route: /dashboard-infrastructure/overview
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     keenetic:
       path: /dashboard-keenetic
-      safe_return_route: /dashboard-infrastructure/overview
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     lider:
       path: /dashboard-lider
-      safe_return_route: /dashboard-infrastructure/overview
+      safe_return_route: /home/overview
+      parent_route: /home/overview
     water_accounting:
       path: /dashboard-water
-      safe_return_route: /dashboard-house-v13/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
+    climate:
+      path: /dashboard-climate-v1/home
+      safe_return_route: /home/overview
+      parent_route: /home/overview
+    dyson:
+      path: /dashboard-dyson
+      safe_return_route: /home/overview
+      parent_route: /home/overview
+    vless_gateway:
+      path: /dashboard-vless-gateway
+      safe_return_route: /home/overview
+      parent_route: /home/overview

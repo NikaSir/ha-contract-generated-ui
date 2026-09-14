@@ -1,0 +1,312 @@
+{
+  "repository": "NikaSir/ha-nikas-dyson",
+  "source_revision": "b14fc882d6c21ee92099461a85e74f8972d58cca",
+  "observed_revision": "b14fc882d6c21ee92099461a85e74f8972d58cca",
+  "policy": {
+    "contract_version": 1,
+    "canonical_repository": "NikaSir/ha-contract-generated-ui",
+    "canonical_revision": "46e4d37d3bbdc9dbb4f5fd01627fa7c0ed564e92",
+    "declaration_sha256": "e5c18d143b165bfa1494dda86b3a247ac015cf474208789db07464d3eb44460b",
+    "ui_version": "2.2",
+    "ui_sha256": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+    "navigation_version": "1.2",
+    "navigation_sha256": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+  },
+  "status": "not_verified",
+  "requirements": [
+    {
+      "requirement": "source_identity",
+      "status": "pass",
+      "detail": "Observed revision compared with pinned inventory",
+      "observed": "b14fc882d6c21ee92099461a85e74f8972d58cca",
+      "declared": "b14fc882d6c21ee92099461a85e74f8972d58cca",
+      "tracked_worktree_modified": false
+    },
+    {
+      "requirement": "repository_identity",
+      "status": "pass",
+      "detail": "Origin repository matches declared identity"
+    },
+    {
+      "requirement": "manifest_identity",
+      "status": "pass",
+      "detail": "Manifest domain/path/version checked",
+      "observed_domain": "nikas_dyson",
+      "integration_version": "0.1.5"
+    },
+    {
+      "requirement": "artifact_integrity",
+      "status": "pass",
+      "detail": "Declared runtime files exist",
+      "artifact": "panel"
+    },
+    {
+      "requirement": "artifact_autonomy",
+      "status": "not_verified",
+      "detail": "Recognized runtime imports inspected; full autonomy needs build/runtime evidence",
+      "artifact": "panel",
+      "imports": [],
+      "unresolved": []
+    },
+    {
+      "requirement": "artifact_syntax",
+      "status": "not_verified",
+      "detail": "Runtime graph inventoried but not checked by the JavaScript engine",
+      "artifact": "panel"
+    },
+    {
+      "requirement": "reproducible_build",
+      "status": "not_verified",
+      "detail": "No deterministic build execution evidence; profile commands are never executed",
+      "artifact": "panel"
+    },
+    {
+      "requirement": "artifact_bindings",
+      "status": "pass",
+      "detail": "Static binding compared to declared artifact",
+      "artifact": "panel",
+      "role": "entrypoint",
+      "path": "custom_components/nikas_dyson/__init__.py",
+      "observed": "nikas-dyson-panel.js",
+      "expected": "nikas-dyson-panel.js"
+    },
+    {
+      "requirement": "artifact_bindings",
+      "status": "pass",
+      "detail": "Static binding compared to declared artifact",
+      "artifact": "panel",
+      "role": "ui_version",
+      "path": "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js",
+      "observed": "1.0.2",
+      "expected": "1.0.2"
+    },
+    {
+      "requirement": "artifact_bindings",
+      "status": "pass",
+      "detail": "Static binding compared to declared artifact",
+      "artifact": "panel",
+      "role": "cache_key",
+      "path": "custom_components/nikas_dyson/const.py",
+      "observed": "1.0.2",
+      "expected": "1.0.2"
+    },
+    {
+      "requirement": "artifact_bindings",
+      "status": "pass",
+      "detail": "Static binding compared to declared artifact",
+      "artifact": "panel",
+      "role": "integration_version",
+      "path": "custom_components/nikas_dyson/const.py",
+      "observed": "0.1.5",
+      "expected": "0.1.5"
+    },
+    {
+      "requirement": "registration_reachability",
+      "status": "not_verified",
+      "detail": "Active setup-to-registration chain needs verification",
+      "artifact": "panel",
+      "evidence_paths": [
+        "custom_components/nikas_dyson/__init__.py",
+        "custom_components/nikas_dyson/panel_manifest.json"
+      ],
+      "missing": []
+    },
+    {
+      "requirement": "version_change_policy",
+      "status": "not_verified",
+      "detail": "Previous-publication version/cache comparison has no execution evidence",
+      "artifact": "panel"
+    },
+    {
+      "requirement": "ui_standard",
+      "status": "pass",
+      "detail": "Normative version compared with canonical target",
+      "field": "version",
+      "observed": "2.2",
+      "required": "2.2"
+    },
+    {
+      "requirement": "ui_standard",
+      "status": "pass",
+      "detail": "Normative version compared with canonical target",
+      "field": "navigation_contract_version",
+      "observed": "1.2",
+      "required": "1.2"
+    },
+    {
+      "requirement": "ui_standard",
+      "status": "pass",
+      "detail": "Actual document and declared hash compared with canonical target",
+      "path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
+      "observed_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+      "declared_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7",
+      "required_hash": "2a15e5c2483f0fa959faff54cd29144ddb8c392e6da4546bd4c5034bf652c2c7"
+    },
+    {
+      "requirement": "ui_standard",
+      "status": "pass",
+      "detail": "Actual document and declared hash compared with canonical target",
+      "path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
+      "observed_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+      "declared_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229",
+      "required_hash": "79923d2de82ef59ab76e37491f75ba7eb7e7c4c23e62d75142744159cae64229"
+    },
+    {
+      "requirement": "ui_behavior",
+      "status": "not_verified",
+      "detail": "Document parity does not prove shell behavior"
+    },
+    {
+      "requirement": "publication_policy",
+      "status": "pass",
+      "detail": "Declared publication policy compared with supported main-only and release-driven HACS models"
+    },
+    {
+      "requirement": "publication_workflows",
+      "status": "not_verified",
+      "detail": "Recognized release/tag commands compared with declared policy; version, target, idempotence and indirect scripts/actions need further evidence",
+      "findings": [],
+      "invalid_workflows": []
+    },
+    {
+      "requirement": "ci_job_identity",
+      "status": "pass",
+      "detail": "Job names must be unique across workflows",
+      "duplicates": [],
+      "jobs": [
+        {
+          "workflow": ".github/workflows/validate.yml",
+          "job": "repository-checks",
+          "name": "repository-checks"
+        },
+        {
+          "workflow": ".github/workflows/validate.yml",
+          "job": "hassfest",
+          "name": "hassfest"
+        },
+        {
+          "workflow": ".github/workflows/validate.yml",
+          "job": "hacs",
+          "name": "hacs"
+        },
+        {
+          "workflow": ".github/workflows/validate.yml",
+          "job": "validate",
+          "name": "validate"
+        }
+      ]
+    },
+    {
+      "requirement": "required_ci",
+      "status": "not_verified",
+      "detail": "Effective GitHub branch protection and required contexts need live evidence",
+      "observed_required_checks": [
+        "validate"
+      ]
+    },
+    {
+      "requirement": "data_quality",
+      "status": "not_verified",
+      "detail": "Snapshot failure/recovery and explicit source/calibration options have regression coverage. Browser responses and Home Assistant boundaries are mocked; real telemetry and calibration remain pending.",
+      "evidence_paths": [
+        "tests/frontend.cjs",
+        "tests/test_options.py",
+        "custom_components/nikas_dyson/config_flow.py"
+      ]
+    },
+    {
+      "requirement": "command_safety",
+      "status": "not_verified",
+      "detail": "Read-only snapshot registration and permission filtering were inspected. No live permission/device acceptance is recorded.",
+      "evidence_paths": [
+        "custom_components/nikas_dyson/__init__.py"
+      ]
+    },
+    {
+      "requirement": "lifecycle",
+      "status": "not_verified",
+      "detail": "Browser tests cover stale pending responses after reconnect, stable DOM, refresh timing and pinch zoom. Live Home Assistant/iPhone navigation, gestures and lifecycle acceptance remain pending.",
+      "evidence_paths": [
+        "tests/frontend.cjs",
+        "custom_components/nikas_dyson/frontend/src/nikas-dyson-panel.js",
+        "custom_components/nikas_dyson/frontend/src/zoom-controller.js"
+      ]
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "not_verified",
+      "detail": "PR #1 and post-merge push run 34744161836 passed repository-checks, HACS, Hassfest and validate. 25 Python tests and 7 browser scenarios; HACS explicitly excludes topics for this custom repository. Active ruleset 23096960 requires strict validate from GitHub Actions, PRs, blocks deletion/force pushes, and has no bypass actors. This is repository evidence, not full device acceptance.",
+      "evidence_paths": [
+        ".github/workflows/validate.yml",
+        "tests/test_ci_gate.py",
+        "tests/test_delivery.py",
+        "tests/test_options.py",
+        "tests/frontend.cjs",
+        "scripts/build_frontend.py",
+        "scripts/check_panel_contract.py",
+        "LICENSE",
+        "custom_components/nikas_dyson/brand/icon.png"
+      ]
+    },
+    {
+      "requirement": "device_acceptance",
+      "status": "not_verified",
+      "detail": "Running user Home Assistant, real appliances, calibrated thresholds and iPhone acceptance have not been verified.",
+      "evidence_paths": []
+    },
+    {
+      "requirement": "data_quality",
+      "status": "not_verified",
+      "detail": "PR #1 marks cached data stale and clears current power/activity after snapshot failure, recovering on success; live network-loss acceptance remains pending.",
+      "finding": "A34"
+    },
+    {
+      "requirement": "artifact_autonomy",
+      "status": "not_verified",
+      "detail": "PR #1 replaces the importing v101 patch entrypoint with one deterministically built module and verifies registration/delivery; live installation acceptance remains pending.",
+      "finding": "A35"
+    },
+    {
+      "requirement": "configuration",
+      "status": "not_verified",
+      "detail": "PR #1 adds manual source selection, explicit calibration, numeric validation and persistent disable settings. Calibration resets on source changes; real thresholds remain unverified.",
+      "finding": "A36"
+    },
+    {
+      "requirement": "standards",
+      "status": "not_verified",
+      "detail": "PR #1 adds canonical specialized shell sources, declarations, refresh timing, reconnect isolation and working pinch zoom. Central profile is now registered; full live specialized-panel acceptance remains pending.",
+      "finding": "A37"
+    },
+    {
+      "requirement": "repository_checks",
+      "status": "not_verified",
+      "detail": "PR #1 adds behavior/delivery tests and fail-closed validate over repository-checks, HACS and Hassfest. PR #2 publishes owner-selected MIT; description and icon are present. Active ruleset 23096960 protects main. HACS topics remains an explicit custom-repository exception; live acceptance is pending.",
+      "finding": "A38"
+    },
+    {
+      "requirement": "version_coherence",
+      "status": "not_verified",
+      "detail": "PR #1 synchronizes README, manifest and registration at integration 0.1.5 / UI 1.0.2, with regression coverage; live browser cache acceptance remains pending.",
+      "finding": "A39"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "panel",
+      "path": "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js",
+      "files": {
+        "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js": "827473a94eafb9d0cfcd86c2117faa52d0522a9f22fc1e353a4b7c5e081e5a51"
+      },
+      "edges": [],
+      "unresolved": [],
+      "missing": []
+    }
+  ],
+  "checked_at": "2026-09-13T14:35:38.436945+00:00",
+  "tool": {
+    "version": "1.0.2",
+    "inspector_sha256": "5b2eab596a509a71a0492c3b10fb1a9e5f2a7928d05098559315aeff0284244f",
+    "schema_sha256": "434e700728b62a9bcc8751fe9052d96350955c86a5568c50fbfabb6f0e467691"
+  }
+}
