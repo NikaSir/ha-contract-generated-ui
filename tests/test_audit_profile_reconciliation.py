@@ -18,7 +18,7 @@ def finding(profile: dict, finding_id: str) -> dict:
 
 def test_hikvision_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-hikvision-next.json")
-    assert profile["source_revision"] == "16f058095019bfbca571dc5e7e13fd1d7ded41d6"
+    assert profile["source_revision"] == "8fc9b51d360c16112350fc12e4195d7ef2bf29df"
     assert finding(profile, "A02")["status"] == "fixed_pending_verification"
     assert finding(profile, "A13")["status"] == "fixed_pending_verification"
     assert finding(profile, "A14")["status"] == "fixed_pending_verification"
@@ -302,7 +302,7 @@ if (Panel && !Panel.prototype.__starkUiV098) {
 
 def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "759d13f714380972e3b3219dff7cfa3a49f14a2a"
+    assert profile["source_revision"] == "92a38ee1cda61de0d0dc3564d5d6b2fbe0a333d0"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
