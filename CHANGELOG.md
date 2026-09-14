@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Reconcile factual fleet profiles with reviewed main revisions and current
+  Keenetic, LIDER, Climate and Stark UI/cache bindings; keep device acceptance pending.
+- Support manually published HACS Releases without enabling undeclared release
+  automation, and correct the S8 publication profile to its existing channel.
+- Clarify the scoped HACS exception in repository policy and record the approved
+  five-integration beta-to-stable transition separately from its implementation.
+
 ## 0.40.3 — 2026-09-13
 
 - Navigation Contract 1.3 makes titles open the immediate declared parent, with every main panel returning to the native `/home/overview`.

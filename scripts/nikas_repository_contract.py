@@ -587,13 +587,14 @@ def check_publication(profile: dict[str, Any], root: Path) -> list[dict[str, Any
     policy = profile["publication"]
     supported_policies = (
         {"default_branch": "main", "github_releases": False, "automatic_tags": False},
+        {"default_branch": "main", "github_releases": True, "automatic_tags": False},
         {"default_branch": "main", "github_releases": True, "automatic_tags": True},
     )
     valid = policy in supported_policies
     results = [_result(
         "publication_policy",
         "pass" if valid else "fail",
-        "Declared publication policy compared with supported main-only and release-driven HACS models",
+        "Declared publication policy compared with main-only, manually published release and automated HACS release models",
     )]
     paths = sorted(set((root / ".github/workflows").glob("*.yml")) | set((root / ".github/workflows").glob("*.yaml")))
     findings, parse_errors, jobs = [], [], []

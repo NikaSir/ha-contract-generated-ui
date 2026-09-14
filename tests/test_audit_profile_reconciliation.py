@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ def test_hikvision_profile_tracks_fixed_main_findings() -> None:
 
 def test_keenetic_profile_tracks_fixed_main_finding() -> None:
     profile = load("ha-keenetic-hero-4g.json")
-    assert profile["source_revision"] == "a7549e4dc1429a84849defbdf69d936cc8dc5195"
+    assert profile["source_revision"] == "40668e90b71484baba2dd2279aa1281e2be3cd8c"
     assert finding(profile, "A15")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "tests/test_wan_contract.py" in data_quality["paths"]
@@ -93,10 +94,10 @@ def test_hikvision_profile_records_required_regressions_without_device_acceptanc
 
 def test_climate_profile_tracks_fixed_main_findings() -> None:
     profile = load("ha-nikas-climate.json")
-    assert profile["source_revision"] == "824b95fd129a953c6d6de8f7a12efd83911c2961"
+    assert profile["source_revision"] == "4150da1f429c0b76ecf83201c459ec28697477a0"
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_climate/frontend/nikas-climate-production.js"
-    assert artifact["ui_version"] == "1.4.28"
+    assert artifact["ui_version"] == "1.4.29"
     assert finding(profile, "A07")["status"] == "fixed_pending_verification"
     assert finding(profile, "A11")["status"] == "fixed_pending_verification"
     assert finding(profile, "A12")["status"] == "fixed_pending_verification"
@@ -108,9 +109,9 @@ def test_climate_profile_tracks_fixed_main_findings() -> None:
 
 def test_lider_profile_tracks_a03_fix() -> None:
     profile = load("ha-lider-voltage-control.json")
-    assert profile["source_revision"] == "1d5bb0dbe233f3d62b0049236768609850c923f6"
+    assert profile["source_revision"] == "cea8d1c85bb371a5322a5579e6478d4186341b40"
     artifact = profile["artifacts"][0]
-    assert artifact["ui_version"] == "0.8.8"
+    assert artifact["ui_version"] == "0.8.10"
     assert finding(profile, "A03")["status"] == "fixed_pending_verification"
     data_quality = next(item for item in profile["evidence"] if item["requirement"] == "data_quality")
     assert "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel-core.js" in data_quality["paths"]
@@ -131,7 +132,7 @@ def test_lider_profile_records_full_hacs_validation_without_device_acceptance() 
     assert "A29" in {item["id"] for item in profile["findings"]}
     assert finding(profile, "A29")["requirement"] == "repository_checks"
     assert finding(profile, "A29")["status"] == "fixed_pending_verification"
-    assert profile["artifacts"][0]["ui_version"] == "0.8.8"
+    assert profile["artifacts"][0]["ui_version"] == "0.8.10"
     evidence = {item["requirement"]: item for item in profile["evidence"]}
     assert "scripts/check-hacs-validation.py" in evidence["repository_checks"]["paths"]
     assert evidence["repository_checks"]["status"] == "pending"
@@ -274,7 +275,7 @@ def test_zont_profile_tracks_merged_a16_but_keeps_field_acceptance_pending() -> 
 
 def test_stark_profile_tracks_required_frontend_delivery_gate() -> None:
     profile = load("ha-stark-solarpower.json")
-    assert profile["source_revision"] == "92ad94231556862e0f491ab6a880c9a1c8765d7e"
+    assert profile["source_revision"] == "331a7dcad89cc8e85d9a4c93f200828175c022db"
     assert finding(profile, "A17")["status"] == "fixed_pending_verification"
     assert finding(profile, "A19")["status"] == "fixed_pending_verification"
     assert finding(profile, "A23")["status"] == "fixed_pending_verification"
@@ -283,9 +284,25 @@ def test_stark_profile_tracks_required_frontend_delivery_gate() -> None:
     assert "tests/test_required_frontend_delivery_gate.py" in repository_checks["paths"]
 
 
+def test_stark_ui_binding_selects_current_header_in_a_bundle_with_historical_constants() -> None:
+    profile = load("ha-stark-solarpower.json")
+    binding = next(item for item in profile["artifacts"][0]["bindings"] if item["role"] == "ui_version")
+    source = '''const UI_VERSION = "0.9.7";
+const SAFE_RETURN_ROUTE = "/home/overview";
+// BEGIN custom_components/stark_solarpower/frontend/stark-solarpower-panel-v098.js
+(() => {
+const Panel = customElements.get("stark-solarpower-panel");
+const UI_VERSION = "0.9.8";
+
+if (Panel && !Panel.prototype.__starkUiV098) {
+'''
+    values = [match.group("value") for match in re.finditer(binding["pattern"], source)]
+    assert values == ["0.9.8"]
+
+
 def test_canonical_profile_tracks_completed_a21_main() -> None:
     profile = load("ha-contract-generated-ui.json")
-    assert profile["source_revision"] == "3a503d86d4d317bf15a6d0bc22fdad13c1800f7b"
+    assert profile["source_revision"] == "376023e266e5bbf8b47996ea5024a46a1bfe5304"
     assert profile["observed_workflow_paths"] == [
         ".github/workflows/nikas-fleet-inspection.yml",
         ".github/workflows/repository-checks.yml",
@@ -321,7 +338,7 @@ def test_vless_service_profile_tracks_dependency_only_main_drift_without_inventi
 def test_dyson_profile_records_merged_specialized_panel_without_live_acceptance():
     profile = load("ha-nikas-dyson.json")
     assert profile["repository"] == "NikaSir/ha-nikas-dyson"
-    assert profile["source_revision"] == "6585c81f230ec471219e65c57394fb7b683b8504"
+    assert profile["source_revision"] == "20763738b1c630e6303d769078e21d367745fbc4"
     assert profile["existing_required_checks"] == ["validate"]
     artifact = profile["artifacts"][0]
     assert artifact["path"] == "custom_components/nikas_dyson/frontend/nikas-dyson-panel.js"

@@ -50,7 +50,7 @@
   },
   "publication": {
     "default_branch": "main",
-    "github_releases": false,
+    "github_releases": true,
     "automatic_tags": false
   },
   "observed_workflow_paths": [

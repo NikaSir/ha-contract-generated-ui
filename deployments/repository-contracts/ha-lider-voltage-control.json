@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-lider-voltage-control",
-  "source_revision": "1d5bb0dbe233f3d62b0049236768609850c923f6",
+  "source_revision": "cea8d1c85bb371a5322a5579e6478d4186341b40",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
-      "ui_version": "0.8.8",
+      "ui_version": "0.8.10",
       "bindings": [
         {
           "role": "entrypoint",
@@ -20,13 +20,13 @@
           "role": "ui_version",
           "path": "custom_components/lider_voltage_control/frontend/lider-voltage-control-panel.js",
           "pattern": "(?m)^\\s*(?:const\\s+)?LIDER_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.8.8"
+          "expected": "0.8.10"
         },
         {
           "role": "cache_key",
           "path": "custom_components/lider_voltage_control/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.8.8"
+          "expected": "0.8.10"
         }
       ],
       "registration_evidence_paths": [
