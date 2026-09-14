@@ -187,9 +187,21 @@ a document or CI file does not itself configure GitHub branch protection;
 settings need separate readback verification. Do not remove an existing required
 check to make a migration mergeable.
 
-NikaS publication remains reviewed commits/PRs and `main` through HACS where
-applicable. GitHub Releases and automatic release tags are not created. Existing
-historical publication objects are not deleted as part of tooling adoption.
+NikaS accepted code remains traceable through reviewed commits/PRs and `main`.
+The main-only delivery model creates no GitHub Releases or automatic tags.
+Release-driven HACS integrations follow the
+[HACS Publication Contract](NIKAS_HACS_PUBLICATION_CONTRACT.md): they may publish
+matching Releases manually or with declared automation. A Release is not proof
+that the user has installed or accepted the version. Existing publication
+objects and the previous stable version remain available for rollback.
+
+The factual profile records the channel implemented at `source_revision`:
+`github_releases` declares release publication; `automatic_tags` separately
+declares repository automation that creates release/tag objects. Manual release
+publication does not require an automatic workflow. Recognized release/tag
+mutations in workflows still fail inspection when automation is not declared.
+Approved channel transitions are tracked separately until implemented; see the
+[beta adoption record](BETA_RELEASE_ADOPTION.md).
 
 ## 10. Adoption sequence and completion
 

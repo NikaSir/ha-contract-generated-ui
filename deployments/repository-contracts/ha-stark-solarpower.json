@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-stark-solarpower",
-  "source_revision": "92ad94231556862e0f491ab6a880c9a1c8765d7e",
+  "source_revision": "331a7dcad89cc8e85d9a4c93f200828175c022db",
   "kind": "ha_integration",
   "artifacts": [
     {
       "id": "panel",
       "path": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
-      "ui_version": "0.9.7",
+      "ui_version": "0.9.8",
       "bindings": [
         {
           "role": "entrypoint",
@@ -19,14 +19,14 @@
         {
           "role": "ui_version",
           "path": "custom_components/stark_solarpower/frontend/stark-solarpower-panel-bundle.js",
-          "pattern": "const UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27];\\s*const SAFE_RETURN_ROUTE\\s*=",
-          "expected": "0.9.7"
+          "pattern": "(?m)^const UI_VERSION\\s*=\\s*\"(?P<value>[^\"\\r\\n]+)\";\\s*\\n\\s*if \\(Panel && !Panel\\.prototype\\.__starkUiV098\\)",
+          "expected": "0.9.8"
         },
         {
           "role": "cache_key",
           "path": "custom_components/stark_solarpower/panel.py",
           "pattern": "(?m)^\\s*(?:const\\s+)?PANEL_UI_VERSION\\s*=\\s*[\\\"\\x27](?P<value>[^\\\"\\x27\\r\\n]+)[\\\"\\x27]",
-          "expected": "0.9.7"
+          "expected": "0.9.8"
         }
       ],
       "registration_evidence_paths": [
@@ -34,7 +34,7 @@
         "custom_components/stark_solarpower/panel.py"
       ],
       "binding_limitations": [
-        "Bundle contains historical scoped UI_VERSION declarations. Binding selects the last navigation patch adjacent to SAFE_RETURN_ROUTE; effective displayed version and patch ordering require runtime acceptance."
+        "The bundle retains historical scoped UI_VERSION declarations. The binding selects the v098 overview-header patch; registration/cache metadata also declares 0.9.8. Live patch ordering and displayed-version acceptance remain pending."
       ]
     }
   ],

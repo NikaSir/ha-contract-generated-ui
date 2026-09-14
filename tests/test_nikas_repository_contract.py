@@ -285,11 +285,27 @@ jobs:
         self.assertEqual(result["status"], "not_verified")
         self.assertEqual(result["findings"][0]["command"], "gh release create")
 
-    def test_unsupported_publication_policy_fails_closed(self):
+    def test_manual_release_policy_does_not_require_automatic_tags_or_certify_delivery(self):
         self.profile["publication"] = {
             "default_branch": "main",
             "github_releases": True,
             "automatic_tags": False,
+        }
+        checks = contract.check_publication(self.profile, self.root)
+        self.assertEqual(next(item for item in checks if item["requirement"] == "publication_policy")["status"], "pass")
+        self.assertEqual(next(item for item in checks if item["requirement"] == "publication_workflows")["status"], "not_verified")
+
+    def test_manual_release_policy_rejects_undeclared_automatic_release_creation(self):
+        self.profile["publication"] = {
+            "default_branch": "main", "github_releases": True, "automatic_tags": False,
+        }
+        self.write(".github/workflows/release.yml", 'jobs:\n  release:\n    steps:\n      - run: gh release create "$VERSION"\n')
+        checks = contract.check_publication(self.profile, self.root)
+        self.assertEqual(next(item for item in checks if item["requirement"] == "publication_workflows")["status"], "fail")
+
+    def test_unsupported_publication_policy_fails_closed(self):
+        self.profile["publication"] = {
+            "default_branch": "main", "github_releases": False, "automatic_tags": True,
         }
         checks = contract.check_publication(self.profile, self.root)
         self.assertEqual(next(item for item in checks if item["requirement"] == "publication_policy")["status"], "fail")

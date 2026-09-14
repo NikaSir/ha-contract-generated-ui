@@ -10,6 +10,13 @@
 - No published update may contain credentials, private Home Assistant storage, tokens or diagnostic payloads with sensitive data.
 - GitHub Releases and automatic release tags are not used; `main` and its reviewed commit history are the publication record.
 
+This main-only policy describes this contract/toolkit repository. Consumer
+integrations with a release-driven HACS channel follow
+[`NIKAS_HACS_PUBLICATION_CONTRACT.md`](NIKAS_HACS_PUBLICATION_CONTRACT.md).
+The owner's approved beta/stable transition for five consumers is tracked in
+[`BETA_RELEASE_ADOPTION.md`](BETA_RELEASE_ADOPTION.md); it is not a claim that
+their delivery automation or device acceptance is complete.
+
 ## Versioning
 
 The project version format will be fixed before the first functional publication. Existing Home Assistant NikaS project version history must not be rewritten merely to satisfy a generic versioning convention, and an internal version does not require a Git tag.
