@@ -9,20 +9,20 @@ ROOT = Path(__file__).parents[1]
 PACKAGE = ROOT / "custom_components" / "contract_generated_ui"
 
 
-def test_release_is_common_registry_service() -> None:
+def test_release_is_common_registry_service_with_one_owned_technical_panel() -> None:
     manifest = json.loads((PACKAGE / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.40.3"
-    assert manifest["dependencies"] == ["http"]
+    assert manifest["version"] == "0.41.0"
+    assert manifest["dependencies"] == ["frontend", "http"]
     assert "after_dependencies" not in manifest
 
     assert list((ROOT / "contracts").glob("*.yaml")) == []
     assert list((ROOT / "manifests").glob("*.yaml")) == []
     assert not (PACKAGE / "bundled_sources" / "contracts").exists()
     assert not (PACKAGE / "bundled_sources" / "manifests").exists()
-    assert not (PACKAGE / "frontend").exists()
+    assert (PACKAGE / "frontend").is_dir()
 
 
-def test_no_panel_implementation_is_packaged() -> None:
+def test_no_retired_house_panel_implementation_is_packaged() -> None:
     retired_modules = {
         "house_base.py",
         "house_navigation.py",
@@ -41,9 +41,6 @@ def test_no_panel_implementation_is_packaged() -> None:
     assert not (ROOT / "scripts" / "build_frontend_bundles.sh").exists()
 
     init = (PACKAGE / "__init__.py").read_text(encoding="utf-8")
-    assert "async_register_static_paths" not in init
-    assert "add_extra_js_url" not in init
-    assert "panel_custom" not in init
     assert "async_register_house_panel" not in init
 
 
@@ -64,5 +61,5 @@ def test_archive_and_repository_boundary_are_documented() -> None:
     scope = (ROOT / "docs" / "REPOSITORY_SCOPE.md").read_text(encoding="utf-8")
     assert "archive/multipanel-0.37.8" in readme
     assert "c525b30" in readme
-    assert "owns no runtime dashboard" in scope
+    assert "one technical availability panel" in scope
     assert "must never clean user-owned" in scope

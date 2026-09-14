@@ -74,3 +74,12 @@ def test_water_route_matches_the_owner_contract() -> None:
         "safe_return_route": "/home/overview",
         "parent_route": "/home/overview",
     }
+
+
+def test_device_availability_route_returns_to_builtin_overview() -> None:
+    navigation = _navigation()
+    assert navigation["spec"]["specialized_routes"]["device_availability"] == {
+        "path": "/dashboard-device-availability",
+        "safe_return_route": "/home/overview",
+        "parent_route": "/home/overview",
+    }

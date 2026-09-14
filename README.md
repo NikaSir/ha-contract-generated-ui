@@ -3,7 +3,7 @@
 `NikaSir/ha-contract-generated-ui` is the shared NikaS contract and registry
 repository. It provides scrubbed Home Assistant registry snapshots, the canonical
 route registry, common schemas, UI standards and offline validation tooling. It owns
-no runtime dashboard and ships no panel frontend.
+the technical `Доступность устройств` route and no operational dashboard.
 
 The installed domain and integration name remain `contract_generated_ui` and
 **NikaS Contract Generated UI** for upgrade compatibility.
@@ -18,8 +18,8 @@ The integration:
 - validates user-provided contract sources under
   `/config/contract_generated_ui/`;
 - synchronizes the canonical common navigation registry;
-- never registers, replaces, unloads or generates a Home Assistant dashboard;
-- serves no panel JavaScript, artwork or other panel-owned asset.
+- registers and serves only the technical device-availability panel;
+- never replaces, unloads or generates another Home Assistant dashboard.
 
 The accepted main House panel is owned exclusively by
 `NikaSir/ha-nikas-house`. Every other panel remains in its dedicated repository.
@@ -45,6 +45,8 @@ previously shipped here remains available in Git history at commit `f5bff81`.
 
 - `custom_components/contract_generated_ui/registry_snapshot.py` — scrubbed registry capture;
 - `custom_components/contract_generated_ui/snapshot_download.py` — authenticated download;
+- `custom_components/contract_generated_ui/device_availability_panel.py` — technical panel lifecycle;
+- `custom_components/contract_generated_ui/frontend/` — availability data adapter and panel UI;
 - `navigation/main.yaml` — canonical cross-repository route registry;
 - `templates/shell_v2/` — canonical build-time shell source copied by panel owners;
 - `schemas/` — common Architecture-as-Code schemas;
@@ -61,6 +63,11 @@ only. Production panel definitions belong to their owning repositories.
 Add `NikaSir/ha-contract-generated-ui` to HACS as a custom **Integration**,
 install it, restart Home Assistant, then add **NikaS Contract Generated UI** under
 **Settings → Devices & services**.
+
+For live device health, install and configure
+[Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability)
+0.5.3 or newer. The technical route remains available without it and shows setup
+guidance until monitoring groups appear.
 
 For a manual installation, copy `custom_components/contract_generated_ui` to
 `/config/custom_components/contract_generated_ui` and restart Home Assistant.
@@ -99,7 +106,7 @@ separately.
 
 ## Safety rules
 
-1. This integration owns no Lovelace or custom-panel route.
+1. This integration owns only `/dashboard-device-availability` and its frontend.
 2. Panel implementations, assets, manifests and runtime tests live with their owners.
 3. User-owned snapshots, inventory and generated history are never removed automatically.
 4. Snapshots contain scrubbed facts only; raw Home Assistant storage is not exported.

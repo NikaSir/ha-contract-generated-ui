@@ -5,11 +5,14 @@
 `NikaSir/ha-contract-generated-ui` is the common NikaS service and knowledge base.
 It captures and downloads scrubbed Home Assistant registry snapshots, validates
 contract sources, publishes shared schemas and standards, and synchronizes the
-canonical route registry. It owns no runtime dashboard.
+canonical route registry. It also owns one technical availability panel at
+`/dashboard-device-availability`.
 
 Panel contracts, manifests, renderers, frontend bundles, artwork and panel-specific
 tests belong to their dedicated repositories. The accepted main House panel is owned
-by `NikaSir/ha-nikas-house`.
+by `NikaSir/ha-nikas-house`. The availability panel is a narrow exception because it
+diagnoses the shared Home Assistant entity registry and consumes the installed Entity
+Availability integration as a source.
 
 ## Route ownership
 
@@ -20,6 +23,7 @@ by `NikaSir/ha-nikas-house`.
 | `/dashboard-house-v12/home` | Historical Contract Generated UI route | Retired; do not register |
 | `/dashboard-house-v13/home` | `ha-nikas-house` | Registry reference only |
 | Other NikaS routes | Dedicated integrations or YAML | Registry reference only |
+| `/dashboard-device-availability` | `ha-contract-generated-ui` | Owned technical route; parent `/home/overview` |
 
 ## Preservation
 
@@ -36,7 +40,8 @@ copies are preserved.
 ## Runtime boundary
 
 - Allowed: registry capture, authenticated snapshot download, generic source
-  validation and common navigation-registry synchronization.
-- Forbidden: panel registration, Lovelace generation from a Home Assistant entity,
-  global frontend injection, panel asset serving, route replacement or unloading a
-  route owned by another project.
+  validation, common navigation-registry synchronization, and ownership of the one
+  technical availability route and its frontend asset.
+- Forbidden: owning any operational or device-specific panel, Lovelace generation
+  from a Home Assistant entity, global frontend injection, route replacement or
+  unloading a route owned by another project.

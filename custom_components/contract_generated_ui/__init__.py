@@ -20,13 +20,31 @@ async def async_setup_entry(
     entry: ConfigEntry[ContractGeneratedUICoordinator],
 ) -> bool:
     """Set up common source validation, registry snapshots and diagnostics."""
+    from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
     from homeassistant.helpers import entity_registry as er
 
-    from .const import DOMAIN, SOURCE_DIRECTORY
+    from .const import (
+        DOMAIN,
+        FRONTEND_DIRECTORY,
+        FRONTEND_STATIC_PATH,
+        FRONTEND_STATIC_REGISTERED,
+        SOURCE_DIRECTORY,
+    )
     from .coordinator import ContractGeneratedUICoordinator
+    from .device_availability_panel import async_register_device_availability_panel
     from .runtime_source_sync import sync_bundled_public_sources
     from .snapshot_download import async_register_snapshot_download_view
+
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    if not domain_data.get(FRONTEND_STATIC_REGISTERED):
+        frontend_root = Path(__file__).parent / FRONTEND_DIRECTORY
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(FRONTEND_STATIC_PATH, str(frontend_root), False)]
+        )
+        domain_data[FRONTEND_STATIC_REGISTERED] = True
+
+    await async_register_device_availability_panel(hass)
 
     source_root = Path(hass.config.path(SOURCE_DIRECTORY))
     try:
@@ -62,7 +80,12 @@ async def async_unload_entry(
     """Unload common service entities."""
     from homeassistant.const import Platform
 
-    return await hass.config_entries.async_unload_platforms(
+    from .device_availability_panel import async_unregister_device_availability_panel
+
+    unloaded = await hass.config_entries.async_unload_platforms(
         entry,
         (Platform.SENSOR, Platform.BUTTON),
     )
+    if unloaded:
+        async_unregister_device_availability_panel(hass)
+    return unloaded

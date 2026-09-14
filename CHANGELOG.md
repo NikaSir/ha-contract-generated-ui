@@ -9,6 +9,17 @@
 - Clarify the scoped HACS exception in repository policy and record the approved
   five-integration beta-to-stable transition separately from its implementation.
 
+## 0.41.0 — 2026-09-14
+
+- Add the integration-owned `Доступность устройств` technical panel at
+  `/dashboard-device-availability`, returning to the built-in `/home/overview`.
+- Use public Entity Availability 0.5.3 group-summary attributes for online,
+  offline, stale, battery and signal diagnostics without reading private storage.
+- Add problem-first group and entity views, search and filters, Home Assistant
+  more-info actions and a contract-compliant black refresh action.
+- Preserve the panel route when Entity Availability is absent or unavailable and
+  remove only the route registered by this integration during unload.
+
 ## 0.40.3 — 2026-09-13
 
 - Navigation Contract 1.3 makes titles open the immediate declared parent, with every main panel returning to the native `/home/overview`.
