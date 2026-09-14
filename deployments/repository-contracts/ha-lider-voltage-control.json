@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-lider-voltage-control",
-  "source_revision": "cea8d1c85bb371a5322a5579e6478d4186341b40",
+  "source_revision": "d7144749882cd008537b633a74b3e3eaeea8c871",
   "kind": "ha_integration",
   "artifacts": [
     {

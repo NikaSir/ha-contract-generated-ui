@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-rooms",
-  "source_revision": "aa0d5e211bb38cd95b52263e8391e55f99327090",
+  "source_revision": "fc668b80790973a57f9f701f2bb1aab6b5c99161",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -97,9 +97,10 @@
         "tests/test_python_syntax_validation.py",
         "tests/test_registration_version.py",
         "scripts/check_standard_documents.py",
-        "tests/test_standard_document_sync.py"
+        "tests/test_standard_document_sync.py",
+        "tests/test_ci_gate.py"
       ],
-      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
+      "note": "Merged PR #4 adds behavioral NikaS v2.2 / Navigation 1.2 and deterministic autonomous-bundle checks. Existing CI paths are code-side evidence only; running Home Assistant/iPhone acceptance remains separate. A31 merged PR #5 adds recursive Python syntax validation to the required repository checker; regression tests reject malformed config_flow.py and nested modules without importing Home Assistant. Post-merge validate passed; live/device acceptance remains pending. A33 merged PR #6 aligns registered metadata and module URL cache version with shipped UI 11.0.15. Tests execute registration and inspect its emitted arguments; live browser acceptance remains pending. PR #7 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #8 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending. 2026-09-14 fleet maintenance: PR #9 adds HACS and Hassfest to the fail-closed required validate aggregate and adds support files. Package metadata is reconciled to the already-declared manifest/changelog version 0.1.17. Post-merge required CI passed; live acceptance remains pending."
     },
     {
       "requirement": "device_acceptance",

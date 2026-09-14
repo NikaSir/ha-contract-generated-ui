@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-vless-gateway",
-  "source_revision": "5aa7c3b1090cf322c3321ee7446388a25915b229",
+  "source_revision": "532d45fecd5cd7622be875437da02ff6060252f8",
   "kind": "ha_integration",
   "artifacts": [
     {
@@ -87,9 +87,10 @@
         "scripts/check_nikas_ui_standard.py",
         "scripts/check_standard_documents.py",
         "tests/test_standard_document_sync.py",
-        "tests/header_parent_navigation.mjs"
+        "tests/header_parent_navigation.mjs",
+        "tests/test_required_ci_gate.py"
       ],
-      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile. PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #24 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending."
+      "note": "Existing workflow/test paths are observed inventory, not proof of production coverage or runtime acceptance. Remote required checks have not been captured in this profile. PR #23 synchronizes standard/navigation documents and adds an offline pinned-hash checker to required CI, rejecting document/declaration drift including coordinated rollback. Documentation parity is fixed; runtime conformance and device acceptance remain pending. PR #24 implements Navigation Contract 1.3: main title opens /home/overview; internal pages use their own immediate parent. Query, storage, source hand-off, referrer and browser history cannot override title navigation. Repository validation is separate from live Home Assistant/device acceptance, which remains pending. 2026-09-14 fleet maintenance: PR #25 adds HACS and Hassfest to the fail-closed required validate aggregate, with regression coverage of incomplete and unsuccessful CI results. Post-merge required CI passed; live gateway acceptance remains pending."
     },
     {
       "requirement": "device_acceptance",

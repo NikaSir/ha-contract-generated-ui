@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "NikaSir/ha-nikas-dyson",
-  "source_revision": "20763738b1c630e6303d769078e21d367745fbc4",
+  "source_revision": "2a246b263ad3fb0398a4ee662e0c1e7a0ffeaae9",
   "kind": "ha_integration",
   "artifacts": [
     {
