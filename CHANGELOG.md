@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reconcile Entity Availability totals by displaying essential and non-essential
+  entities separately, including their online, offline and suppressed counts.
+- Keep non-essential failures informational, refine the mobile composition card and
+  publish device-availability UI `1.0.0-beta002` with integration `0.41.1`.
 - Reconcile factual fleet profiles with reviewed main revisions and current
   Keenetic, LIDER, Climate and Stark UI/cache bindings; keep device acceptance pending.
 - Support manually published HACS Releases without enabling undeclared release

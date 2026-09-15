@@ -125,6 +125,55 @@ def test_group_summary_builds_problem_first_snapshot_from_053_attributes() -> No
     ]
 
 
+def test_group_summary_reconciles_non_essential_entities_with_total() -> None:
+    states = {
+        "sensor.entity_availability_okna_group_summary": _state(
+            36,
+            friendly_name="Entity Availability - Окна Group summary",
+            total_entities=36,
+            essential=31,
+            online=30,
+            offline=1,
+            suppressed=0,
+            non_essential=5,
+            non_essential_online=4,
+            non_essential_offline=1,
+            non_essential_suppressed=0,
+            stale=0,
+            stale_non_essential=0,
+            low_battery=0,
+            low_battery_non_essential=0,
+            poor_signal=0,
+            poor_signal_non_essential=0,
+            entities=["binary_sensor.window", "switch.seasonal"],
+            non_essential_entities=["switch.seasonal"],
+            offline_entities=["binary_sensor.window"],
+            offline_entities_non_essential=["switch.seasonal"],
+        )
+    }
+
+    snapshot = _run("build", states)
+
+    assert snapshot["composition"] == {
+        "essential": 31,
+        "non_essential": 5,
+        "suppressed": 0,
+        "non_essential_online": 4,
+        "non_essential_offline": 1,
+        "non_essential_suppressed": 0,
+    }
+    assert snapshot["composition"]["essential"] + snapshot["composition"][
+        "non_essential"
+    ] == snapshot["totals"]["total"]
+    group = snapshot["groups"][0]
+    assert group["essential"] == 31
+    assert group["nonEssential"] == 5
+    assert group["nonEssentialOnline"] == 4
+    assert group["nonEssentialOffline"] == 1
+    items = {item["entityId"]: item for item in snapshot["items"]}
+    assert items["switch.seasonal"]["nonEssential"] is True
+
+
 def test_unavailable_summary_reports_no_data_without_discarding_other_group() -> None:
     states = {
         "sensor.entity_availability_svet_group_summary": _state(
@@ -179,7 +228,39 @@ def test_live_hass_updates_do_not_rebuild_panel_shell() -> None:
 
 
 def test_first_beta_uses_approved_compact_version_format() -> None:
-    assert _run_panel("version") == {"version": "1.0.0-beta001"}
+    assert _run_panel("version") == {"version": "1.0.0-beta002"}
+
+
+def test_summary_explains_non_essential_entities_without_hiding_the_balance() -> None:
+    states = {
+        "sensor.entity_availability_okna_group_summary": _state(
+            36,
+            friendly_name="Entity Availability - Окна Group summary",
+            total_entities=36,
+            essential=31,
+            online=30,
+            offline=1,
+            suppressed=0,
+            non_essential=5,
+            non_essential_online=4,
+            non_essential_offline=1,
+            non_essential_suppressed=0,
+            stale=0,
+            low_battery=0,
+            poor_signal=0,
+            entities=["binary_sensor.window", "switch.seasonal"],
+            non_essential_entities=["switch.seasonal"],
+            offline_entities=["binary_sensor.window"],
+            offline_entities_non_essential=["switch.seasonal"],
+        )
+    }
+
+    text = _run_panel("summary", states=states)["text"]
+
+    assert "31 основных" in text
+    assert "5 не влияют на статус" in text
+    assert "4 доступно" in text
+    assert "1 отключено" in text
 
 
 def test_more_info_uses_home_assistant_event_contract() -> None:
