@@ -3,7 +3,7 @@ import {
   filterAvailabilityItems,
 } from "./device-availability-model.js?build=b002";
 
-export const UI_VERSION = "1.0.0-beta002";
+export const UI_VERSION = "1.0.0-beta003";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -33,14 +33,20 @@ export function navigatePanel(path, environment = window) {
 }
 
 export async function refreshAvailabilitySources(hass, snapshot, sleeper = sleep) {
-  const entityIds = Array.isArray(snapshot?.updateEntityIds)
-    ? snapshot.updateEntityIds.filter(Boolean)
-    : [];
-  if (!entityIds.length) throw new Error("Источники Entity Availability не найдены");
-  await Promise.all([
-    hass.callService("homeassistant", "update_entity", { entity_id: entityIds }),
-    sleeper(900),
-  ]);
+  const refresh = async () => {
+    const entityIds = Array.isArray(snapshot?.updateEntityIds)
+      ? snapshot.updateEntityIds.filter(Boolean)
+      : [];
+    if (!entityIds.length) throw new Error("Источники Entity Availability не найдены");
+    if (typeof hass?.callService !== "function") throw new Error("Обновление недоступно");
+    const result = await hass.callService("homeassistant", "update_entity", { entity_id: entityIds });
+    if (result === false) throw new Error("Запрос обновления отклонён");
+  };
+  // Even an immediate failure keeps the minimum busy interval. Neither timer
+  // completion nor a resolved false result is a successful refresh request.
+  const results = await Promise.allSettled([refresh(), sleeper(900)]);
+  const failure = results.find((result) => result.status === "rejected");
+  if (failure) throw failure.reason;
 }
 
 const CONDITION = Object.freeze({
@@ -71,19 +77,23 @@ function formatTimestamp(value) {
 
 function panelStyles() {
   return `
-    :host{display:block;position:relative;width:100%;height:100%;overflow:hidden;color:var(--primary-text-color,#17191c);background:var(--primary-background-color,#f4f6f8);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    :host{container-type:inline-size;display:block;position:relative;width:100%;height:100%;overflow:hidden;color:var(--primary-text-color,#17191c);background:var(--primary-background-color,#f4f6f8);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     *{box-sizing:border-box}[hidden]{display:none!important}button,input,select{font:inherit}button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-    .shell{position:absolute;inset:0;display:grid;grid-template-rows:calc(66px + env(safe-area-inset-top,0px)) minmax(0,1fr) calc(68px + env(safe-area-inset-bottom,0px));overflow:hidden}
-    header{padding:env(safe-area-inset-top,0px) calc(12px + env(safe-area-inset-right,0px)) 0 calc(12px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 97%,transparent);border-bottom:1px solid var(--divider-color,#dfe3e8);z-index:3}
-    .title{grid-column:2;width:min(440px,100%);height:54px;justify-self:center;border:1px solid color-mix(in srgb,var(--primary-color,#03a9d9) 25%,var(--divider-color,#dfe3e8));border-radius:17px;background:color-mix(in srgb,var(--primary-color,#03a9d9) 7%,var(--card-background-color,#fff));color:inherit;display:grid;place-content:center;text-align:center;cursor:pointer;box-shadow:0 5px 16px rgba(23,45,76,.06)}
-    .title strong{font-size:21px;font-weight:800;line-height:1.05}.title small{font-size:13px;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:4px}
+    .shell{position:absolute;inset:0;display:grid;grid-template-rows:calc(60px + env(safe-area-inset-top,0px)) minmax(0,1fr) calc(68px + env(safe-area-inset-bottom,0px));overflow:hidden}
+    header{padding:env(safe-area-inset-top,0px) calc(12px + env(safe-area-inset-right,0px)) 0 calc(12px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 97%,transparent);border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 70%,transparent);backdrop-filter:blur(18px) saturate(130%);-webkit-backdrop-filter:blur(18px) saturate(130%);z-index:3}
+    .header-action{grid-row:1;width:44px;height:44px;padding:0;justify-self:center;border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 72%,transparent);border-radius:16px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.08);display:grid;place-items:center;cursor:pointer}.header-action ha-icon{--mdc-icon-size:25px}.menu{grid-column:1}.header-action:active{transform:scale(.985)}
+    .title{grid-area:1/2;min-width:0;width:min(360px,100%);height:52px;padding:5px 14px;justify-self:center;border:1px solid color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8));border-radius:16px;background:color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff));color:inherit;display:flex;flex-direction:column;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 5px 16px rgba(23,45,76,.06)}
+    .title-heading{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}.title-heading ha-icon{--mdc-icon-size:25px;flex:0 0 25px}.title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px;font-weight:800;line-height:1.05}.title small{font-size:14px;font-weight:560;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:3px;white-space:nowrap}
+    .title:active{background:color-mix(in srgb,var(--primary-color,#03a9d9) 13%,var(--card-background-color,#fff));border-color:color-mix(in srgb,var(--primary-color,#03a9d9) 42%,var(--divider-color,#dfe3e8));box-shadow:0 2px 7px rgba(23,45,76,.05);transform:scale(.985)}.title:focus-visible,.header-action:focus-visible{outline:2px solid var(--primary-color,#03a9d9);outline-offset:2px}
+    .refresh{grid-column:3;background:#111418;color:#fff}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin .9s linear infinite}.refresh.success ha-icon{color:#43a047}.refresh.error ha-icon{color:#e53935}@keyframes spin{to{transform:rotate(360deg)}}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.refresh-error{position:absolute;inset-inline:12px;top:calc(68px + env(safe-area-inset-top,0px));max-width:580px;margin-inline:auto;padding:12px 16px;border:1px solid #e53935;border-radius:14px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.12);z-index:5}
+    @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:13px}}
     .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:none;-webkit-overflow-scrolling:touch}.viewport.zoomed{overflow:hidden;touch-action:none}
     .canvas{width:100%;min-height:100%;transform-origin:0 0}.content{width:100%;max-width:1280px;min-height:100%;margin:0 auto;padding:14px 12px 24px}
     nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
     .tab{height:54px;border:0;border-radius:16px;background:transparent;color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;cursor:pointer}.tab ha-icon{--mdc-icon-size:25px}.tab span{font-size:12px}.tab.active{color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)}
     .hero,.card,.empty,.controls{background:var(--card-background-color,#fff);border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 82%,transparent);border-radius:22px;box-shadow:0 8px 24px rgba(23,45,76,.07)}
     .hero{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.hero-status{display:flex;align-items:center;gap:14px;min-width:0}.hero-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--status-color) 13%,transparent);color:var(--status-color)}.hero-icon ha-icon{--mdc-icon-size:30px}.hero h2{margin:0;font-size:23px}.hero p{margin:4px 0 0;color:var(--secondary-text-color,#68737d)}
-    .refresh{height:46px;min-width:148px;padding:0 18px;border:0;border-radius:16px;background:#111418;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin 1s linear infinite}.refresh.success ha-icon{color:#72d77d}.refresh.error ha-icon{color:#ff857d}@keyframes spin{to{transform:rotate(360deg)}}
     .ok{--status-color:#43a047}.bad{--status-color:#e05252}.warn{--status-color:#ef9f25}.muted{--status-color:#7b8792}
     .stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:12px 0}.stat{padding:14px 10px;border-radius:18px;background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#dfe3e8);text-align:center}.stat b{display:block;font-size:25px}.stat span{font-size:12px;color:var(--secondary-text-color,#68737d)}
     .composition{padding:14px 16px;display:grid;gap:10px;margin-bottom:12px}.composition-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}.composition-label{font-size:14px}.composition-label b{font-size:18px}.composition-detail{font-size:12px;color:var(--secondary-text-color,#68737d);text-align:right}.composition-row+.composition-row{padding-top:10px;border-top:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 70%,transparent)}
@@ -94,7 +104,7 @@ function panelStyles() {
     .device-list{display:grid;gap:8px;margin-top:10px}.device{width:100%;padding:13px 14px;border:1px solid var(--divider-color,#dfe3e8);border-radius:17px;background:var(--card-background-color,#fff);color:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;cursor:pointer}.device-main{min-width:0}.device-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-sub{margin-top:4px;color:var(--secondary-text-color,#68737d);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-side{text-align:right}.device-side .pill{display:inline-block}.health{margin-top:5px;font-size:12px;color:var(--secondary-text-color,#68737d)}
     .diag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.diag .card{padding:17px}.diag h3{margin:0 0 12px}.diag-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 65%,transparent)}.diag-row:last-child{border:0}.diag-row span{color:var(--secondary-text-color,#68737d)}code{word-break:break-all;font-size:12px}
     @media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr)}.groups{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.controls input{grid-column:1/-1}.diag{grid-template-columns:1fr}}
-    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.refresh{width:100%}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.title strong{font-size:19px}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
+    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
     @media(prefers-reduced-motion:reduce){.refresh.busy ha-icon{animation:none}}
   `;
 }
@@ -113,6 +123,8 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this._shellRendered = false;
     this._refreshState = "idle";
     this._refreshTimer = null;
+    this._refreshGeneration = 0;
+    this._refreshError = "";
     this._zoom = 1;
     this._pinch = null;
   }
@@ -128,11 +140,16 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
 
   connectedCallback() {
     if (!this._shellRendered) this._renderShell();
+    this._patchRefreshButton();
     this._patchActiveView();
   }
 
   disconnectedCallback() {
-    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    ++this._refreshGeneration;
+    if (this._refreshTimer !== null) clearTimeout(this._refreshTimer);
+    this._refreshTimer = null;
+    this._refreshState = "idle";
+    this._refreshError = "";
     this._removeZoomListeners?.();
   }
 
@@ -140,11 +157,15 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${panelStyles()}</style>
       <div class="shell">
-        <header>
-          <button id="title" class="title" aria-label="Вернуться в обзор Home Assistant">
-            <strong>Доступность устройств</strong><small>UI ${UI_VERSION}</small>
+        <header aria-label="Верхнее меню">
+          <button id="menu" type="button" class="header-action menu" title="Меню Home Assistant" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu" aria-hidden="true"></ha-icon></button>
+          <button id="title" type="button" class="title" title="Доступность устройств — обзор Home Assistant" aria-label="Доступность устройств. Вернуться в обзор Home Assistant">
+            <span class="title-heading"><ha-icon icon="mdi:wifi" aria-hidden="true"></ha-icon><strong>Доступность устройств</strong></span><small>UI v${UI_VERSION}</small>
           </button>
+          <button id="refresh" type="button" class="header-action refresh idle" title="Обновить" aria-label="Обновить" aria-busy="false"><ha-icon icon="mdi:refresh" aria-hidden="true"></ha-icon></button>
         </header>
+        <div id="refresh-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="refresh-error" class="refresh-error" role="alert" hidden></div>
         <main id="viewport" class="viewport"><div id="canvas" class="canvas"><section id="content" class="content"></section></div></main>
         <nav aria-label="Разделы панели">
           <button class="tab active" data-tab="summary"><ha-icon icon="mdi:view-dashboard-outline"></ha-icon><span>Сводка</span></button>
@@ -153,10 +174,16 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
         </nav>
       </div>`;
     this._shellRendered = true;
-    const title = this.shadowRoot.getElementById("title");
-    title?.addEventListener("click", () => navigatePanel(
-      this._panel?.config?.parent_route || "/home/overview",
-    ));
+    this.shadowRoot.getElementById("menu")?.addEventListener("click", () => {
+      this.dispatchEvent(new CustomEvent("hass-toggle-menu", { bubbles: true, composed: true }));
+    });
+    this.shadowRoot.getElementById("refresh")?.addEventListener("click", () => this._refresh());
+    this.shadowRoot.getElementById("title")?.addEventListener("click", () => {
+      const declared = this._panel?.config?.parent_route;
+      const parent = typeof declared === "string" && declared.split(/[?#]/)[0] !== window.location.pathname
+        ? declared : "/home/overview";
+      if (!navigatePanel(parent)) navigatePanel("/home/overview");
+    });
     this.shadowRoot.querySelectorAll(".tab").forEach((button) => {
       button.addEventListener("click", () => this._activateTab(button.dataset.tab));
     });
@@ -191,17 +218,14 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     }
     const [label, tone, icon] = statusMeta(snapshot.status);
     const t = snapshot.totals;
-    const refreshIcon = this._refreshState === "success" ? "mdi:check" : this._refreshState === "error" ? "mdi:alert-circle-outline" : "mdi:refresh";
-    const refreshText = this._refreshState === "busy" ? "Обновление…" : this._refreshState === "success" ? "Обновлено" : this._refreshState === "error" ? "Ошибка" : "Обновить";
     content.innerHTML = `
-      <section class="hero ${tone}"><div class="hero-status"><div class="hero-icon"><ha-icon icon="${icon}"></ha-icon></div><div><h2>${label}</h2><p>${snapshot.groups.length} групп · ${t.total} контролируемых сущностей</p></div></div><button id="refresh" class="refresh ${this._refreshState}" ${this._refreshState === "busy" ? "disabled" : ""}><ha-icon icon="${refreshIcon}"></ha-icon><span>${refreshText}</span></button></section>
+      <section class="hero ${tone}"><div class="hero-status"><div class="hero-icon"><ha-icon icon="${icon}"></ha-icon></div><div><h2>${label}</h2><p>${snapshot.groups.length} групп · ${t.total} контролируемых сущностей</p></div></div></section>
       <section class="stats">
         ${this._stat("Всего",t.total)}${this._stat("Доступно",t.online)}${this._stat("Недоступно",t.offline)}${this._stat("Устарели",t.stale)}${this._stat("Батарея",t.low_battery)}${this._stat("Сигнал",t.poor_signal)}
       </section>
       ${this._compositionCard(snapshot.composition)}
       <h2 class="section-title">Группы контроля</h2>
       <section class="groups">${snapshot.groups.map((group) => this._groupCard(group)).join("")}</section>`;
-    content.querySelector("#refresh")?.addEventListener("click", () => this._refresh());
   }
 
   _stat(label, value) { return `<div class="stat"><b>${value}</b><span>${label}</span></div>`; }
@@ -256,22 +280,60 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     content.innerHTML = `<section class="diag"><article class="card"><h3>Источник данных</h3><div class="diag-row"><span>Интеграция</span><b>${snapshot.status === "no_integration" ? "Не обнаружена" : "Entity Availability 0.5.3+"}</b></div><div class="diag-row"><span>Групп</span><b>${snapshot.groups.length}</b></div><div class="diag-row"><span>Без данных</span><b>${snapshot.diagnostics.unavailableSources.length}</b></div><div class="diag-row"><span>Последнее обновление панели</span><b>${new Intl.DateTimeFormat("ru-RU",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date())}</b></div></article><article class="card"><h3>Обнаруженные группы</h3>${sourceRows || `<p>Источники не найдены.</p>`}</article></section>`;
   }
 
+  _patchRefreshButton() {
+    const button = this.shadowRoot.getElementById("refresh");
+    if (!button) return;
+    const state = this._refreshState;
+    const labels = {
+      idle: "Обновить", busy: "Обновление данных",
+      success: "Запрос обновления выполнен", error: "Не удалось обновить данные",
+    };
+    const label = labels[state];
+    const className = `header-action refresh ${state}`;
+    if (button.className !== className) button.className = className;
+    if (button.disabled !== (state === "busy")) button.disabled = state === "busy";
+    for (const [name, value] of Object.entries({ "aria-label": label, "aria-busy": String(state === "busy"), title: label })) {
+      if (button.getAttribute(name) !== value) button.setAttribute(name, value);
+    }
+    const glyph = state === "success" ? "mdi:check" : state === "error" ? "mdi:alert-circle-outline" : "mdi:refresh";
+    const icon = button.querySelector("ha-icon");
+    if (icon && icon.getAttribute("icon") !== glyph) icon.setAttribute("icon", glyph);
+    const status = this.shadowRoot.getElementById("refresh-status");
+    const announcement = state === "idle" || state === "error" ? "" : label;
+    if (status && status.textContent !== announcement) status.textContent = announcement;
+    const error = this.shadowRoot.getElementById("refresh-error");
+    if (error) {
+      if (error.textContent !== this._refreshError) error.textContent = this._refreshError;
+      if (error.hidden !== !this._refreshError) error.hidden = !this._refreshError;
+    }
+  }
+
   async _refresh() {
-    if (this._refreshState === "busy") return;
+    if (this._refreshState === "busy" || !this.isConnected) return;
+    // A deliberate retry cancels the previous result deadline before starting.
+    if (this._refreshTimer !== null) clearTimeout(this._refreshTimer);
+    this._refreshTimer = null;
+    const generation = ++this._refreshGeneration;
     this._refreshState = "busy";
-    this._patchActiveView();
+    this._refreshError = "";
+    this._patchRefreshButton();
+    let result = "success";
     try {
       await refreshAvailabilitySources(this._hass, this._snapshot);
-      this._snapshot = buildAvailabilitySnapshot(this._hass?.states || {});
-      this._refreshState = "success";
     } catch (_error) {
-      this._refreshState = "error";
+      result = "error";
     }
-    this._patchActiveView();
-    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    if (generation !== this._refreshGeneration || !this.isConnected) return;
+    this._refreshState = result;
+    if (result === "error") this._refreshError = "Не удалось обновить данные. Повторите попытку.";
+    this._patchRefreshButton();
+    // Successful API completion is not new telemetry. The normal hass setter
+    // remains the only data source; the request never rebuilds the work view.
     this._refreshTimer = setTimeout(() => {
+      if (generation !== this._refreshGeneration || !this.isConnected) return;
+      this._refreshTimer = null;
       this._refreshState = "idle";
-      if (this._activeTab === "summary") this._patchActiveView();
+      this._patchRefreshButton();
     }, 1400);
   }
 
