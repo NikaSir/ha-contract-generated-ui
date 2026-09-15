@@ -25,7 +25,7 @@ HTML = """<!doctype html><html lang="ru"><meta charset="utf-8">
 body{margin:0}#host{position:absolute;inset:0;overflow:hidden}
 ha-icon{display:inline-block}
 </style><div id="host"></div><script type="module">
-import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b003';
+import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b004';
 // Test-only icon host: production uses Home Assistant's registered ha-icon.
 customElements.define('ha-icon', class extends HTMLElement {
   static get observedAttributes(){return ['icon'];}
@@ -83,7 +83,6 @@ def browser():
 def page(browser):
     page = browser.new_page(viewport={"width": 393, "height": 852})
     page.clock.install(time=datetime(2026, 9, 15, tzinfo=timezone.utc))
-    page.clock.pause_at(datetime(2026, 9, 15, 0, 0, 1, tzinfo=timezone.utc))
     # No browser-network access is required. Only the dependency specifier is
     # mapped to an in-memory URL; production JavaScript is otherwise unchanged.
     blob = "code => URL.createObjectURL(new Blob([code], {type:'text/javascript'}))"
@@ -91,8 +90,10 @@ def page(browser):
     source = (FRONTEND / "device-availability-panel.js").read_text()
     source = re.sub(r'\./device-availability-model\.js\?build=[^"\s]+', model_url, source)
     module_url = page.evaluate(blob, source)
-    page.set_content(HTML.replace('/device-availability-panel.js?build=b003', module_url))
+    page.set_content(HTML.replace('/device-availability-panel.js?build=b004', module_url))
     page.wait_for_function("window.ready === true")
+    # Pause only after module startup: a frozen RAF can stall readiness polling.
+    page.clock.pause_at(datetime(2026, 9, 15, 0, 0, 1, tzinfo=timezone.utc))
     yield page
     page.close()
 
@@ -136,8 +137,8 @@ def test_header_geometry_at_each_host_width(page, width):
         assert dimensions[action]["h"] == 44
     assert dimensions["font"] == ("21px" if width < 360 else "23px")
     assert dimensions["weight"] == "800"
-    assert dimensions["version"] == "UI v1.0.0-beta003"
-    assert dimensions["refreshBg"] == "rgb(17, 20, 24)"
+    assert dimensions["version"] == "UI v1.0.0-beta004"
+    assert dimensions["refreshBg"] == "rgb(255, 255, 255)"
     assert dimensions["border"] == "16px"
     assert not dimensions["overflow"]
 
@@ -276,3 +277,149 @@ def test_disconnect_ignores_late_completion(page):
     assert page.evaluate("lateWrites") == 0
     assert page.evaluate("panel._refreshTimer") is None
     assert page.evaluate("panel._refreshState") == "idle"
+
+
+@pytest.mark.parametrize("theme", ["light", "dark"])
+def test_beta004_refresh_uses_normative_theme_surface(page, theme):
+    if theme == "dark":
+        page.evaluate("document.documentElement.style.setProperty('--card-background-color','#242424')")
+    result = page.locator("header #refresh").evaluate("""b => {
+      const s=getComputedStyle(b), i=b.querySelector('ha-icon');
+      return {bg:s.backgroundColor,color:getComputedStyle(i).color,
+       radius:s.borderRadius,shadow:s.boxShadow,border:s.borderTopWidth};
+    }""")
+    assert result["bg"] == ("rgb(255, 255, 255)" if theme == "light" else "rgb(36, 36, 36)")
+    assert result["color"] == "rgb(3, 169, 217)"
+    assert result["radius"] == "16px"
+    assert result["border"] == "1px"
+    assert "7px 20px" in result["shadow"]
+
+
+@pytest.mark.parametrize("width", [320, 359, 360, 393, 430, 560, 1024])
+def test_beta004_title_never_overflows_or_uses_wifi(page, width):
+    page.set_viewport_size({"width":width,"height":852})
+    assert page.locator("#title ha-icon").count() == 0
+    result = page.locator("#title strong").evaluate("""e => ({
+      width:e.clientWidth, textWidth:e.scrollWidth, text:e.innerText,
+      titleLabel:e.closest('button').getAttribute('aria-label')})""")
+    assert result["textWidth"] <= result["width"]
+    assert result["text"] in ("Доступность", "Доступность устройств")
+    assert "Доступность устройств" in result["titleLabel"]
+
+
+def update_group(page, **changes):
+    page.evaluate("""changes => {
+      const k='sensor.entity_availability_okna_group_summary';
+      states[k]={...states[k],attributes:{...states[k].attributes,...changes}};
+      panel.hass={...hass,states:{...states}};
+    }""", changes)
+
+
+def remember_devices(page):
+    page.locator('[data-tab="devices"]').dispatch_event("click")
+    page.evaluate("""() => {
+      const r=panel.shadowRoot;
+      window.groupBefore=r.querySelector('#group-filter');
+      window.conditionBefore=r.querySelector('#condition-filter');
+      window.searchBefore=r.querySelector('#search');
+      window.optionsBefore=[...groupBefore.options];
+      window.rowBefore=r.querySelector('.device[data-entity="sensor.okna"]');
+    }""")
+
+
+@pytest.mark.parametrize("control", ["group-filter", "condition-filter"])
+def test_beta004_focused_select_survives_real_telemetry(page, control):
+    remember_devices(page)
+    page.locator('#'+control).focus()
+    update_group(page, online=10,offline=2,display_names={"sensor.okna":"Окна обновлены"})
+    assert page.evaluate("groupBefore===panel.shadowRoot.querySelector('#group-filter')")
+    assert page.evaluate("conditionBefore===panel.shadowRoot.querySelector('#condition-filter')")
+    assert page.evaluate("optionsBefore.every((node,i)=>node===groupBefore.options[i])")
+    assert page.evaluate("rowBefore===panel.shadowRoot.querySelector('.device[data-entity=\"sensor.okna\"]')")
+    assert page.locator('#'+control).evaluate("e=>e.getRootNode().activeElement===e")
+    assert "Окна обновлены" in page.locator('.device[data-entity="sensor.okna"]').inner_text()
+    page.locator("#group-filter").select_option("okna")
+    assert page.locator(".device").count() == 1
+
+
+def test_beta004_search_preserves_node_focus_caret_and_filters_on_telemetry(page):
+    remember_devices(page)
+    search=page.locator('#search')
+    search.focus()
+    search.fill("Окна")
+    search.evaluate("e=>e.setSelectionRange(1,3)")
+    update_group(page, online=10,offline=2)
+    assert page.evaluate("searchBefore===panel.shadowRoot.querySelector('#search')")
+    assert search.input_value() == "Окна"
+    assert search.evaluate("e=>[e.selectionStart,e.selectionEnd]") == [1,3]
+    assert search.evaluate("e=>e.getRootNode().activeElement===e")
+    assert page.locator('.device').count() == 1
+
+
+def test_beta004_select_options_are_deferred_while_open_and_synced_after_blur(page):
+    remember_devices(page)
+    page.locator('#group-filter').focus()
+    page.evaluate("""() => {
+      states['sensor.entity_availability_new_group_summary']={state:'1',attributes:{
+       group_name:'Новая группа', total_entities:1,online:1,entities:['sensor.new']}};
+      panel.hass={...hass,states:{...states}};
+    }""")
+    assert page.evaluate("optionsBefore.every((node,i)=>node===groupBefore.options[i])")
+    assert page.locator('#group-filter option[value="new"]').count() == 0
+    page.locator('#search').focus()
+    assert page.locator('#group-filter option[value="new"]').count() == 1
+    page.locator('#group-filter').select_option('new')
+    assert page.locator('.device[data-entity="sensor.new"]').count() == 1
+
+
+def test_beta004_unrelated_hass_updates_produce_no_work_dom_writes(page):
+    remember_devices(page)
+    page.evaluate("""() => {
+      window.workWrites=0;
+      window.observer=new MutationObserver(rs=>workWrites+=rs.length);
+      observer.observe(panel.shadowRoot.querySelector('#content'),{
+       childList:true,subtree:true,attributes:true,characterData:true});
+      for(let i=0;i<50;i++)panel.hass={...hass,states:{...states,'sensor.unrelated':{state:String(i)}}};
+    }""")
+    assert page.evaluate("workWrites") == 0
+
+
+def test_beta004_long_summary_preserves_cards_scroll_and_updates_counts(page):
+    page.evaluate("""() => {
+      for(let i=0;i<15;i++)states[`sensor.entity_availability_extra${i}_group_summary`]={
+       state:'1',attributes:{group_name:`Группа ${i}`,online:1,total_entities:1,entities:[]}};
+      panel.hass={...hass,states:{...states}};
+      const r=panel.shadowRoot, v=r.querySelector('#viewport');
+      v.scrollTop=450;window.scrollBefore=v.scrollTop;
+      window.heroBefore=r.querySelector('.hero');window.groupsBefore=r.querySelector('.groups');
+      window.cardsBefore=[...groupsBefore.children];
+      window.cardTops=cardsBefore.map(c=>c.getBoundingClientRect().top);
+      window.scrollWrites=0;
+      const descriptor=Object.getOwnPropertyDescriptor(Element.prototype,'scrollTop');
+      Object.defineProperty(v,'scrollTop',{get(){return descriptor.get.call(this)},set(x){scrollWrites++;descriptor.set.call(this,x)}});
+    }""")
+    assert page.evaluate("scrollBefore") > 0
+    # Recovery changes the model's sort order. Mounted groups must not move.
+    update_group(page, online=12, offline=0)
+    assert page.evaluate("heroBefore===panel.shadowRoot.querySelector('.hero')")
+    assert page.evaluate("groupsBefore===panel.shadowRoot.querySelector('.groups')")
+    assert page.evaluate("cardsBefore.every((c,i)=>c===groupsBefore.children[i])")
+    assert page.evaluate("cardTops.every((y,i)=>Math.abs(y-cardsBefore[i].getBoundingClientRect().top)<1)")
+    assert page.evaluate("scrollBefore===panel.shadowRoot.querySelector('#viewport').scrollTop")
+    assert page.evaluate("scrollWrites") == 0
+    assert page.locator('.hero h2').inner_text() == 'Всё доступно'
+    assert page.locator('.stat').nth(2).locator('b').inner_text() == '0'
+
+
+def test_beta004_same_tab_click_does_not_scroll_to_top(page):
+    page.evaluate("panel.shadowRoot.querySelector('#viewport').scrollTop=100;window.before=panel.shadowRoot.querySelector('#viewport').scrollTop")
+    page.locator('[data-tab="summary"]').dispatch_event('click')
+    assert page.evaluate("before===panel.shadowRoot.querySelector('#viewport').scrollTop")
+
+
+def test_beta004_device_label_and_metadata_are_separate_lines(page):
+    remember_devices(page)
+    result = page.locator('.device').first.evaluate("""row=>({
+      name:row.querySelector('.device-name').getBoundingClientRect().bottom,
+      sub:row.querySelector('.device-sub').getBoundingClientRect().top})""")
+    assert result['sub'] >= result['name']

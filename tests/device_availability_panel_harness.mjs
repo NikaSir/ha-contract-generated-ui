@@ -97,6 +97,7 @@ if (request.operation === "header_actions") {
   const panel = new module.NikasDeviceAvailabilityPanel();
   panel.hass = { states: request.states || {} };
   const content = { innerHTML: "", querySelector() { return null; } };
+  panel._patchViewMarkup = (target, markup) => { target.innerHTML = markup; };
   panel._renderSummary(content);
   const text = content.innerHTML.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   process.stdout.write(JSON.stringify({ html: content.innerHTML, text }));

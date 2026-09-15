@@ -3,7 +3,7 @@ import {
   filterAvailabilityItems,
 } from "./device-availability-model.js?build=b002";
 
-export const UI_VERSION = "1.0.0-beta003";
+export const UI_VERSION = "1.0.0-beta004";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -75,6 +75,78 @@ function formatTimestamp(value) {
   }).format(date);
 }
 
+// Reconcile only the work view. Never replace a mounted input/select during
+// telemetry; native pickers and the browser's scroll anchor belong to these nodes.
+function workNodeKey(node) {
+  if (node.nodeType !== 1) return null;
+  return node.id ? `id:${node.id}` : node.getAttribute("data-key");
+}
+
+function patchWorkNode(current, next, telemetry) {
+  if (current.nodeType !== 1) {
+    if (current.nodeValue !== next.nodeValue) current.nodeValue = next.nodeValue;
+    return;
+  }
+  const focused = current.getRootNode().activeElement === current;
+  // Changing even the options of a focused native select may dismiss its picker.
+  // The delegated focusout handler applies the latest options after it closes.
+  if (focused && current.localName === "select") return;
+  for (const attribute of [...current.attributes]) {
+    if (focused && current.localName === "input" && attribute.name === "value") continue;
+    if (!next.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+  }
+  for (const attribute of [...next.attributes]) {
+    if (focused && current.localName === "input" && attribute.name === "value") continue;
+    if (current.getAttribute(attribute.name) !== attribute.value) {
+      current.setAttribute(attribute.name, attribute.value);
+    }
+  }
+  if (current.localName === "input") {
+    if (!focused && current.value !== next.value) current.value = next.value;
+    return;
+  }
+  patchWorkChildren(current, next, telemetry);
+  if (current.localName === "select" && current.value !== next.value) {
+    current.value = next.value;
+  }
+}
+
+function patchWorkChildren(parent, nextParent, telemetry) {
+  const previous = [...parent.childNodes];
+  const keyed = new Map(previous.filter(workNodeKey).map(node => [workNodeKey(node), node]));
+  const used = new Set();
+  const desired = [];
+  for (const next of nextParent.childNodes) {
+    const key = workNodeKey(next);
+    let current = key ? keyed.get(key) : previous.find(node => (
+      !used.has(node) && !workNodeKey(node)
+      && node.nodeType === next.nodeType && node.nodeName === next.nodeName
+    ));
+    if (current && (used.has(current) || current.nodeName !== next.nodeName)) current = null;
+    if (current) {
+      used.add(current);
+      patchWorkNode(current, next, telemetry);
+      desired.push(current);
+    } else {
+      desired.push(next.cloneNode(true));
+    }
+  }
+  // A health change must not move the group the user is reading. Re-sort on an
+  // explicit filter/tab change; append newly discovered rows during telemetry.
+  const stableOrder = telemetry && parent.matches?.(".groups,.device-list");
+  const ordered = stableOrder
+    ? [...previous.filter(node => used.has(node)), ...desired.filter(node => !used.has(node))]
+    : desired;
+  let cursor = parent.firstChild;
+  for (const node of ordered) {
+    if (node === cursor) cursor = cursor.nextSibling;
+    else parent.insertBefore(node, cursor);
+  }
+  for (const node of previous) {
+    if (!used.has(node)) node.remove();
+  }
+}
+
 function panelStyles() {
   return `
     :host{container-type:inline-size;display:block;position:relative;width:100%;height:100%;overflow:hidden;color:var(--primary-text-color,#17191c);background:var(--primary-background-color,#f4f6f8);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -83,9 +155,9 @@ function panelStyles() {
     header{padding:env(safe-area-inset-top,0px) calc(12px + env(safe-area-inset-right,0px)) 0 calc(12px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 97%,transparent);border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 70%,transparent);backdrop-filter:blur(18px) saturate(130%);-webkit-backdrop-filter:blur(18px) saturate(130%);z-index:3}
     .header-action{grid-row:1;width:44px;height:44px;padding:0;justify-self:center;border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 72%,transparent);border-radius:16px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.08);display:grid;place-items:center;cursor:pointer}.header-action ha-icon{--mdc-icon-size:25px}.menu{grid-column:1}.header-action:active{transform:scale(.985)}
     .title{grid-area:1/2;min-width:0;width:min(360px,100%);height:52px;padding:5px 14px;justify-self:center;border:1px solid color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8));border-radius:16px;background:color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff));color:inherit;display:flex;flex-direction:column;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 5px 16px rgba(23,45,76,.06)}
-    .title-heading{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}.title-heading ha-icon{--mdc-icon-size:25px;flex:0 0 25px}.title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px;font-weight:800;line-height:1.05}.title small{font-size:14px;font-weight:560;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:3px;white-space:nowrap}
+    .title-heading{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}.title-compact{display:none}@container(max-width:519px){.title-full{display:none}.title-compact{display:inline}}.title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px;font-weight:800;line-height:1.05}.title small{font-size:14px;font-weight:560;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:3px;white-space:nowrap}
     .title:active{background:color-mix(in srgb,var(--primary-color,#03a9d9) 13%,var(--card-background-color,#fff));border-color:color-mix(in srgb,var(--primary-color,#03a9d9) 42%,var(--divider-color,#dfe3e8));box-shadow:0 2px 7px rgba(23,45,76,.05);transform:scale(.985)}.title:focus-visible,.header-action:focus-visible{outline:2px solid var(--primary-color,#03a9d9);outline-offset:2px}
-    .refresh{grid-column:3;background:#111418;color:#fff}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin .9s linear infinite}.refresh.success ha-icon{color:#43a047}.refresh.error ha-icon{color:#e53935}@keyframes spin{to{transform:rotate(360deg)}}
+    .refresh{grid-column:3;color:var(--primary-color,#03a9d9)}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin .9s linear infinite}.refresh.success ha-icon{color:#43a047}.refresh.error ha-icon{color:#e53935}@keyframes spin{to{transform:rotate(360deg)}}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.refresh-error{position:absolute;inset-inline:12px;top:calc(68px + env(safe-area-inset-top,0px));max-width:580px;margin-inline:auto;padding:12px 16px;border:1px solid #e53935;border-radius:14px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.12);z-index:5}
     @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:13px}}
     .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:none;-webkit-overflow-scrolling:touch}.viewport.zoomed{overflow:hidden;touch-action:none}
@@ -101,7 +173,7 @@ function panelStyles() {
     .group-reference{margin-top:10px;padding:9px 11px;border-radius:13px;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 88%,transparent);font-size:12px;color:var(--secondary-text-color,#68737d)}.group-reference b{color:var(--primary-text-color,#17191c)}
     .empty{padding:28px;text-align:center}.empty ha-icon{--mdc-icon-size:46px;color:var(--secondary-text-color,#68737d)}.empty h2{margin:10px 0 6px}.empty p{margin:0 auto;max-width:560px;color:var(--secondary-text-color,#68737d)}.empty button{margin-top:17px;border:0;border-radius:14px;padding:11px 16px;background:#111418;color:#fff;font-weight:750;cursor:pointer}
     .controls{padding:10px;display:grid;grid-template-columns:minmax(220px,1fr) 220px 220px;gap:8px;position:sticky;top:0;z-index:2}.controls input,.controls select{height:44px;border:1px solid var(--divider-color,#dfe3e8);border-radius:14px;background:var(--card-background-color,#fff);color:inherit;padding:0 13px;min-width:0}
-    .device-list{display:grid;gap:8px;margin-top:10px}.device{width:100%;padding:13px 14px;border:1px solid var(--divider-color,#dfe3e8);border-radius:17px;background:var(--card-background-color,#fff);color:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;cursor:pointer}.device-main{min-width:0}.device-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-sub{margin-top:4px;color:var(--secondary-text-color,#68737d);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-side{text-align:right}.device-side .pill{display:inline-block}.health{margin-top:5px;font-size:12px;color:var(--secondary-text-color,#68737d)}
+    .device-list{display:grid;gap:8px;margin-top:10px}.device{width:100%;padding:13px 14px;border:1px solid var(--divider-color,#dfe3e8);border-radius:17px;background:var(--card-background-color,#fff);color:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;cursor:pointer}.device-main{min-width:0;display:grid;gap:4px}.device-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-sub{display:block;color:var(--secondary-text-color,#68737d);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-side{text-align:right}.device-side .pill{display:inline-block}.health{display:block;margin-top:5px;font-size:12px;color:var(--secondary-text-color,#68737d)}
     .diag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.diag .card{padding:17px}.diag h3{margin:0 0 12px}.diag-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 65%,transparent)}.diag-row:last-child{border:0}.diag-row span{color:var(--secondary-text-color,#68737d)}code{word-break:break-all;font-size:12px}
     @media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr)}.groups{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.controls input{grid-column:1/-1}.diag{grid-template-columns:1fr}}
     @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
@@ -116,6 +188,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this._hass = null;
     this._panel = null;
     this._snapshot = buildAvailabilitySnapshot({});
+    this._snapshotSignature = JSON.stringify(this._snapshot);
     this._activeTab = "summary";
     this._query = "";
     this._groupFilter = "all";
@@ -131,8 +204,12 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
 
   set hass(value) {
     this._hass = value;
-    this._snapshot = buildAvailabilitySnapshot(value?.states || {});
-    if (this._shellRendered) this._patchActiveView();
+    const snapshot = buildAvailabilitySnapshot(value?.states || {});
+    const signature = JSON.stringify(snapshot);
+    if (signature === this._snapshotSignature) return;
+    this._snapshot = snapshot;
+    this._snapshotSignature = signature;
+    if (this._shellRendered) this._patchTelemetry();
   }
   get hass() { return this._hass; }
   set panel(value) { this._panel = value; }
@@ -160,7 +237,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
         <header aria-label="Верхнее меню">
           <button id="menu" type="button" class="header-action menu" title="Меню Home Assistant" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu" aria-hidden="true"></ha-icon></button>
           <button id="title" type="button" class="title" title="Доступность устройств — обзор Home Assistant" aria-label="Доступность устройств. Вернуться в обзор Home Assistant">
-            <span class="title-heading"><ha-icon icon="mdi:wifi" aria-hidden="true"></ha-icon><strong>Доступность устройств</strong></span><small>UI v${UI_VERSION}</small>
+            <span class="title-heading"><strong><span class="title-full">Доступность устройств</span><span class="title-compact" aria-hidden="true">Доступность</span></strong></span><small>UI v${UI_VERSION}</small>
           </button>
           <button id="refresh" type="button" class="header-action refresh idle" title="Обновить" aria-label="Обновить" aria-busy="false"><ha-icon icon="mdi:refresh" aria-hidden="true"></ha-icon></button>
         </header>
@@ -187,11 +264,40 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this.shadowRoot.querySelectorAll(".tab").forEach((button) => {
       button.addEventListener("click", () => this._activateTab(button.dataset.tab));
     });
+    this._installViewListeners();
     this._installZoom();
   }
 
+  _installViewListeners() {
+    const content = this.shadowRoot.getElementById("content");
+    if (!content) return;
+    // One delegated listener per event, not one new handler per HA update.
+    content.addEventListener("input", event => {
+      if (event.target.id !== "search") return;
+      this._query = event.target.value;
+      this._renderDevices(content);
+    });
+    content.addEventListener("change", event => {
+      if (event.target.id === "group-filter") this._groupFilter = event.target.value;
+      else if (event.target.id === "condition-filter") this._conditionFilter = event.target.value;
+      else return;
+      this._renderDevices(content);
+    });
+    content.addEventListener("focusout", event => {
+      if (event.target.localName !== "select") return;
+      queueMicrotask(() => {
+        if (this.isConnected && this._activeTab === "devices") this._renderDevices(content, true);
+      });
+    });
+    content.addEventListener("click", event => {
+      const device = event.target.closest?.(".device[data-entity]");
+      if (device) dispatchMoreInfo(this, device.dataset.entity);
+      else if (event.target.closest?.("#open-integration")) navigatePanel("/config/integrations");
+    });
+  }
+
   _activateTab(tab) {
-    if (!["summary", "devices", "diagnostics"].includes(tab)) return;
+    if (!["summary", "devices", "diagnostics"].includes(tab) || tab === this._activeTab) return;
     this._activeTab = tab;
     this.shadowRoot.querySelectorAll(".tab").forEach((button) => {
       button.classList.toggle("active", button.dataset.tab === tab);
@@ -201,31 +307,40 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this._patchActiveView();
   }
 
-  _patchActiveView() {
-    const content = this.shadowRoot.getElementById("content");
-    if (!content) return;
-    if (this._activeTab === "devices") this._renderDevices(content);
-    else if (this._activeTab === "diagnostics") this._renderDiagnostics(content);
-    else this._renderSummary(content);
+  _patchTelemetry() {
+    this._patchActiveView(true);
   }
 
-  _renderSummary(content) {
+  _patchViewMarkup(content, markup, telemetry = false) {
+    const template = content.ownerDocument.createElement("template");
+    template.innerHTML = markup;
+    patchWorkChildren(content, template.content, telemetry);
+  }
+
+  _patchActiveView(telemetry = false) {
+    const content = this.shadowRoot.getElementById("content");
+    if (!content) return;
+    if (this._activeTab === "devices") this._renderDevices(content, telemetry);
+    else if (this._activeTab === "diagnostics") this._renderDiagnostics(content, telemetry);
+    else this._renderSummary(content, telemetry);
+  }
+
+  _renderSummary(content, telemetry = false) {
     const snapshot = this._snapshot;
     if (snapshot.status === "no_integration") {
-      content.innerHTML = `<div class="empty"><ha-icon icon="mdi:shield-off-outline"></ha-icon><h2>Entity Availability не обнаружена</h2><p>Установите или запустите интеграцию и создайте группы контролируемых сущностей.</p><button id="open-integration">Открыть интеграции</button></div>`;
-      content.querySelector("#open-integration")?.addEventListener("click", () => navigatePanel("/config/integrations"));
+      this._patchViewMarkup(content, `<div class="empty"><ha-icon icon="mdi:shield-off-outline"></ha-icon><h2>Entity Availability не обнаружена</h2><p>Установите или запустите интеграцию и создайте группы контролируемых сущностей.</p><button id="open-integration">Открыть интеграции</button></div>`, telemetry);
       return;
     }
     const [label, tone, icon] = statusMeta(snapshot.status);
     const t = snapshot.totals;
-    content.innerHTML = `
+    this._patchViewMarkup(content, `
       <section class="hero ${tone}"><div class="hero-status"><div class="hero-icon"><ha-icon icon="${icon}"></ha-icon></div><div><h2>${label}</h2><p>${snapshot.groups.length} групп · ${t.total} контролируемых сущностей</p></div></div></section>
       <section class="stats">
         ${this._stat("Всего",t.total)}${this._stat("Доступно",t.online)}${this._stat("Недоступно",t.offline)}${this._stat("Устарели",t.stale)}${this._stat("Батарея",t.low_battery)}${this._stat("Сигнал",t.poor_signal)}
       </section>
       ${this._compositionCard(snapshot.composition)}
       <h2 class="section-title">Группы контроля</h2>
-      <section class="groups">${snapshot.groups.map((group) => this._groupCard(group)).join("")}</section>`;
+      <section class="groups" data-key="groups">${snapshot.groups.map((group) => this._groupCard(group)).join("")}</section>`, telemetry);
   }
 
   _stat(label, value) { return `<div class="stat"><b>${value}</b><span>${label}</span></div>`; }
@@ -247,20 +362,20 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     const reference = group.nonEssential
       ? `<div class="group-reference"><b>${group.nonEssential}</b> не влияют на статус · ${group.nonEssentialOnline} доступно · ${group.nonEssentialOffline} отключено${group.nonEssentialSuppressed ? ` · ${group.nonEssentialSuppressed} исключено` : ""}</div>`
       : "";
-    return `<article class="card group ${meta[1]}"><div class="group-head"><h3>${escapeHtml(group.name)}</h3><span class="pill">${meta[0]}</span></div><div class="group-metrics"><div class="metric"><b>${group.online}</b><small>доступно</small></div><div class="metric"><b>${group.offline}</b><small>недоступно</small></div><div class="metric"><b>${group.stale + group.lowBattery + group.poorSignal}</b><small>внимание</small></div></div>${reference}</article>`;
+    return `<article class="card group ${meta[1]}" data-key="group:${escapeHtml(group.slug)}"><div class="group-head"><h3>${escapeHtml(group.name)}</h3><span class="pill">${meta[0]}</span></div><div class="group-metrics"><div class="metric"><b>${group.online}</b><small>доступно</small></div><div class="metric"><b>${group.offline}</b><small>недоступно</small></div><div class="metric"><b>${group.stale + group.lowBattery + group.poorSignal}</b><small>внимание</small></div></div>${reference}</article>`;
   }
 
-  _renderDevices(content) {
-    const groups = this._snapshot.groups.filter((group) => group.condition !== "no_data");
+  _renderDevices(content, telemetry = false) {
+    const groups = [...this._snapshot.groups].sort((left, right) => left.name.localeCompare(right.name, "ru"));
+    // Keep a removed selected group visible until the user chooses a new filter.
+    if (this._groupFilter !== "all" && !groups.some(group => group.slug === this._groupFilter)) {
+      groups.push({ slug: this._groupFilter, name: `${this._groupFilter} (нет данных)` });
+    }
     const items = filterAvailabilityItems(this._snapshot, this._query, this._groupFilter, this._conditionFilter);
-    content.innerHTML = `
-      <section class="controls"><input id="search" type="search" value="${escapeHtml(this._query)}" placeholder="Поиск устройства или entity ID" aria-label="Поиск"><select id="group-filter" aria-label="Группа"><option value="all">Все группы</option>${groups.map((group) => `<option value="${escapeHtml(group.slug)}" ${this._groupFilter === group.slug ? "selected" : ""}>${escapeHtml(group.name)}</option>`).join("")}</select><select id="condition-filter" aria-label="Состояние"><option value="all">Все состояния</option>${Object.entries(CONDITION).filter(([key]) => key !== "no_data").map(([key,value]) => `<option value="${key}" ${this._conditionFilter === key ? "selected" : ""}>${value[0]}</option>`).join("")}</select></section>
-      <div class="device-list">${items.length ? items.map((item) => this._deviceRow(item)).join("") : `<div class="empty"><ha-icon icon="mdi:magnify-close"></ha-icon><h2>Ничего не найдено</h2><p>Измените строку поиска или фильтры.</p></div>`}</div>`;
-    const search = content.querySelector("#search");
-    search?.addEventListener("input", (event) => { this._query = event.target.value; this._renderDevices(content); content.querySelector("#search")?.focus(); });
-    content.querySelector("#group-filter")?.addEventListener("change", (event) => { this._groupFilter = event.target.value; this._renderDevices(content); });
-    content.querySelector("#condition-filter")?.addEventListener("change", (event) => { this._conditionFilter = event.target.value; this._renderDevices(content); });
-    content.querySelectorAll(".device[data-entity]").forEach((row) => row.addEventListener("click", () => dispatchMoreInfo(this, row.dataset.entity)));
+    this._patchViewMarkup(content, `
+      <section class="controls"><input id="search" type="search" value="${escapeHtml(this._query)}" placeholder="Поиск устройства или entity ID" aria-label="Поиск"><select id="group-filter" aria-label="Группа"><option value="all">Все группы</option>${groups.map((group) => `<option data-key="option:${escapeHtml(group.slug)}" value="${escapeHtml(group.slug)}" ${this._groupFilter === group.slug ? "selected" : ""}>${escapeHtml(group.name)}</option>`).join("")}</select><select id="condition-filter" aria-label="Состояние"><option value="all">Все состояния</option>${Object.entries(CONDITION).filter(([key]) => key !== "no_data").map(([key,value]) => `<option value="${key}" ${this._conditionFilter === key ? "selected" : ""}>${value[0]}</option>`).join("")}</select></section>
+      <div class="device-list" data-key="device-list">${items.length ? items.map((item) => this._deviceRow(item)).join("") : `<div class="empty"><ha-icon icon="mdi:magnify-close"></ha-icon><h2>Ничего не найдено</h2><p>Измените строку поиска или фильтры.</p></div>`}</div>`, telemetry);
+
   }
 
   _deviceRow(item) {
@@ -271,13 +386,13 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (item.offlineSince) details.push(`с ${formatTimestamp(item.offlineSince)}`);
     else if (item.lastSeen) details.push(`данные ${formatTimestamp(item.lastSeen)}`);
     if (item.nonEssential) details.push("не влияет на статус");
-    return `<button class="device" data-entity="${escapeHtml(item.entityId)}"><span class="device-main"><span class="device-name">${escapeHtml(item.name)}</span><span class="device-sub">${escapeHtml(item.groupName)} · ${escapeHtml(item.entityId)}</span></span><span class="device-side ${tone}"><span class="pill">${label}</span><span class="health">${details.join(" · ") || " "}</span></span></button>`;
+    return `<button class="device" data-key="device:${escapeHtml(item.group)}:${escapeHtml(item.entityId)}" data-entity="${escapeHtml(item.entityId)}"><span class="device-main"><span class="device-name">${escapeHtml(item.name)}</span><span class="device-sub">${escapeHtml(item.groupName)} · ${escapeHtml(item.entityId)}</span></span><span class="device-side ${tone}"><span class="pill">${label}</span><span class="health">${details.join(" · ") || " "}</span></span></button>`;
   }
 
-  _renderDiagnostics(content) {
+  _renderDiagnostics(content, telemetry = false) {
     const snapshot = this._snapshot;
     const sourceRows = snapshot.groups.map((group) => `<div class="diag-row"><span>${escapeHtml(group.name)}</span><code>${escapeHtml(group.sourceEntityId)}</code></div>`).join("");
-    content.innerHTML = `<section class="diag"><article class="card"><h3>Источник данных</h3><div class="diag-row"><span>Интеграция</span><b>${snapshot.status === "no_integration" ? "Не обнаружена" : "Entity Availability 0.5.3+"}</b></div><div class="diag-row"><span>Групп</span><b>${snapshot.groups.length}</b></div><div class="diag-row"><span>Без данных</span><b>${snapshot.diagnostics.unavailableSources.length}</b></div><div class="diag-row"><span>Последнее обновление панели</span><b>${new Intl.DateTimeFormat("ru-RU",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date())}</b></div></article><article class="card"><h3>Обнаруженные группы</h3>${sourceRows || `<p>Источники не найдены.</p>`}</article></section>`;
+    this._patchViewMarkup(content, `<section class="diag"><article class="card"><h3>Источник данных</h3><div class="diag-row"><span>Интеграция</span><b>${snapshot.status === "no_integration" ? "Не обнаружена" : "Entity Availability 0.5.3+"}</b></div><div class="diag-row"><span>Групп</span><b>${snapshot.groups.length}</b></div><div class="diag-row"><span>Без данных</span><b>${snapshot.diagnostics.unavailableSources.length}</b></div><div class="diag-row"><span>Последнее обновление панели</span><b>${new Intl.DateTimeFormat("ru-RU",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date())}</b></div></article><article class="card"><h3>Обнаруженные группы</h3>${sourceRows || `<p>Источники не найдены.</p>`}</article></section>`, telemetry);
   }
 
   _patchRefreshButton() {
