@@ -228,7 +228,7 @@ def test_live_hass_updates_do_not_rebuild_panel_shell() -> None:
 
 
 def test_header_beta_uses_approved_compact_version_format() -> None:
-    assert _run_panel("version") == {"version": "1.0.0-beta003"}
+    assert _run_panel("version") == {"version": "1.0.0-beta004"}
 
 
 def test_summary_explains_non_essential_entities_without_hiding_the_balance() -> None:
