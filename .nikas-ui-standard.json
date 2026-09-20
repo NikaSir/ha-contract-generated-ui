@@ -2,7 +2,7 @@
   "version": "2.2",
   "navigation_contract_version": "1.3",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "361f191efe8e8c87466d76f3fea7be78165bf21f0b567cfe4135fe9a6703543b",
+  "standard_sha256": "edec2234d6f65653a7755f117d18ce79e8dc29c48881fbd362ff300ccc6dc7e0",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
   "navigation_contract_sha256": "04c81cb498de3bd9ac35b7e70ed8a90fa4376ed3a31bcedb1fe5cc3cb53e05a6",
   "role": "registry",
