@@ -124,7 +124,7 @@ idle arrow → busy rotation → success check or error glyph → idle arrow.
 ### Center title plaque — open the immediate parent
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
-- The first line is the current specialized-panel name. The second line is the interface version in the exact form `UI vX.Y.Z`.
+- The first line is the current specialized-panel name. The second line is the complete interface version in the form `UI vX.Y.Z`; an explicitly versioned UI beta retains its full `-betaNNN` suffix. See section 11.1 for the separate integration-version display.
 - The whole plaque is one semantic `button` and copies the S8 OMNI reference geometry and tone exactly; it retains geometric centering between the side rails.
 - Default geometry: `justify-self:center`, `width:min(360px,100%)`, `height:52px`, `padding:5px 14px`. Below `360px` it uses `width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
 - Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
@@ -309,6 +309,36 @@ minimum-only height. It supersedes v1.0's larger `200px × 60px` plaque.
 - The production bundle is syntax-checked directly. Tests reject runtime imports, duplicate current component registration and more than one active shell/viewport.
 - Styles required for the shell are bundled or shipped locally with the same deterministic version policy. Runtime network failure must not remove Header, navigation or core state presentation.
 
+
+### 11.1 Mandatory version identity and acceptance
+
+The [Engineering Knowledge Base, section 6.3.1](NIKAS_ENGINEERING_KNOWLEDGE_BASE.md#631-version-naming-and-complete-display--decision-2026-09-16)
+defines the version naming and display decision of 2026-09-16.
+
+- Integration betas use exactly `MAJOR.MINOR.PATCH-betaNNN`:
+  `1.0.0-beta001`, `1.0.0-beta002`. The three-digit counter starts at
+  `001`, increases sequentially within each target version and is not reused
+  for changed contents. Stable versions omit the suffix.
+- UI and integration numbers may differ. Retain each panel's UI lineage,
+  including `v11.0.N`; never renumber all panels to that line.
+- Display both identities explicitly: full `UI vX.Y.Z` beneath the Header
+  title (including any actual UI beta suffix), and a separately labelled
+  `Интеграция: 1.0.0-beta002` in the approved information/diagnostics area.
+  Keep the two-line 52px title plaque and existing typography unchanged.
+- Reject abbreviated, hash-only, hidden, clipped or ellipsized version values.
+  Wrapping is allowed in the information area, not by changing Header geometry.
+- Compare the integration display to the installed HA manifest and the UI
+  display to its own panel manifest/configuration, contract and shipped bundle.
+  Do not add unsupported UI keys to the HA integration manifest.
+- Acceptance includes the complete viewport/sidebar matrix, 100% and work zoom,
+  cold startup, reopening after upgrade, telemetry and tab transitions.
+  A stale cached UI or mismatched displayed identity blocks acceptance.
+- Record source revision, both versions and evidence. Beta branches are allowed;
+  merging a beta into `main`/production requires separate owner confirmation.
+  CI success is not user acceptance or permission for stable promotion.
+- This documentation update does not certify installed panels, change publication
+  channels, create tags/Releases or implement these guards in consumer code.
+
 ## 12. Brand and repository identity
 
 - Every integration repository ships a recognizable integration brand asset.
@@ -353,6 +383,7 @@ Repository tests or static checks must verify:
 28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
 29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
 30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.1, including the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
+31. both complete version identities and beta numbering satisfy section 11.1; missing, shortened or mismatched versions block acceptance.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
 
