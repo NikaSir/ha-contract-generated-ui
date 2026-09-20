@@ -73,9 +73,30 @@ low on battery or has poor signal. Otherwise it is `Всё доступно`. No
 suppressed entities remain visible in detail but do not raise the aggregate problem
 status.
 
+### Problems
+
+The second view answers which devices need attention and why. It groups rows by
+their primary problem in this fixed priority order:
+
+1. offline or no connection;
+2. stale data;
+3. low battery;
+4. poor signal;
+5. unknown source state.
+
+Each physical row appears in only one primary group. Additional problems remain
+visible as compact badges on that row. Rows retain the source integration's
+device-collapse result, show name, group, entity ID, available timing/battery/signal
+details, and open Home Assistant more-info.
+
+Non-essential problem rows are not mixed into the alert groups. They appear in a
+separate neutral section below and never raise the aggregate status. When no
+essential or non-essential problems exist, the view displays `Проблемных устройств
+нет`.
+
 ### Devices
 
-The second view contains one searchable table/list of monitored items with filters
+The third view contains one searchable table/list of monitored items with filters
 for group and condition. Rows show the display name, group, current condition,
 duration or last activity when available, battery and signal. A row opens the normal
 Home Assistant more-info dialog for its representative entity.
@@ -86,7 +107,7 @@ provided in sensor attributes. It does not attempt a second independent collapse
 
 ### Diagnostics
 
-The third view shows integration presence, detected groups, source entity IDs,
+The fourth view shows integration presence, detected groups, source entity IDs,
 missing optional sensors, last successful refresh and current compatibility status.
 This view makes source-data problems distinguishable from actual device outages.
 

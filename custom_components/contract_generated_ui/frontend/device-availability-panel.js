@@ -1,9 +1,10 @@
 import {
   buildAvailabilitySnapshot,
+  buildAvailabilityProblemGroups,
   filterAvailabilityItems,
-} from "./device-availability-model.js?build=b002";
+} from "./device-availability-model.js?build=b005";
 
-export const UI_VERSION = "1.0.0-beta004";
+export const UI_VERSION = "1.0.0-beta005";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -55,6 +56,7 @@ const CONDITION = Object.freeze({
   stale: ["Данные устарели", "warn", "mdi:clock-alert-outline"],
   low_battery: ["Низкий заряд", "warn", "mdi:battery-alert-variant-outline"],
   poor_signal: ["Слабый сигнал", "warn", "mdi:signal-cellular-1"],
+  unknown: ["Неизвестное состояние", "warn", "mdi:help-circle-outline"],
   suppressed: ["Исключено", "muted", "mdi:bell-off-outline"],
   no_data: ["Нет данных", "muted", "mdi:help-circle-outline"],
 });
@@ -162,8 +164,8 @@ function panelStyles() {
     @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:13px}}
     .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:none;-webkit-overflow-scrolling:touch}.viewport.zoomed{overflow:hidden;touch-action:none}
     .canvas{width:100%;min-height:100%;transform-origin:0 0}.content{width:100%;max-width:1280px;min-height:100%;margin:0 auto;padding:14px 12px 24px}
-    nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
-    .tab{height:54px;border:0;border-radius:16px;background:transparent;color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;cursor:pointer}.tab ha-icon{--mdc-icon-size:25px}.tab span{font-size:12px}.tab.active{color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)}
+    nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
+    .tab{min-width:0;height:54px;border:0;border-radius:16px;background:transparent;color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;cursor:pointer}.tab ha-icon{--mdc-icon-size:25px}.tab span{max-width:100%;font-size:12px;line-height:14px;white-space:nowrap}.tab.active{color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)}
     .hero,.card,.empty,.controls{background:var(--card-background-color,#fff);border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 82%,transparent);border-radius:22px;box-shadow:0 8px 24px rgba(23,45,76,.07)}
     .hero{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.hero-status{display:flex;align-items:center;gap:14px;min-width:0}.hero-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--status-color) 13%,transparent);color:var(--status-color)}.hero-icon ha-icon{--mdc-icon-size:30px}.hero h2{margin:0;font-size:23px}.hero p{margin:4px 0 0;color:var(--secondary-text-color,#68737d)}
     .ok{--status-color:#43a047}.bad{--status-color:#e05252}.warn{--status-color:#ef9f25}.muted{--status-color:#7b8792}
@@ -174,9 +176,12 @@ function panelStyles() {
     .empty{padding:28px;text-align:center}.empty ha-icon{--mdc-icon-size:46px;color:var(--secondary-text-color,#68737d)}.empty h2{margin:10px 0 6px}.empty p{margin:0 auto;max-width:560px;color:var(--secondary-text-color,#68737d)}.empty button{margin-top:17px;border:0;border-radius:14px;padding:11px 16px;background:#111418;color:#fff;font-weight:750;cursor:pointer}
     .controls{padding:10px;display:grid;grid-template-columns:minmax(220px,1fr) 220px 220px;gap:8px;position:sticky;top:0;z-index:2}.controls input,.controls select{height:44px;border:1px solid var(--divider-color,#dfe3e8);border-radius:14px;background:var(--card-background-color,#fff);color:inherit;padding:0 13px;min-width:0}
     .device-list{display:grid;gap:8px;margin-top:10px}.device{width:100%;padding:13px 14px;border:1px solid var(--divider-color,#dfe3e8);border-radius:17px;background:var(--card-background-color,#fff);color:inherit;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;cursor:pointer}.device-main{min-width:0;display:grid;gap:4px}.device-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-sub{display:block;color:var(--secondary-text-color,#68737d);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.device-side{text-align:right}.device-side .pill{display:inline-block}.health{display:block;margin-top:5px;font-size:12px;color:var(--secondary-text-color,#68737d)}
+    .problem-section{margin-top:16px}.problem-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 3px 8px}.problem-heading h2{margin:0;font-size:16px}.problem-count{min-width:28px;padding:4px 8px;border-radius:999px;background:color-mix(in srgb,var(--status-color) 13%,transparent);color:var(--status-color);font-size:12px;font-weight:800;text-align:center}.problem-section .device-list{margin-top:0}.problem-reference{margin-top:20px;padding-top:3px;border-top:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 82%,transparent)}.condition-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;margin-top:6px}.condition-tag{padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--status-color) 11%,transparent);color:var(--status-color);font-size:11px;font-weight:700}
+    .problem-data-warning{padding:14px 16px;margin-bottom:16px;border-color:color-mix(in srgb,var(--status-color) 35%,var(--divider-color,#dfe3e8));background:color-mix(in srgb,var(--status-color) 7%,var(--card-background-color,#fff))}.problem-data-warning h2{margin:0;font-size:16px;color:var(--status-color)}.problem-data-warning p{margin:5px 0 0;color:var(--secondary-text-color,#68737d);font-size:13px}
     .diag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.diag .card{padding:17px}.diag h3{margin:0 0 12px}.diag-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 65%,transparent)}.diag-row:last-child{border:0}.diag-row span{color:var(--secondary-text-color,#68737d)}code{word-break:break-all;font-size:12px}
     @media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr)}.groups{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.controls input{grid-column:1/-1}.diag{grid-template-columns:1fr}}
-    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}}
+    @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}.condition-tags{justify-content:flex-start}}
+    @container(max-width:359px){.tab span{font-size:10.5px}.tab ha-icon{--mdc-icon-size:24px}}
     @media(prefers-reduced-motion:reduce){.refresh.busy ha-icon{animation:none}}
   `;
 }
@@ -246,6 +251,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
         <main id="viewport" class="viewport"><div id="canvas" class="canvas"><section id="content" class="content"></section></div></main>
         <nav aria-label="Разделы панели">
           <button class="tab active" data-tab="summary"><ha-icon icon="mdi:view-dashboard-outline"></ha-icon><span>Сводка</span></button>
+          <button class="tab" data-tab="problems"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>Проблемы</span></button>
           <button class="tab" data-tab="devices"><ha-icon icon="mdi:access-point-check"></ha-icon><span>Устройства</span></button>
           <button class="tab" data-tab="diagnostics"><ha-icon icon="mdi:stethoscope"></ha-icon><span>Диагностика</span></button>
         </nav>
@@ -297,7 +303,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
   }
 
   _activateTab(tab) {
-    if (!["summary", "devices", "diagnostics"].includes(tab) || tab === this._activeTab) return;
+    if (!["summary", "problems", "devices", "diagnostics"].includes(tab) || tab === this._activeTab) return;
     this._activeTab = tab;
     this.shadowRoot.querySelectorAll(".tab").forEach((button) => {
       button.classList.toggle("active", button.dataset.tab === tab);
@@ -320,7 +326,8 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
   _patchActiveView(telemetry = false) {
     const content = this.shadowRoot.getElementById("content");
     if (!content) return;
-    if (this._activeTab === "devices") this._renderDevices(content, telemetry);
+    if (this._activeTab === "problems") this._renderProblems(content, telemetry);
+    else if (this._activeTab === "devices") this._renderDevices(content, telemetry);
     else if (this._activeTab === "diagnostics") this._renderDiagnostics(content, telemetry);
     else this._renderSummary(content, telemetry);
   }
@@ -365,6 +372,34 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     return `<article class="card group ${meta[1]}" data-key="group:${escapeHtml(group.slug)}"><div class="group-head"><h3>${escapeHtml(group.name)}</h3><span class="pill">${meta[0]}</span></div><div class="group-metrics"><div class="metric"><b>${group.online}</b><small>доступно</small></div><div class="metric"><b>${group.offline}</b><small>недоступно</small></div><div class="metric"><b>${group.stale + group.lowBattery + group.poorSignal}</b><small>внимание</small></div></div>${reference}</article>`;
   }
 
+  _renderProblems(content, telemetry = false) {
+    if (this._snapshot.status === "no_integration") {
+      this._patchViewMarkup(content, `<div class="empty"><ha-icon icon="mdi:shield-off-outline"></ha-icon><h2>Entity Availability не обнаружена</h2><p>Установите или запустите интеграцию и создайте группы контролируемых сущностей.</p><button id="open-integration">Открыть интеграции</button></div>`, telemetry);
+      return;
+    }
+    const grouped = buildAvailabilityProblemGroups(this._snapshot);
+    const unavailableCount = this._snapshot.diagnostics.unavailableSources.length;
+    const dataWarning = unavailableCount
+      ? `<section class="card problem-data-warning warn"><h2>Есть источники без данных</h2><p>${unavailableCount} ${unavailableCount === 1 ? "группа не передаёт" : "группы не передают"} актуальное состояние. Известные проблемы показаны ниже.</p></section>`
+      : "";
+    if (!grouped.essential.length && !grouped.nonEssential.length) {
+      this._patchViewMarkup(content, dataWarning || `<div class="empty"><ha-icon icon="mdi:shield-check-outline"></ha-icon><h2>Проблемных устройств нет</h2><p>Все контролируемые устройства работают без замечаний.</p></div>`, telemetry);
+      return;
+    }
+    const essential = grouped.essential.map(group => this._problemSection(group)).join("");
+    const referenceItems = grouped.nonEssential.flatMap(group => group.items);
+    const reference = referenceItems.length
+      ? `<section class="problem-reference muted"><div class="problem-heading"><h2>Не влияют на общий статус</h2><span class="problem-count">${referenceItems.length}</span></div><div class="device-list" data-key="problem-reference-list">${referenceItems.map(item => this._deviceRow(item, true)).join("")}</div></section>`
+      : "";
+    this._patchViewMarkup(content, `${dataWarning}${essential}${reference}`, telemetry);
+  }
+
+  _problemSection(group) {
+    const [label, tone] = CONDITION[group.condition] || CONDITION.no_data;
+    const heading = group.condition === "offline" ? "Недоступны / нет связи" : label;
+    return `<section class="problem-section ${tone}" data-key="problem:${escapeHtml(group.condition)}"><div class="problem-heading"><h2>${heading}</h2><span class="problem-count">${group.items.length}</span></div><div class="device-list" data-key="problem-list:${escapeHtml(group.condition)}">${group.items.map(item => this._deviceRow(item, true)).join("")}</div></section>`;
+  }
+
   _renderDevices(content, telemetry = false) {
     const groups = [...this._snapshot.groups].sort((left, right) => left.name.localeCompare(right.name, "ru"));
     // Keep a removed selected group visible until the user chooses a new filter.
@@ -378,7 +413,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
 
   }
 
-  _deviceRow(item) {
+  _deviceRow(item, showAllConditions = false) {
     const [label,tone] = CONDITION[item.condition] || CONDITION.no_data;
     const details = [];
     if (item.battery !== null) details.push(`АКБ ${item.battery}%`);
@@ -386,7 +421,13 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (item.offlineSince) details.push(`с ${formatTimestamp(item.offlineSince)}`);
     else if (item.lastSeen) details.push(`данные ${formatTimestamp(item.lastSeen)}`);
     if (item.nonEssential) details.push("не влияет на статус");
-    return `<button class="device" data-key="device:${escapeHtml(item.group)}:${escapeHtml(item.entityId)}" data-entity="${escapeHtml(item.entityId)}"><span class="device-main"><span class="device-name">${escapeHtml(item.name)}</span><span class="device-sub">${escapeHtml(item.groupName)} · ${escapeHtml(item.entityId)}</span></span><span class="device-side ${tone}"><span class="pill">${label}</span><span class="health">${details.join(" · ") || " "}</span></span></button>`;
+    const secondary = showAllConditions
+      ? (item.conditions || []).slice(1).map(condition => {
+        const [secondaryLabel, secondaryTone] = CONDITION[condition] || CONDITION.no_data;
+        return `<span class="condition-tag ${secondaryTone}">${secondaryLabel}</span>`;
+      }).join("")
+      : "";
+    return `<button class="device" data-key="device:${escapeHtml(item.group)}:${escapeHtml(item.entityId)}" data-entity="${escapeHtml(item.entityId)}"><span class="device-main"><span class="device-name">${escapeHtml(item.name)}</span><span class="device-sub">${escapeHtml(item.groupName)} · ${escapeHtml(item.entityId)}</span></span><span class="device-side ${tone}"><span class="pill">${label}</span>${secondary ? `<span class="condition-tags">${secondary}</span>` : ""}<span class="health">${details.join(" · ") || " "}</span></span></button>`;
   }
 
   _renderDiagnostics(content, telemetry = false) {

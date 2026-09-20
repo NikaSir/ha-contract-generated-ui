@@ -222,13 +222,248 @@ def test_search_and_filters_operate_on_display_name_group_and_condition() -> Non
     assert [item["entityId"] for item in offline] == ["light.porch"]
 
 
+def test_multiple_problem_conditions_use_one_highest_priority_group() -> None:
+    states = {
+        "sensor.entity_availability_svet_group_summary": _state(
+            2,
+            friendly_name="Entity Availability - Свет Group summary",
+            total_entities=2,
+            essential=2,
+            online=0,
+            offline=1,
+            stale=1,
+            low_battery=1,
+            poor_signal=1,
+            entities=["light.porch", "light.hall"],
+            display_names={"light.porch": "Крыльцо", "light.hall": "Холл"},
+            offline_entities=["light.porch"],
+            stale_entities=["light.porch"],
+            low_battery_entities=["light.porch"],
+            poor_signal_entities=["light.hall"],
+        ),
+        "light.porch": _state("unavailable"),
+        "light.hall": _state("on"),
+    }
+
+    groups = _run("problems", states)
+
+    assert [group["condition"] for group in groups["essential"]] == [
+        "offline",
+        "poor_signal",
+    ]
+    porch = groups["essential"][0]["items"][0]
+    assert porch["entityId"] == "light.porch"
+    assert porch["conditions"] == ["offline", "stale", "low_battery"]
+    assert sum(
+        item["entityId"] == "light.porch"
+        for group in groups["essential"]
+        for item in group["items"]
+    ) == 1
+
+
+def test_problem_groups_separate_non_essential_rows() -> None:
+    states = {
+        "sensor.entity_availability_service_group_summary": _state(
+            2,
+            friendly_name="Entity Availability - Сервис Group summary",
+            total_entities=2,
+            essential=1,
+            non_essential=1,
+            online=0,
+            offline=1,
+            non_essential_offline=1,
+            entities=["switch.main", "switch.reference"],
+            non_essential_entities=["switch.reference"],
+            offline_entities=["switch.main"],
+            offline_entities_non_essential=["switch.reference"],
+        )
+    }
+
+    groups = _run("problems", states)
+
+    assert [item["entityId"] for item in groups["essential"][0]["items"]] == [
+        "switch.main"
+    ]
+    assert [item["entityId"] for item in groups["nonEssential"][0]["items"]] == [
+        "switch.reference"
+    ]
+
+
+def test_unknown_problem_uses_live_state_only_without_higher_source_condition() -> None:
+    states = {
+        "sensor.entity_availability_datchiki_group_summary": _state(
+            2,
+            friendly_name="Entity Availability - Датчики Group summary",
+            total_entities=2,
+            essential=2,
+            online=1,
+            offline=1,
+            entities=["sensor.unknown_value", "sensor.source_offline"],
+            offline_entities=["sensor.source_offline"],
+        ),
+        "sensor.unknown_value": _state("unknown"),
+        "sensor.source_offline": _state("unknown"),
+    }
+
+    groups = _run("problems", states)
+
+    assert [group["condition"] for group in groups["essential"]] == [
+        "offline",
+        "unknown",
+    ]
+    assert groups["essential"][0]["items"][0]["conditions"] == ["offline"]
+    assert groups["essential"][1]["items"][0]["conditions"] == ["unknown"]
+
+
+def test_suppressed_unknown_item_keeps_source_suppression() -> None:
+    states = {
+        "sensor.entity_availability_service_group_summary": _state(
+            1,
+            friendly_name="Entity Availability - Сервис Group summary",
+            total_entities=1,
+            essential=1,
+            online=0,
+            offline=0,
+            suppressed=1,
+            entities=["sensor.maintenance"],
+            suppressed_until={"sensor.maintenance": "2026-09-21T10:00:00+00:00"},
+        ),
+        "sensor.maintenance": _state("unknown"),
+    }
+
+    snapshot = _run("build", states)
+
+    assert snapshot["items"][0]["condition"] == "suppressed"
+    assert snapshot["items"][0]["conditions"] == ["suppressed"]
+    assert _run("problems", states) == {"essential": [], "nonEssential": []}
+
+
+def test_problem_groups_are_empty_when_every_item_is_healthy() -> None:
+    states = {
+        "sensor.entity_availability_okna_group_summary": _state(
+            1,
+            friendly_name="Entity Availability - Окна Group summary",
+            total_entities=1,
+            essential=1,
+            online=1,
+            offline=0,
+            entities=["binary_sensor.window"],
+        ),
+        "binary_sensor.window": _state("off"),
+    }
+
+    assert _run("problems", states) == {"essential": [], "nonEssential": []}
+
+
+def test_problems_tab_uses_approved_navigation_order() -> None:
+    assert _run_panel("tabs") == {
+        "tabs": [
+            {"id": "summary", "label": "Сводка"},
+            {"id": "problems", "label": "Проблемы"},
+            {"id": "devices", "label": "Устройства"},
+            {"id": "diagnostics", "label": "Диагностика"},
+        ]
+    }
+
+
+def test_problem_view_groups_primary_problem_and_shows_secondary_badges() -> None:
+    states = {
+        "sensor.entity_availability_svet_group_summary": _state(
+            2,
+            friendly_name="Entity Availability - Свет Group summary",
+            total_entities=2,
+            essential=1,
+            non_essential=1,
+            online=0,
+            offline=1,
+            non_essential_offline=1,
+            stale=1,
+            low_battery=1,
+            entities=["light.porch", "switch.reference"],
+            display_names={
+                "light.porch": "Крыльцо",
+                "switch.reference": "Сезонная подсветка",
+            },
+            non_essential_entities=["switch.reference"],
+            offline_entities=["light.porch"],
+            offline_entities_non_essential=["switch.reference"],
+            stale_entities=["light.porch"],
+            low_battery_entities=["light.porch"],
+        )
+    }
+
+    result = _run_panel("problems", states=states)
+
+    assert "Недоступны / нет связи" in result["text"]
+    assert "Данные устарели" in result["text"]
+    assert "Низкий заряд" in result["text"]
+    assert "Не влияют на общий статус" in result["text"]
+    assert result["html"].count('data-entity="light.porch"') == 1
+    assert result["html"].count('data-entity="switch.reference"') == 1
+
+
+def test_problem_view_has_calm_empty_state() -> None:
+    states = {
+        "sensor.entity_availability_okna_group_summary": _state(
+            1,
+            friendly_name="Entity Availability - Окна Group summary",
+            total_entities=1,
+            essential=1,
+            online=1,
+            offline=0,
+            entities=["binary_sensor.window"],
+        ),
+        "binary_sensor.window": _state("off"),
+    }
+
+    result = _run_panel("problems", states=states)
+
+    assert "Проблемных устройств нет" in result["text"]
+    assert "Недоступны / нет связи" not in result["text"]
+
+
+def test_problem_view_never_treats_unavailable_sources_as_all_clear() -> None:
+    unavailable = {
+        "sensor.entity_availability_svet_group_summary": _state(
+            "unavailable",
+            friendly_name="Entity Availability - Свет Group summary",
+        )
+    }
+    mixed = {
+        **unavailable,
+        "sensor.entity_availability_okna_group_summary": _state(
+            1,
+            friendly_name="Entity Availability - Окна Group summary",
+            total_entities=1,
+            essential=1,
+            online=0,
+            offline=1,
+            entities=["binary_sensor.window"],
+            offline_entities=["binary_sensor.window"],
+        ),
+    }
+
+    for states in (unavailable, mixed):
+        result = _run_panel("problems", states=states)
+        assert "Есть источники без данных" in result["text"]
+        assert "Проблемных устройств нет" not in result["text"]
+
+    mixed_result = _run_panel("problems", states=mixed)
+    assert "Недоступны / нет связи" in mixed_result["text"]
+
+
+def test_problems_tab_telemetry_keeps_single_panel_shell() -> None:
+    result = _run_panel("activate_problems", states={})
+    assert result == {"activeTab": "problems", "writes": 1}
+
+
 def test_live_hass_updates_do_not_rebuild_panel_shell() -> None:
     result = _run_panel("shell", states={})
     assert result == {"writes": 1}
 
 
 def test_header_beta_uses_approved_compact_version_format() -> None:
-    assert _run_panel("version") == {"version": "1.0.0-beta004"}
+    assert _run_panel("version") == {"version": "1.0.0-beta005"}
 
 
 def test_summary_explains_non_essential_entities_without_hiding_the_balance() -> None:
