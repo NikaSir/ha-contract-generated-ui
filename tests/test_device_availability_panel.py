@@ -87,7 +87,7 @@ def test_registers_owned_route_even_without_entity_availability_states() -> None
     assert call["module_url"].startswith(
         "/contract_generated_ui/frontend/device-availability-panel.js?build="
     )
-    assert call["module_url"].endswith("build=b004")
+    assert call["module_url"].endswith("build=b005")
     assert call["config"] == {
         "title": "Доступность устройств",
         "parent_route": "/home/overview",

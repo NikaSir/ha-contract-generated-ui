@@ -101,6 +101,29 @@ if (request.operation === "header_actions") {
   panel._renderSummary(content);
   const text = content.innerHTML.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   process.stdout.write(JSON.stringify({ html: content.innerHTML, text }));
+} else if (request.operation === "problems") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.hass = { states: request.states || {} };
+  const content = { innerHTML: "", querySelector() { return null; } };
+  panel._patchViewMarkup = (target, markup) => { target.innerHTML = markup; };
+  panel._renderProblems(content);
+  const text = content.innerHTML.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  process.stdout.write(JSON.stringify({ html: content.innerHTML, text }));
+} else if (request.operation === "tabs") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.connectedCallback();
+  const tabs = [...panel.shadowRoot.innerHTML.matchAll(/data-tab="([^"]+)"[^>]*>[\s\S]*?<span>([^<]+)<\/span>/g)]
+    .map(match => ({ id: match[1], label: match[2] }));
+  process.stdout.write(JSON.stringify({ tabs }));
+} else if (request.operation === "activate_problems") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.connectedCallback();
+  panel._activateTab("problems");
+  panel.hass = { states: request.states || {} };
+  process.stdout.write(JSON.stringify({
+    activeTab: panel._activeTab,
+    writes: panel.shadowRoot.writes,
+  }));
 } else if (request.operation === "more_info") {
   const target = new globalThis.HTMLElement();
   module.dispatchMoreInfo(target, "light.kitchen");

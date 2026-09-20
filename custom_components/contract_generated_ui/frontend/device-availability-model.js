@@ -41,7 +41,15 @@ export function discoverAvailabilityGroups(states = {}) {
     .sort((left, right) => left.name.localeCompare(right.name, "ru"));
 }
 
-function conditionFor(entityId, attributes) {
+const PROBLEM_CONDITIONS = Object.freeze([
+  "offline",
+  "stale",
+  "low_battery",
+  "poor_signal",
+  "unknown",
+]);
+
+function conditionsFor(entityId, attributes, states, memberEntityIds) {
   const offline = new Set(asList(attributes.offline_entities));
   const offlineNonEssential = new Set(asList(attributes.offline_entities_non_essential));
   const stale = new Set([
@@ -57,12 +65,16 @@ function conditionFor(entityId, attributes) {
     ...asList(attributes.poor_signal_entities_non_essential),
   ]);
   const suppressed = asObject(attributes.suppressed_until);
-  if (offline.has(entityId) || offlineNonEssential.has(entityId)) return "offline";
-  if (stale.has(entityId)) return "stale";
-  if (lowBattery.has(entityId)) return "low_battery";
-  if (poorSignal.has(entityId)) return "poor_signal";
-  if (Object.hasOwn(suppressed, entityId)) return "suppressed";
-  return "online";
+  const conditions = [];
+  if (offline.has(entityId) || offlineNonEssential.has(entityId)) conditions.push("offline");
+  if (stale.has(entityId)) conditions.push("stale");
+  if (lowBattery.has(entityId)) conditions.push("low_battery");
+  if (poorSignal.has(entityId)) conditions.push("poor_signal");
+  if (!conditions.length && Object.hasOwn(suppressed, entityId)) conditions.push("suppressed");
+  if (!conditions.length && memberEntityIds.some(memberId => states?.[memberId]?.state === "unknown")) {
+    conditions.push("unknown");
+  }
+  return conditions.length ? conditions : ["online"];
 }
 
 const CONDITION_WEIGHT = Object.freeze({
@@ -70,11 +82,12 @@ const CONDITION_WEIGHT = Object.freeze({
   stale: 1,
   low_battery: 2,
   poor_signal: 3,
-  suppressed: 4,
-  online: 5,
+  unknown: 4,
+  suppressed: 5,
+  online: 6,
 });
 
-function buildGroup(source) {
+function buildGroup(source, states) {
   const attributes = source.attributes;
   const unavailable = ["unavailable", "unknown"].includes(source.state);
   if (unavailable) {
@@ -110,23 +123,28 @@ function buildGroup(source) {
   const lastSeen = asObject(attributes.last_seen);
   const nonEssential = new Set(asList(attributes.non_essential_entities));
   const rowMembers = asObject(attributes.row_members);
-  const items = entities.map((entityId) => ({
-    entityId,
-    memberEntityIds: asList(rowMembers[entityId]).length
+  const items = entities.map((entityId) => {
+    const memberEntityIds = asList(rowMembers[entityId]).length
       ? asList(rowMembers[entityId])
-      : [entityId],
-    name: typeof names[entityId] === "string" ? names[entityId] : entityId,
-    group: source.slug,
-    groupName: source.name,
-    condition: conditionFor(entityId, attributes),
-    nonEssential: nonEssential.has(entityId),
-    battery: Number.isFinite(Number(battery[entityId])) ? Number(battery[entityId]) : null,
-    signal: Number.isFinite(Number(signal[entityId]))
-      ? { value: Number(signal[entityId]), unit: String(signalUnits[entityId] || "") }
-      : null,
-    offlineSince: typeof offlineSince[entityId] === "string" ? offlineSince[entityId] : null,
-    lastSeen: typeof lastSeen[entityId] === "string" ? lastSeen[entityId] : null,
-  }));
+      : [entityId];
+    const conditions = conditionsFor(entityId, attributes, states, memberEntityIds);
+    return {
+      entityId,
+      memberEntityIds,
+      name: typeof names[entityId] === "string" ? names[entityId] : entityId,
+      group: source.slug,
+      groupName: source.name,
+      condition: conditions[0],
+      conditions,
+      nonEssential: nonEssential.has(entityId),
+      battery: Number.isFinite(Number(battery[entityId])) ? Number(battery[entityId]) : null,
+      signal: Number.isFinite(Number(signal[entityId]))
+        ? { value: Number(signal[entityId]), unit: String(signalUnits[entityId] || "") }
+        : null,
+      offlineSince: typeof offlineSince[entityId] === "string" ? offlineSince[entityId] : null,
+      lastSeen: typeof lastSeen[entityId] === "string" ? lastSeen[entityId] : null,
+    };
+  });
   const problemCount = asNumber(attributes.offline)
     + asNumber(attributes.stale)
     + asNumber(attributes.low_battery)
@@ -184,7 +202,7 @@ export function buildAvailabilitySnapshot(states = {}) {
     };
   }
 
-  const groups = sources.map(buildGroup).sort((left, right) => {
+  const groups = sources.map(source => buildGroup(source, states)).sort((left, right) => {
     const leftWeight = left.condition === "no_data" ? 0 : left.condition === "problem" ? 1 : 2;
     const rightWeight = right.condition === "no_data" ? 0 : right.condition === "problem" ? 1 : 2;
     return leftWeight - rightWeight || left.name.localeCompare(right.name, "ru");
@@ -222,6 +240,20 @@ export function buildAvailabilitySnapshot(states = {}) {
     diagnostics: { unavailableSources, missingOptionalData: [] },
     updateEntityIds: sources.map((source) => source.entityId).sort(),
   };
+}
+
+export function buildAvailabilityProblemGroups(snapshot) {
+  const grouped = { essential: [], nonEssential: [] };
+  for (const bucket of ["essential", "nonEssential"]) {
+    const nonEssential = bucket === "nonEssential";
+    for (const condition of PROBLEM_CONDITIONS) {
+      const items = (snapshot?.items || []).filter(item => (
+        item.nonEssential === nonEssential && item.condition === condition
+      ));
+      if (items.length) grouped[bucket].push({ condition, items });
+    }
+  }
+  return grouped;
 }
 
 export function filterAvailabilityItems(

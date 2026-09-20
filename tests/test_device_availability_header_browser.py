@@ -25,7 +25,7 @@ HTML = """<!doctype html><html lang="ru"><meta charset="utf-8">
 body{margin:0}#host{position:absolute;inset:0;overflow:hidden}
 ha-icon{display:inline-block}
 </style><div id="host"></div><script type="module">
-import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b004';
+import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b005';
 // Test-only icon host: production uses Home Assistant's registered ha-icon.
 customElements.define('ha-icon', class extends HTMLElement {
   static get observedAttributes(){return ['icon'];}
@@ -90,7 +90,7 @@ def page(browser):
     source = (FRONTEND / "device-availability-panel.js").read_text()
     source = re.sub(r'\./device-availability-model\.js\?build=[^"\s]+', model_url, source)
     module_url = page.evaluate(blob, source)
-    page.set_content(HTML.replace('/device-availability-panel.js?build=b004', module_url))
+    page.set_content(HTML.replace('/device-availability-panel.js?build=b005', module_url))
     page.wait_for_function("window.ready === true")
     # Pause only after module startup: a frozen RAF can stall readiness polling.
     page.clock.pause_at(datetime(2026, 9, 15, 0, 0, 1, tzinfo=timezone.utc))
@@ -137,10 +137,24 @@ def test_header_geometry_at_each_host_width(page, width):
         assert dimensions[action]["h"] == 44
     assert dimensions["font"] == ("21px" if width < 360 else "23px")
     assert dimensions["weight"] == "800"
-    assert dimensions["version"] == "UI v1.0.0-beta004"
+    assert dimensions["version"] == "UI v1.0.0-beta005"
     assert dimensions["refreshBg"] == "rgb(255, 255, 255)"
     assert dimensions["border"] == "16px"
     assert not dimensions["overflow"]
+
+
+def test_problems_tab_four_item_footer_fits_narrow_phone(page):
+    page.set_viewport_size({"width": 320, "height": 700})
+    result = page.locator("nav").evaluate("""nav => ({
+      labels:[...nav.querySelectorAll('.tab')].map(button=>button.innerText.trim()),
+      widths:[...nav.querySelectorAll('.tab')].map(button=>button.getBoundingClientRect().width),
+      navWidth:nav.getBoundingClientRect().width,
+      overflow:nav.scrollWidth>nav.clientWidth || document.documentElement.scrollWidth>innerWidth
+    })""")
+    assert result["labels"] == ["Сводка", "Проблемы", "Устройства", "Диагностика"]
+    assert max(result["widths"]) - min(result["widths"]) < 0.2
+    assert sum(result["widths"]) <= result["navWidth"]
+    assert not result["overflow"]
 
 
 def test_header_follows_host_not_window_when_sidebar_takes_space(page):

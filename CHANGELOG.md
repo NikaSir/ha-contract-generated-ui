@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.42.0 — 2026-09-20
+
+- Add the `Проблемы` tab between Summary and Devices, grouping each monitored
+  device by its highest-priority issue while retaining secondary issue badges.
+- Keep non-essential problem rows in a separate neutral section and show a calm
+  empty state when no device needs attention.
+- Publish device-availability UI `1.0.0-beta005` with a four-item responsive
+  bottom navigation and asset build `b005`.
+
 - Reconcile Entity Availability totals by displaying essential and non-essential
   entities separately, including their online, offline and suppressed counts.
 - Keep non-essential failures informational, refine the mobile composition card and
