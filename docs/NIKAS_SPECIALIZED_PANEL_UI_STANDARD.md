@@ -124,7 +124,7 @@ idle arrow → busy rotation → success check or error glyph → idle arrow.
 ### Center title plaque — open the immediate parent
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
-- The first line is the current specialized-panel name. The second line is the complete interface version in the form `UI vX.Y.Z`; an explicitly versioned UI beta retains its full `-betaNNN` suffix. See section 11.1 for the separate integration-version display.
+- The first line is the current specialized-panel name. The second line is the complete interface version in the exact form `UI vX.Y.Z`; an explicitly versioned UI beta retains its full `-betaNNN` suffix. See section 11.1 for the separate integration-version display.
 - The whole plaque is one semantic `button` and copies the S8 OMNI reference geometry and tone exactly; it retains geometric centering between the side rails.
 - Default geometry: `justify-self:center`, `width:min(360px,100%)`, `height:52px`, `padding:5px 14px`. Below `360px` it uses `width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
 - Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
