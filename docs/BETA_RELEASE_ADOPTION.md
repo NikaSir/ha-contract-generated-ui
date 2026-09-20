@@ -4,7 +4,7 @@
 
 The owner approved the following delivery sequence for five integrations:
 
-1. Publish a candidate version with a `-beta.N` suffix for user testing.
+1. Publish a candidate version with a `-betaNNN` suffix (exactly three digits, starting at `001`) for user testing.
 2. Let the user install the beta through HACS with beta versions enabled.
 3. Publish the corresponding stable version only after the user's acceptance.
 4. Keep the previous stable Release available for rollback.
@@ -39,3 +39,14 @@ Factual repository profiles continue to describe implemented behavior at their
 pinned revisions. They must not be changed to claim working beta automation
 merely because this decision has been approved. Acceptance remains subject to
 the [HACS Publication Contract](NIKAS_HACS_PUBLICATION_CONTRACT.md).
+
+## Naming clarification — 2026-09-16
+
+The later owner decision supersedes the earlier `-beta.N` spelling with
+`MAJOR.MINOR.PATCH-betaNNN`, for example `1.0.0-beta001` and
+`1.0.0-beta002`. Follow the full naming, UI display and acceptance checklist in
+[Engineering Knowledge Base section 6.3.1](NIKAS_ENGINEERING_KNOWLEDGE_BASE.md#631-version-naming-and-complete-display--decision-2026-09-16).
+Beta branches are allowed; beta promotion into `main`/production requires
+separate owner confirmation. CI success is neither that confirmation nor stable
+acceptance. This clarification does not enable publication automation, expand the
+five-repository channel scope or rename/delete existing tags and Releases.

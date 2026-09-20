@@ -405,6 +405,55 @@ A function that constructs the full panel HTML for every `hass` update is a desi
 
 UI/integration/contract/panel manifest/cache key must be coherent. A behavioral frontend change increments UI version and deterministic cache busting. CI must reject version drift.
 
+
+### 6.3.1 Version naming and complete display — decision 2026-09-16
+
+Integration and UI versions are separate identities; coherence means each matches
+its own declared build, not that their numbers are equal.
+
+- Integration beta format is exactly `MAJOR.MINOR.PATCH-betaNNN`, for example
+  `1.0.0-beta001` then `1.0.0-beta002`. Use the ASCII hyphen, lowercase
+  `beta` and exactly three digits. Start at `001` and increment sequentially
+  within the target stable version; never reuse a number for changed contents.
+- Stable integration versions have no beta suffix, for example `1.0.0`.
+  A new target stable version starts its own beta sequence.
+- Do not use `b001`, `beta1`, `beta.1`, `b005.99` or a commit hash as the
+  displayed release identity. Historical releases are not renamed.
+- Preserve the independent UI version lineage: `vMAJOR.MINOR.PATCH`, including
+  `v11.0.N` for the existing v11 line. If a panel already has an explicitly
+  versioned UI beta, show its complete `-betaNNN` suffix too; never hide it.
+- Both identities must be explicitly visible in the panel: the complete UI
+  version under the Header title and a separately labelled full integration
+  version in the approved information/diagnostics area. For example:
+  `UI v11.0.7` and `Интеграция: 1.0.0-beta002`.
+- Preserve the fixed two-line Header geometry. Do not squeeze both identities
+  into its version line, shrink typography or replace required text with a
+  tooltip, ellipsis or hash. The information area may wrap its labelled value.
+- The integration version must match the installed HA `manifest.json`.
+  UI metadata in the panel manifest, contract/configuration, generated bundle,
+  Header and deterministic cache identity must refer to the declared UI build.
+  This does not require adding unsupported UI fields to the HA manifest.
+- Full values remain readable on phone, tablet and desktop, at 100% and during
+  work-area zoom. Telemetry, tab changes and loss/recovery do not alter them.
+- Beta branches are permitted. Promotion to `main`/production requires separate
+  owner confirmation; green CI alone is not approval. Stable promotion follows
+  beta acceptance. This naming rule does not enable tags, Releases or a new
+  delivery channel in other repositories.
+
+**Blocking version acceptance checklist:**
+
+1. Check exact beta spelling, three digits, sequence and declared target version.
+2. Compare the installed integration manifest with its displayed full value.
+3. Compare UI metadata, Header, production bundle and cache/build identity.
+4. Verify both labelled identities are available and not clipped in every
+   mandatory viewport, including sidebar open/closed and zoom/reset.
+5. Check cold startup and post-update reopening for stale cached UI/version pairs.
+6. Record source commit, both versions, test evidence and explicit promotion
+   approval. Missing or mismatched identities block acceptance.
+
+Documentation alone grants no runtime PASS. Existing panels remain unverified
+against this addition until their own build and device evidence is recorded.
+
 ### 6.4 Generated production bundle
 
 Exactly one shipped autonomous JS entrypoint. Build-time composition is allowed; runtime imports/CDN dependencies are not. CI regenerates/checks the bundle deterministically and fails if tracked output is stale.
