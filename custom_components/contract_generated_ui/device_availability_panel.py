@@ -10,6 +10,7 @@ from .const import (
     DEVICE_AVAILABILITY_PANEL_PATH,
     DEVICE_AVAILABILITY_PANEL_URL_PATH,
     DOMAIN,
+    INTEGRATION_VERSION,
 )
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ async def async_register_device_availability_panel(hass: HomeAssistant) -> bool:
         frontend_url_path=DEVICE_AVAILABILITY_PANEL_URL_PATH,
         webcomponent_name=PANEL_COMPONENT_NAME,
         sidebar_title="Доступность устройств",
-        sidebar_icon="mdi:shield-pulse-outline",
+        sidebar_icon="mdi:shield-check-outline",
         module_url=DEVICE_AVAILABILITY_PANEL_MODULE_URL,
         embed_iframe=False,
         require_admin=False,
@@ -46,6 +47,7 @@ async def async_register_device_availability_panel(hass: HomeAssistant) -> bool:
             "title": "Доступность устройств",
             "parent_route": PANEL_PARENT_ROUTE,
             "default_path": PANEL_DEFAULT_PATH,
+            "integration_version": INTEGRATION_VERSION,
         },
     )
     hass.data.setdefault(DOMAIN, {})[DEVICE_AVAILABILITY_PANEL_PATH] = (

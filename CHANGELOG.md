@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.42.1 — 2026-09-27
+
+- Show both the device-availability UI and integration versions in the panel
+  subtitle, keeping the complete beta identifier visible in the interface.
+- Replace the unavailable sidebar glyph with the supported
+  `mdi:shield-check-outline` icon and publish UI `1.0.0-beta006` with asset
+  build `b006`.
+
 ## 0.42.0 — 2026-09-20
 
 - Add the `Проблемы` tab between Summary and Devices, grouping each monitored

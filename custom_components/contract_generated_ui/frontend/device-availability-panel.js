@@ -2,9 +2,9 @@ import {
   buildAvailabilitySnapshot,
   buildAvailabilityProblemGroups,
   filterAvailabilityItems,
-} from "./device-availability-model.js?build=b005";
+} from "./device-availability-model.js?build=b006";
 
-export const UI_VERSION = "1.0.0-beta005";
+export const UI_VERSION = "1.0.0-beta006";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -157,11 +157,11 @@ function panelStyles() {
     header{padding:env(safe-area-inset-top,0px) calc(12px + env(safe-area-inset-right,0px)) 0 calc(12px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:52px minmax(0,1fr) 52px;align-items:center;background:color-mix(in srgb,var(--primary-background-color,#f4f6f8) 97%,transparent);border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 70%,transparent);backdrop-filter:blur(18px) saturate(130%);-webkit-backdrop-filter:blur(18px) saturate(130%);z-index:3}
     .header-action{grid-row:1;width:44px;height:44px;padding:0;justify-self:center;border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 72%,transparent);border-radius:16px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.08);display:grid;place-items:center;cursor:pointer}.header-action ha-icon{--mdc-icon-size:25px}.menu{grid-column:1}.header-action:active{transform:scale(.985)}
     .title{grid-area:1/2;min-width:0;width:min(360px,100%);height:52px;padding:5px 14px;justify-self:center;border:1px solid color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8));border-radius:16px;background:color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff));color:inherit;display:flex;flex-direction:column;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 5px 16px rgba(23,45,76,.06)}
-    .title-heading{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}.title-compact{display:none}@container(max-width:519px){.title-full{display:none}.title-compact{display:inline}}.title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px;font-weight:800;line-height:1.05}.title small{font-size:14px;font-weight:560;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:3px;white-space:nowrap}
+    .title-heading{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}.title-compact{display:none}@container(max-width:519px){.title-full{display:none}.title-compact{display:inline}.title small{font-size:10px;letter-spacing:-.1px}}.title strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:23px;font-weight:800;line-height:1.05}.title small{max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:14px;font-weight:560;color:var(--secondary-text-color,#68737d);line-height:1.1;margin-top:3px;white-space:nowrap}
     .title:active{background:color-mix(in srgb,var(--primary-color,#03a9d9) 13%,var(--card-background-color,#fff));border-color:color-mix(in srgb,var(--primary-color,#03a9d9) 42%,var(--divider-color,#dfe3e8));box-shadow:0 2px 7px rgba(23,45,76,.05);transform:scale(.985)}.title:focus-visible,.header-action:focus-visible{outline:2px solid var(--primary-color,#03a9d9);outline-offset:2px}
     .refresh{grid-column:3;color:var(--primary-color,#03a9d9)}.refresh:disabled{opacity:.62;cursor:wait}.refresh.busy ha-icon{animation:spin .9s linear infinite}.refresh.success ha-icon{color:#43a047}.refresh.error ha-icon{color:#e53935}@keyframes spin{to{transform:rotate(360deg)}}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.refresh-error{position:absolute;inset-inline:12px;top:calc(68px + env(safe-area-inset-top,0px));max-width:580px;margin-inline:auto;padding:12px 16px;border:1px solid #e53935;border-radius:14px;background:var(--card-background-color,#fff);color:var(--primary-text-color,#17191c);box-shadow:0 7px 20px rgba(23,45,76,.12);z-index:5}
-    @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:13px}}
+    @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:9px;letter-spacing:-.2px}}
     .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:none;-webkit-overflow-scrolling:touch}.viewport.zoomed{overflow:hidden;touch-action:none}
     .canvas{width:100%;min-height:100%;transform-origin:0 0}.content{width:100%;max-width:1280px;min-height:100%;margin:0 auto;padding:14px 12px 24px}
     nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
@@ -217,8 +217,20 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (this._shellRendered) this._patchTelemetry();
   }
   get hass() { return this._hass; }
-  set panel(value) { this._panel = value; }
+  set panel(value) {
+    this._panel = value;
+    if (this._shellRendered) this._patchVersionSubtitle();
+  }
   get panel() { return this._panel; }
+
+  _versionSubtitle() {
+    return `UI ${UI_VERSION} · Интеграция ${this._panel?.config?.integration_version || "—"}`;
+  }
+
+  _patchVersionSubtitle() {
+    const subtitle = this.shadowRoot.getElementById("title")?.querySelector("small");
+    if (subtitle) subtitle.textContent = this._versionSubtitle();
+  }
 
   connectedCallback() {
     if (!this._shellRendered) this._renderShell();
@@ -242,7 +254,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
         <header aria-label="Верхнее меню">
           <button id="menu" type="button" class="header-action menu" title="Меню Home Assistant" aria-label="Меню Home Assistant"><ha-icon icon="mdi:menu" aria-hidden="true"></ha-icon></button>
           <button id="title" type="button" class="title" title="Доступность устройств — обзор Home Assistant" aria-label="Доступность устройств. Вернуться в обзор Home Assistant">
-            <span class="title-heading"><strong><span class="title-full">Доступность устройств</span><span class="title-compact" aria-hidden="true">Доступность</span></strong></span><small>UI v${UI_VERSION}</small>
+            <span class="title-heading"><strong><span class="title-full">Доступность устройств</span><span class="title-compact" aria-hidden="true">Доступность</span></strong></span><small>${escapeHtml(this._versionSubtitle())}</small>
           </button>
           <button id="refresh" type="button" class="header-action refresh idle" title="Обновить" aria-label="Обновить" aria-busy="false"><ha-icon icon="mdi:refresh" aria-hidden="true"></ha-icon></button>
         </header>

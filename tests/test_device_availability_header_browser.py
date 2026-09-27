@@ -25,7 +25,7 @@ HTML = """<!doctype html><html lang="ru"><meta charset="utf-8">
 body{margin:0}#host{position:absolute;inset:0;overflow:hidden}
 ha-icon{display:inline-block}
 </style><div id="host"></div><script type="module">
-import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b005';
+import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b006';
 // Test-only icon host: production uses Home Assistant's registered ha-icon.
 customElements.define('ha-icon', class extends HTMLElement {
   static get observedAttributes(){return ['icon'];}
@@ -62,7 +62,7 @@ window.hass={states,callService:async(...args)=>{
  return undefined;
 }};
 window.panel=new NikasDeviceAvailabilityPanel();
-panel.panel={config:{parent_route:'/home/overview'}};
+panel.panel={config:{parent_route:'/home/overview',integration_version:'0.42.1'}};
 panel.hass=hass;document.querySelector('#host').append(panel);
 window.ready=true;
 </script></html>"""
@@ -90,7 +90,7 @@ def page(browser):
     source = (FRONTEND / "device-availability-panel.js").read_text()
     source = re.sub(r'\./device-availability-model\.js\?build=[^"\s]+', model_url, source)
     module_url = page.evaluate(blob, source)
-    page.set_content(HTML.replace('/device-availability-panel.js?build=b005', module_url))
+    page.set_content(HTML.replace('/device-availability-panel.js?build=b006', module_url))
     page.wait_for_function("window.ready === true")
     # Pause only after module startup: a frozen RAF can stall readiness polling.
     page.clock.pause_at(datetime(2026, 9, 15, 0, 0, 1, tzinfo=timezone.utc))
@@ -123,6 +123,7 @@ def test_header_geometry_at_each_host_width(page, width):
        font:getComputedStyle(title.querySelector('strong')).fontSize,
        weight:getComputedStyle(title.querySelector('strong')).fontWeight,
        version:title.querySelector('small').textContent,
+       versionFits:title.querySelector('small').scrollWidth<=title.querySelector('small').clientWidth,
        refreshBg:getComputedStyle(root.querySelector('#refresh')).backgroundColor,
        border:getComputedStyle(title).borderRadius,
        overflow:document.documentElement.scrollWidth>innerWidth};
@@ -137,7 +138,8 @@ def test_header_geometry_at_each_host_width(page, width):
         assert dimensions[action]["h"] == 44
     assert dimensions["font"] == ("21px" if width < 360 else "23px")
     assert dimensions["weight"] == "800"
-    assert dimensions["version"] == "UI v1.0.0-beta005"
+    assert dimensions["version"] == "UI 1.0.0-beta006 · Интеграция 0.42.1"
+    assert dimensions["versionFits"]
     assert dimensions["refreshBg"] == "rgb(255, 255, 255)"
     assert dimensions["border"] == "16px"
     assert not dimensions["overflow"]

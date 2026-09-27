@@ -17,10 +17,11 @@ def constants():
     }
 
 
-def test_beta005_version_and_loading_key():
+def test_beta006_version_and_loading_key():
     panel = (PACKAGE / "frontend/device-availability-panel.js").read_text()
-    assert 'UI_VERSION = "1.0.0-beta005"' in panel
-    assert constants()["DEVICE_AVAILABILITY_PANEL_BUILD"] == "b005"
+    assert 'UI_VERSION = "1.0.0-beta006"' in panel
+    assert constants()["DEVICE_AVAILABILITY_PANEL_BUILD"] == "b006"
+    assert constants()["INTEGRATION_VERSION"] == "0.42.1"
 
 
 def test_validation_attribute_keeps_its_public_name():

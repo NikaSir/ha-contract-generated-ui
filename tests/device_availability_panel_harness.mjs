@@ -1,12 +1,12 @@
 import fs from "node:fs";
 
 class FakeHeaderElement {
-  constructor() { this.listeners = new Map(); this.attributes = new Map(); }
+  constructor() { this.listeners = new Map(); this.attributes = new Map(); this.small = null; }
   addEventListener(type, handler) { this.listeners.set(type, handler); }
   click() { this.listeners.get("click")?.(); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
   setAttribute(name, value) { this.attributes.set(name, value); }
-  querySelector() { return null; }
+  querySelector(selector) { return selector === "small" ? this.small : null; }
 }
 
 class FakeShadowRoot {
@@ -21,6 +21,8 @@ class FakeShadowRoot {
     for (const id of ["title", "menu", "refresh", "refresh-status", "refresh-error"]) {
       if (value.includes(`id="${id}"`)) this.headerElements.set(id, new FakeHeaderElement());
     }
+    const version = value.match(/<small>([^<]+)<\/small>/)?.[1];
+    if (version) this.headerElements.get("title").small = { textContent: version };
   }
   get innerHTML() { return this._html; }
   getElementById(id) { return this.headerElements?.get(id) ?? null; }
@@ -93,6 +95,20 @@ if (request.operation === "header_actions") {
   process.stdout.write(JSON.stringify({ writes: panel.shadowRoot.writes }));
 } else if (request.operation === "version") {
   process.stdout.write(JSON.stringify({ version: module.UI_VERSION }));
+} else if (request.operation === "version_subtitle") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.panel = { config: { integration_version: request.integrationVersion } };
+  panel.connectedCallback();
+  const match = panel.shadowRoot.innerHTML.match(/<small>([^<]+)<\/small>/);
+  process.stdout.write(JSON.stringify({ subtitle: match?.[1] ?? null }));
+} else if (request.operation === "late_version_subtitle") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.connectedCallback();
+  panel.panel = { config: { integration_version: request.integrationVersion } };
+  process.stdout.write(JSON.stringify({
+    subtitle: panel.shadowRoot.getElementById("title").querySelector("small").textContent,
+    writes: panel.shadowRoot.writes,
+  }));
 } else if (request.operation === "summary") {
   const panel = new module.NikasDeviceAvailabilityPanel();
   panel.hass = { states: request.states || {} };
