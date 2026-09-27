@@ -2,6 +2,7 @@ import fs from "node:fs";
 import {
   buildAvailabilitySnapshot,
   buildAvailabilityProblemGroups,
+  buildAvailabilityLabelGroups,
   discoverAvailabilityGroups,
   filterAvailabilityItems,
 } from "../custom_components/contract_generated_ui/frontend/device-availability-model.js";
@@ -20,6 +21,8 @@ if (request.operation === "discover") {
   );
 } else if (request.operation === "problems") {
   result = buildAvailabilityProblemGroups(buildAvailabilitySnapshot(request.states));
+} else if (request.operation === "labels") {
+  result = buildAvailabilityLabelGroups(buildAvailabilitySnapshot(request.states), request.registries);
 } else {
   result = buildAvailabilitySnapshot(request.states);
 }

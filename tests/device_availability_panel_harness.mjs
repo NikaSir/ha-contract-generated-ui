@@ -125,6 +125,21 @@ if (request.operation === "header_actions") {
   panel._renderProblems(content);
   const text = content.innerHTML.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   process.stdout.write(JSON.stringify({ html: content.innerHTML, text }));
+} else if (request.operation === "labels_view") {
+  const panel = new module.NikasDeviceAvailabilityPanel();
+  panel.hass = { states: request.states || {} };
+  panel._labelRegistries = request.registries;
+  panel._labelLoadState = request.loadState || "ready";
+  const content = { innerHTML: "" };
+  panel._patchViewMarkup = (target, markup) => { target.innerHTML = markup; };
+  panel._renderLabels(content);
+  process.stdout.write(JSON.stringify({ html: content.innerHTML }));
+} else if (request.operation === "labels_fetch") {
+  const calls = [];
+  const registries = await module.fetchAvailabilityLabelRegistries({
+    callWS: async ({ type }) => { calls.push(type); return request.results[type]; },
+  });
+  process.stdout.write(JSON.stringify({ calls, registries }));
 } else if (request.operation === "tabs") {
   const panel = new module.NikasDeviceAvailabilityPanel();
   panel.connectedCallback();

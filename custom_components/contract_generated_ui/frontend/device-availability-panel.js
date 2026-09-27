@@ -1,10 +1,11 @@
 import {
   buildAvailabilitySnapshot,
   buildAvailabilityProblemGroups,
+  buildAvailabilityLabelGroups,
   filterAvailabilityItems,
-} from "./device-availability-model.js?build=b006";
+} from "./device-availability-model.js?build=b007";
 
-export const UI_VERSION = "1.0.0-beta006";
+export const UI_VERSION = "1.0.0-beta007";
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const escapeHtml = (value) => String(value ?? "")
@@ -48,6 +49,16 @@ export async function refreshAvailabilitySources(hass, snapshot, sleeper = sleep
   const results = await Promise.allSettled([refresh(), sleeper(900)]);
   const failure = results.find((result) => result.status === "rejected");
   if (failure) throw failure.reason;
+}
+
+export async function fetchAvailabilityLabelRegistries(hass) {
+  if (typeof hass?.callWS !== "function") throw new Error("Реестры Home Assistant недоступны");
+  const [labels, entities, devices] = await Promise.all([
+    hass.callWS({ type: "config/label_registry/list" }),
+    hass.callWS({ type: "config/entity_registry/list_for_display" }),
+    hass.callWS({ type: "config/device_registry/list" }),
+  ]);
+  return { labels, entities, devices };
 }
 
 const CONDITION = Object.freeze({
@@ -165,8 +176,8 @@ function panelStyles() {
     @container(max-width:359px){header{grid-template-columns:48px minmax(0,1fr) 48px}.title{width:100%;padding-inline:8px}.title strong{font-size:21px}.title small{font-size:9px;letter-spacing:-.2px}}
     .viewport{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior:none;-webkit-overflow-scrolling:touch}.viewport.zoomed{overflow:hidden;touch-action:none}
     .canvas{width:100%;min-height:100%;transform-origin:0 0}.content{width:100%;max-width:1280px;min-height:100%;margin:0 auto;padding:14px 12px 24px}
-    nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
-    .tab{min-width:0;height:54px;border:0;border-radius:16px;background:transparent;color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;cursor:pointer}.tab ha-icon{--mdc-icon-size:25px}.tab span{max-width:100%;font-size:12px;line-height:14px;white-space:nowrap}.tab.active{color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)}
+    nav{padding:6px calc(6px + env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) calc(6px + env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;background:var(--card-background-color,#fff);border-top:1px solid var(--divider-color,#dfe3e8);box-shadow:0 -5px 22px rgba(23,45,76,.08);z-index:3}
+    .tab{min-width:0;height:54px;border:0;border-radius:16px;background:transparent;color:var(--secondary-text-color,#68737d);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:700;cursor:pointer}.tab ha-icon{--mdc-icon-size:25px}.tab span{max-width:100%;font-size:12px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tab.active{color:var(--primary-color,#2186d7);background:color-mix(in srgb,var(--primary-color,#2186d7) 11%,transparent)}
     .hero,.card,.empty,.controls{background:var(--card-background-color,#fff);border:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 82%,transparent);border-radius:22px;box-shadow:0 8px 24px rgba(23,45,76,.07)}
     .hero{padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.hero-status{display:flex;align-items:center;gap:14px;min-width:0}.hero-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:color-mix(in srgb,var(--status-color) 13%,transparent);color:var(--status-color)}.hero-icon ha-icon{--mdc-icon-size:30px}.hero h2{margin:0;font-size:23px}.hero p{margin:4px 0 0;color:var(--secondary-text-color,#68737d)}
     .ok{--status-color:#43a047}.bad{--status-color:#e05252}.warn{--status-color:#ef9f25}.muted{--status-color:#7b8792}
@@ -182,7 +193,7 @@ function panelStyles() {
     .diag{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.diag .card{padding:17px}.diag h3{margin:0 0 12px}.diag-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--divider-color,#dfe3e8) 65%,transparent)}.diag-row:last-child{border:0}.diag-row span{color:var(--secondary-text-color,#68737d)}code{word-break:break-all;font-size:12px}
     @media(max-width:850px){.stats{grid-template-columns:repeat(3,1fr)}.groups{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr 1fr}.controls input{grid-column:1/-1}.diag{grid-template-columns:1fr}}
     @media(max-width:560px){.content{padding:10px 9px 18px}.hero{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr);gap:7px}.composition-row{grid-template-columns:1fr;gap:3px}.composition-detail{text-align:left}.groups{grid-template-columns:1fr}.controls{grid-template-columns:1fr;position:static}.controls input{grid-column:auto}.device{grid-template-columns:minmax(0,1fr)}.device-side{text-align:left}.condition-tags{justify-content:flex-start}}
-    @container(max-width:359px){.tab span{font-size:10.5px}.tab ha-icon{--mdc-icon-size:24px}}
+    @container(max-width:400px){.tab span{font-size:10px}.tab ha-icon{--mdc-icon-size:24px}}
     @media(prefers-reduced-motion:reduce){.refresh.busy ha-icon{animation:none}}
   `;
 }
@@ -199,6 +210,9 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     this._query = "";
     this._groupFilter = "all";
     this._conditionFilter = "all";
+    this._labelRegistries = null;
+    this._labelLoadState = "idle";
+    this._labelLoadGeneration = 0;
     this._shellRendered = false;
     this._refreshState = "idle";
     this._refreshTimer = null;
@@ -209,13 +223,17 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
   }
 
   set hass(value) {
+    const registryAccessBecameAvailable = typeof this._hass?.callWS !== "function"
+      && typeof value?.callWS === "function";
     this._hass = value;
     const snapshot = buildAvailabilitySnapshot(value?.states || {});
     const signature = JSON.stringify(snapshot);
-    if (signature === this._snapshotSignature) return;
-    this._snapshot = snapshot;
-    this._snapshotSignature = signature;
-    if (this._shellRendered) this._patchTelemetry();
+    if (signature !== this._snapshotSignature) {
+      this._snapshot = snapshot;
+      this._snapshotSignature = signature;
+      if (this._shellRendered) this._patchTelemetry();
+    }
+    if (registryAccessBecameAvailable && this._activeTab === "labels") this._loadLabels();
   }
   get hass() { return this._hass; }
   set panel(value) {
@@ -237,9 +255,11 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (!this._shellRendered) this._renderShell();
     this._patchRefreshButton();
     this._patchActiveView();
+    if (this._activeTab === "labels") this._loadLabels();
   }
 
   disconnectedCallback() {
+    ++this._labelLoadGeneration;
     ++this._refreshGeneration;
     if (this._refreshTimer !== null) clearTimeout(this._refreshTimer);
     this._refreshTimer = null;
@@ -266,6 +286,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
           <button class="tab active" data-tab="summary"><ha-icon icon="mdi:view-dashboard-outline"></ha-icon><span>Сводка</span></button>
           <button class="tab" data-tab="problems"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>Проблемы</span></button>
           <button class="tab" data-tab="devices"><ha-icon icon="mdi:access-point-check"></ha-icon><span>Устройства</span></button>
+          <button class="tab" data-tab="labels"><ha-icon icon="mdi:tag-multiple-outline"></ha-icon><span>Ярлыки</span></button>
           <button class="tab" data-tab="diagnostics"><ha-icon icon="mdi:stethoscope"></ha-icon><span>Диагностика</span></button>
         </nav>
       </div>`;
@@ -312,11 +333,12 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
       const device = event.target.closest?.(".device[data-entity]");
       if (device) dispatchMoreInfo(this, device.dataset.entity);
       else if (event.target.closest?.("#open-integration")) navigatePanel("/config/integrations");
+      else if (event.target.closest?.("#retry-labels")) this._loadLabels();
     });
   }
 
   _activateTab(tab) {
-    if (!["summary", "problems", "devices", "diagnostics"].includes(tab) || tab === this._activeTab) return;
+    if (!["summary", "problems", "devices", "labels", "diagnostics"].includes(tab) || tab === this._activeTab) return;
     this._activeTab = tab;
     this.shadowRoot.querySelectorAll(".tab").forEach((button) => {
       button.classList.toggle("active", button.dataset.tab === tab);
@@ -324,6 +346,24 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     const viewport = this.shadowRoot.getElementById("viewport");
     if (viewport) viewport.scrollTop = 0;
     this._patchActiveView();
+    if (tab === "labels") this._loadLabels();
+  }
+
+  async _loadLabels() {
+    const generation = ++this._labelLoadGeneration;
+    this._labelLoadState = "loading";
+    if (this._activeTab === "labels") this._patchActiveView();
+    try {
+      const registries = await fetchAvailabilityLabelRegistries(this._hass);
+      if (!this.isConnected || generation !== this._labelLoadGeneration) return;
+      this._labelRegistries = registries;
+      this._labelLoadState = "ready";
+    } catch (_error) {
+      if (!this.isConnected || generation !== this._labelLoadGeneration) return;
+      this._labelRegistries = null;
+      this._labelLoadState = "error";
+    }
+    if (this._activeTab === "labels") this._patchActiveView();
   }
 
   _patchTelemetry() {
@@ -341,6 +381,7 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
     if (!content) return;
     if (this._activeTab === "problems") this._renderProblems(content, telemetry);
     else if (this._activeTab === "devices") this._renderDevices(content, telemetry);
+    else if (this._activeTab === "labels") this._renderLabels(content, telemetry);
     else if (this._activeTab === "diagnostics") this._renderDiagnostics(content, telemetry);
     else this._renderSummary(content, telemetry);
   }
@@ -424,6 +465,27 @@ export class NikasDeviceAvailabilityPanel extends HTMLElement {
       <section class="controls"><input id="search" type="search" value="${escapeHtml(this._query)}" placeholder="Поиск устройства или entity ID" aria-label="Поиск"><select id="group-filter" aria-label="Группа"><option value="all">Все группы</option>${groups.map((group) => `<option data-key="option:${escapeHtml(group.slug)}" value="${escapeHtml(group.slug)}" ${this._groupFilter === group.slug ? "selected" : ""}>${escapeHtml(group.name)}</option>`).join("")}</select><select id="condition-filter" aria-label="Состояние"><option value="all">Все состояния</option>${Object.entries(CONDITION).filter(([key]) => key !== "no_data").map(([key,value]) => `<option value="${key}" ${this._conditionFilter === key ? "selected" : ""}>${value[0]}</option>`).join("")}</select></section>
       <div class="device-list" data-key="device-list">${items.length ? items.map((item) => this._deviceRow(item)).join("") : `<div class="empty"><ha-icon icon="mdi:magnify-close"></ha-icon><h2>Ничего не найдено</h2><p>Измените строку поиска или фильтры.</p></div>`}</div>`, telemetry);
 
+  }
+
+  _renderLabels(content, telemetry = false) {
+    if (this._snapshot.status === "no_integration") {
+      this._patchViewMarkup(content, `<div class="empty"><h2>Entity Availability не обнаружена</h2><p>Нет контролируемых сущностей для распределения по ярлыкам.</p></div>`, telemetry);
+      return;
+    }
+    if (this._labelLoadState === "error") {
+      this._patchViewMarkup(content, `<div class="empty"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><h2>Не удалось загрузить ярлыки</h2><p>Проверьте доступ к реестрам Home Assistant и повторите запрос.</p><button id="retry-labels" type="button">Повторить</button></div>`, telemetry);
+      return;
+    }
+    if (this._labelLoadState !== "ready") {
+      this._patchViewMarkup(content, `<div class="empty"><h2>Загружаем ярлыки…</h2></div>`, telemetry);
+      return;
+    }
+    const groups = buildAvailabilityLabelGroups(this._snapshot, this._labelRegistries);
+    const sections = groups.map(group => {
+      const key = group.id === null ? "unlabeled" : `id:${group.id}`;
+      return `<section class="problem-section muted" data-key="label:${escapeHtml(key)}"><div class="problem-heading"><h2>${escapeHtml(group.name)}</h2><span class="problem-count">${group.items.length}</span></div><div class="device-list" data-key="label-list:${escapeHtml(key)}">${group.items.map(item => this._deviceRow(item, true)).join("")}</div></section>`;
+    }).join("");
+    this._patchViewMarkup(content, sections || `<div class="empty"><h2>Контролируемых сущностей нет</h2></div>`, telemetry);
   }
 
   _deviceRow(item, showAllConditions = false) {

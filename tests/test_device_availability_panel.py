@@ -87,13 +87,13 @@ def test_registers_owned_route_even_without_entity_availability_states() -> None
     assert call["module_url"].startswith(
         "/contract_generated_ui/frontend/device-availability-panel.js?build="
     )
-    assert call["module_url"].endswith("build=b006")
+    assert call["module_url"].endswith("build=b007")
     assert call["sidebar_icon"] == "mdi:shield-check-outline"
     assert call["config"] == {
         "title": "Доступность устройств",
         "parent_route": "/home/overview",
         "default_path": "/dashboard-device-availability",
-        "integration_version": "0.42.1",
+        "integration_version": "0.42.2",
     }
     assert hass.data[module.DOMAIN][module.DEVICE_AVAILABILITY_PANEL_PATH] == (
         "dashboard-device-availability"
