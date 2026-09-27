@@ -463,7 +463,20 @@ def test_live_hass_updates_do_not_rebuild_panel_shell() -> None:
 
 
 def test_header_beta_uses_approved_compact_version_format() -> None:
-    assert _run_panel("version") == {"version": "1.0.0-beta005"}
+    assert _run_panel("version") == {"version": "1.0.0-beta006"}
+
+
+def test_header_subtitle_shows_ui_and_integration_versions() -> None:
+    assert _run_panel("version_subtitle", integrationVersion="0.42.1") == {
+        "subtitle": "UI 1.0.0-beta006 · Интеграция 0.42.1"
+    }
+
+
+def test_late_panel_config_point_updates_version_without_rebuilding_shell() -> None:
+    assert _run_panel("late_version_subtitle", integrationVersion="0.42.1") == {
+        "subtitle": "UI 1.0.0-beta006 · Интеграция 0.42.1",
+        "writes": 1,
+    }
 
 
 def test_summary_explains_non_essential_entities_without_hiding_the_balance() -> None:
