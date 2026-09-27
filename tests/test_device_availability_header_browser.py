@@ -25,7 +25,7 @@ HTML = """<!doctype html><html lang="ru"><meta charset="utf-8">
 body{margin:0}#host{position:absolute;inset:0;overflow:hidden}
 ha-icon{display:inline-block}
 </style><div id="host"></div><script type="module">
-import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b006';
+import {NikasDeviceAvailabilityPanel} from '/device-availability-panel.js?build=b007';
 // Test-only icon host: production uses Home Assistant's registered ha-icon.
 customElements.define('ha-icon', class extends HTMLElement {
   static get observedAttributes(){return ['icon'];}
@@ -54,7 +54,14 @@ for (const [slug,name,total,online,offline,extra] of [
   entities:['sensor.'+slug],display_names:{['sensor.'+slug]:name}
  }};
 }
-window.hass={states,callService:async(...args)=>{
+window.registryCalls=[];
+window.hass={states,callWS:async({type})=>{
+ registryCalls.push(type);
+ if(type==='config/label_registry/list') return [{label_id:'important',name:'Важное'},{label_id:'windows',name:'Окна'}];
+ if(type==='config/entity_registry/list_for_display') return {entities:[{ei:'sensor.okna',lb:['windows'],di:'device-a'},{ei:'sensor.svet',di:'device-a'}]};
+ if(type==='config/device_registry/list') return [{id:'device-a',labels:['important']}];
+ throw Error('unexpected registry request');
+},callService:async(...args)=>{
  calls.push(args);
  if(mode==='failure') throw Error('private details must not be shown');
  if(mode==='false') return false;
@@ -62,7 +69,7 @@ window.hass={states,callService:async(...args)=>{
  return undefined;
 }};
 window.panel=new NikasDeviceAvailabilityPanel();
-panel.panel={config:{parent_route:'/home/overview',integration_version:'0.42.1'}};
+panel.panel={config:{parent_route:'/home/overview',integration_version:'0.42.2'}};
 panel.hass=hass;document.querySelector('#host').append(panel);
 window.ready=true;
 </script></html>"""
@@ -90,7 +97,7 @@ def page(browser):
     source = (FRONTEND / "device-availability-panel.js").read_text()
     source = re.sub(r'\./device-availability-model\.js\?build=[^"\s]+', model_url, source)
     module_url = page.evaluate(blob, source)
-    page.set_content(HTML.replace('/device-availability-panel.js?build=b006', module_url))
+    page.set_content(HTML.replace('/device-availability-panel.js?build=b007', module_url))
     page.wait_for_function("window.ready === true")
     # Pause only after module startup: a frozen RAF can stall readiness polling.
     # Module startup can exceed a second on CI's first Chromium launch.
@@ -140,14 +147,14 @@ def test_header_geometry_at_each_host_width(page, width):
         assert dimensions[action]["h"] == 44
     assert dimensions["font"] == ("21px" if width < 360 else "23px")
     assert dimensions["weight"] == "800"
-    assert dimensions["version"] == "UI 1.0.0-beta006 · Интеграция 0.42.1"
+    assert dimensions["version"] == "UI 1.0.0-beta007 · Интеграция 0.42.2"
     assert dimensions["versionFits"]
     assert dimensions["refreshBg"] == "rgb(255, 255, 255)"
     assert dimensions["border"] == "16px"
     assert not dimensions["overflow"]
 
 
-def test_problems_tab_four_item_footer_fits_narrow_phone(page):
+def test_five_item_footer_fits_narrow_phone(page):
     page.set_viewport_size({"width": 320, "height": 700})
     result = page.locator("nav").evaluate("""nav => ({
       labels:[...nav.querySelectorAll('.tab')].map(button=>button.innerText.trim()),
@@ -155,10 +162,36 @@ def test_problems_tab_four_item_footer_fits_narrow_phone(page):
       navWidth:nav.getBoundingClientRect().width,
       overflow:nav.scrollWidth>nav.clientWidth || document.documentElement.scrollWidth>innerWidth
     })""")
-    assert result["labels"] == ["Сводка", "Проблемы", "Устройства", "Диагностика"]
+    assert result["labels"] == ["Сводка", "Проблемы", "Устройства", "Ярлыки", "Диагностика"]
     assert max(result["widths"]) - min(result["widths"]) < 0.2
     assert sum(result["widths"]) <= result["navWidth"]
     assert not result["overflow"]
+
+
+def test_labels_tab_groups_entities_and_preserves_header_on_telemetry(page):
+    page.locator('nav [data-tab="labels"]').click()
+    page.locator('[data-key="label:id:important"] .device').first.wait_for()
+    assert page.locator('[data-key="label:id:important"] .device').count() == 2
+    assert page.locator('[data-key="label:id:windows"] .device').count() == 1
+    assert page.locator('[data-key="label:unlabeled"] .device').count() == 1
+    assert len(page.evaluate("registryCalls")) == 3
+    page.locator('nav [data-tab="summary"]').click()
+    page.locator('nav [data-tab="labels"]').click()
+    page.locator('[data-key="label:id:important"] .device').first.wait_for()
+    assert len(page.evaluate("registryCalls")) == 6
+    page.evaluate("""() => {
+      window.headerBefore = panel.shadowRoot.querySelector('header');
+      const updated = {...hass, states: {...hass.states,
+        'sensor.entity_availability_okna_group_summary': {
+          ...hass.states['sensor.entity_availability_okna_group_summary'],
+          attributes: {...hass.states['sensor.entity_availability_okna_group_summary'].attributes,
+            offline_entities:['sensor.okna']}
+        }
+      }};
+      panel.hass = updated;
+    }""")
+    assert page.locator('[data-key="label:id:windows"] .pill').inner_text() == "Недоступно"
+    assert page.evaluate("panel.shadowRoot.querySelector('header') === headerBefore")
 
 
 def test_header_follows_host_not_window_when_sidebar_takes_space(page):

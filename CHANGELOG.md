@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.42.2 — 2026-09-27
+
+- Group monitored entities by Home Assistant entity and device labels in a
+  separate `Ярлыки` tab, including collapsed row members and unlabeled entities.
+- Show availability in each label group, retain the panel shell during updates,
+  and keep five navigation items within the mobile viewport.
+- Publish UI `1.0.0-beta007` with asset build `b007`.
+
 ## 0.42.1 — 2026-09-27
 
 - Show both the device-availability UI and integration versions in the panel

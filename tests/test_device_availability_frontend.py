@@ -38,6 +38,69 @@ def _run_panel(operation: str, **options) -> object:
     return json.loads(completed.stdout)
 
 
+def test_label_groups_include_entity_device_and_collapsed_member_labels() -> None:
+    states = {"sensor.entity_availability_okna_group_summary": _state(
+        3, total_entities=3, online=3,
+        entities=["binary_sensor.window", "light.hall", "switch.unlabeled"],
+        row_members={"binary_sensor.window": ["binary_sensor.window", "sensor.window_battery"]},
+    )}
+    registries = {
+        "labels": [{"label_id": "critical", "name": "Важное"},
+                   {"label_id": "outside", "name": "Улица"}],
+        "entities": {"entities": [
+            {"ei": "binary_sensor.window", "lb": ["critical"], "di": "device1"},
+            {"ei": "sensor.window_battery", "lb": ["outside"], "di": "device1"},
+            {"ei": "light.hall", "di": "device1"},
+        ]},
+        "devices": [{"id": "device1", "labels": ["critical"]}],
+    }
+    groups = _run("labels", states, registries=registries)
+    assert [(group["name"], [item["entityId"] for item in group["items"]])
+            for group in groups] == [
+        ("Важное", ["binary_sensor.window", "light.hall"]),
+        ("Улица", ["binary_sensor.window"]),
+        ("Без ярлыка", ["switch.unlabeled"]),
+    ]
+
+
+def test_label_groups_deduplicate_entities_and_sort_names() -> None:
+    states = {
+        "sensor.entity_availability_a_group_summary": _state(
+            2, entities=["sensor.z", "sensor.a"], display_names={"sensor.z": "Яблоко", "sensor.a": "Абрикос"}),
+        "sensor.entity_availability_b_group_summary": _state(1, entities=["sensor.a"]),
+    }
+    groups = _run("labels", states, registries={"labels": [], "entities": [], "devices": []})
+    assert len(groups) == 1
+    assert groups[0]["name"] == "Без ярлыка"
+    assert [item["entityId"] for item in groups[0]["items"]] == ["sensor.a", "sensor.z"]
+
+
+def test_labels_tab_loads_registry_data_and_escapes_label_names() -> None:
+    payload = {"config/label_registry/list": [{"label_id": "x", "name": "<опасно>"}],
+               "config/entity_registry/list_for_display": {"entities": [{"ei": "sensor.one", "lb": ["x"]}]},
+               "config/device_registry/list": []}
+    fetched = _run_panel("labels_fetch", results=payload)
+    assert set(fetched["calls"]) == set(payload)
+    states = {"sensor.entity_availability_one_group_summary": _state(
+        1, entities=["sensor.one"], display_names={"sensor.one": "Датчик"})}
+    view = _run_panel("labels_view", states=states, registries={
+        "labels": payload["config/label_registry/list"],
+        "entities": payload["config/entity_registry/list_for_display"],
+        "devices": [],
+    })["html"]
+    assert "&lt;опасно&gt;" in view and "<опасно>" not in view
+    assert 'data-entity="sensor.one"' in view
+    assert "Доступно" in view
+    assert "Без ярлыка" not in view
+
+
+def test_labels_tab_does_not_mistake_registry_error_for_no_labels() -> None:
+    states = {"sensor.entity_availability_one_group_summary": _state(1, entities=["sensor.one"])}
+    view = _run_panel("labels_view", states=states, loadState="error")["html"]
+    assert "Не удалось загрузить ярлыки" in view
+    assert "Без ярлыка" not in view
+
+
 def test_missing_integration_is_distinct_from_healthy() -> None:
     snapshot = _run("build", {"sensor.outside": _state("1")})
     assert snapshot["status"] == "no_integration"
@@ -355,12 +418,13 @@ def test_problem_groups_are_empty_when_every_item_is_healthy() -> None:
     assert _run("problems", states) == {"essential": [], "nonEssential": []}
 
 
-def test_problems_tab_uses_approved_navigation_order() -> None:
+def test_labels_tab_follows_devices_in_navigation() -> None:
     assert _run_panel("tabs") == {
         "tabs": [
             {"id": "summary", "label": "Сводка"},
             {"id": "problems", "label": "Проблемы"},
             {"id": "devices", "label": "Устройства"},
+            {"id": "labels", "label": "Ярлыки"},
             {"id": "diagnostics", "label": "Диагностика"},
         ]
     }
@@ -463,18 +527,18 @@ def test_live_hass_updates_do_not_rebuild_panel_shell() -> None:
 
 
 def test_header_beta_uses_approved_compact_version_format() -> None:
-    assert _run_panel("version") == {"version": "1.0.0-beta006"}
+    assert _run_panel("version") == {"version": "1.0.0-beta007"}
 
 
 def test_header_subtitle_shows_ui_and_integration_versions() -> None:
-    assert _run_panel("version_subtitle", integrationVersion="0.42.1") == {
-        "subtitle": "UI 1.0.0-beta006 · Интеграция 0.42.1"
+    assert _run_panel("version_subtitle", integrationVersion="0.42.2") == {
+        "subtitle": "UI 1.0.0-beta007 · Интеграция 0.42.2"
     }
 
 
 def test_late_panel_config_point_updates_version_without_rebuilding_shell() -> None:
-    assert _run_panel("late_version_subtitle", integrationVersion="0.42.1") == {
-        "subtitle": "UI 1.0.0-beta006 · Интеграция 0.42.1",
+    assert _run_panel("late_version_subtitle", integrationVersion="0.42.2") == {
+        "subtitle": "UI 1.0.0-beta007 · Интеграция 0.42.2",
         "writes": 1,
     }
 

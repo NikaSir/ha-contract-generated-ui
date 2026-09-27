@@ -256,6 +256,42 @@ export function buildAvailabilityProblemGroups(snapshot) {
   return grouped;
 }
 
+export function buildAvailabilityLabelGroups(snapshot, registries = {}) {
+  const labels = Array.isArray(registries?.labels) ? registries.labels : [];
+  const rawEntities = registries?.entities?.entities ?? registries?.entities;
+  const entities = Array.isArray(rawEntities) ? rawEntities : [];
+  const devices = Array.isArray(registries?.devices) ? registries.devices : [];
+  const labelNames = new Map(labels.map(label => [label.label_id, label.name]));
+  const entityIndex = new Map(entities.map(entity => [entity.ei ?? entity.entity_id, entity]));
+  const deviceIndex = new Map(devices.map(device => [device.id, device]));
+  const groups = new Map();
+  const seen = new Set();
+  for (const item of snapshot?.items || []) {
+    if (seen.has(item.entityId)) continue;
+    seen.add(item.entityId);
+    const labelIds = new Set();
+    for (const entityId of item.memberEntityIds || [item.entityId]) {
+      const entity = entityIndex.get(entityId);
+      for (const labelId of asList(entity?.lb ?? entity?.labels)) labelIds.add(labelId);
+      const device = deviceIndex.get(entity?.di ?? entity?.device_id);
+      for (const labelId of asList(device?.labels)) labelIds.add(labelId);
+    }
+    for (const labelId of labelIds.size ? labelIds : [null]) {
+      if (!groups.has(labelId)) groups.set(labelId, {
+        id: labelId,
+        name: labelId === null ? "Без ярлыка" : String(labelNames.get(labelId) || labelId),
+        items: [],
+      });
+      groups.get(labelId).items.push(item);
+    }
+  }
+  return [...groups.values()]
+    .map(group => ({ ...group, items: group.items.sort((a, b) =>
+      a.name.localeCompare(b.name, "ru") || a.entityId.localeCompare(b.entityId)) }))
+    .sort((a, b) => a.id === null ? 1 : b.id === null ? -1
+      : a.name.localeCompare(b.name, "ru") || a.id.localeCompare(b.id));
+}
+
 export function filterAvailabilityItems(
   snapshot,
   query = "",
