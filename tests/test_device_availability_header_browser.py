@@ -93,7 +93,9 @@ def page(browser):
     page.set_content(HTML.replace('/device-availability-panel.js?build=b006', module_url))
     page.wait_for_function("window.ready === true")
     # Pause only after module startup: a frozen RAF can stall readiness polling.
-    page.clock.pause_at(datetime(2026, 9, 15, 0, 0, 1, tzinfo=timezone.utc))
+    # Module startup can exceed a second on CI's first Chromium launch.
+    # Pause relative to the installed clock to avoid rewinding it.
+    page.clock.pause_at(datetime.fromtimestamp(page.evaluate("Date.now()") / 1000 + 1, tz=timezone.utc))
     yield page
     page.close()
 
