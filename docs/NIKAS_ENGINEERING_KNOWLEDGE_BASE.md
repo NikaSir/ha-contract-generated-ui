@@ -422,13 +422,10 @@ its own declared build, not that their numbers are equal.
 - Preserve the independent UI version lineage: `vMAJOR.MINOR.PATCH`, including
   `v11.0.N` for the existing v11 line. If a panel already has an explicitly
   versioned UI beta, show its complete `-betaNNN` suffix too; never hide it.
-- Both identities must be explicitly visible in the panel: the complete UI
-  version under the Header title and a separately labelled full integration
-  version in the approved information/diagnostics area. For example:
-  `UI v11.0.7` and `Интеграция: 1.0.0-beta002`.
-- Preserve the fixed two-line Header geometry. Do not squeeze both identities
-  into its version line, shrink typography or replace required text with a
-  tooltip, ellipsis or hash. The information area may wrap its labelled value.
+- Show both complete identities on one line under the Header title, for example
+  `UI v0.9.11-beta004 / 1.9.11-beta007`. The integration version follows the slash.
+- Keep the `52px` title plaque and use the responsive type scale of the UI standard.
+  Verify the complete text at narrow panel widths.
 - The integration version must match the installed HA `manifest.json`.
   UI metadata in the panel manifest, contract/configuration, generated bundle,
   Header and deterministic cache identity must refer to the declared UI build.

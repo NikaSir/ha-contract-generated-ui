@@ -2,9 +2,9 @@
   "version": "2.2",
   "navigation_contract_version": "1.3",
   "standard_path": "docs/NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md",
-  "standard_sha256": "dda395e603dc71266b8dbabeb337b773fecbd0778c5fa11883ee366112126e6e",
+  "standard_sha256": "6ef10e3bc8a98de92d4ff3d6b67c08c8a2b955accf67a4a97c3d101fdab1561f",
   "navigation_contract_path": "docs/NIKAS_PANEL_NAVIGATION_CONTRACT.md",
-  "navigation_contract_sha256": "04c81cb498de3bd9ac35b7e70ed8a90fa4376ed3a31bcedb1fe5cc3cb53e05a6",
+  "navigation_contract_sha256": "26269e700cffa7cc1b0a2f93ff6314ed3d366f988460168c312324511f282423",
   "role": "registry",
   "shell_contract": {
     "version": "2.1",
@@ -30,7 +30,7 @@
   "runtime_files": [],
   "source_kit": {
     "path": "templates/shell_v2/nikas-specialized-shell.js",
-    "sha256": "b7dbb84bb2f950fce75591266d6de7dbff824f4d480f455f0b8cbb0866a1c176",
+    "sha256": "ced4c2cc9b223c8d3765c28c34988384b63d7433ba2a7eb9c037a0ef97c6b909",
     "delivery": "vendored-build-time",
     "runtime_dependency": false
   },
@@ -51,15 +51,20 @@
     "side_action_shadow": "0 7px 20px rgba(23,45,76,.08)"
   },
   "title_plaque_reference": {
-    "implementation": "S8 OMNI",
-    "implementation_source": "NikaSir/ha-s8-omni",
+    "implementation": "NikaS Shell v2.1, variant B",
+    "implementation_source": "NikaSir/ha-contract-generated-ui",
     "width": "min(360px,100%)",
     "height_px": 52,
     "padding_px": "5 14",
     "radius_px": 16,
-    "primary_background_mix_percent": 5,
-    "primary_border_mix_percent": 24,
-    "shadow": "0 5px 16px rgba(23,45,76,.06)"
+    "primary_background_mix_percent": 3,
+    "primary_border_mix_percent": 12,
+    "shadow": "0 5px 16px rgba(23,45,76,.06)",
+    "version_format": "UI vX.Y.Z / A.B.C",
+    "title_weight": 700,
+    "version_weight": 500,
+    "version_min_px": 11,
+    "version_max_px": 14
   },
   "connection_plaque_reference": {
     "implementation": "S8 OMNI",
