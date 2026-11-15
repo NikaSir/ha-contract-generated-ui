@@ -95,15 +95,15 @@ The Header retains the S8 OMNI body geometry and surface. The center return plaq
 - Version line: weight `500`, `var(--secondary-text-color)`, one line. Size adapts to the panel from `11px` at `320px` to `14px` at `430px`.
 - The permanent left action is only Home Assistant system menu `mdi:menu`; it dispatches bubbling/composed `hass-toggle-menu`.
 - At most one panel-global action occupies the right rail. Refresh uses `mdi:refresh` in idle/busy state and the completion glyphs defined below.
-- Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph. The refresh button uses a dark neutral surface (`8%` card color mixed with `#1c1c1c`) for white-arrow contrast in both themes.
-- The menu glyph uses `var(--primary-text-color)`. The circular refresh arrow is white (`#ffffff`) in idle and busy states.
+- Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph. The refresh button uses a white surface (`#ffffff`) in the light theme and a dark neutral surface (`8%` card color mixed with `#1c1c1c`) in the dark theme.
+- The menu glyph uses `var(--primary-text-color)`. In idle and busy states, the circular refresh arrow is black (`#000000`) in the light theme and white (`#ffffff`) in the dark theme.
 - Disabled global action may reduce opacity, but its plaque geometry and reserved rail remain unchanged so title centering never moves.
 - A transparent refresh rail, a borderless side action, a locally selected integration color or mismatched menu/refresh geometry is non-conforming.
 - Back, an integration drawer, a device command or a decorative brand icon is prohibited in the permanent left rail.
 
 ### Refresh — busy, success and error
 
-[NikaS Refresh Action Contract v1.2](NIKAS_REFRESH_ACTION_CONTRACT.md) is required
+[NikaS Refresh Action Contract v1.3](NIKAS_REFRESH_ACTION_CONTRACT.md) is required
 when a refresh action is present. The same mounted button has four states:
 idle arrow → busy rotation → success check or error glyph → idle arrow.
 
@@ -383,7 +383,7 @@ Repository tests or static checks must verify:
 27. the non-passive touch boundary guard blocks Home Assistant pull-to-refresh and outer scrolling at both work-viewport edges without replacing native interior scrolling or two-finger zoom.
 28. a peer-device selector, when present, keeps one persistent accessible status lamp per device, preserves selection styling independently, applies the green/orange/red/gray fail-closed state contract and updates lamps without replacing selector DOM.
 29. an owned panel route is registered before fallible device I/O, remains present after initial failure and is removed only by its exact owner, as required by `NIKAS_PANEL_LIFECYCLE_CONTRACT.md`.
-30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.2, including the white idle/busy arrow, the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
+30. a refresh action satisfies `NIKAS_REFRESH_ACTION_CONTRACT.md` v1.3, including the theme-aware idle/busy arrow, the 1400 ms green check/red error state, truthful completion, retry/timer isolation and stable geometry.
 31. both complete version identities and beta numbering satisfy section 11.1; missing, shortened or mismatched versions block acceptance.
 
 Each repository also maintains `docs/NIKAS_SPECIALIZED_PANEL_COMPLIANCE.md` (or an equivalent explicit record). Unimplemented runtime behavior is recorded as `GAP`, never assumed to pass from documentation alone.
