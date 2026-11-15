@@ -136,7 +136,7 @@ Header button. Use a button-specific state class and preserve plaque geometry.
 
 **Correct model:** one mounted button, four states:
 `idle → busy → success/error → idle`. Follow
-[Refresh Action Contract v1.2](NIKAS_REFRESH_ACTION_CONTRACT.md):
+[Refresh Action Contract v1.3](NIKAS_REFRESH_ACTION_CONTRACT.md):
 
 - busy begins immediately, lasts at least 900 ms and until the request settles;
 - explicit success shows green `mdi:check` for 1400 ms;

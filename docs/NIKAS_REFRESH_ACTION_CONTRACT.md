@@ -1,11 +1,11 @@
-# NikaS Refresh Action Contract v1.2
+# NikaS Refresh Action Contract v1.3
 
 **Status:** REQUIRED companion to NikaS Specialized Panel UI Standard v2.2  
 **Canonical source:** `NikaSir/ha-contract-generated-ui`  
 **Applies to:** every NikaS specialized panel that exposes a refresh action  
 **Approved:** 2026-09-07  
 **Completion feedback amendment:** 2026-09-08\
-**White refresh arrow amendment:** 2026-11-15\
+**Theme-aware refresh arrow amendment:** 2026-11-15\
 **Machine contract:** `.nikas-ui-standard.json` → `refresh_action_feedback`
 
 This companion extends the Header, stable-rendering, data-truth and acceptance rules of [NikaS UI Standard v2.2](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md). It does not change shell geometry, require a refresh button where none was approved, or certify unchanged panels as compliant.
@@ -44,8 +44,8 @@ in the same button for 1400 ms, then restore its idle glyph and color:
 
 | State | Glyph | Glyph color | Accessible name |
 |---|---|---|---|
-| Idle | `mdi:refresh` | white `#ffffff` | `Обновить` |
-| Busy | rotating `mdi:refresh` | white `#ffffff` | `Обновление данных` |
+| Idle | `mdi:refresh` | light `#000000`, dark `#ffffff` | `Обновить` |
+| Busy | rotating `mdi:refresh` | light `#000000`, dark `#ffffff` | `Обновление данных` |
 | Success | static `mdi:check` | green `#43a047` | `Запрос обновления выполнен` |
 | Error | static `mdi:alert-circle-outline` | red `#e53935` | `Не удалось обновить данные` |
 
@@ -67,7 +67,7 @@ The canonical `44px × 44px` plaque, `25px` glyph, border, background and Header
 rail remain unchanged in every state. Only the glyph, its color and accessible
 status change for success/error. Do not add a separate check button, resize the
 control, flash the whole Header or use a panel-wide loading CSS class for the button.
-Check the white arrow against the button surface in both light and dark themes.
+Use a white button surface in the light theme and the dark neutral surface in §2 of the UI standard in the dark theme. Verify the idle and busy glyph in both themes and preserve the mounted control during theme changes.
 
 Successful completion of the request does not by itself prove that every device supplied a new sample. Never mark preserved telemetry current, change its timestamp, or turn a status healthy merely because the animation ended. Freshness changes only when factual new data is accepted.
 

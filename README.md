@@ -82,7 +82,7 @@ associated experience and failure modes.
 [Visual-state rules for integration panels](docs/INTEGRATION_DASHBOARD_UI_STANDARD.md#9-visual-state-semantics)
 cover equipment rows and compact connection and freshness indicators.
 
-The [Refresh Action Contract v1.2](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
+The [Refresh Action Contract v1.3](docs/NIKAS_REFRESH_ACTION_CONTRACT.md) is a
 required companion for panels with a refresh action. Each owning repository must
 provide its own production tests and browser/device acceptance evidence.
 

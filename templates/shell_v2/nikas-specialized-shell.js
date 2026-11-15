@@ -69,6 +69,7 @@ function nikasShellV2Styles() {
     }
     .nikas-shell__side-action--right{justify-self:end;color:var(--primary-color,#03a9d9)}
     .nikas-shell__side-action--refresh{color:#fff;background:#1c1c1c;background:color-mix(in srgb,var(--card-background-color,#fff) 8%,#1c1c1c)}
+    .nikas-shell__side-action--refresh[data-nikas-color-mode="light"]{color:#000;background:#fff}
     .nikas-shell__side-action:disabled{opacity:.55;cursor:wait}
     .nikas-shell__side-action ha-icon{--mdc-icon-size:25px}
     .nikas-shell__title{
