@@ -82,7 +82,7 @@ Bottom Tab Bar  64px + effective bottom safe area
 
 ## 2. Header — canonical geometry with S8 OMNI surface
 
-The complete upper application menu copies the S8 OMNI Header, not merely its title typography. The Header surface, menu plaque, center return plaque and optional right action are one visual system.
+The Header retains the S8 OMNI body geometry and surface. The center return plaque uses the approved restrained style.
 
 - The Header body is exactly `60px` high, plus the effective top safe area owned by the Header.
 - Its body grid is exactly `52px minmax(0,1fr) 52px` with `12px` horizontal padding plus the effective left/right safe area. On widths below `360px`, only the two rails reduce to `48px`; the body height does not change.
@@ -91,11 +91,11 @@ The complete upper application menu copies the S8 OMNI Header, not merely its ti
 - The Header strip remains a persistent mounted layer. Blur, border and background must not be toggled or remounted during scroll, pinch, telemetry changes or tab switches.
 - A solid integration-brand color, a transparent strip that exposes moving work content, or a card-white strip disconnected from `var(--primary-background-color)` is non-conforming.
 - Title remains geometrically centered regardless of side actions.
-- Primary title: `23px`, weight `800`, one line; `21px` on very narrow phones.
-- Secondary/version line: `14px`, weight approximately `560`, `var(--secondary-text-color)`; `13px` on very narrow phones.
+- Primary title: `22px`, weight `700`, one line. Below `360px` panel width it uses `20px`.
+- Version line: weight `500`, `var(--secondary-text-color)`, one line. Size adapts to the panel from `11px` at `320px` to `14px` at `430px`.
 - The permanent left action is only Home Assistant system menu `mdi:menu`; it dispatches bubbling/composed `hass-toggle-menu`.
 - At most one panel-global action occupies the right rail. Refresh uses `mdi:refresh` in idle/busy state and the completion glyphs defined below.
-- Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph.
+- Menu and refresh copy the S8 OMNI side plaques exactly: `44px × 44px`, `16px` radius, `1px solid color-mix(in srgb,var(--divider-color) 72%,transparent)` border, `var(--card-background-color)` background, `0 7px 20px rgba(23,45,76,.08)` shadow and a `25px` `ha-icon` glyph. The refresh button uses a dark neutral surface (`8%` card color mixed with `#1c1c1c`) for white-arrow contrast in both themes.
 - The menu glyph uses `var(--primary-text-color)`. The circular refresh arrow is white (`#ffffff`) in idle and busy states.
 - Disabled global action may reduce opacity, but its plaque geometry and reserved rail remain unchanged so title centering never moves.
 - A transparent refresh rail, a borderless side action, a locally selected integration color or mismatched menu/refresh geometry is non-conforming.
@@ -124,10 +124,10 @@ idle arrow → busy rotation → success check or error glyph → idle arrow.
 ### Center title plaque — open the immediate parent
 
 - The geometrically centered two-line title is a persistent clickable plaque and the sole standard return control from a specialized panel to the NikaS base interface.
-- The first line is the current specialized-panel name. The second line is the complete interface version in the exact form `UI vX.Y.Z`; an explicitly versioned UI beta retains its full `-betaNNN` suffix. See section 11.1 for the separate integration-version display.
-- The whole plaque is one semantic `button` and copies the S8 OMNI reference geometry and tone exactly; it retains geometric centering between the side rails.
+- The first line is the panel name. The second line has the exact form `UI vX.Y.Z / A.B.C`, with the complete UI version first and the installed integration version second. Each beta retains its full `-betaNNN` suffix. See section 11.1.
+- The whole plaque is one semantic `button`, geometrically centered between the side rails.
 - Default geometry: `justify-self:center`, `width:min(360px,100%)`, `height:52px`, `padding:5px 14px`. Below `360px` it uses `width:100%; padding-inline:8px` so the plaque fills the available center grid column without moving the side rails.
-- Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 24%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 5%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
+- Reference surface: `1px` border `color-mix(in srgb,var(--primary-color,#03a9d9) 12%,var(--divider-color,#dfe3e8))`, `16px` radius, background `color-mix(in srgb,var(--primary-color,#03a9d9) 3%,var(--card-background-color,#fff))`, and shadow `0 5px 16px rgba(23,45,76,.06)`.
 - Pressed state: background primary mix `13%`, border primary mix `42%`, shadow `0 2px 7px rgba(23,45,76,.05)`; an optional subtle `scale(.985)` response is allowed. Focus-visible uses a `2px` primary-color outline with `2px` offset.
 - The focus state and pressed response are mandatory and remain visibly distinct from the default state.
 - A transparent title, a plain text label without the S8 OMNI surface, a white-only card surface, a wider `460px` desktop plaque forced into the phone Header, or a locally chosen integration color is non-conforming.
@@ -213,7 +213,7 @@ The former rule that one-finger transform panning also provides vertical movemen
 - Meaningful user-facing text stays within `12–25px` inclusive.
 - `12px` is the minimum for captions, state freshness, navigation labels, chips and compact secondary values.
 - `25px` is the maximum for a prominent live value or compact hero heading. Larger display typography is not part of the phone form baseline.
-- The Header is governed by its explicit `23/14px` wide and `21/13px` narrow pairs above.
+- The Header uses the responsive title and version sizes in §2, including the `11px` floor for the version line.
 - `9–10px` is allowed only for redundant, non-interactive schematic annotations whose meaning is already conveyed elsewhere. It is prohibited for statuses, controls, navigation, entity names, measurements and required explanations.
 - A layout that needs meaningful text below `12px` must be recomposed instead of shrinking the type.
 
@@ -321,12 +321,13 @@ defines the version naming and display decision of 2026-09-16.
   for changed contents. Stable versions omit the suffix.
 - UI and integration numbers may differ. Retain each panel's UI lineage,
   including `v11.0.N`; never renumber all panels to that line.
-- Display both identities explicitly: full `UI vX.Y.Z` beneath the Header
-  title (including any actual UI beta suffix), and a separately labelled
-  `Интеграция: 1.0.0-beta002` in the approved information/diagnostics area.
-  Keep the two-line 52px title plaque and existing typography unchanged.
-- Reject abbreviated, hash-only, hidden, clipped or ellipsized version values.
-  Wrapping is allowed in the information area, not by changing Header geometry.
+- Display both complete versions below the Header title, on one line. For example,
+  `UI v0.9.11-beta004 / 1.9.11-beta007`. The slash separates UI from integration.
+  Use both values when they coincide. Show an em dash for an unavailable
+  integration version and verify the installed metadata before acceptance.
+- Keep the `52px` title plaque. Check both versions for full visibility, including
+  at `320px` panel width. Abbreviation, hashes, clipping, ellipses and wrapping
+  each fail acceptance.
 - Compare the integration display to the installed HA manifest and the UI
   display to its own panel manifest/configuration, contract and shipped bundle.
   Do not add unsupported UI keys to the HA integration manifest.
@@ -411,7 +412,7 @@ For every matrix entry, compare the measured Header, title plaque, work viewport
 - every peer selector shows one correctly classified lamp per device; selected styling remains unchanged while green/orange/red/gray health states update independently and without geometry shift;
 - the upper menu visually matches S8 OMNI: persistent 97% primary-background strip, divider, blur and three aligned plaques below Dynamic Island;
 - both Header side buttons are visible matching `44px × 44px` plaques;
-- the centered title plaque shows the panel name and exact `UI vX.Y.Z`, opens the immediate parent and reaches `/home/overview` from every main panel, including after direct opening;
+- the centered title plaque shows the panel name and complete `UI vX.Y.Z / A.B.C` line, opens the immediate parent and reaches `/home/overview` from every main panel, including after direct opening;
 - Bottom icons and labels match the Stark SolarPower visual scale;
 - integration/repository icon is present and recognizable in installed/distribution surfaces.
 - a requested connection indicator has the exact `168px × 58px` box, `13px` top/right inset, `18px` radius, internal `10px` lamp and fixed `16/700` + `13/600` text; an enabled blue corner has the exact `205px` circle and fixed fill/anchor from `NIKAS_CONNECTION_DECORATION_CONTRACT.md`;
