@@ -202,12 +202,14 @@ Semantic color is reserved for confirmed meaning:
 
 ### Operating state in equipment rows
 
-Use the same semantic color for the equipment icon and its status text. Keep
-the equipment name neutral and the row visible through state changes.
+Use the same semantic color for the icon and its status text in equipment and
+outlet rows. Keep the name neutral and the row visible through state changes.
+Choose theme-aware tones and verify at least 4.5:1 status-text contrast against
+the row background in both light and dark themes.
 
 | Confirmed state | Icon and status text | Default label |
 |---|---|---|
-| On or active | Yellow | `Включено` |
+| On or active | Orange | `Включено` |
 | Off or inactive | Light blue | `Выключено` |
 | Unavailable or unknown | Gray | `Недоступно` |
 
