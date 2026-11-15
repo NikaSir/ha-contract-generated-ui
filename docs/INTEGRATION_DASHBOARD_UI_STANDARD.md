@@ -200,6 +200,50 @@ Semantic color is reserved for confirmed meaning:
 - red — fault/critical;
 - grey/neutral — unknown/unavailable/not confirmed.
 
+### Operating state in equipment rows
+
+Use the same semantic color for the equipment icon and its status text. Keep
+the equipment name neutral and the row visible through state changes.
+
+| Confirmed state | Icon and status text | Default label |
+|---|---|---|
+| On or active | Yellow | `Включено` |
+| Off or inactive | Light blue | `Выключено` |
+| Unavailable or unknown | Gray | `Недоступно` |
+
+Match the label to what the source actually measures. A burner that has stopped
+firing is `Горелка неактивна`. An unavailable burner signal is
+`Данные горелки недоступны`.
+
+### Compact connection and freshness icons
+
+When the panel calls for compact indicators beside a card heading, show
+connection first and data freshness second. Each icon has a separate accessible
+name that includes its current state. Expose the same statuses in text in the
+card or its diagnostics.
+
+| Indicator | State | Icon and color |
+|---|---|---|
+| Connection | Confirmed reachable | Green filled cloud (`mdi:cloud`) |
+| Connection | Confirmed outage | Orange crossed-out outline cloud (`mdi:cloud-off-outline`) |
+| Connection | Unknown | Gray outline cloud with question mark (`mdi:cloud-question-outline`) |
+| Freshness | Current | Green check in a circle (`mdi:check-circle-outline`) |
+| Freshness | Stale | Orange check in the same circle |
+| Freshness | Missing or unverifiable | Gray check in the same circle |
+
+The compact cloud indicates reachability. Show the verified transport path in
+diagnostics when available. The
+[two-line connection plaque](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md#8-optional-connection-and-freshness-indicator--s8-omni-reference)
+keeps its own geometry, labels and palette.
+
+Evaluate the two indicators independently. A reachable source with old
+measurements shows a green cloud and an orange check. Calculate age from the
+last successful receipt of valid telemetry. Receiving the same measurement
+again advances its receipt time. For a summary of required readings, use
+the oldest receipt and show gray if a required reading or its receipt time is
+missing. Use the integration's validated freshness state or its documented
+threshold. Update the existing icons, colors and accessible descriptions in place.
+
 ### Trust before last known state
 
 Source failure/stale/untrusted state overrides a last reported normal mode in overview status.
