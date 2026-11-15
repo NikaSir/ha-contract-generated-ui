@@ -16,7 +16,7 @@ CASES = [
     "result_presentation", "retry_during_result", "partial_failure", "disconnect_cleanup",
 ]
 EXPECTED = {
-    "version": "1.1",
+    "version": "1.2",
     "status": "required",
     "applies_when": "refresh_action_present",
     "path": PATH,
@@ -33,7 +33,8 @@ EXPECTED = {
         "error_icon": "mdi:alert-circle-outline",
         "error_color": "#e53935",
         "idle_icon": "mdi:refresh",
-        "idle_color": "var(--primary-color)",
+        "idle_color": "#ffffff",
+        "busy_color": "#ffffff",
         "success_semantics": "all_required_requests_explicitly_succeeded",
         "retry_during_result": True,
         "cancel_previous_timer_on_retry": True,
