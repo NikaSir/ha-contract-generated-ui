@@ -230,8 +230,8 @@ card or its diagnostics.
 | Connection | Confirmed outage | Orange crossed-out outline cloud (`mdi:cloud-off-outline`) |
 | Connection | Unknown | Gray outline cloud with question mark (`mdi:cloud-question-outline`) |
 | Freshness | Current | Green check in a circle (`mdi:check-circle-outline`) |
-| Freshness | Stale | Orange check in the same circle |
-| Freshness | Missing or unverifiable | Gray check in the same circle |
+| Freshness | Stale | Orange outline clock with an alert mark (`mdi:clock-alert-outline`) |
+| Freshness | Missing or unverifiable | Gray outline clock with a question mark (for example, `mdi:clock-outline` with a question-mark badge) |
 
 The compact cloud indicates reachability. Show the verified transport path in
 diagnostics when available. The
@@ -239,7 +239,7 @@ diagnostics when available. The
 keeps its own geometry, labels and palette.
 
 Evaluate the two indicators independently. A reachable source with old
-measurements shows a green cloud and an orange check. Calculate age from the
+measurements shows a green cloud and an orange clock. Calculate age from the
 last successful receipt of valid telemetry. Receiving the same measurement
 again advances its receipt time. For a summary of required readings, use
 the oldest receipt and show gray if a required reading or its receipt time is
