@@ -231,7 +231,7 @@ card or its diagnostics.
 | Connection | Unknown | Gray outline cloud with question mark (`mdi:cloud-question-outline`) |
 | Freshness | Current | Green check in a circle (`mdi:check-circle-outline`) |
 | Freshness | Stale | Orange outline clock with an alert mark (`mdi:clock-alert-outline`) |
-| Freshness | Missing or unverifiable | Gray outline clock with a question mark (`mdi:clock-question-outline`) |
+| Freshness | Missing or unverifiable | Gray outline clock with a question mark (for example, `mdi:clock-outline` with a question-mark badge) |
 
 The compact cloud indicates reachability. Show the verified transport path in
 diagnostics when available. The
