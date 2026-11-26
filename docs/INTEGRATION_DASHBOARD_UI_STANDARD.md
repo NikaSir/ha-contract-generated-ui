@@ -219,32 +219,8 @@ firing is `Горелка неактивна`. An unavailable burner signal is
 
 ### Compact connection and freshness icons
 
-When the panel calls for compact indicators beside a card heading, show
-connection first and data freshness second. Each icon has a separate accessible
-name that includes its current state. Expose the same statuses in text in the
-card or its diagnostics.
-
-| Indicator | State | Icon and color |
-|---|---|---|
-| Connection | Confirmed reachable | Green filled cloud (`mdi:cloud`) |
-| Connection | Confirmed outage | Orange crossed-out outline cloud (`mdi:cloud-off-outline`) |
-| Connection | Unknown | Gray outline cloud with question mark (`mdi:cloud-question-outline`) |
-| Freshness | Current | Green check in a circle (`mdi:check-circle-outline`) |
-| Freshness | Stale | Orange outline clock with an alert mark (`mdi:clock-alert-outline`) |
-| Freshness | Missing or unverifiable | Gray outline clock with a question mark (for example, `mdi:clock-outline` with a question-mark badge) |
-
-The compact cloud indicates reachability. Show the verified transport path in
-diagnostics when available. The
-[two-line connection plaque](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md#8-optional-connection-and-freshness-indicator--s8-omni-reference)
-keeps its own geometry, labels and palette.
-
-Evaluate the two indicators independently. A reachable source with old
-measurements shows a green cloud and an orange clock. Calculate age from the
-last successful receipt of valid telemetry. Receiving the same measurement
-again advances its receipt time. For a summary of required readings, use
-the oldest receipt and show gray if a required reading or its receipt time is
-missing. Use the integration's validated freshness state or its documented
-threshold. Update the existing icons, colors and accessible descriptions in place.
+Follow [NikaS Specialized Panel UI Standard v2.2 §8.1](NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md#81-compact-connection-and-freshness-icons)
+for the two compact indicators beside a card heading.
 
 ### Trust before last known state
 
