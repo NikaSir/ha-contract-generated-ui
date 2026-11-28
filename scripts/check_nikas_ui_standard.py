@@ -6,7 +6,9 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import tarfile
 from pathlib import Path
+from sys import argv
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +24,32 @@ def read_relative(path: str) -> str:
     target = ROOT / path
     require(target.is_file(), f"missing required file: {path}")
     return target.read_text(encoding="utf-8")
+
+
+def check_compact_status_icons(standard: str) -> None:
+    heading = "### 8.1 Compact connection and freshness icons\n"
+    require(heading in standard, "missing compact connection and freshness rules")
+    section = standard.split(heading, 1)[1].split("\n## ", 1)[0]
+    rows = [row for row in section.splitlines() if row.startswith(("| Connection |", "| Freshness |"))]
+    require(rows == [
+        '| Connection | Confirmed reachable | Green | `mdi:cloud` |',
+        '| Connection | Confirmed outage | Orange | `mdi:cloud-off-outline` |',
+        '| Connection | Unknown | Gray | `mdi:cloud-question-outline` |',
+        '| Freshness | Current | Green | `mdi:check-circle-outline` |',
+        '| Freshness | Stale | Orange | `mdi:clock-alert-outline` |',
+        '| Freshness | Missing or unverifiable | Gray | `mdi:clock-outline` with a separate `?` badge |',
+    ], "compact connection and freshness icon mapping drift")
+    legacy = read_relative("docs/INTEGRATION_DASHBOARD_UI_STANDARD.md")
+    require(
+        "NIKAS_SPECIALIZED_PANEL_UI_STANDARD.md#81-compact-connection-and-freshness-icons" in legacy
+        and "check in the same circle" not in legacy,
+        "the integration dashboard standard must refer to the canonical compact icon rules",
+    )
+    if len(argv) > 1:
+        with tarfile.open(argv[1], mode="r:gz") as archive:
+            files = set(archive.getnames())
+        for icon in re.findall(r"`mdi:([a-z-]+)`", section):
+            require(f"package/svg/{icon}.svg" in files, f"MDI icon is unavailable: {icon}")
 
 
 def main() -> None:
@@ -43,6 +71,7 @@ def main() -> None:
         require("### 2.13 Connection plaque and blue corner must use locked tokens" in knowledge_base, "knowledge base is missing the locked connection/decoration lesson")
     digest = hashlib.sha256(standard.encode("utf-8")).hexdigest()
     require(digest == config.get("standard_sha256"), "local NikaS UI standard is not the canonical v2.2 copy")
+    check_compact_status_icons(standard)
     # Registry integrity only: production layout needs the companion's browser evidence.
     geometry = config.get("connection_decoration_contract", {})
     require(geometry.get("version") == "1.1", "connection/decoration contract must be v1.1")
